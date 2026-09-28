@@ -1,0 +1,31 @@
+{
+  "nombre": "Dedsafío 4",
+  "minecraft": "1.21.1",
+  "fabric_loader": "0.19.3",
+  "mods": [
+    {
+      "archivo": "fabric-api-0.116.15+1.21.1.jar",
+      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/Nlt8gI9z/fabric-api-0.116.15%2B1.21.1.jar",
+      "sha1": "d25c793833a90cc028c9a61bc4546cd578a70ce1",
+      "nombre": "Fabric API"
+    },
+    {
+      "archivo": "geckolib-fabric-1.21.1-4.9.2.jar",
+      "url": "https://cdn.modrinth.com/data/8BmcQJ2H/versions/dnJdtm0u/geckolib-fabric-1.21.1-4.9.2.jar",
+      "sha1": "b95b1d631baeada54c6773ca8f6ede40d57fea46",
+      "nombre": "GeckoLib"
+    },
+    {
+      "archivo": "xaerominimap-fabric-1.21.1-26.5.0.jar",
+      "url": "https://cdn.modrinth.com/data/1bokaNcj/versions/ZD6hK4GV/xaerominimap-fabric-1.21.1-26.5.0.jar",
+      "sha1": "b9cec1acb286b6d7c05759c0c1e4b8a04f28d785",
+      "nombre": "Xaero's Minimap"
+    },
+    {
+      "nombre": "Dedsafío 4",
+      "archivo": "dedsafio4.jar",
+      "url": "https://raw.githubusercontent.com/dpascolat/dedsafio/main/dedsafio4.jar",
+      "sha1": "09c09d39077fa4f842266466ba781829d6222350"
+    }
+  ]
+}
