@@ -16,7 +16,8 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Los botones de los jefes que se manejan (se pueden cambiar en Controles):
  * - T-Rex: R gritar, Z abrir puerta.
- * - Qumara: R nacer, Z giro, V círculos, B atraer, N gas (el Enfriamiento no es un botón: pasa solo en los pinchitos de la barra).
+ * - Qumara: R nacer, Z giro, V círculos, B atraer, N gas, M levitación (el Enfriamiento no es un botón: pasa solo en
+ *   los pinchitos de la barra).
  */
 public final class TRexControles {
 	private TRexControles() {}
@@ -32,6 +33,8 @@ public final class TRexControles {
 			"key.dedsafio4.jefe_5", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.dedsafio4"));
 	public static final KeyMapping BOTON_6 = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.dedsafio4.jefe_6", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, "category.dedsafio4"));
+	public static final KeyMapping BOTON_7 = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+			"key.dedsafio4.jefe_7", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.dedsafio4"));
 
 	private static boolean montaJefe(Minecraft mc) {
 		// Solo el que la maneja (no el que tiene agarrado Qumara).
@@ -53,6 +56,9 @@ public final class TRexControles {
 			while (BOTON_6.consumeClick()) if (monta && mc.player.getVehicle() instanceof QumaraEntity) {
 				ClientPlayNetworking.send(new ModTRex.AccionPayload(ModTRex.BOTON_6));
 			}
+			while (BOTON_7.consumeClick()) if (monta && mc.player.getVehicle() instanceof QumaraEntity) {
+				ClientPlayNetworking.send(new ModTRex.AccionPayload(ModTRex.BOTON_7));
+			}
 		});
 	}
 
@@ -73,6 +79,8 @@ public final class TRexControles {
 			texto = (q.nacida() ? "" : tecla(GRITAR) + "Nacer     ") + tecla(ABRIR_PUERTA) + giro + "     " + tecla(BOTON_4) + circulos
 					+ "     " + tecla(BOTON_5) + atraer
 					+ "     " + tecla(BOTON_6) + (q.recargaGas() > 0 ? "Gas (" + (int) Math.ceil(q.recargaGas() / 20f) + " s)" : "Gas")
+					+ "     " + tecla(BOTON_7) + "Levitación " + q.segundosLevitacion() + " s"
+					+ (q.recargaLevitacion() > 0 ? " (" + (int) Math.ceil(q.recargaLevitacion() / 20f) + " s)" : "")
 					+ (q.debil() ? "     (Enfriamiento)" : "");
 		} else {
 			texto = tecla(GRITAR) + "Gritar     " + tecla(ABRIR_PUERTA) + "Abrir puerta";

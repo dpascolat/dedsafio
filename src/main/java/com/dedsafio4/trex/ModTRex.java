@@ -26,7 +26,7 @@ public final class ModTRex {
 					.clientTrackingRange(16).updateInterval(1).build("trex"));
 
 	/** Los botones: 1, 2 y 4 (R, G y V). En el T-Rex: 1 gritar, 2 abrir puerta; en Qumara: 1 nacer, 2 giro, 4 círculos, 5 atraer, 6 gas. */
-	public static final int GRITAR = 1, ABRIR_PUERTA = 2, BOTON_4 = 4, BOTON_5 = 5, BOTON_6 = 6;
+	public static final int GRITAR = 1, ABRIR_PUERTA = 2, BOTON_4 = 4, BOTON_5 = 5, BOTON_6 = 6, BOTON_7 = 7;
 
 	/** Cliente → servidor: el jinete apretó un botón. */
 	public record AccionPayload(int accion) implements CustomPacketPayload {

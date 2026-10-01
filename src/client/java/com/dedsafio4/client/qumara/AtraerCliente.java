@@ -11,15 +11,18 @@ import net.minecraft.world.phys.Vec3;
  * El Atraer de Qumara (botón 5) lo hace el cliente de cada jugador: cada tick, antes de moverse, su
  * velocidad horizontal apunta a la planta (así va igual caminando que saltando).
  *
- * Mientras te trae no podés saltar y aparece la barra de aguante: manteniendo el espacio apretado te
- * resistís y te trae mucho más lento, pero la barra se gasta (4 segundos) y en los costados saltan chispas rojas; al soltar
- * se vuelve a llenar. Vacía, no te podés resistir.
+ * Mientras te trae no podés saltar y aparece la barra de aguante: apretando el espacio muchas veces seguidas (clicks,
+ * no mantenerlo) te resistís y te trae muy lento, pero la barra se gasta (4 segundos) y en los costados saltan chispas
+ * rojas; si dejás de apretar se vuelve a llenar. Vacía, no te podés resistir.
  */
 public final class AtraerCliente {
 	private AtraerCliente() {}
 
-	/** Con el espacio apretado te trae a esta parte de la velocidad (1,5 bloques por segundo). */
-	private static final double RESISTIENDO = 0.15;
+	/** Resistiéndote te trae a esta parte de la velocidad (medio bloque por segundo: muy lento). */
+	private static final double RESISTIENDO = 0.05;
+	/** Cada click en el espacio te deja resistiendo este tiempo (en ticks): hay que seguir apretando. */
+	private static final int POR_CLICK = 6;
+	private static int resistenciaRestante;
 	/** Cuánto dura la barra resistiendo, y cuánto tarda en llenarse de nuevo (segundos). */
 	private static final float DURA = 4, LLENA = 6;
 
@@ -41,13 +44,20 @@ public final class AtraerCliente {
 			QumaraEntity q = atrae(mc);
 			if (q == null) {
 				// Entre Atraer y Atraer la barra se llena del todo.
+				resistenciaRestante = 0;
 				atraido = false;
 				resistiendo = false;
 				aguante = 1;
 				return;
 			}
 			atraido = true;
-			resistiendo = mc.options.keyJump.isDown() && mc.screen == null && aguante > 0;
+			// Los clicks del espacio (apretar y soltar), no mantenerlo apretado. Sólo mientras te atrae, así no le
+			// saca los clicks al minijuego del agarre.
+			int clicks = 0;
+			while (mc.options.keyJump.consumeClick()) clicks++;
+			if (clicks > 0 && mc.screen == null) resistenciaRestante = POR_CLICK;
+			else if (resistenciaRestante > 0) resistenciaRestante--;
+			resistiendo = resistenciaRestante > 0 && aguante > 0;
 			aguante = resistiendo ? Math.max(0, aguante - 1 / (DURA * 20)) : Math.min(1, aguante + 1 / (LLENA * 20));
 			double dx = q.getX() - mc.player.getX(), dz = q.getZ() - mc.player.getZ(), d = Math.sqrt(dx * dx + dz * dz);
 			if (d < QumaraEntity.RADIO_CERCA - 1) return;   // ya llegó

@@ -42,6 +42,8 @@ import java.util.UUID;
  *    (15 aciertos con el espacio y se salva; 5 fallos o 10 segundos sin pulsar y muere, salvo con tótem).
  *    Si se salva, lo tira lejos (el "Sacar" del diseño).
  * 6. Gas: una nube de Gas Morado en la posición de cada jugador (da el Veneno Primitivo).
+ * 7. Levitación: a todos los jugadores Levitación I por 10 segundos en la primera etapa, 20 en la segunda, 30 en
+ *    la tercera y 40 en la cuarta (las etapas son las mismas que el nivel de los Círculos, según la vida).
  * Estar pegado a la planta saca 5 corazones (cada 3 segundos, y te empuja para atrás). Los admins y el que
  * la maneja no son afectados por nada de esto. Se la puede lastimar con proyectiles.
  * Enfriamiento (solo, al llegar la vida a cada pinchito de la barra: 75%, 50% y 25%): se debilita (se
@@ -69,6 +71,7 @@ public class QumaraEntity extends PathfinderMob {
 	private static final EntityDataAccessor<Long> T_CIRCULOS = SynchedEntityData.defineId(QumaraEntity.class, EntityDataSerializers.LONG);
 	private static final EntityDataAccessor<Long> T_ATRAER = SynchedEntityData.defineId(QumaraEntity.class, EntityDataSerializers.LONG);
 	private static final EntityDataAccessor<Long> T_GAS = SynchedEntityData.defineId(QumaraEntity.class, EntityDataSerializers.LONG);
+	private static final EntityDataAccessor<Long> T_LEVITACION = SynchedEntityData.defineId(QumaraEntity.class, EntityDataSerializers.LONG);
 	/** El agarre: a quién (id, -1 nadie), cuándo lo agarró y cuándo lo empezó a sacar, dónde estaba y dónde cae, y el minijuego. */
 	/** /boss 1 ai: la maneja una IA (para practicar). */
 	private static final EntityDataAccessor<Boolean> IA = SynchedEntityData.defineId(QumaraEntity.class, EntityDataSerializers.BOOLEAN);
@@ -115,6 +118,7 @@ public class QumaraEntity extends PathfinderMob {
 		builder.define(T_CIRCULOS, Long.MIN_VALUE / 2);
 		builder.define(T_ATRAER, Long.MIN_VALUE / 2);
 		builder.define(T_GAS, Long.MIN_VALUE / 2);
+		builder.define(T_LEVITACION, Long.MIN_VALUE / 2);
 		builder.define(IA, false);
 		builder.define(AGARRADO, -1);
 		builder.define(T_AGARRE, Long.MIN_VALUE / 2);
@@ -175,6 +179,7 @@ public class QumaraEntity extends PathfinderMob {
 			case 4 -> circulos(jugador);
 			case 5 -> atraer(jugador);
 			case 6 -> gasATodos(jugador);
+			case 7 -> levitacion(jugador);
 			default -> {}
 		}
 	}
@@ -349,6 +354,7 @@ public class QumaraEntity extends PathfinderMob {
 		if (recargaGas() == 0) {
 			for (int i = 0; i < 2; i++) ataques.add(() -> gasATodos(null));
 		}
+		if (recargaLevitacion() == 0) ataques.add(() -> levitacion(null));
 		if (recargaAtraer() == 0 && !atrayendo()) {
 			for (int i = 0; i < (d > ALCANCE ? 4 : 2); i++) ataques.add(() -> atraer(null));
 		}
@@ -407,6 +413,47 @@ public class QumaraEntity extends PathfinderMob {
 			if (d < RADIO_CERCA - 1) continue;
 			if (tickCount % 4 == 0) mundo.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL, p.getX(), p.getY() + 1, p.getZ(), 6, 0.3, 0.5, 0.3, 0.3);
 		}
+	}
+
+	// --- Botón 7: Levitación ---
+
+	/** Cada cuánto se puede usar la Levitación (desde que se usó). */
+	public static final int RECARGA_LEVITACION = 30 * 20;
+
+	public int recargaLevitacion() {
+		return (int) Math.max(0, RECARGA_LEVITACION - (level().getGameTime() - entityData.get(T_LEVITACION)));
+	}
+
+	/** Cuántos segundos dura la Levitación en esta etapa: 10 en la primera, 20 en la segunda, y así. */
+	public int segundosLevitacion() {
+		return 10 * nivelCirculos();
+	}
+
+	/** Levitación I a todos los jugadores (menos admins y el que la maneja, salvo con la IA). */
+	private void levitacion(@Nullable ServerPlayer jugador) {
+		if (!nacida() || naciendo() || derrotada()) return;
+		if (debil()) {
+			avisar(jugador, "Está debilitada: no puede atacar.");
+			return;
+		}
+		if (recargaLevitacion() > 0) {
+			avisar(jugador, "Levitación: faltan " + (int) Math.ceil(recargaLevitacion() / 20f) + " s.");
+			return;
+		}
+		if (!(level() instanceof ServerLevel mundo)) return;
+		entityData.set(T_LEVITACION, mundo.getGameTime());
+		entityData.set(T_GRITO, mundo.getGameTime());   // abre la boca
+		int segundos = segundosLevitacion(), afectados = 0;
+		for (ServerPlayer p : mundo.players()) {
+			if (!esBlanco(p) || p.getVehicle() == this) continue;
+			p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.LEVITATION,
+					segundos * 20, 0), this);
+			mundo.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD, p.getX(), p.getY() + 0.2, p.getZ(),
+					12, 0.4, 0.2, 0.4, 0.02);
+			afectados++;
+		}
+		mundo.playSound(null, getX(), getY() + 25, getZ(), SoundEvents.SHULKER_SHOOT, SoundSource.HOSTILE, 8f, 0.5f);
+		avisar(jugador, "Levitación " + segundos + " s a " + afectados + (afectados == 1 ? " jugador" : " jugadores"));
 	}
 
 	// --- Botón 6: Gas a todos ---
