@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/cube_bottom_top",
+	"textures": {
+		"top": "dedsafio4:block/plataforma_despegue",
+		"bottom": "dedsafio4:block/plataforma_metal",
+		"side": "dedsafio4:block/plataforma_metal"
+	}
+}

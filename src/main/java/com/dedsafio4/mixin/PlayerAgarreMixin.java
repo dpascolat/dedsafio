@@ -7,12 +7,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** El que tiene agarrado Qumara no se puede bajar con shift. */
+/** El que tiene agarrado Qumara no se puede bajar con shift, ni el que va en la nave mientras vuela. */
 @Mixin(Player.class)
 public abstract class PlayerAgarreMixin {
 	@Inject(method = "wantsToStopRiding", at = @At("HEAD"), cancellable = true)
 	private void dedsafio4$noSeBaja(CallbackInfoReturnable<Boolean> cir) {
 		Player self = (Player) (Object) this;
 		if (self.getVehicle() instanceof QumaraEntity q && q.agarradoId() == self.getId()) cir.setReturnValue(false);
+		// En la nave, mientras despega o aterriza, no te podés bajar (te caerías del cielo).
+		if (self.getVehicle() instanceof com.dedsafio4.despegue.NaveViajeEntity nave
+				&& (nave.estado() == com.dedsafio4.despegue.NaveViajeEntity.DESPEGANDO
+				|| nave.estado() == com.dedsafio4.despegue.NaveViajeEntity.ATERRIZANDO)) cir.setReturnValue(false);
 	}
 }

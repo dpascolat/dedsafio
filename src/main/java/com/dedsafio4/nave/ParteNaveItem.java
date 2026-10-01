@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 /**
  * Una parte de la nave (cabina, motor o alerones) como ítem: se ve con su modelo 3D (GeckoLib), en el inventario, en
- * la mano, en el piso y en los marcos. Por ahora no hace nada más.
+ * la mano, en el piso y en los marcos. La nave entera (la Biplaza) se pone en la Plataforma de Despegue.
  */
 public class ParteNaveItem extends Item implements GeoItem {
 	/**
@@ -52,6 +52,13 @@ public class ParteNaveItem extends Item implements GeoItem {
 	@Override
 	public net.minecraft.network.chat.Component getName(net.minecraft.world.item.ItemStack item) {
 		return super.getName(item).copy().withStyle(com.dedsafio4.items.DescritoItem.color(colorNombre));
+	}
+
+	/** La Nave Espacial Biplaza se pone sobre la Plataforma de Despegue (ver NaveViajeEntity). */
+	@Override
+	public net.minecraft.world.InteractionResult useOn(net.minecraft.world.item.context.UseOnContext contexto) {
+		if (this == PartesNave.NAVE_BIPLAZA) return com.dedsafio4.despegue.NaveViajeEntity.colocar(contexto);
+		return super.useOn(contexto);
 	}
 
 	@Override

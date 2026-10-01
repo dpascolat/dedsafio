@@ -32,6 +32,7 @@ public class PastoRosaBlock extends BushBlock {
 
 	@Override
 	protected VoxelShape getShape(BlockState estado, BlockGetter mundo, BlockPos pos, CollisionContext contexto) {
-		return FORMA.move(estado.getOffset(mundo, pos));
+		net.minecraft.world.phys.Vec3 corrido = estado.getOffset(mundo, pos);
+		return FORMA.move(corrido.x, corrido.y, corrido.z);
 	}
 }

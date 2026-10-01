@@ -70,6 +70,7 @@ public class Dedsafio4 implements ModInitializer {
 		ModGeneracion.registrar();
 		Portales.registrar();
 		com.dedsafio4.dimension.Organos.registrar();
+		com.dedsafio4.despegue.ModDespegue.registrar();
 		Eburia.registrar();
 		com.dedsafio4.items.Linternas.registrar();
 		com.dedsafio4.items.TotemFrericoItem.registrar();

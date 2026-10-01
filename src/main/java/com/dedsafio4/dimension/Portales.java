@@ -86,7 +86,7 @@ public final class Portales {
 	}
 
 	/** Busca el piso en el mismo X/Z, para no aparecer dentro de la tierra ni colgado en el aire. */
-	static BlockPos lugarSeguro(ServerLevel destino, BlockPos desde) {
+	public static BlockPos lugarSeguro(ServerLevel destino, BlockPos desde) {
 		BlockPos columna = new BlockPos(desde.getX(), 0, desde.getZ());
 		BlockPos arriba = destino.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, columna);
 		return arriba.getY() <= destino.getMinBuildHeight() + 1 ? columna.atY(100) : arriba;

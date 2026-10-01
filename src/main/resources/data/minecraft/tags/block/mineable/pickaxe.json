@@ -16,6 +16,9 @@
 		"dedsafio4:cofre_huesos",
 		"dedsafio4:musculo",
 		"dedsafio4:gelatina_roja",
-		"dedsafio4:gelatina_rosa"
+		"dedsafio4:gelatina_rosa",
+		"dedsafio4:plataforma_despegue",
+		"dedsafio4:plataforma_metal",
+		"dedsafio4:plataforma_borde"
 	]
 }
