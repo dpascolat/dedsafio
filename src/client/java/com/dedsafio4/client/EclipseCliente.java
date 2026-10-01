@@ -20,15 +20,12 @@ import org.joml.Matrix4f;
 
 /**
  * El Eclipse (Momento Reviil) visto desde el cliente, en el Overworld:
- * - el cielo es negro, con el sol eclipsado (disco negro con la corona brillando) y, en lo alto, la grieta
- *   con el espacio y Reviil asomándose (la misma del cielo rojo, ver ReviilCielo);
+ * - el cielo es negro, con el sol eclipsado (disco negro con la corona brillando); sin la grieta de Reviil;
  * - ninguna luz ilumina: ni el sol ni las antorchas; solo la Linterna (ver LinternaLuz).
  *   (Se cambia la tabla de luces con la que Minecraft pinta todo.)
  *
  * Animación al empezar con el comando (en ticks desde que llegó el aviso):
  *   0..100   la luna tapa el sol y todo se va oscureciendo
- *   100..160 se abre la grieta en el cielo (se ve el espacio)
- *   160..240 Reviil sube hasta asomarse y abre los ojos
  */
 public final class EclipseCliente {
 	private EclipseCliente() {}
@@ -39,9 +36,8 @@ public final class EclipseCliente {
 	/** Color de la niebla y del fondo del cielo: casi negro. */
 	public static final float NIEBLA_R = 0.008f, NIEBLA_G = 0.008f, NIEBLA_B = 0.014f;
 
-	private static final float DURACION_OSCURO = 100f, INICIO_GRIETA = 100f, DURACION_GRIETA = 60f,
-			INICIO_REVIIL = 160f, DURACION_REVIIL = 80f;
-	/** El sol eclipsado: a 45° del cenit hacia el sur (así la grieta, que está arriba, no lo tapa). */
+	private static final float DURACION_OSCURO = 100f;
+	/** El sol eclipsado: a 45° del cenit hacia el sur. */
 	private static final float INCLINACION = 45f;
 	/** Tamaño (medio lado) del cuadro del eclipse y radio de la luna, a 100 bloques. */
 	private static final float LADO_ECLIPSE = 34f, RADIO_LUNA = 34f * 2 * 70 / 256f;
@@ -96,7 +92,7 @@ public final class EclipseCliente {
 		return Math.round(Mth.lerp(p, desde, hasta));
 	}
 
-	/** El cielo del eclipse: fondo negro (lo pone la niebla), el sol que se va tapando, y la grieta con Reviil. */
+	/** El cielo del eclipse: fondo negro (lo pone la niebla) y el sol que se va tapando. */
 	public static void dibujarCielo(Matrix4f matrizVista, float parcial) {
 		PoseStack pose = new PoseStack();
 		pose.mulPose(matrizVista);
@@ -136,15 +132,6 @@ public final class EclipseCliente {
 		RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 		RenderSystem.defaultBlendFunc();
 
-		// La grieta con el espacio, y Reviil asomándose.
-		float grieta = progreso(parcial, INICIO_GRIETA, DURACION_GRIETA);
-		if (grieta > 0f) {
-			Minecraft mc = Minecraft.getInstance();
-			float tiempo = (mc.level != null ? mc.level.getGameTime() % 100000L : 0) + parcial;
-			RenderSystem.disableCull();
-			ReviilCielo.dibujar(matrizVista, tiempo, grieta, progreso(parcial, INICIO_REVIIL, DURACION_REVIIL));
-			RenderSystem.enableCull();
-		}
 		RenderSystem.depthMask(true);
 		RenderSystem.disableBlend();
 	}
