@@ -414,6 +414,8 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.bloques.ModBloques.CARNE_ROJA_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.CARNE_CON_VENAS_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.MUSCULO_ITEM);
+						entradas.accept(com.dedsafio4.bloques.ModBloques.GELATINA_ROJA_ITEM);
+						entradas.accept(com.dedsafio4.bloques.ModBloques.GELATINA_ROSA_ITEM);
 						entradas.accept(com.dedsafio4.robots.ModRobots.ROBOT_DORMIDO_ITEM);
 						entradas.accept(LLAVE);
 						entradas.accept(FRUTA_SOLARIA);

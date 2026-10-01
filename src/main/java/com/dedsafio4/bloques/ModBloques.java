@@ -161,6 +161,17 @@ public final class ModBloques {
 	public static final Item CARNE_CON_VENAS_ITEM = registrarItem("carne_con_venas", CARNE_CON_VENAS);
 	public static final Item MUSCULO_ITEM = registrarItem("musculo", MUSCULO);
 
+	// Los árboles de la Dimensión de los Órganos: gelatina que tiembla (la textura se mueve). Se pican con pico.
+	public static final Block GELATINA_ROJA = registrar("gelatina_roja", bloqueDeGelatina(MapColor.COLOR_RED));
+	public static final Block GELATINA_ROSA = registrar("gelatina_rosa", bloqueDeGelatina(MapColor.COLOR_PINK));
+	public static final Item GELATINA_ROJA_ITEM = registrarItem("gelatina_roja", GELATINA_ROJA);
+	public static final Item GELATINA_ROSA_ITEM = registrarItem("gelatina_rosa", GELATINA_ROSA);
+
+	private static Block bloqueDeGelatina(MapColor color) {
+		return new Block(BlockBehaviour.Properties.of().mapColor(color).strength(1.5f, 3f).sound(SoundType.SLIME_BLOCK)
+				.requiresCorrectToolForDrops());
+	}
+
 	private static Block bloqueDeCarne(MapColor color) {
 		return new Block(BlockBehaviour.Properties.of().mapColor(color).strength(0.6f).sound(SoundType.MUD));
 	}

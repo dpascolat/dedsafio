@@ -13,6 +13,11 @@ public final class ModGeneracion {
 	public static final Feature<ArbolAltoFeature.Config> ARBOL_ALTO = Registry.register(BuiltInRegistries.FEATURE,
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "arbol_alto"), new ArbolAltoFeature());
 
+	/** Los árboles de gelatina de la Dimensión de los Órganos. */
+	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> ARBOL_ORGANO =
+			Registry.register(BuiltInRegistries.FEATURE,
+					ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "arbol_organo"), new ArbolOrganoFeature());
+
 	/** Ya no se usa en la generación, pero los mundos creados antes lo tienen guardado. */
 	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> CIRCULO_PORTAL =
 			Registry.register(BuiltInRegistries.FEATURE,
