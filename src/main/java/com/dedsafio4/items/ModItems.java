@@ -285,6 +285,41 @@ public final class ModItems {
 	public static final Item CORAZON = registrar("corazon", new CorazonItem(new Item.Properties().rarity(Rarity.RARE)
 			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).alwaysEdible().build())));
 
+	/** Fruta Guardiana: al comerla, la próxima vez que te morís no perdés el inventario (una sola vez). */
+	public static final Item FRUTA_GUARDIANA = registrar("fruta_guardiana", new FrutaGuardianaItem(new Item.Properties()
+			.rarity(Rarity.RARE)
+			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(4).saturationModifier(0.3f).alwaysEdible().build())));
+
+	/**
+	 * Espada de Hoja de Qumara: 10 de daño, 1,6 de velocidad y 2030 de durabilidad.
+	 * En el creativo viene con Filo V, Saqueo III e Irrompibilidad III.
+	 */
+	private static final net.minecraft.world.item.Tier HOJA_QUMARA = new net.minecraft.world.item.Tier() {
+		private final net.minecraft.world.item.Tier base = net.minecraft.world.item.Tiers.NETHERITE;
+		@Override public int getUses() { return 2030; }
+		@Override public float getSpeed() { return base.getSpeed(); }
+		@Override public float getAttackDamageBonus() { return base.getAttackDamageBonus(); }
+		@Override public net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> getIncorrectBlocksForDrops() {
+			return base.getIncorrectBlocksForDrops();
+		}
+		@Override public int getEnchantmentValue() { return base.getEnchantmentValue(); }
+		@Override public net.minecraft.world.item.crafting.Ingredient getRepairIngredient() { return base.getRepairIngredient(); }
+	};
+	// Daño: 1 (el de la mano) + 5 + 4 (el bonus de netherita) = 10. Velocidad: 4 - 2,4 = 1,6.
+	public static final Item ESPADA_HOJA_QUMARA = registrar("espada_hoja_qumara",
+			new net.minecraft.world.item.SwordItem(HOJA_QUMARA, new Item.Properties()
+					.attributes(net.minecraft.world.item.SwordItem.createAttributes(HOJA_QUMARA, 5, -2.4f))));
+
+	/** La espada con sus encantamientos (para el creativo). */
+	private static ItemStack espadaEncantada(net.minecraft.core.HolderLookup.Provider registros) {
+		ItemStack pila = new ItemStack(ESPADA_HOJA_QUMARA);
+		var encantamientos = registros.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
+		pila.enchant(encantamientos.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS), 5);
+		pila.enchant(encantamientos.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING), 3);
+		pila.enchant(encantamientos.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING), 3);
+		return pila;
+	}
+
 	/** Semilla de Arándano Nocturno: se planta en los troncos del Centro de Quiu. */
 	public static final Item SEMILLA_ARANDANO = registrar("semilla_arandano",
 			new SemillaArandanoItem(com.dedsafio4.bloques.ModBloques.ARANDANO_NOCTURNO, new Item.Properties().stacksTo(64)));
@@ -401,6 +436,8 @@ public final class ModItems {
 						entradas.accept(HUEVO_EBURIA);
 						entradas.accept(ARANDANO_NOCTURNO);
 						entradas.accept(CORAZON);
+						entradas.accept(FRUTA_GUARDIANA);
+						entradas.accept(espadaEncantada(parametros.holders()));
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
 						entradas.accept(SEMILLA_ARANDANO);
