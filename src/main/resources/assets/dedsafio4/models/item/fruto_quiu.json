@@ -1,6 +1,6 @@
 {
 	"parent": "minecraft:item/generated",
 	"textures": {
-		"layer0": "dedsafio4:item/fruta_guardiana"
+		"layer0": "dedsafio4:item/fruto_quiu"
 	}
 }

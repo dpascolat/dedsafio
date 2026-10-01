@@ -285,9 +285,8 @@ public final class ModItems {
 	public static final Item CORAZON = registrar("corazon", new CorazonItem(new Item.Properties().rarity(Rarity.RARE)
 			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).alwaysEdible().build())));
 
-	/** Fruta Guardiana: al comerla, la próxima vez que te morís no perdés el inventario (una sola vez). */
-	public static final Item FRUTA_GUARDIANA = registrar("fruta_guardiana", new FrutaGuardianaItem(new Item.Properties()
-			.rarity(Rarity.RARE)
+	/** Fruto de Quiu: al comerlo, la próxima vez que te morís no perdés el inventario (una sola vez). */
+	public static final Item FRUTO_QUIU = registrar("fruto_quiu", new FrutoQuiuItem(new Item.Properties()
 			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(4).saturationModifier(0.3f).alwaysEdible().build())));
 
 	/**
@@ -436,7 +435,7 @@ public final class ModItems {
 						entradas.accept(HUEVO_EBURIA);
 						entradas.accept(ARANDANO_NOCTURNO);
 						entradas.accept(CORAZON);
-						entradas.accept(FRUTA_GUARDIANA);
+						entradas.accept(FRUTO_QUIU);
 						entradas.accept(espadaEncantada(parametros.holders()));
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
