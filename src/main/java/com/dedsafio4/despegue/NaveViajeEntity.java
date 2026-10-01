@@ -63,6 +63,8 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	/** A cuántos bloques del piso aparece al llegar. */
 	private static final double ALTURA_LLEGADA = 45;
 	private static final int AMARILLO = 0xF0D86A, NARANJA = 0xFFA23C, VIOLETA = 0xC883FF;
+	/** Dónde van los pasajeros dentro de la cabina, corridos a mano (1 píxel = 1/16 de bloque). */
+	private static final double AJUSTE_X = 10 / 16.0, AJUSTE_Y = 10 / 16.0;
 
 	private UUID dueno;
 	private String nombreDueno = "";
@@ -168,7 +170,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	@Override
 	protected Vec3 getPassengerAttachmentPoint(Entity pasajero, EntityDimensions dimensiones, float escala) {
 		int lugar = Math.max(0, getPassengers().indexOf(pasajero));
-		return new Vec3(lugar == 0 ? -0.4 : 0.4, 2.0, 0).yRot(-getYRot() * Mth.DEG_TO_RAD);
+		return new Vec3((lugar == 0 ? -0.4 : 0.4) + AJUSTE_X, 2.0 + AJUSTE_Y, 0).yRot(-getYRot() * Mth.DEG_TO_RAD);
 	}
 
 	/** Al bajarse queda parado al costado de la nave (busca un lado libre). */
