@@ -3,11 +3,20 @@ package com.dedsafio4.almas;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.dedsafio4.Dedsafio4;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -21,6 +30,7 @@ import java.util.Collection;
  * /alma sacar <jugador>   → le saca el alma.
  * /alma ver <jugador>     → dice si la tiene.
  * Se guarda en el jugador (sigue igual después de morir o reiniciar el servidor).
+ * El cliente lo recibe con {@link Payload} para mostrar el Alma (o el Sin Alma) en el inventario.
  */
 public final class Almas {
 	private Almas() {}
@@ -35,11 +45,30 @@ public final class Almas {
 	public static void ponerAlma(ServerPlayer p, boolean tiene) {
 		if (tiene) p.removeTag(SIN_ALMA);
 		else p.addTag(SIN_ALMA);
+		sincronizar(p);
+	}
+
+	public static void sincronizar(ServerPlayer p) {
+		if (ServerPlayNetworking.canSend(p, Payload.TYPE)) ServerPlayNetworking.send(p, new Payload(tieneAlma(p)));
 	}
 
 	public static void registrar() {
+		PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
 		// Al morir o volver del End se pierden las marcas del jugador: el estado del alma se copia.
 		ServerPlayerEvents.COPY_FROM.register((viejo, nuevo, vivo) -> ponerAlma(nuevo, tieneAlma(viejo)));
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sincronizar(handler.player));
+	}
+
+	/** Servidor → cliente: si el jugador tiene alma. */
+	public record Payload(boolean tiene) implements CustomPacketPayload {
+		public static final Type<Payload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "alma"));
+		public static final StreamCodec<ByteBuf, Payload> CODEC = StreamCodec.composite(
+				ByteBufCodecs.BOOL, Payload::tiene, Payload::new);
+
+		@Override
+		public Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {

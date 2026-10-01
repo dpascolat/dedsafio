@@ -156,6 +156,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 				XaeroBloqueo.adminsLoUsan = payload.adminsLoUsan());
 		ClientPlayNetworking.registerGlobalReceiver(HermandadesJugadoresPayload.TYPE, (payload, context) ->
 				HermandadesCliente.actualizar(payload));
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.almas.Almas.Payload.TYPE, (payload, context) ->
+				AlmaCliente.tieneAlma = payload.tiene());
 		ClientPlayNetworking.registerGlobalReceiver(CieloPayload.TYPE, (payload, context) ->
 				CieloCliente.setActivo(payload.rojo(), payload.animar()));
 		ClientPlayNetworking.registerGlobalReceiver(TemporizadorPayload.TYPE, (payload, context) ->
