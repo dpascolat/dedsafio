@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 /**
  * La Dimensión de los Órganos: todo el piso es carne (rosa, roja y con venas), con pasto rosa y árboles de gelatina.
  * Por ahora se entra con "/admin organos" (y con el mismo comando se vuelve al Overworld).
- * El agua de esta dimensión es rosa y lastima: medio corazón por segundo mientras estés adentro.
+ * El agua de esta dimensión es rosa y lastima: medio corazón por segundo mientras estés adentro. No hay nubes.
  */
 public final class Organos {
 	private Organos() {}
