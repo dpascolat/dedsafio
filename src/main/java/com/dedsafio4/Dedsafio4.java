@@ -74,6 +74,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.items.TotemFrericoItem.registrar();
 		com.dedsafio4.items.CorazonItem.registrar();
 		com.dedsafio4.items.FrutoQuiuItem.registrar();
+		com.dedsafio4.almas.Almas.registrar();
 		com.dedsafio4.items.PildoraItem.registrar();
 		VenenoPrimitivo.registrar();
 		ModPociones.registrar();
@@ -122,6 +123,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.qumara.BossComandos.registrar(dispatcher);
 			AdminComandos.registrar(dispatcher);
 			AyudaComando.registrar(dispatcher);
+			com.dedsafio4.almas.Almas.registrarComandos(dispatcher);
 			com.dedsafio4.estructuras.Estructuras.registrar(dispatcher);
 			com.dedsafio4.casino.CasinoPremios.registrarComandos(dispatcher);
 			com.dedsafio4.catalogo.Catalogo.registrarComandos(dispatcher);
