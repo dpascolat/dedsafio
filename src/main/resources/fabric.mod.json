@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "dedsafio4",
+	"version": "${version}",
+	"name": "Dedsafío 4",
+	"description": "Recreación de las mecánicas de Dedsafío 4.",
+	"authors": [
+		"Patricio"
+	],
+	"license": "All-Rights-Reserved",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.dedsafio4.Dedsafio4"
+		],
+		"client": [
+			"com.dedsafio4.client.Dedsafio4Client"
+		]
+	},
+	"mixins": [
+		"dedsafio4.mixins.json",
+		{
+			"config": "dedsafio4.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*",
+		"geckolib": ">=4.9.0"
+	}
+}

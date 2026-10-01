@@ -1,0 +1,14 @@
+{
+	"cofre_abrir": {
+		"sounds": [
+			"dedsafio4:cofre_abrir"
+		],
+		"subtitle": "subtitles.dedsafio4.cofre_abrir"
+	},
+	"cofre_cerrar": {
+		"sounds": [
+			"dedsafio4:cofre_cerrar"
+		],
+		"subtitle": "subtitles.dedsafio4.cofre_cerrar"
+	}
+}

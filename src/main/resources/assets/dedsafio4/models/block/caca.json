@@ -1,0 +1,204 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"cuerpo": "dedsafio4:block/caca",
+		"monton": "dedsafio4:block/caca_monton",
+		"particle": "dedsafio4:block/caca"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				16,
+				4,
+				16
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						12,
+						16,
+						16
+					],
+					"texture": "#cuerpo"
+				},
+				"south": {
+					"uv": [
+						0,
+						12,
+						16,
+						16
+					],
+					"texture": "#cuerpo"
+				},
+				"east": {
+					"uv": [
+						0,
+						12,
+						16,
+						16
+					],
+					"texture": "#cuerpo"
+				},
+				"west": {
+					"uv": [
+						0,
+						12,
+						16,
+						16
+					],
+					"texture": "#cuerpo"
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#cuerpo"
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#cuerpo",
+					"cullface": "down"
+				}
+			}
+		},
+		{
+			"from": [
+				2,
+				4,
+				2
+			],
+			"to": [
+				14,
+				8,
+				14
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						2,
+						8,
+						14,
+						12
+					],
+					"texture": "#cuerpo"
+				},
+				"south": {
+					"uv": [
+						2,
+						8,
+						14,
+						12
+					],
+					"texture": "#cuerpo"
+				},
+				"east": {
+					"uv": [
+						2,
+						8,
+						14,
+						12
+					],
+					"texture": "#cuerpo"
+				},
+				"west": {
+					"uv": [
+						2,
+						8,
+						14,
+						12
+					],
+					"texture": "#cuerpo"
+				},
+				"up": {
+					"uv": [
+						2,
+						2,
+						14,
+						14
+					],
+					"texture": "#cuerpo"
+				}
+			}
+		},
+		{
+			"from": [
+				0,
+				8,
+				8
+			],
+			"to": [
+				16,
+				16,
+				8
+			],
+			"shade": false,
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						8
+					],
+					"texture": "#monton"
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						8
+					],
+					"texture": "#monton"
+				}
+			}
+		},
+		{
+			"from": [
+				8,
+				8,
+				0
+			],
+			"to": [
+				8,
+				16,
+				16
+			],
+			"shade": false,
+			"faces": {
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						8
+					],
+					"texture": "#monton"
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						8
+					],
+					"texture": "#monton"
+				}
+			}
+		}
+	]
+}

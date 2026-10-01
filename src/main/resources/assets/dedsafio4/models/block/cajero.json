@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "dedsafio4:block/cajero_frente",
+		"side": "dedsafio4:block/cajero_lado",
+		"top": "dedsafio4:block/cajero_arriba"
+	}
+}

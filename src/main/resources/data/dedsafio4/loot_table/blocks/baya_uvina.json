@@ -1,0 +1,62 @@
+{
+	"type": "minecraft:block",
+	"pools": [
+		{
+			"rolls": 1,
+			"entries": [
+				{
+					"type": "minecraft:alternatives",
+					"children": [
+						{
+							"type": "minecraft:item",
+							"name": "dedsafio4:baya_uvina",
+							"conditions": [
+								{
+									"condition": "minecraft:block_state_property",
+									"block": "dedsafio4:baya_uvina",
+									"properties": {
+										"edad": "2"
+									}
+								}
+							],
+							"functions": [
+								{
+									"function": "minecraft:set_count",
+									"count": {
+										"type": "minecraft:uniform",
+										"min": 2,
+										"max": 3
+									}
+								}
+							]
+						},
+						{
+							"type": "minecraft:item",
+							"name": "dedsafio4:semilla_uvina",
+							"conditions": [
+								{
+									"condition": "minecraft:inverted",
+									"term": {
+										"condition": "minecraft:block_state_property",
+										"block": "dedsafio4:baya_uvina",
+										"properties": {
+											"edad": "3"
+										}
+									}
+								}
+							]
+						},
+						{
+							"type": "minecraft:empty"
+						}
+					]
+				}
+			],
+			"conditions": [
+				{
+					"condition": "minecraft:survives_explosion"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,26 @@
+{
+	"required": true,
+	"package": "com.dedsafio4.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"BlockBehaviourMixin",
+		"CarvedPumpkinBlockMixin",
+		"ChatTypeMixin",
+		"ChestBlockMixin",
+		"CreeperAccessor",
+		"ExplosionMixin",
+		"HopperBlockEntityMixin",
+		"ItemStackMixin",
+		"LevelEntitiesMixin",
+		"LivingEntityMixin",
+		"MobAccessor",
+		"PlayerAgarreMixin",
+		"PotionBrewingMixin",
+		"SpawnPlacementsMixin",
+		"StoredUserEntryAccessor",
+		"ThrownEnderpearlMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

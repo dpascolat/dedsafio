@@ -1,0 +1,83 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"t": "dedsafio4:block/bloque_dilitio",
+		"particle": "dedsafio4:block/bloque_dilitio"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				16,
+				16,
+				16
+			],
+			"faces": {
+				"up": {
+					"uv": [
+						4,
+						0,
+						8,
+						4
+					],
+					"texture": "#t",
+					"cullface": "up"
+				},
+				"down": {
+					"uv": [
+						8,
+						0,
+						12,
+						4
+					],
+					"texture": "#t",
+					"cullface": "down"
+				},
+				"north": {
+					"uv": [
+						4,
+						4,
+						8,
+						8
+					],
+					"texture": "#t",
+					"cullface": "north"
+				},
+				"east": {
+					"uv": [
+						8,
+						4,
+						12,
+						8
+					],
+					"texture": "#t",
+					"cullface": "east"
+				},
+				"south": {
+					"uv": [
+						12,
+						4,
+						16,
+						8
+					],
+					"texture": "#t",
+					"cullface": "south"
+				},
+				"west": {
+					"uv": [
+						0,
+						4,
+						4,
+						8
+					],
+					"texture": "#t",
+					"cullface": "west"
+				}
+			}
+		}
+	]
+}

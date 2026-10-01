@@ -1,0 +1,26 @@
+{
+	"type": "minecraft:block",
+	"pools": [
+		{
+			"rolls": 1,
+			"entries": [
+				{
+					"type": "minecraft:item",
+					"name": "dedsafio4:cofre_protegido"
+				}
+			],
+			"conditions": [
+				{
+					"condition": "minecraft:survives_explosion"
+				},
+				{
+					"condition": "minecraft:block_state_property",
+					"block": "dedsafio4:cofre_protegido",
+					"properties": {
+						"parte": "principal"
+					}
+				}
+			]
+		}
+	]
+}

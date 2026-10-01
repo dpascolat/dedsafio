@@ -1,0 +1,18 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"###",
+		"###",
+		"###"
+	],
+	"key": {
+		"#": {
+			"item": "dedsafio4:dilitio"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:racimo_dilitio",
+		"count": 1
+	}
+}

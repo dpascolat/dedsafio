@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/cube_column",
+	"textures": {
+		"end": "dedsafio4:block/abeto_claro_log_top",
+		"side": "dedsafio4:block/abeto_claro_log"
+	}
+}

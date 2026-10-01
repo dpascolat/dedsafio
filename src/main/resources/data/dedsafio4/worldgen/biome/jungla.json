@@ -1,0 +1,89 @@
+{
+	"has_precipitation": true,
+	"temperature": 0.95,
+	"downfall": 0.9,
+	"effects": {
+		"fog_color": 12576976,
+		"water_color": 3123596,
+		"water_fog_color": 735796,
+		"sky_color": 8832744,
+		"grass_color": 5489226,
+		"foliage_color": 4173882,
+		"mood_sound": {
+			"sound": "minecraft:ambient.cave",
+			"tick_delay": 6000,
+			"block_search_extent": 8,
+			"offset": 2.0
+		}
+	},
+	"spawners": {
+		"monster": [
+			{
+				"type": "dedsafio4:mira",
+				"weight": 100,
+				"minCount": 1,
+				"maxCount": 2
+			},
+			{
+				"type": "dedsafio4:dactylo_bebe",
+				"weight": 40,
+				"minCount": 1,
+				"maxCount": 2
+			}
+		],
+		"creature": [
+			{
+				"type": "dedsafio4:walker",
+				"weight": 10,
+				"minCount": 1,
+				"maxCount": 1
+			}
+		],
+		"ambient": [],
+		"axolotls": [],
+		"underground_water_creature": [],
+		"water_creature": [],
+		"water_ambient": [],
+		"misc": []
+	},
+	"spawn_costs": {},
+	"carvers": {
+		"air": [
+			"minecraft:cave",
+			"minecraft:cave_extra_underground",
+			"minecraft:canyon"
+		]
+	},
+	"features": [
+		[],
+		[
+			"minecraft:lake_lava_underground"
+		],
+		[
+			"minecraft:amethyst_geode"
+		],
+		[],
+		[],
+		[],
+		[
+			"minecraft:ore_dirt",
+			"minecraft:ore_gravel",
+			"minecraft:ore_coal_upper",
+			"minecraft:ore_coal_lower",
+			"dedsafio4:mineral_de_ambar"
+		],
+		[],
+		[
+			"minecraft:spring_water"
+		],
+		[
+			"dedsafio4:arbol_alto_roble",
+			"dedsafio4:arbol_alto_abeto",
+			"minecraft:patch_grass_jungle",
+			"minecraft:flower_default"
+		],
+		[
+			"minecraft:freeze_top_layer"
+		]
+	]
+}

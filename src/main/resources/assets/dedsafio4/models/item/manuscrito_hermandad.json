@@ -1,0 +1,9 @@
+{
+	"parent": "minecraft:item/generated",
+	"textures": {
+		"layer0": "minecraft:item/writable_book"
+	},
+	"overrides": [
+		{ "predicate": { "dedsafio4:sellado": 1 }, "model": "dedsafio4:item/manuscrito_hermandad_sellado" }
+	]
+}

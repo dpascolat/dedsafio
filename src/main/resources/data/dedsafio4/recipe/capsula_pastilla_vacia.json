@@ -1,0 +1,21 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		" C ",
+		"CVC",
+		" C "
+	],
+	"key": {
+		"C": {
+			"item": "minecraft:quartz"
+		},
+		"V": {
+			"item": "minecraft:glass"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:pildora_vacia",
+		"count": 1
+	}
+}

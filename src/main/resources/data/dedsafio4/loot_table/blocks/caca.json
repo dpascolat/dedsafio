@@ -1,0 +1,36 @@
+{
+	"type": "minecraft:block",
+	"pools": [
+		{
+			"rolls": 1,
+			"entries": [
+				{
+					"type": "minecraft:alternatives",
+					"children": [
+						{
+							"type": "minecraft:item",
+							"name": "dedsafio4:excremento",
+							"conditions": [
+								{
+									"condition": "minecraft:match_tool",
+									"predicate": {
+										"items": "#minecraft:pickaxes"
+									}
+								}
+							]
+						},
+						{
+							"type": "minecraft:item",
+							"name": "dedsafio4:caca"
+						}
+					]
+				}
+			],
+			"conditions": [
+				{
+					"condition": "minecraft:survives_explosion"
+				}
+			]
+		}
+	]
+}

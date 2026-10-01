@@ -1,0 +1,21 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"ICI",
+		"CI ",
+		"I  "
+	],
+	"key": {
+		"I": {
+			"item": "minecraft:iron_ingot"
+		},
+		"C": {
+			"item": "dedsafio4:chip_phora"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:nave_aleron_izquierdo",
+		"count": 1
+	}
+}

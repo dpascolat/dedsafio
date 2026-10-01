@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=north": {
+			"model": "dedsafio4:block/cajero"
+		},
+		"facing=east": {
+			"model": "dedsafio4:block/cajero",
+			"y": 90
+		},
+		"facing=south": {
+			"model": "dedsafio4:block/cajero",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "dedsafio4:block/cajero",
+			"y": 270
+		}
+	}
+}

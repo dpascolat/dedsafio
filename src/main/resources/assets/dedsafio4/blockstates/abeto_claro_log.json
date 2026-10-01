@@ -1,0 +1,16 @@
+{
+	"variants": {
+		"axis=x": {
+			"model": "dedsafio4:block/abeto_claro_log_horizontal",
+			"x": 90,
+			"y": 90
+		},
+		"axis=y": {
+			"model": "dedsafio4:block/abeto_claro_log"
+		},
+		"axis=z": {
+			"model": "dedsafio4:block/abeto_claro_log_horizontal",
+			"x": 90
+		}
+	}
+}

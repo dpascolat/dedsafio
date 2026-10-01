@@ -1,0 +1,28 @@
+{
+	"required": true,
+	"package": "com.dedsafio4.client.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"AbstractTextureAccessor",
+		"CapeLayerMixin",
+		"ChestRendererMixin",
+		"ClientPacketListenerMixin",
+		"ClientLevelMixin",
+		"EffectRenderingInventoryScreenMixin",
+		"GuiMixin",
+		"FogRendererMixin",
+		"KeyMappingMixin",
+		"ListaFondoMixin",
+		"LivingEntitySaltoMixin",
+		"LightTextureMixin",
+		"LoadingOverlayMixin",
+		"LevelRendererMixin",
+		"MinecraftMixin",
+		"PlayerRendererMixin",
+		"ScreenFondoMixin",
+		"TextureAtlasMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

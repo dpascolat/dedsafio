@@ -1,0 +1,10 @@
+{
+	"chat": {
+		"translation_key": "chat.type.dedsafio4",
+		"parameters": ["sender", "content"]
+	},
+	"narration": {
+		"translation_key": "chat.type.text.narrate",
+		"parameters": ["sender", "content"]
+	}
+}

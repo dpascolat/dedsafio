@@ -1,0 +1,17 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"##",
+		"##"
+	],
+	"key": {
+		"#": {
+			"item": "minecraft:item_frame"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:marco_grande",
+		"count": 1
+	}
+}

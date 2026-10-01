@@ -1,0 +1,16 @@
+{
+	"variants": {
+		"facing=north": {
+			"model": "dedsafio4:block/robot_dormido"
+		},
+		"facing=south": {
+			"model": "dedsafio4:block/robot_dormido"
+		},
+		"facing=east": {
+			"model": "dedsafio4:block/robot_dormido"
+		},
+		"facing=west": {
+			"model": "dedsafio4:block/robot_dormido"
+		}
+	}
+}

@@ -1,0 +1,25 @@
+{
+	"type": "dedsafio4:arbol_alto",
+	"config": {
+		"tronco": {
+			"Name": "dedsafio4:roble_claro_log",
+			"Properties": {
+				"axis": "y"
+			}
+		},
+		"hojas": {
+			"Name": "minecraft:oak_leaves",
+			"Properties": {
+				"distance": "7",
+				"persistent": "false",
+				"waterlogged": "false"
+			}
+		},
+		"altura_min": 17,
+		"altura_max": 22,
+		"frutas": true,
+		"fruta_extra": {
+			"Name": "dedsafio4:baya_uvina"
+		}
+	}
+}

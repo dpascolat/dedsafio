@@ -1,0 +1,68 @@
+{
+	"variants": {
+		"edad=0,facing=north": {
+			"model": "dedsafio4:block/arandano_nocturno_stage0",
+			"y": 0
+		},
+		"edad=0,facing=east": {
+			"model": "dedsafio4:block/arandano_nocturno_stage0",
+			"y": 90
+		},
+		"edad=0,facing=south": {
+			"model": "dedsafio4:block/arandano_nocturno_stage0",
+			"y": 180
+		},
+		"edad=0,facing=west": {
+			"model": "dedsafio4:block/arandano_nocturno_stage0",
+			"y": 270
+		},
+		"edad=1,facing=north": {
+			"model": "dedsafio4:block/arandano_nocturno_stage1",
+			"y": 0
+		},
+		"edad=1,facing=east": {
+			"model": "dedsafio4:block/arandano_nocturno_stage1",
+			"y": 90
+		},
+		"edad=1,facing=south": {
+			"model": "dedsafio4:block/arandano_nocturno_stage1",
+			"y": 180
+		},
+		"edad=1,facing=west": {
+			"model": "dedsafio4:block/arandano_nocturno_stage1",
+			"y": 270
+		},
+		"edad=2,facing=north": {
+			"model": "dedsafio4:block/arandano_nocturno_stage2",
+			"y": 0
+		},
+		"edad=2,facing=east": {
+			"model": "dedsafio4:block/arandano_nocturno_stage2",
+			"y": 90
+		},
+		"edad=2,facing=south": {
+			"model": "dedsafio4:block/arandano_nocturno_stage2",
+			"y": 180
+		},
+		"edad=2,facing=west": {
+			"model": "dedsafio4:block/arandano_nocturno_stage2",
+			"y": 270
+		},
+		"edad=3,facing=north": {
+			"model": "dedsafio4:block/arandano_nocturno_podrido",
+			"y": 0
+		},
+		"edad=3,facing=east": {
+			"model": "dedsafio4:block/arandano_nocturno_podrido",
+			"y": 90
+		},
+		"edad=3,facing=south": {
+			"model": "dedsafio4:block/arandano_nocturno_podrido",
+			"y": 180
+		},
+		"edad=3,facing=west": {
+			"model": "dedsafio4:block/arandano_nocturno_podrido",
+			"y": 270
+		}
+	}
+}

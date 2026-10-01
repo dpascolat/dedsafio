@@ -1,0 +1,28 @@
+{
+	"type": "dedsafio4:arbol_alto",
+	"config": {
+		"tronco": {
+			"Name": "dedsafio4:roble_claro_log",
+			"Properties": {
+				"axis": "y"
+			}
+		},
+		"hojas": {
+			"Name": "minecraft:oak_leaves",
+			"Properties": {
+				"distance": "7",
+				"persistent": "false",
+				"waterlogged": "false"
+			}
+		},
+		"altura_min": 62,
+		"altura_max": 78,
+		"frutas": true,
+		"fruta": {
+			"Name": "dedsafio4:fruta_solaria"
+		},
+		"fruta_extra": {
+			"Name": "dedsafio4:arandano_nocturno"
+		}
+	}
+}

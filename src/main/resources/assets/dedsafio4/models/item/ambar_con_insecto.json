@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:item/generated",
+	"textures": {
+		"layer0": "dedsafio4:item/ambar_con_insecto"
+	}
+}
