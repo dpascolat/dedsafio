@@ -19,6 +19,7 @@
 		"LoadingOverlayMixin",
 		"LevelRendererMixin",
 		"MinecraftMixin",
+		"PlayerModelNaveMixin",
 		"PlayerRendererMixin",
 		"PlayerRendererNaveMixin",
 		"ScreenFondoMixin",
