@@ -5,8 +5,8 @@
 	"effects": {
 		"fog_color": 13130350,
 		"sky_color": 14715546,
-		"water_color": 10096674,
-		"water_fog_color": 5900306,
+		"water_color": 15764142,
+		"water_fog_color": 12079214,
 		"grass_color": 13127786,
 		"foliage_color": 13127786,
 		"mood_sound": {
@@ -45,7 +45,8 @@
 		[],
 		[],
 		[
-			"dedsafio4:arbol_organo"
+			"dedsafio4:arbol_organo",
+			"dedsafio4:pasto_rosa"
 		],
 		[]
 	]

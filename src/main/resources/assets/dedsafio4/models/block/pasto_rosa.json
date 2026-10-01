@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:block/cross",
+	"textures": {
+		"cross": "dedsafio4:block/pasto_rosa"
+	}
+}
