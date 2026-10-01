@@ -148,6 +148,23 @@ public final class ModBloques {
 				}
 			});
 
+	// Dimensión de los Órganos: todo el piso es carne. Blandos como la tierra, salvo el Músculo de abajo.
+	public static final Block CARNE_ROSA = registrar("carne_rosa", bloqueDeCarne(MapColor.COLOR_PINK));
+	public static final Block CARNE_ROJA = registrar("carne_roja", bloqueDeCarne(MapColor.COLOR_RED));
+	public static final Block CARNE_CON_VENAS = registrar("carne_con_venas", bloqueDeCarne(MapColor.COLOR_PINK));
+	/** Lo que hay debajo de la carne, como la piedra del Overworld: hace falta pico. */
+	public static final Block MUSCULO = registrar("musculo", new Block(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.CRIMSON_NYLIUM).strength(1.5f, 6f).sound(SoundType.WART_BLOCK)
+			.requiresCorrectToolForDrops()));
+	public static final Item CARNE_ROSA_ITEM = registrarItem("carne_rosa", CARNE_ROSA);
+	public static final Item CARNE_ROJA_ITEM = registrarItem("carne_roja", CARNE_ROJA);
+	public static final Item CARNE_CON_VENAS_ITEM = registrarItem("carne_con_venas", CARNE_CON_VENAS);
+	public static final Item MUSCULO_ITEM = registrarItem("musculo", MUSCULO);
+
+	private static Block bloqueDeCarne(MapColor color) {
+		return new Block(BlockBehaviour.Properties.of().mapColor(color).strength(0.6f).sound(SoundType.MUD));
+	}
+
 	/** Brillan: dan luz y se ven siempre a pleno color, aunque sea de noche o estén en una cueva. */
 	private static Block bloqueDeColor(net.minecraft.world.level.material.MapColor color) {
 		return new Block(BlockBehaviour.Properties.of().mapColor(color).strength(1.5f, 6f)

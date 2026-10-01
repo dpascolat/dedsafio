@@ -1,0 +1,11 @@
+{
+	"type": "dedsafio4:organos",
+	"generator": {
+		"type": "minecraft:noise",
+		"settings": "dedsafio4:organos",
+		"biome_source": {
+			"type": "minecraft:fixed",
+			"biome": "dedsafio4:organos"
+		}
+	}
+}
