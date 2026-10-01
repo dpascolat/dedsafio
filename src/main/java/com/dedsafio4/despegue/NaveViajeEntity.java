@@ -48,7 +48,8 @@ import java.util.UUID;
  * - Click derecho: te subís (entran 2). Apenas sube alguien empieza la cuenta regresiva (5 segundos); si se bajan
  *   todos, se cancela.
  * - Despegue: fuego y humo abajo, sube cada vez más rápido y, bien arriba, viaja a la Dimensión de los Órganos.
- * - Llegada: aparece en el cielo de la otra dimensión y baja despacio hasta el piso; ahí te bajás.
+ * - Llegada: aparece en el cielo de la otra dimensión y baja despacio hasta que toca el piso. Ahí se queda quieta
+ *   y te bajás vos (Shift). No vuelve a despegar hasta que alguien se baje y se suba de nuevo.
  * - Desde la Dimensión de los Órganos, subirse de nuevo te lleva de vuelta al Overworld.
  * - Shift + click derecho: el dueño la guarda en el inventario (sólo cuando está quieta y vacía).
  */
@@ -69,6 +70,8 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private double velocidad;
 	/** Dónde se apoya al terminar de aterrizar (NaN = calcularlo cuando haga falta). */
 	private double sueloLlegada = Double.NaN;
+	/** Recién aterrizó con gente adentro: no arranca otra cuenta regresiva hasta que se bajen todos. */
+	private boolean recienLlegada;
 	private final AnimatableInstanceCache animaciones = GeckoLibUtil.createInstanceCache(this);
 
 	public NaveViajeEntity(EntityType<? extends NaveViajeEntity> tipo, Level level) {
@@ -161,11 +164,11 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		return getPassengers().size() < 2;
 	}
 
-	/** Los dos van adentro de la cabina, uno al lado del otro. */
+	/** Los dos van adentro de la cabina, uno al lado del otro, acostados boca arriba (ver PlayerRendererNaveMixin). */
 	@Override
 	protected Vec3 getPassengerAttachmentPoint(Entity pasajero, EntityDimensions dimensiones, float escala) {
 		int lugar = Math.max(0, getPassengers().indexOf(pasajero));
-		return new Vec3(lugar == 0 ? -0.35 : 0.35, 2.0, 0).yRot(-getYRot() * Mth.DEG_TO_RAD);
+		return new Vec3(lugar == 0 ? -0.4 : 0.4, 2.0, 0).yRot(-getYRot() * Mth.DEG_TO_RAD);
 	}
 
 	/** Al bajarse queda parado al costado de la nave (busca un lado libre). */
@@ -196,7 +199,9 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		tiempo++;
 		switch (estado()) {
 			case QUIETA -> {
-				if (tienePiloto()) estado(CUENTA);
+				if (!isVehicle()) recienLlegada = false;
+				else if (recienLlegada && tiempo % 60 == 1) aviso("Aterrizaste. Apretá Shift para bajarte.");
+				if (tienePiloto() && !recienLlegada) estado(CUENTA);
 			}
 			case CUENTA -> {
 				if (!tienePiloto()) {
@@ -236,12 +241,15 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				}
 				double falta = getY() - sueloLlegada;
 				double bajada = Mth.clamp(falta * 0.05, 0.08, 0.9);
-				if (falta <= bajada) {
-					setPos(getX(), sueloLlegada, getZ());
+				// Frena apenas toca algo sólido abajo (aunque el piso no esté donde se calculó al llegar).
+				double piso = pisoDebajo(mundo, bajada);
+				if (!Double.isNaN(piso) || falta <= bajada) {
+					setPos(getX(), Double.isNaN(piso) ? sueloLlegada : piso, getZ());
 					estado(QUIETA);
+					recienLlegada = isVehicle();
 					sonido(mundo, SoundEvents.ANVIL_LAND, 1f, 0.6f);
 					mundo.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 0.2, getZ(), 40, 1.5, 0.1, 1.5, 0.05);
-					ejectPassengers();
+					titulo("Aterrizaste", VIOLETA, "Apretá Shift para bajarte");
 				} else {
 					setPos(getX(), getY() - bajada, getZ());
 					fuego(mundo, 0.4f);
@@ -249,6 +257,28 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				}
 			}
 			default -> estado(QUIETA);
+		}
+	}
+
+	/**
+	 * Si al bajar {@code bajada} bloques toca algo sólido (o agua), devuelve la altura donde se apoya; si no, NaN.
+	 * Mira el centro y las cuatro puntas de la base para no quedar metida en una ladera.
+	 */
+	private double pisoDebajo(ServerLevel mundo, double bajada) {
+		double mejor = Double.NaN;
+		double[][] puntos = {{0, 0}, {0.6, 0.6}, {-0.6, 0.6}, {0.6, -0.6}, {-0.6, -0.6}};
+		for (double[] d : puntos) {
+			BlockPos debajo = BlockPos.containing(getX() + d[0], getY() - bajada - 0.01, getZ() + d[1]);
+			boolean solido = !mundo.getBlockState(debajo).getCollisionShape(mundo, debajo).isEmpty()
+					|| !mundo.getFluidState(debajo).isEmpty();
+			if (solido && (Double.isNaN(mejor) || debajo.getY() + 1 > mejor)) mejor = debajo.getY() + 1;
+		}
+		return mejor;
+	}
+
+	private void aviso(String texto) {
+		for (Entity p : getPassengers()) {
+			if (p instanceof ServerPlayer jugador) jugador.displayClientMessage(Component.literal(texto).withColor(VIOLETA), true);
 		}
 	}
 
