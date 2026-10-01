@@ -291,7 +291,6 @@ public final class ModItems {
 
 	/**
 	 * Espada de Hoja de Qumara: 10 de daño, 1,6 de velocidad y 2030 de durabilidad.
-	 * En el creativo viene con Filo V, Saqueo III e Irrompibilidad III.
 	 */
 	private static final net.minecraft.world.item.Tier HOJA_QUMARA = new net.minecraft.world.item.Tier() {
 		private final net.minecraft.world.item.Tier base = net.minecraft.world.item.Tiers.NETHERITE;
@@ -308,16 +307,6 @@ public final class ModItems {
 	public static final Item ESPADA_HOJA_QUMARA = registrar("espada_hoja_qumara",
 			new net.minecraft.world.item.SwordItem(HOJA_QUMARA, new Item.Properties()
 					.attributes(net.minecraft.world.item.SwordItem.createAttributes(HOJA_QUMARA, 5, -2.4f))));
-
-	/** La espada con sus encantamientos (para el creativo). */
-	private static ItemStack espadaEncantada(net.minecraft.core.HolderLookup.Provider registros) {
-		ItemStack pila = new ItemStack(ESPADA_HOJA_QUMARA);
-		var encantamientos = registros.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
-		pila.enchant(encantamientos.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS), 5);
-		pila.enchant(encantamientos.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING), 3);
-		pila.enchant(encantamientos.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING), 3);
-		return pila;
-	}
 
 	/** Semilla de Arándano Nocturno: se planta en los troncos del Centro de Quiu. */
 	public static final Item SEMILLA_ARANDANO = registrar("semilla_arandano",
@@ -439,7 +428,7 @@ public final class ModItems {
 						entradas.accept(ARANDANO_NOCTURNO);
 						entradas.accept(CORAZON);
 						entradas.accept(FRUTO_QUIU);
-						entradas.accept(espadaEncantada(parametros.holders()));
+						entradas.accept(ESPADA_HOJA_QUMARA);
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
 						entradas.accept(SEMILLA_ARANDANO);
