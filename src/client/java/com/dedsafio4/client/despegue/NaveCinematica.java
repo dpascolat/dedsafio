@@ -6,15 +6,18 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 
 /**
  * El viaje en la nave visto por los pasajeros, en el juego (ver EspacioCielo para los planetas):
  * 1. En los últimos segundos de la subida la pantalla se va a negro (salís de la atmósfera).
- * 2. Aparecés en el Espacio: se aclara y viajás de verdad unos 15 segundos (estrellas, los dos planetas y polvo
- *    espacial pasando rápido). Al final se vuelve a negro.
+ * 2. Aparecés en el Espacio: se aclara y viajás de verdad unos 20 segundos: te alejás del planeta gigante, destello
+ *    blanco y salto a la velocidad de la luz (estrellas en rayas, polvo volando), otro destello y aparece el planeta de
+ *    destino (ver EspacioCielo). Al final se vuelve a negro.
  * 3. Llegás al cielo del planeta de destino: se aclara mientras la nave aterriza.
  * Mientras cambia de dimensión (y en el "Cargando terreno") queda negro.
  */
@@ -30,6 +33,8 @@ public final class NaveCinematica {
 	/** Está en medio de un viaje (entre el final de la subida y el aterrizaje). */
 	private static boolean viajando;
 	private static float negro, negroAntes;
+	/** Ya sonó el salto a la velocidad de la luz (y la salida) en este viaje. */
+	private static boolean sonoSalto, sonoSalida;
 
 	public static void registrar() {
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
@@ -52,7 +57,18 @@ public final class NaveCinematica {
 					viajando = true;
 					int fin = NaveViajeEntity.TIEMPO_ESPACIO;
 					negro = Math.max(1f - ticksEstado / (float) FUNDIDO, Mth.clamp((ticksEstado - (fin - FUNDIDO)) / (float) FUNDIDO, 0f, 1f));
-					polvo(mc);
+					float p = progresoEspacio(0);
+					if (ticksEstado < 3) sonoSalto = sonoSalida = false;
+					if (p >= EspacioCielo.SALTO && !sonoSalto) {
+						sonoSalto = true;
+						mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.WARDEN_SONIC_BOOM, 0.6f, 1f));
+						mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BEACON_ACTIVATE, 2f, 1f));
+					}
+					if (p >= EspacioCielo.FIN_SALTO && !sonoSalida) {
+						sonoSalida = true;
+						mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.WARDEN_SONIC_BOOM, 0.9f, 0.8f));
+					}
+					polvo(mc, EspacioCielo.velocidadLuz(p));
 				}
 				case NaveViajeEntity.ATERRIZANDO, NaveViajeEntity.QUIETA -> {
 					if (viajando) {
@@ -80,8 +96,13 @@ public final class NaveCinematica {
 				}
 			}
 		});
-		HudRenderCallback.EVENT.register((g, tiempo) ->
-				pintarNegro(g, Mth.lerp(tiempo.getGameTimeDeltaPartialTick(true), negroAntes, negro)));
+		HudRenderCallback.EVENT.register((g, tiempo) -> {
+			float parcial = tiempo.getGameTimeDeltaPartialTick(true);
+			pintarNegro(g, Mth.lerp(parcial, negroAntes, negro));
+			// El destello blanco al entrar y salir de la velocidad de la luz.
+			float blanco = EspacioCielo.destello(progresoEspacio(parcial));
+			if (blanco > 0.001f) g.fill(0, 0, g.guiWidth(), g.guiHeight(), (Mth.clamp((int) (blanco * 255), 0, 255) << 24) | 0xFFFFFF);
+		});
 		// La pantalla de "Cargando terreno" del cambio de dimensión también queda negra.
 		ScreenEvents.AFTER_INIT.register((mc, pantalla, ancho, alto) -> {
 			if (pantalla instanceof ReceivingLevelScreen) {
@@ -98,14 +119,14 @@ public final class NaveCinematica {
 		return Mth.clamp((ticksEstado + parcial) / NaveViajeEntity.TIEMPO_ESPACIO, 0f, 1f);
 	}
 
-	/** Polvo espacial pasando rápido de arriba para abajo, para que se sienta la velocidad. */
-	private static void polvo(Minecraft mc) {
+	/** Polvo espacial pasando rápido de arriba para abajo, para que se sienta la velocidad (volando a la de la luz). */
+	private static void polvo(Minecraft mc, float luz) {
 		if (mc.level == null || mc.player == null) return;
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 6 + 30 * luz; i++) {
 			double x = mc.player.getX() + (mc.level.random.nextDouble() - 0.5) * 24;
 			double y = mc.player.getY() + 20 + mc.level.random.nextDouble() * 25;
 			double z = mc.player.getZ() + (mc.level.random.nextDouble() - 0.5) * 24;
-			mc.level.addParticle(ParticleTypes.END_ROD, x, y, z, 0, -2.2, 0);
+			mc.level.addParticle(ParticleTypes.END_ROD, x, y, z, 0, -2.2 - 9 * luz, 0);
 		}
 	}
 
