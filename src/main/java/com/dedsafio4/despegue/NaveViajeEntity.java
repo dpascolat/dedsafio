@@ -59,7 +59,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	public static final int QUIETA = 0, CUENTA = 1, DESPEGANDO = 2, ATERRIZANDO = 3;
 
 	/** Cuenta regresiva: 5 segundos. Despegue: 7 segundos subiendo antes de saltar a la otra dimensión. */
-	private static final int TIEMPO_CUENTA = 100, TIEMPO_DESPEGUE = 140;
+	public static final int TIEMPO_CUENTA = 100, TIEMPO_DESPEGUE = 140;
 	/** A cuántos bloques del piso aparece al llegar. */
 	private static final double ALTURA_LLEGADA = 45;
 	private static final int AMARILLO = 0xF0D86A, NARANJA = 0xFFA23C, VIOLETA = 0xC883FF;
