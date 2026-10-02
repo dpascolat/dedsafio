@@ -48,7 +48,7 @@ dependencies {
 	implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.2"
 }
 
-neoforge {
+neoForge {
 	version = '21.1.252'
 
 	runs {
