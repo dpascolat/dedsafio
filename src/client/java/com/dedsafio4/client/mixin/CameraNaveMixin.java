@@ -13,12 +13,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * En la nave, en primera persona, la cámara va 6 píxeles hacia atrás y 6 hacia abajo (donde queda la cabeza del jugador
+ * En la nave, en primera persona, la cámara va 3 píxeles hacia atrás y 9 hacia abajo (donde queda la cabeza del jugador
  * acostado, ver PlayerRendererNaveMixin).
  */
 @Mixin(Camera.class)
 public abstract class CameraNaveMixin {
-	private static final double ATRAS = 6 / 16.0, ABAJO = 6 / 16.0;
+	private static final double ATRAS = 3 / 16.0, ABAJO = 9 / 16.0;
 
 	@Shadow
 	protected abstract void setPosition(Vec3 posicion);
