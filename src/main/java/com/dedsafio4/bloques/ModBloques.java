@@ -160,6 +160,10 @@ public final class ModBloques {
 	public static final Item CARNE_ROJA_ITEM = registrarItem("carne_roja", CARNE_ROJA);
 	public static final Item CARNE_CON_VENAS_ITEM = registrarItem("carne_con_venas", CARNE_CON_VENAS);
 	public static final Item MUSCULO_ITEM = registrarItem("musculo", MUSCULO);
+	/** Bloque de Carne: un trozo chiquito (más bajo que una losa y más angosto). */
+	public static final Block BLOQUE_CARNE = registrar("bloque_carne", new BloqueCarneBlock(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.CRIMSON_NYLIUM).strength(0.6f).sound(SoundType.MUD).noOcclusion()));
+	public static final Item BLOQUE_CARNE_ITEM = registrarItem("bloque_carne", BLOQUE_CARNE);
 
 	// Los árboles de la Dimensión de los Órganos: gelatina que tiembla (la textura se mueve). Se pican con pico.
 	public static final Block GELATINA_ROJA = registrar("gelatina_roja", bloqueDeGelatina(MapColor.COLOR_RED));
