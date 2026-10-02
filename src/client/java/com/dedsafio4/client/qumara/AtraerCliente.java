@@ -11,9 +11,10 @@ import net.minecraft.world.phys.Vec3;
  * El Atraer de Qumara (botón 5) lo hace el cliente de cada jugador: cada tick, antes de moverse, su
  * velocidad horizontal apunta a la planta (así va igual caminando que saltando).
  *
- * Mientras te trae no podés saltar y aparece la barra de aguante: apretando el espacio muchas veces seguidas (clicks,
- * no mantenerlo) te resistís y te trae muy lento, pero la barra se gasta (4 segundos) y en los costados saltan chispas
- * rojas; si dejás de apretar se vuelve a llenar. Vacía, no te podés resistir.
+ * Mientras te trae no podés saltar. Para resistirte hay que hacer clicks con el espacio (apretar y soltar):
+ * mantenerlo apretado no cuenta. Cada click te deja resistiendo un ratito y te trae muy lento; no se gasta nunca,
+ * así que mientras sigas apretando te podés resistir todo lo que quieras. En los costados del cartel saltan
+ * chispas rojas mientras te resistís.
  */
 public final class AtraerCliente {
 	private AtraerCliente() {}
@@ -22,12 +23,9 @@ public final class AtraerCliente {
 	private static final double RESISTIENDO = 0.05;
 	/** Cada click en el espacio te deja resistiendo este tiempo (en ticks): hay que seguir apretando. */
 	private static final int POR_CLICK = 6;
-	private static int resistenciaRestante;
-	/** Cuánto dura la barra resistiendo, y cuánto tarda en llenarse de nuevo (segundos). */
-	private static final float DURA = 4, LLENA = 6;
 
-	private static float aguante = 1;
-	private static boolean resistiendo, atraido;
+	private static int resistenciaRestante;
+	private static boolean resistiendo, atraido, espacioAntes;
 
 	/** La Qumara que está atrayendo a este jugador (o null). */
 	private static QumaraEntity atrae(Minecraft mc) {
@@ -41,24 +39,22 @@ public final class AtraerCliente {
 	public static void registrar() {
 		ClientTickEvents.START_CLIENT_TICK.register(mc -> {
 			if (mc.player == null || mc.level == null || mc.isPaused()) return;
+			// Un click es cuando el espacio pasa de suelto a apretado: mantenerlo no suma (ni con la repetición
+			// de teclas de Windows, que por eso no se usan los clicks de la tecla).
+			boolean espacio = mc.options.keyJump.isDown() && mc.screen == null;
+			boolean click = espacio && !espacioAntes;
+			espacioAntes = espacio;
 			QumaraEntity q = atrae(mc);
 			if (q == null) {
-				// Entre Atraer y Atraer la barra se llena del todo.
 				resistenciaRestante = 0;
 				atraido = false;
 				resistiendo = false;
-				aguante = 1;
 				return;
 			}
 			atraido = true;
-			// Los clicks del espacio (apretar y soltar), no mantenerlo apretado. Sólo mientras te atrae, así no le
-			// saca los clicks al minijuego del agarre.
-			int clicks = 0;
-			while (mc.options.keyJump.consumeClick()) clicks++;
-			if (clicks > 0 && mc.screen == null) resistenciaRestante = POR_CLICK;
+			if (click) resistenciaRestante = POR_CLICK;
 			else if (resistenciaRestante > 0) resistenciaRestante--;
-			resistiendo = resistenciaRestante > 0 && aguante > 0;
-			aguante = resistiendo ? Math.max(0, aguante - 1 / (DURA * 20)) : Math.min(1, aguante + 1 / (LLENA * 20));
+			resistiendo = resistenciaRestante > 0;
 			double dx = q.getX() - mc.player.getX(), dz = q.getZ() - mc.player.getZ(), d = Math.sqrt(dx * dx + dz * dz);
 			if (d < QumaraEntity.RADIO_CERCA - 1) return;   // ya llegó
 			double v = QumaraEntity.VELOCIDAD_ATRAER * (resistiendo ? RESISTIENDO : 1);
@@ -72,29 +68,19 @@ public final class AtraerCliente {
 		return atraido;
 	}
 
-	/** Para las pruebas. */
+	/** Para las pruebas: ya no hay barra que se gaste (siempre llena). */
 	public static float aguante() {
-		return aguante;
+		return 1;
 	}
 
-	/** La barra: blanca y brillante como un tubo, con chispas rojas en las puntas mientras te resistís. */
+	/** El cartel "[ESPACIO] para resistir", con chispas rojas en las puntas mientras te resistís. */
 	public static void dibujar(GuiGraphics g) {
 		Minecraft mc = Minecraft.getInstance();
 		if (!atraido || mc.options.hideGui) return;
-		int ancho = 80, alto = 9, x0 = g.guiWidth() / 2 - ancho / 2, y0 = g.guiHeight() / 2 + 28;
-		// Borde gris con las esquinas redondeadas y el fondo oscuro de lo gastado.
-		g.fill(x0 + 1, y0, x0 + ancho - 1, y0 + alto, 0xFF5E6268);
-		g.fill(x0, y0 + 1, x0 + ancho, y0 + alto - 1, 0xFF5E6268);
-		g.fill(x0 + 1, y0 + 1, x0 + ancho - 1, y0 + alto - 1, 0xAA1A1C20);
-		// El relleno: de arriba a abajo, blanco → celeste grisáceo (como un tubo).
-		int lleno = Math.round((ancho - 2) * aguante);
-		int[] filas = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFF4F7FA, 0xFFE6ECF1, 0xFFD6DEE5, 0xFFC4CDD6, 0xFFAEB8C2};
-		for (int i = 0; i < filas.length; i++) {
-			int x1 = x0 + 1 + lleno - (i == 0 || i == filas.length - 1 ? 1 : 0);
-			if (x1 > x0 + 1) g.fill(x0 + 1 + (i == 0 || i == filas.length - 1 ? 1 : 0), y0 + 1 + i, x1, y0 + 2 + i, filas[i]);
-		}
-		if (aguante < 0.25f && (System.currentTimeMillis() / 200) % 2 == 0) g.fill(x0 + 1, y0 + 1, x0 + ancho - 1, y0 + alto - 1, 0x40FF3030);
-		// Chispas rojas en las dos puntas mientras te resistís.
+		String texto = "Clicks con [" + mc.options.keyJump.getTranslatedKeyMessage().getString().toUpperCase() + "] para resistir";
+		int ancho = mc.font.width(texto) + 10, alto = 13, x0 = g.guiWidth() / 2 - ancho / 2, y0 = g.guiHeight() / 2 + 26;
+		g.fill(x0, y0, x0 + ancho, y0 + alto, resistiendo ? 0xCC3A1218 : 0xAA1A1C20);
+		g.drawString(mc.font, texto, x0 + 5, y0 + 3, resistiendo ? 0xFFFFD0D0 : 0xFFFFFFFF, true);
 		if (resistiendo) {
 			long t = System.currentTimeMillis() / 60;
 			for (int lado = 0; lado < 2; lado++) {
