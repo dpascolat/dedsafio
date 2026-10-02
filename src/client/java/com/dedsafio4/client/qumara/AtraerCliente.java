@@ -14,7 +14,8 @@ import net.minecraft.world.phys.Vec3;
  * Mientras te trae no podés saltar. Para resistirte hay que hacer clicks con el espacio (apretar y soltar):
  * mantenerlo apretado no cuenta. Cada click te deja resistiendo un ratito y te trae muy lento; no se gasta nunca,
  * así que mientras sigas apretando te podés resistir todo lo que quieras. En los costados del cartel saltan
- * chispas rojas mientras te resistís.
+ * chispas rojas mientras te resistís. Con el espacio apretado no podés caminar (la cámara sí se mueve), así no se
+ * puede resistir y escapar a la vez (ver KeyboardInputAtraerMixin).
  */
 public final class AtraerCliente {
 	private AtraerCliente() {}
@@ -61,6 +62,11 @@ public final class AtraerCliente {
 			Vec3 actual = mc.player.getDeltaMovement();
 			mc.player.setDeltaMovement(dx / d * v, actual.y, dz / d * v);
 		});
+	}
+
+	/** ¿Te está atrayendo y tenés el espacio apretado? Entonces no podés caminar (KeyboardInputAtraerMixin). */
+	public static boolean sinCaminar() {
+		return atraido && espacioAntes;
 	}
 
 	/** ¿Te está atrayendo ahora? (entonces no podés saltar: LivingEntitySaltoMixin) */

@@ -13,6 +13,7 @@
 		"GuiMixin",
 		"InventoryScreenAlmaMixin",
 		"FogRendererMixin",
+		"KeyboardInputAtraerMixin",
 		"KeyMappingMixin",
 		"ListaFondoMixin",
 		"LivingEntitySaltoMixin",
