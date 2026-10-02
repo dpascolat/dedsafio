@@ -243,10 +243,13 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				}
 				double falta = getY() - sueloLlegada;
 				double bajada = Mth.clamp(falta * 0.05, 0.08, 0.9);
-				// Frena apenas toca algo sólido abajo (aunque el piso no esté donde se calculó al llegar).
+				if (falta <= 0) bajada = 0.08;
+				// Frena cuando el motor toca el piso de verdad (si está más abajo de lo calculado al llegar, sigue
+				// bajando; si no hay piso, frena en el fondo del mundo).
 				double piso = pisoDebajo(mundo, bajada);
-				if (!Double.isNaN(piso) || falta <= bajada) {
-					setPos(getX(), Double.isNaN(piso) ? sueloLlegada : piso, getZ());
+				boolean fondo = getY() - bajada <= mundo.getMinBuildHeight();
+				if (!Double.isNaN(piso) || fondo) {
+					setPos(getX(), Double.isNaN(piso) ? getY() : piso, getZ());
 					estado(QUIETA);
 					recienLlegada = isVehicle();
 					sonido(mundo, SoundEvents.ANVIL_LAND, 1f, 0.6f);
@@ -263,19 +266,17 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	}
 
 	/**
-	 * Si al bajar {@code bajada} bloques toca algo sólido (o agua), devuelve la altura donde se apoya; si no, NaN.
-	 * Mira el centro y las cuatro puntas de la base para no quedar metida en una ladera.
+	 * Si al bajar {@code bajada} bloques el centro (donde está el motor) toca algo sólido o agua, devuelve la altura
+	 * donde se apoya; si no, NaN. Sólo el centro: si mirara las puntas, en una loma quedaría flotando.
 	 */
 	private double pisoDebajo(ServerLevel mundo, double bajada) {
-		double mejor = Double.NaN;
-		double[][] puntos = {{0, 0}, {0.6, 0.6}, {-0.6, 0.6}, {0.6, -0.6}, {-0.6, -0.6}};
-		for (double[] d : puntos) {
-			BlockPos debajo = BlockPos.containing(getX() + d[0], getY() - bajada - 0.01, getZ() + d[1]);
-			boolean solido = !mundo.getBlockState(debajo).getCollisionShape(mundo, debajo).isEmpty()
-					|| !mundo.getFluidState(debajo).isEmpty();
-			if (solido && (Double.isNaN(mejor) || debajo.getY() + 1 > mejor)) mejor = debajo.getY() + 1;
-		}
-		return mejor;
+		BlockPos debajo = BlockPos.containing(getX(), getY() - bajada - 0.01, getZ());
+		boolean solido = !mundo.getBlockState(debajo).getCollisionShape(mundo, debajo).isEmpty()
+				|| !mundo.getFluidState(debajo).isEmpty();
+		if (!solido) return Double.NaN;
+		// Se apoya arriba de lo que tenga (un bloque entero, una losa, etc.).
+		double alto = mundo.getBlockState(debajo).getCollisionShape(mundo, debajo).max(net.minecraft.core.Direction.Axis.Y);
+		return debajo.getY() + (Double.isFinite(alto) && alto > 0 ? alto : 1);
 	}
 
 	private void aviso(String texto) {
