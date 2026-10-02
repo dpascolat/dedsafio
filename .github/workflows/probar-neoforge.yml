@@ -34,7 +34,7 @@ jobs:
           echo "===== RESULTADO SERVIDOR ====="
           grep -E 'Done \(' servidor.log || echo "NO LLEGÓ A DONE"
           echo "===== ERRORES Y AVISOS ====="
-          grep -nE 'ERROR|Exception|Caused by|Mixin|mixin|dedsafio' servidor.log | grep -v 'Mixing' | head -150
+          grep -nE 'ERROR|Exception|Caused by|Injection|injection|dedsafio' servidor.log | head -150
 
       - name: Juego (pantalla virtual)
         if: always()
@@ -52,4 +52,4 @@ jobs:
           echo "===== RESULTADO JUEGO ====="
           grep -E 'Sound engine started|Game crashed|Crash report' juego.log || echo "SIN SEÑALES"
           echo "===== ERRORES Y AVISOS ====="
-          grep -nE 'ERROR|Exception|Caused by|Mixin apply|InvalidInjection|dedsafio' juego.log | head -200
+          grep -nE 'ERROR|Exception|Caused by|Injection|injection|dedsafio' juego.log | head -200

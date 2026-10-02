@@ -36,6 +36,10 @@ def copiarRecursos = tasks.register('copiarRecursosFabric', Sync) {
 	from('../src/main/resources') { exclude 'fabric.mod.json' }
 	from('../src/client/resources')
 	into(recursosFabric)
+	// NeoForge cambia algunas partes de Minecraft: si una inyección no encaja, que no se cierre el juego (se avisa en el log).
+	filesMatching('*.mixins.json') {
+		filter { String linea -> linea.replace('"defaultRequire": 1', '"defaultRequire": 0') }
+	}
 }
 
 sourceSets.main.java.srcDir(copiarCodigo)
@@ -55,10 +59,12 @@ neoForge {
 	runs {
 		client {
 			client()
+			jvmArgument '-Dmixin.debug.countInjections=true'
 		}
 		server {
 			server()
 			programArgument '--nogui'
+			jvmArgument '-Dmixin.debug.countInjections=true'
 		}
 	}
 
