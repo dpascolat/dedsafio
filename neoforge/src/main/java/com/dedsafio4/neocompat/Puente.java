@@ -71,8 +71,9 @@ public final class Puente {
 	private static final Map<UUID, ServerPlayer> ANTES_DE_REAPARECER = new HashMap<>();
 
 	public static void iniciar(IEventBus mod, Dist lado) {
-		mod.addListener(EventPriority.HIGHEST, false, RegisterEvent.class, e -> {
-			if (!iniciado) {
+		// Arranca cuando NeoForge ya registró sus atributos (los bichos los usan al armar su vida, velocidad, etc.).
+		mod.addListener(EventPriority.LOWEST, false, RegisterEvent.class, e -> {
+			if (!iniciado && e.getRegistryKey().equals(net.minecraft.core.registries.Registries.ATTRIBUTE)) {
 				iniciado = true;
 				new com.dedsafio4.Dedsafio4().onInitialize();
 				if (lado.isClient()) PuenteCliente.iniciarCliente();
