@@ -88,6 +88,8 @@ public final class Puente {
 			if (evento != null) evento.oyentes().forEach(o -> o.modifyEntries(new FabricItemGroupEntries(e)));
 		});
 		mod.addListener(EventPriority.HIGHEST, false, RegisterCapabilitiesEvent.class, Puente::capacidades);
+		mod.addListener(EventPriority.NORMAL, false, net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.class,
+				e -> NeoComun.COLOCACIONES.forEach(c -> c.accept(e)));
 		eventosDelJuego(NeoForge.EVENT_BUS);
 		if (lado.isClient()) PuenteCliente.iniciar(mod);
 	}

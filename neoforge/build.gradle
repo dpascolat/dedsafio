@@ -27,6 +27,7 @@ def copiarCodigo = tasks.register('copiarCodigoFabric', Sync) {
 	filter { String linea ->
 		linea.replace('net.fabricmc.', 'com.dedsafio4.neocompat.')
 				.replace('net.minecraft.client.gui.screens.MenuScreens.register(', 'com.dedsafio4.neocompat.NeoCompat.pantallaDeMenu(')
+				.replace('SpawnPlacements.register(', 'com.dedsafio4.neocompat.NeoComun.colocacion(')
 	}
 }
 
