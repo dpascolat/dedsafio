@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerMixin {
-	/** La animación del tótem muestra el Totem Frerico si fue él el que te salvó (no hay Tótem de la Inmortalidad en la mano). */
+	/** La animación del tótem muestra el Totem Frerico o el de Concha si fue él el que te salvó (no hay Tótem de la Inmortalidad en la mano). */
 	@Inject(method = "findTotem", at = @At("HEAD"), cancellable = true)
 	private static void dedsafio4$totemFrerico(Player jugador, CallbackInfoReturnable<ItemStack> cir) {
 		for (InteractionHand mano : InteractionHand.values()) {
@@ -21,7 +21,7 @@ public abstract class ClientPacketListenerMixin {
 		}
 		for (InteractionHand mano : InteractionHand.values()) {
 			ItemStack pila = jugador.getItemInHand(mano);
-			if (pila.is(ModItems.TOTEM_FRERICO)) {
+			if (pila.is(ModItems.TOTEM_FRERICO) || pila.is(ModItems.TOTEM_CONCHA)) {
 				cir.setReturnValue(pila.copy());
 				return;
 			}

@@ -198,6 +198,8 @@ public final class ModItems {
 			new DescritoItem(new Item.Properties(), DescritoItem::racimoDilitio));
 
 	public static final Item TOTEM_FRERICO = registrar("totem_frerico", new TotemFrericoItem(new Item.Properties()));
+	/** Tótem de Concha: te salva de la muerte, como el Tótem de la Inmortalidad. */
+	public static final Item TOTEM_CONCHA = registrar("totem_concha", new TotemConchaItem(new Item.Properties()));
 	/** Tótem del Ídolo: por ahora no hace nada (se apila de a 1, como el tótem de Minecraft). */
 	/** Corazón Violeta: por ahora no hace nada. */
 	public static final Item CORAZON_VIOLETA = registrar("corazon_violeta", new Item(new Item.Properties()));
@@ -385,6 +387,7 @@ public final class ModItems {
 						entradas.accept(LLAVE_CANDADO);
 						entradas.accept(LINTERNA);
 						entradas.accept(TOTEM_FRERICO);
+						entradas.accept(TOTEM_CONCHA);
 						entradas.accept(TOTEM_IDOLO);
 						entradas.accept(SIN_ALMA);
 						entradas.accept(ALMA);
