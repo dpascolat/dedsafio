@@ -64,7 +64,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private static final double ALTURA_LLEGADA = 45;
 	private static final int AMARILLO = 0xF0D86A, NARANJA = 0xFFA23C, VIOLETA = 0xC883FF;
 	/** Dónde van los pasajeros dentro de la cabina, corridos a mano (1 píxel = 1/16 de bloque). */
-	private static final double AJUSTE_X = 9 / 16.0, AJUSTE_Y = 7 / 16.0;
+	private static final double AJUSTE_X = 6 / 16.0, AJUSTE_Y = 7 / 16.0;
 
 	private UUID dueno;
 	private String nombreDueno = "";
