@@ -38,7 +38,10 @@ def copiarRecursos = tasks.register('copiarRecursosFabric', Sync) {
 	into(recursosFabric)
 	// NeoForge cambia algunas partes de Minecraft: si una inyección no encaja, que no se cierre el juego (se avisa en el log).
 	filesMatching('*.mixins.json') {
-		filter { String linea -> linea.replace('"defaultRequire": 1', '"defaultRequire": 0') }
+		filter { String linea ->
+			linea.replace('"defaultRequire": 1', '"defaultRequire": 0')
+					.replace('"package":', '"plugin": "com.dedsafio4.neocompat.DiagnosticoMixins",\n\t"package":')
+		}
 	}
 }
 
