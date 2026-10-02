@@ -41,7 +41,7 @@ public class NaveVelozEntity extends Monster implements GeoEntity {
 	/** Persiguiendo: bloques por tick (unos 11 por segundo, más rápido que correr). Paseando: mucho más lento. */
 	private static final double VELOCIDAD = 0.55, VELOCIDAD_PASEO = 0.12;
 	/** A cuánta distancia te choca, cada cuánto puede volver a pegarte y desde dónde se pone en modo ataque. */
-	private static final double ALCANCE_CHOQUE = 1.4, DISTANCIA_ATAQUE = 8;
+	private static final double ALCANCE_CHOQUE = 2.2, DISTANCIA_ATAQUE = 8;
 	private static final int ESPERA_CHOQUE = 15;
 
 	private final AnimatableInstanceCache animaciones = GeckoLibUtil.createInstanceCache(this);

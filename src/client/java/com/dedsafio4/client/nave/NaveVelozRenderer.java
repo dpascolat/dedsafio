@@ -7,10 +7,11 @@ import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-/** Dibuja la Nave Veloz con GeckoLib (geo/entity/nave_veloz.geo.json, textures/entity/nave_veloz.png y sus animaciones). */
+/** Dibuja la Nave Veloz al doble de tamaño con GeckoLib (geo/entity/nave_veloz.geo.json, textures/entity/nave_veloz.png y sus animaciones). */
 public class NaveVelozRenderer extends GeoEntityRenderer<NaveVelozEntity> {
 	public NaveVelozRenderer(EntityRendererProvider.Context contexto) {
 		super(contexto, new DefaultedEntityGeoModel<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "nave_veloz")));
-		this.shadowRadius = 0.5f;
+		this.shadowRadius = 1.0f;
+		withScale(2f);   // el doble del modelo de Blockbench
 	}
 }
