@@ -197,7 +197,10 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	@Override
 	public void tick() {
 		super.tick();
-		if (!(level() instanceof ServerLevel mundo)) return;
+		if (!(level() instanceof ServerLevel mundo)) {
+			deslizar();
+			return;
+		}
 		tiempo++;
 		switch (estado()) {
 			case QUIETA -> {
@@ -283,6 +286,28 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		for (Entity p : getPassengers()) {
 			if (p instanceof ServerPlayer jugador) jugador.displayClientMessage(Component.literal(texto).withColor(VIOLETA), true);
 		}
+	}
+
+	// --- Suavizado en el cliente: sin esto la nave salta de una posición a la otra (a los tirones al subir) ---
+
+	private int pasosDeslizar;
+	private double destinoX, destinoY, destinoZ;
+
+	/** El servidor avisa dónde está: en vez de saltar ahí, se va deslizando en unos ticks (como los botes). */
+	@Override
+	public void lerpTo(double x, double y, double z, float giroY, float giroX, int pasos) {
+		destinoX = x;
+		destinoY = y;
+		destinoZ = z;
+		pasosDeslizar = 3;
+		setYRot(giroY);
+	}
+
+	private void deslizar() {
+		if (pasosDeslizar <= 0) return;
+		setPos(getX() + (destinoX - getX()) / pasosDeslizar, getY() + (destinoY - getY()) / pasosDeslizar,
+				getZ() + (destinoZ - getZ()) / pasosDeslizar);
+		pasosDeslizar--;
 	}
 
 	/** Fuego y humo saliendo del motor (abajo). */
