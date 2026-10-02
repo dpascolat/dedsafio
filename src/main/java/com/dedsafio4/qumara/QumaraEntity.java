@@ -101,9 +101,12 @@ public class QumaraEntity extends PathfinderMob {
 		setPersistenceRequired();
 	}
 
+	/** La vida normal (para una persona); con "/boss 1 gente N" se multiplica por N. */
+	public static final double VIDA_BASE = 1000;
+
 	public static AttributeSupplier.Builder crearAtributos() {
 		return PathfinderMob.createMobAttributes()
-				.add(Attributes.MAX_HEALTH, 1000)
+				.add(Attributes.MAX_HEALTH, VIDA_BASE)
 				.add(Attributes.MOVEMENT_SPEED, 0)
 				.add(Attributes.KNOCKBACK_RESISTANCE, 1)
 				.add(Attributes.ARMOR, 6);
