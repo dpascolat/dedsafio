@@ -146,6 +146,8 @@
 	"item.dedsafio4.tarjeta_puerta_rosa": "Tarjeta de Acceso Phora",
 	"item.dedsafio4.tarjeta_puerta_verde": "Tarjeta de Acceso Phora",
 	"entity.dedsafio4.creeper_pasto": "Creeper de Pasto",
+	"entity.dedsafio4.creeper_amarillo": "Creeper Amarillo",
+	"item.dedsafio4.creeper_amarillo_spawn_egg": "Huevo generador de Creeper Amarillo",
 	"item.dedsafio4.creeper_pasto_spawn_egg": "Huevo generador de Creeper de Pasto",
 	"entity.dedsafio4.meteorito": "Meteorito",
 	"death.attack.meteorito": "%1$s fue aplastado por un meteorito",

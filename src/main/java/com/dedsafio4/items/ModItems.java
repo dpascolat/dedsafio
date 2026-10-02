@@ -265,6 +265,10 @@ public final class ModItems {
 	public static final Item DACTYLO_BEBE_SPAWN_EGG = registrar("dactylo_bebe_spawn_egg",
 			new SpawnEggItem(com.dedsafio4.dactylos.ModDactylos.DACTYLO_BEBE, 0x8A4A2A, 0xE8913A, new Item.Properties()));
 
+	/** Huevo generador del Creeper Amarillo. */
+	public static final Item CREEPER_AMARILLO_SPAWN_EGG = registrar("creeper_amarillo_spawn_egg",
+			new SpawnEggItem(ModEntidades.CREEPER_AMARILLO, 0xFFF4A8, 0x362E12, new Item.Properties()));
+
 	/** Huevo generador del Creeper de Pasto. */
 	public static final Item CREEPER_PASTO_SPAWN_EGG = registrar("creeper_pasto_spawn_egg",
 			new SpawnEggItem(ModEntidades.CREEPER_PASTO, 0x437524, 0x141A10, new Item.Properties()));
@@ -480,6 +484,7 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.despegue.ModDespegue.PLATAFORMA_BORDE_ITEM);
 						entradas.accept(ALDEANO_ROBOT_SPAWN_EGG);
 						entradas.accept(CREEPER_PASTO_SPAWN_EGG);
+						entradas.accept(CREEPER_AMARILLO_SPAWN_EGG);
 						entradas.accept(DACTYLO_BEBE_SPAWN_EGG);
 						entradas.accept(HEROBRINE_SPAWN_EGG);
 						entradas.accept(TREX_SPAWN_EGG);

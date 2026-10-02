@@ -62,6 +62,10 @@ public final class ModEntidades {
 			EntityType.Builder.of(AldeanoRobotEntity::new, MobCategory.MISC).sized(0.7f, 1.9f).clientTrackingRange(10));
 
 	/** Creeper de Pasto: 1,5 veces 1/4 de un creeper normal (0,64 bloques de alto). */
+	/** Creeper Amarillo: el creeper de siempre, amarillo clarito. */
+	public static final EntityType<com.dedsafio4.bestias.CreeperAmarilloEntity> CREEPER_AMARILLO = registrar("creeper_amarillo",
+			EntityType.Builder.of(com.dedsafio4.bestias.CreeperAmarilloEntity::new, MobCategory.MONSTER).sized(0.6f, 1.7f).clientTrackingRange(8));
+
 	public static final EntityType<com.dedsafio4.bestias.CreeperPastoEntity> CREEPER_PASTO = registrar("creeper_pasto",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperPastoEntity::new, MobCategory.MONSTER).sized(0.45f, 0.65f).clientTrackingRange(8));
 
@@ -85,6 +89,7 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(WALKER, WalkerEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(ALDEANO_ROBOT, AldeanoRobotEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CREEPER_PASTO, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		FabricDefaultAttributeRegistry.register(CREEPER_AMARILLO, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		for (EntityType<LagartoEntity> lagarto : LAGARTOS) {
 			FabricDefaultAttributeRegistry.register(lagarto,
 					lagarto == REPTISAURIO_GUERRERO ? LagartoEntity.atributosGuerrero() : LagartoEntity.crearAtributos());
