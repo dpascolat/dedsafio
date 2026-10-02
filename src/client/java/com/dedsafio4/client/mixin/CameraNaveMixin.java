@@ -13,12 +13,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * En la nave, en primera persona, la cámara va 2 píxeles hacia adelante y 14 hacia abajo (donde queda la cabeza del jugador
- * acostado, ver PlayerRendererNaveMixin).
+ * En la nave, en primera persona, la cámara se corre para quedar donde está la cabeza del jugador
+ * acostado (ver PlayerRendererNaveMixin).
  */
 @Mixin(Camera.class)
 public abstract class CameraNaveMixin {
-	private static final double ATRAS = -2 / 16.0, ABAJO = 14 / 16.0;
+	/** Corrimiento de la cámara, en píxeles de la nave (1/16 de bloque): X al costado, Y arriba, Z adelante. */
+	private static final double X = -2 / 16.0, Y = -16 / 16.0, Z = 2 / 16.0;
 
 	@Shadow
 	protected abstract void setPosition(Vec3 posicion);
@@ -30,7 +31,7 @@ public abstract class CameraNaveMixin {
 	private void dedsafio4$camaraEnLaNave(BlockGetter mundo, Entity entidad, boolean terceraPersona, boolean deFrente,
 										  float partialTick, CallbackInfo ci) {
 		if (terceraPersona || entidad == null || !(entidad.getVehicle() instanceof NaveViajeEntity nave)) return;
-		float giro = nave.getYRot() * Mth.DEG_TO_RAD;
-		setPosition(getPosition().add(Mth.sin(giro) * ATRAS, -ABAJO, -Mth.cos(giro) * ATRAS));
+		// Mismos ejes que los pasajeros (NaveViajeEntity.getPassengerAttachmentPoint): girados con la nave.
+		setPosition(getPosition().add(new Vec3(X, Y, Z).yRot(-nave.getYRot() * Mth.DEG_TO_RAD)));
 	}
 }
