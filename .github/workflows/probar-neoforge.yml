@@ -20,48 +20,41 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Servidor
+      - name: Servidor y juego conectado
         run: |
           chmod +x gradlew
-          mkdir -p neoforge/run && echo "eula=true" > neoforge/run/eula.txt
-          printf 'online-mode=false\nlevel-type=minecraft\\:flat\nspawn-protection=0\n' > neoforge/run/server.properties
-          ./gradlew -p neoforge runServer --no-daemon > servidor.log 2>&1 &
-          PID=$!
-          for i in $(seq 1 180); do
-            if grep -qE 'Done \(|Crash report|Exception in server tick loop|Failed to start|BUILD FAILED' servidor.log; then break; fi
-            sleep 5
-          done
-          sleep 10
-          kill $PID || true
-          pkill -f 'net.neoforged' || true
-          echo "===== RESULTADO SERVIDOR ====="
-          grep -E 'Done \(' servidor.log || echo "NO LLEGÓ A DONE"
-          echo "===== ERRORES Y AVISOS ====="
-          grep -nE 'ERROR|Exception|Caused by|INYECCIÓN|dedsafio' servidor.log | head -150
-
-      - name: Juego (pantalla virtual)
-        if: always()
-        run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils > /dev/null
-          xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew -p neoforge runClient --no-daemon > juego.log 2>&1 &
+          mkdir -p neoforge/run && echo "eula=true" > neoforge/run/eula.txt
+          printf 'online-mode=false\nspawn-protection=0\nenforce-secure-profile=false\n' > neoforge/run/server.properties
+          ./gradlew -p neoforge compileJava --no-daemon -q
+          # El juego corre desde una copia (otra carpeta de juego y sin pelearse con el Gradle del servidor).
+          cp -r neoforge neoforge-juego
+          ./gradlew -p neoforge runServer --no-daemon > servidor.log 2>&1 &
           for i in $(seq 1 180); do
-            if grep -qE 'Sound engine started|Created: .*textures/atlas|Crash report|Game crashed|BUILD FAILED|Exception in thread "main"' juego.log; then break; fi
+            if grep -qE 'Done \(|Crash report|Failed to start|BUILD FAILED' servidor.log; then break; fi
             sleep 5
           done
-          sleep 40
+          echo "===== SERVIDOR =====" && (grep -E 'Done \(' servidor.log || echo "NO LLEGÓ A DONE")
+          # El juego en otra carpeta (si no, pisa los archivos del servidor) y entrando directo al servidor.
+          xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew -p neoforge-juego runClient --no-daemon --args="--quickPlayMultiplayer localhost:25565" > juego.log 2>&1 &
+          for i in $(seq 1 120); do
+            if grep -qE 'joined the game|Crash report|Game crashed' servidor.log juego.log; then break; fi
+            sleep 5
+          done
+          echo "===== CONEXIÓN =====" && (grep -E 'joined the game|logged in with entity' servidor.log || echo "NO ENTRÓ")
+          sleep 90
+          echo "===== EN EL MUNDO 90 SEGUNDOS ====="
+          grep -nE 'Exception|ERROR|Crash|INYECCIÓN' servidor.log | cut -c1-300 | head -60
           pkill -f 'xvfb-run' || true
-          pkill -f 'net.neoforged' || true
-          pkill -f 'java' || true
-          echo "===== RESULTADO JUEGO ====="
-          grep -E 'Sound engine started|Game crashed|Crash report' juego.log || echo "SIN SEÑALES"
-          echo "===== ERRORES Y AVISOS ====="
-          grep -nE 'ERROR|Exception|Caused by|INYECCIÓN|dedsafio' juego.log | head -200
+          pkill -f java || true
 
       - name: Subir los logs a la rama diagnostico-neoforge
         if: always()
         run: |
           mkdir -p /tmp/diag && cp servidor.log juego.log /tmp/diag/ 2>/dev/null || true
-          cp neoforge/run/logs/latest.log /tmp/diag/servidor-latest.log 2>/dev/null || true
+          cp neoforge/run/logs/*.log /tmp/diag/ 2>/dev/null || true
+          cp neoforge-juego/run/logs/latest.log /tmp/diag/juego-latest.log 2>/dev/null || true
+          cp neoforge-juego/run/crash-reports/*.txt neoforge/run/crash-reports/*.txt /tmp/diag/ 2>/dev/null || true
           cp neoforge/run/crash-reports/*.txt /tmp/diag/ 2>/dev/null || true
           cd /tmp/diag
           git init -q -b diagnostico-neoforge
