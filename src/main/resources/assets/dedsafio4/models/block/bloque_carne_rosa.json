@@ -1,0 +1,22 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"particle": "dedsafio4:block/bloque_carne_rosa",
+		"lado": "dedsafio4:block/bloque_carne_rosa",
+		"arriba": "dedsafio4:block/bloque_carne_rosa_arriba"
+	},
+	"elements": [
+		{
+			"from": [2, 0, 2],
+			"to": [14, 6, 14],
+			"faces": {
+				"down": {"uv": [2, 2, 14, 14], "texture": "#lado", "cullface": "down"},
+				"up": {"uv": [2, 2, 14, 14], "texture": "#arriba"},
+				"north": {"uv": [2, 10, 14, 16], "texture": "#lado"},
+				"south": {"uv": [2, 10, 14, 16], "texture": "#lado"},
+				"west": {"uv": [2, 10, 14, 16], "texture": "#lado"},
+				"east": {"uv": [2, 10, 14, 16], "texture": "#lado"}
+			}
+		}
+	]
+}

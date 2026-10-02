@@ -164,6 +164,10 @@ public final class ModBloques {
 	public static final Block BLOQUE_CARNE = registrar("bloque_carne", new BloqueCarneBlock(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.CRIMSON_NYLIUM).strength(0.6f).sound(SoundType.MUD).noOcclusion()));
 	public static final Item BLOQUE_CARNE_ITEM = registrarItem("bloque_carne", BLOQUE_CARNE);
+	/** Bloque de Carne Rosa: igual, pero rosita clarito. */
+	public static final Block BLOQUE_CARNE_ROSA = registrar("bloque_carne_rosa", new BloqueCarneBlock(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.COLOR_PINK).strength(0.6f).sound(SoundType.MUD).noOcclusion()));
+	public static final Item BLOQUE_CARNE_ROSA_ITEM = registrarItem("bloque_carne_rosa", BLOQUE_CARNE_ROSA);
 
 	// Los árboles de la Dimensión de los Órganos: gelatina que tiembla (la textura se mueve). Se pican con pico.
 	public static final Block GELATINA_ROJA = registrar("gelatina_roja", bloqueDeGelatina(MapColor.COLOR_RED));
