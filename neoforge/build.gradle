@@ -59,12 +59,10 @@ neoForge {
 	runs {
 		client {
 			client()
-			jvmArgument '-Dmixin.debug.countInjections=true'
 		}
 		server {
 			server()
 			programArgument '--nogui'
-			jvmArgument '-Dmixin.debug.countInjections=true'
 		}
 	}
 
