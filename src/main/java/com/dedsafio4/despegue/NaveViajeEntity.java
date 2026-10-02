@@ -66,7 +66,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	/** Cuenta regresiva: 5 segundos. Despegue: 14 segundos subiendo antes de salir al Espacio. */
 	public static final int TIEMPO_CUENTA = 100, TIEMPO_DESPEGUE = 280;
 	/** Lo que dura el viaje por el Espacio: 15 segundos. */
-	public static final int TIEMPO_ESPACIO = 300;
+	public static final int TIEMPO_ESPACIO = 400;
 	/** A qué altura queda la nave en el Espacio (no hay piso: es todo vacío). */
 	private static final double ALTURA_ESPACIO = 120;
 	/** A cuántos bloques del piso aparece al llegar. */

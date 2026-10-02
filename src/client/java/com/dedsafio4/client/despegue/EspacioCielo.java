@@ -21,19 +21,32 @@ import org.joml.Matrix4f;
 
 /**
  * El cielo del Espacio (la dimensión vacía por donde viaja la nave): negro, lleno de estrellas, con los dos planetas.
- * La nave queda quieta y lo que se mueve son los planetas: el de salida está abajo y se va alejando, el de destino
- * está arriba, chiquito, y se acerca hasta ocupar casi todo el cielo. Son esferas en 3D (con su mapa envuelto, lado de
- * día y de noche, atmósfera y girando) dibujadas en el cielo, así nunca quedan cortadas por la distancia de renderizado.
+ * Los planetas son gigantes, como en la vida real (la nave es un puntito al lado): esferas en 3D con su mapa envuelto,
+ * lado de día y de noche, atmósfera y girando despacio. El viaje (de 0 a 1, ver NaveCinematica.progresoEspacio):
+ * <ul>
+ *   <li>0 a 1/3: salís del planeta. Lo tenés abajo, enorme, con el horizonte curvo, y te vas alejando.</li>
+ *   <li>1/3: destello y SALTO A LA VELOCIDAD DE LA LUZ: las estrellas se estiran en rayas y el polvo pasa volando.</li>
+ *   <li>2/3: otro destello, salís del salto y el planeta de destino está arriba; te acercás hasta que llena el cielo.</li>
+ * </ul>
+ * Se dibujan dentro del cielo (achicados, con la misma forma y tamaño que se verían de verdad), así nunca quedan cortados
+ * por la distancia de renderizado.
  */
 public final class EspacioCielo {
 	private EspacioCielo() {}
 
 	private static final ResourceLocation TIERRA = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/planeta_overworld.png");
 	private static final ResourceLocation ROJO = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/planeta_rojo.png");
-	/** Radio de los planetas (en bloques) y a qué distancia se dibuja el cielo. */
-	private static final float RADIO_PLANETA = 50, CIELO = 90;
+	/** A qué distancia se dibuja el cielo. */
+	private static final float CIELO = 90;
 	/** El color del brillo de la atmósfera de cada planeta. */
 	private static final int[] AIRE_TIERRA = {110, 170, 255}, AIRE_ROJO = {255, 120, 160};
+	/** Cuándo empieza y termina el salto a la velocidad de la luz (en el progreso del viaje, de 0 a 1). */
+	public static final float SALTO = 0.33f, FIN_SALTO = 0.67f;
+	/**
+	 * Distancia al centro del planeta, en radios del planeta: 1.035 es estar pegado (el planeta llena medio cielo y se ve
+	 * el horizonte curvo); 3 es lejos (se ve la bola entera).
+	 */
+	private static final double CERCA = 1.035, LEJOS_SALIDA = 2.2, LEJOS_LLEGADA = 3.2;
 
 	private static final int ESTRELLAS = 1500;
 	private static final float[][] ESTRELLA = new float[ESTRELLAS][5];   // dirección x, y, z, tamaño, fase
@@ -55,46 +68,55 @@ public final class EspacioCielo {
 		DimensionRenderingRegistry.registerWeatherRenderer(ModDespegue.ESPACIO, contexto -> {});
 	}
 
+	/** Cuánto se está yendo a la velocidad de la luz: 0 normal, 1 a full (con un ratito para arrancar y frenar). */
+	public static float velocidadLuz(float p) {
+		return suave((p - SALTO) / 0.03f) * (1 - suave((p - (FIN_SALTO - 0.03f)) / 0.03f));
+	}
+
+	/** El destello blanco al entrar y al salir del salto: de 0 a 1. */
+	public static float destello(float p) {
+		return Math.max(0, 1 - Math.min(Math.abs(p - SALTO), Math.abs(p - FIN_SALTO)) / 0.025f);
+	}
+
+	private static float suave(float t) {
+		t = Mth.clamp(t, 0f, 1f);
+		return t * t * (3 - 2 * t);
+	}
+
 	private static void dibujar(WorldRenderContext contexto) {
 		Minecraft mc = Minecraft.getInstance();
 		Matrix4f m = contexto.positionMatrix();
-		Vec3 camara = contexto.camera().getPosition();
 		float parcial = contexto.tickCounter().getGameTimeDeltaPartialTick(false);
 		float tiempo = (mc.level == null ? 0 : mc.level.getGameTime() % 100000L) + parcial;
+		NaveViajeEntity nave = mc.player != null && mc.player.getVehicle() instanceof NaveViajeEntity n ? n : null;
+		boolean haciaRojo = nave == null || nave.haciaRojo();
+		float p = NaveCinematica.progresoEspacio(parcial);
+		float luz = velocidadLuz(p);
 
 		RenderSystem.depthMask(false);
 		RenderSystem.disableCull();
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
+		RenderSystem.setShaderColor(1, 1, 1, 1);
 
-		// Las estrellas: cuadraditos blancos que titilan.
+		// Las estrellas: cuadraditos que titilan. A la velocidad de la luz se estiran en rayas para atrás (para abajo).
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
 		BufferBuilder estrellas = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 		for (float[] e : ESTRELLA) {
-			int brillo = (int) (170 + 85 * Mth.sin(tiempo * 0.08f + e[4]));
-			cuadro(estrellas, m, e[0] * 100, e[1] * 100, e[2] * 100, e[3], brillo);
+			int brillo = (int) Math.min(255, 170 + 85 * Mth.sin(tiempo * 0.08f + e[4]) + 80 * luz);
+			estrella(estrellas, m, e, luz, brillo);
 		}
 		BufferUploader.drawWithShader(estrellas.buildOrThrow());
 
-		// Los planetas, según por dónde va el viaje.
-		NaveViajeEntity nave = mc.player != null && mc.player.getVehicle() instanceof NaveViajeEntity n ? n : null;
-		boolean haciaRojo = nave == null || nave.haciaRojo();
-		float p = NaveCinematica.progresoEspacio(parcial);
-		float e = p * p * (3 - 2 * p);
-		Vec3 base = nave != null ? nave.getPosition(parcial) : camara;
-		// Al salir el planeta está justo abajo, enorme: se ve su borde curvo.
-		Vec3 salida = base.add(-15, -(56 + 900 * e), 8);
-		Vec3 destino = base.add(25 * (1 - e), 950 - 870 * e, 15 * (1 - e));
-		ResourceLocation texSalida = haciaRojo ? TIERRA : ROJO, texDestino = haciaRojo ? ROJO : TIERRA;
-		int[] aireSalida = haciaRojo ? AIRE_TIERRA : AIRE_ROJO, aireDestino = haciaRojo ? AIRE_ROJO : AIRE_TIERRA;
-		RenderSystem.setShaderColor(1, 1, 1, 1);
-		// Primero el más lejano.
-		if (salida.distanceTo(camara) > destino.distanceTo(camara)) {
-			planeta(m, camara, salida, texSalida, tiempo, aireSalida);
-			planeta(m, camara, destino, texDestino, tiempo, aireDestino);
-		} else {
-			planeta(m, camara, destino, texDestino, tiempo, aireDestino);
-			planeta(m, camara, salida, texSalida, tiempo, aireSalida);
+		// Los planetas: el de salida abajo (alejándose) antes del salto y el de destino arriba (acercándose) después.
+		if (p < SALTO) {
+			double distancia = Mth.lerp(suave(p / SALTO), CERCA, LEJOS_SALIDA);
+			planeta(m, new Vec3(0.12, -1, 0.08).normalize(), distancia, haciaRojo ? TIERRA : ROJO, tiempo,
+					haciaRojo ? AIRE_TIERRA : AIRE_ROJO);
+		} else if (p > FIN_SALTO) {
+			double distancia = Mth.lerp(suave((p - FIN_SALTO) / (1 - FIN_SALTO)), LEJOS_LLEGADA, CERCA);
+			planeta(m, new Vec3(-0.1, 1, 0.12).normalize(), distancia, haciaRojo ? ROJO : TIERRA, tiempo,
+					haciaRojo ? AIRE_ROJO : AIRE_TIERRA);
 		}
 
 		RenderSystem.disableBlend();
@@ -105,21 +127,16 @@ public final class EspacioCielo {
 	/** De dónde viene la luz del sol (la mitad de cada planeta queda de día y la otra de noche). */
 	private static final Vec3 SOL = new Vec3(1, 0.35, -0.6).normalize();
 	/** Cuántas partes tiene la esfera de cada planeta, alrededor y de polo a polo. */
-	private static final int LONGITUDES = 48, LATITUDES = 24;
+	private static final int LONGITUDES = 128, LATITUDES = 64;
 
 	/**
-	 * Un planeta de verdad: una esfera con su mapa envuelto, iluminada de un lado y girando despacio sobre sí misma.
-	 * Se dibuja achicada dentro del cielo (misma forma y tamaño aparente que a su distancia real), así se ve redondo y
-	 * curvo cuando lo tenés cerca y nunca queda cortado.
+	 * Un planeta: una esfera con su mapa envuelto, iluminada de un lado y girando despacio sobre sí misma. Se dibuja
+	 * achicada dentro del cielo: en esa dirección y a {@code distancia} radios de su centro.
 	 */
-	private static void planeta(Matrix4f m, Vec3 camara, Vec3 centroReal, ResourceLocation textura, float tiempo, int[] aire) {
-		Vec3 hacia = centroReal.subtract(camara);
-		double distancia = hacia.length();
-		if (distancia < 1) return;
-		Vec3 dir = hacia.scale(1 / distancia);
-		double radio = CIELO * RADIO_PLANETA / Math.max(distancia, RADIO_PLANETA * 1.03);
+	private static void planeta(Matrix4f m, Vec3 dir, double distancia, ResourceLocation textura, float tiempo, int[] aire) {
+		double radio = CIELO / distancia;
 		Vec3 centro = dir.scale(CIELO);
-		float giro = tiempo * 0.006f;
+		float giro = tiempo * 0.0015f;
 
 		// Cada punto de la esfera: su dirección desde el centro (girada e inclinada) y su lugar en el mapa.
 		Vec3[][] normal = new Vec3[LONGITUDES + 1][LATITUDES + 1];
@@ -127,8 +144,7 @@ public final class EspacioCielo {
 			double lon = 2 * Math.PI * i / LONGITUDES + giro;
 			for (int j = 0; j <= LATITUDES; j++) {
 				double lat = Math.PI * (0.5 - (double) j / LATITUDES);
-				Vec3 n = new Vec3(Math.cos(lat) * Math.cos(lon), Math.sin(lat), Math.cos(lat) * Math.sin(lon));
-				normal[i][j] = n.zRot(0.4f);
+				normal[i][j] = new Vec3(Math.cos(lat) * Math.cos(lon), Math.sin(lat), Math.cos(lat) * Math.sin(lon)).zRot(0.4f);
 			}
 		}
 
@@ -143,8 +159,7 @@ public final class EspacioCielo {
 				for (int[] q : esquinas) {
 					Vec3 n = normal[q[0]][q[1]];
 					Vec3 punto = centro.add(n.scale(radio));
-					float luz = luz(n);
-					int c = (int) (255 * luz);
+					int c = (int) (255 * luz(n));
 					b.addVertex(m, (float) punto.x, (float) punto.y, (float) punto.z)
 							.setUv((float) q[0] / LONGITUDES, (float) q[1] / LATITUDES).setColor(c, c, c, 255);
 				}
@@ -154,8 +169,8 @@ public final class EspacioCielo {
 		if (caras > 0) BufferUploader.drawWithShader(b.buildOrThrow());
 		else b.build();
 
-		// La atmósfera: un brillo de color en el borde del planeta, del lado de día.
-		double radioAire = radio * 1.05;
+		// La atmósfera: una capa finita alrededor que brilla de color en el borde (el horizonte), del lado de día.
+		double radioAire = radio * 1.02;
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
 		RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA,
 				com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
@@ -170,7 +185,7 @@ public final class EspacioCielo {
 					Vec3 punto = centro.add(n.scale(radioAire));
 					double deFrente = Math.max(0, n.dot(punto.scale(-1).normalize()));
 					double borde = Math.pow(1 - deFrente, 3);
-					int alfa = (int) (200 * borde * (0.25 + 0.75 * luz(n)));
+					int alfa = (int) (210 * borde * (0.2 + 0.8 * luz(n)));
 					a.addVertex(m, (float) punto.x, (float) punto.y, (float) punto.z).setColor(aire[0], aire[1], aire[2], alfa);
 				}
 				caras++;
@@ -194,15 +209,33 @@ public final class EspacioCielo {
 		return (float) (0.13 + 0.87 * Mth.clamp(sol * 1.6 + 0.15, 0, 1));
 	}
 
-	/** Un cuadrito blanco de lado 2×{@code tam} en ese punto, mirando a la cámara (una estrella). */
-	private static void cuadro(BufferBuilder b, Matrix4f m, float x, float y, float z, float tam, int brillo) {
-		Vec3 d = new Vec3(x, y, z).normalize();
-		Vec3 arriba = Math.abs(d.y) > 0.9 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0);
-		Vec3 a = d.cross(arriba).normalize().scale(tam), c = d.cross(a).normalize().scale(tam);
-		float[][] esquinas = {{-1, -1}, {1, -1}, {1, 1}, {-1, 1}};
-		for (float[] q : esquinas) {
-			float vx = (float) (x + a.x * q[0] + c.x * q[1]), vy = (float) (y + a.y * q[0] + c.y * q[1]), vz = (float) (z + a.z * q[0] + c.z * q[1]);
-			b.addVertex(m, vx, vy, vz).setColor(brillo, brillo, Math.min(255, brillo + 15), 255);
+	/**
+	 * Una estrella: un cuadradito mirando a la cámara. Con {@code luz} > 0 (velocidad de la luz) se estira en una raya
+	 * hacia atrás, más larga cuanto más rápido.
+	 */
+	private static void estrella(BufferBuilder b, Matrix4f m, float[] e, float luz, int brillo) {
+		Vec3 d = new Vec3(e[0], e[1], e[2]);
+		Vec3 desde = d.scale(100);
+		Vec3 hasta = d.subtract(0, luz * 1.4, 0).normalize().scale(100);
+		Vec3 largo = hasta.subtract(desde);
+		int azul = Math.min(255, brillo + 15 + (int) (40 * luz));
+		if (largo.lengthSqr() < 0.25) {
+			Vec3 arriba = Math.abs(d.y) > 0.9 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0);
+			Vec3 a = d.cross(arriba).normalize().scale(e[3]), c = d.cross(a).normalize().scale(e[3]);
+			vertice(b, m, desde.subtract(a).subtract(c), brillo, azul);
+			vertice(b, m, desde.add(a).subtract(c), brillo, azul);
+			vertice(b, m, desde.add(a).add(c), brillo, azul);
+			vertice(b, m, desde.subtract(a).add(c), brillo, azul);
+		} else {
+			Vec3 costado = largo.cross(desde).normalize().scale(e[3] * 0.7);
+			vertice(b, m, desde.add(costado), brillo, azul);
+			vertice(b, m, desde.subtract(costado), brillo, azul);
+			vertice(b, m, hasta.subtract(costado), brillo, azul);
+			vertice(b, m, hasta.add(costado), brillo, azul);
 		}
+	}
+
+	private static void vertice(BufferBuilder b, Matrix4f m, Vec3 v, int brillo, int azul) {
+		b.addVertex(m, (float) v.x, (float) v.y, (float) v.z).setColor(brillo, brillo, azul, 255);
 	}
 }
