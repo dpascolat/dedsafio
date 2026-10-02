@@ -1,0 +1,60 @@
+# Compila la versión NeoForge (carpeta neoforge/, que usa el mismo código de src/) y actualiza dedsafio4-neoforge.jar
+# del repo y su sha1 en dedsafio-neoforge.json. Si la compilación falla, no se toca nada.
+name: Compilar el mod (NeoForge)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "neoforge/**"
+      - ".github/workflows/compilar-neoforge.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: compilar-neoforge
+  cancel-in-progress: false
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Compilar
+        run: |
+          chmod +x gradlew
+          ./gradlew -p neoforge build --no-daemon
+
+      - name: Actualizar dedsafio4-neoforge.jar y dedsafio-neoforge.json
+        run: |
+          JAR=$(ls neoforge/build/libs/*.jar | grep -v -e '-sources' -e '-dev' | head -n 1)
+          echo "Jar compilado: $JAR"
+          cp "$JAR" dedsafio4-neoforge.jar
+          SHA1=$(sha1sum dedsafio4-neoforge.jar | cut -d' ' -f1)
+          python3 - "$SHA1" <<'PY'
+          import json, sys
+          texto = open("dedsafio-neoforge.json", encoding="utf-8", newline="").read()
+          viejo = next(m["sha1"] for m in json.loads(texto)["mods"] if m["archivo"] == "dedsafio4-neoforge.jar")
+          open("dedsafio-neoforge.json", "w", encoding="utf-8", newline="").write(texto.replace(viejo, sys.argv[1]))
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dedsafio4-neoforge.jar dedsafio-neoforge.json
+          if git diff --cached --quiet; then
+            echo "No cambió nada."
+          else
+            git commit -m "Actualizar dedsafio4-neoforge.jar (compilado automáticamente)"
+            git pull --rebase --autostash -X theirs origin main
+            git push origin HEAD:main
+          fi

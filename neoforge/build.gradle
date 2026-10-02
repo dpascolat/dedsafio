@@ -1,0 +1,74 @@
+// Versión NeoForge del mod. Usa EL MISMO código que la versión Fabric (../src): antes de compilar lo copia y le
+// cambia los "net.fabricmc." por "com.dedsafio4.neocompat.", una capa (en src/ de esta carpeta) que imita la parte de
+// Fabric API que usa el mod, pero por dentro usa NeoForge. Así cada cosa nueva se hace una sola vez.
+plugins {
+	id 'java-library'
+	id 'net.neoforged.moddev' version '2.0.148'
+}
+
+version = '0.1.0'
+group = 'com.dedsafio4'
+
+base {
+	archivesName = 'dedsafio4-neoforge'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+def codigoFabric = layout.buildDirectory.dir('codigo-fabric')
+def recursosFabric = layout.buildDirectory.dir('recursos-fabric')
+
+// El código de la versión Fabric, con los imports pasados a la capa compatible.
+def copiarCodigo = tasks.register('copiarCodigoFabric', Sync) {
+	from('../src/main/java')
+	from('../src/client/java')
+	into(codigoFabric)
+	filteringCharset = 'UTF-8'
+	filter { String linea ->
+		linea.replace('net.fabricmc.', 'com.dedsafio4.neocompat.')
+				.replace('net.minecraft.client.gui.screens.MenuScreens.register(', 'com.dedsafio4.neocompat.NeoCompat.pantallaDeMenu(')
+	}
+}
+
+// Los recursos de la versión Fabric (menos fabric.mod.json, que en NeoForge es neoforge.mods.toml).
+def copiarRecursos = tasks.register('copiarRecursosFabric', Sync) {
+	from('../src/main/resources') { exclude 'fabric.mod.json' }
+	from('../src/client/resources')
+	into(recursosFabric)
+}
+
+sourceSets.main.java.srcDir(copiarCodigo)
+sourceSets.main.resources.srcDir(copiarRecursos)
+
+repositories {
+	maven { url "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/" }
+}
+
+dependencies {
+	implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.2"
+}
+
+neoforge {
+	version = '21.1.252'
+
+	runs {
+		client {
+			client()
+		}
+		server {
+			server()
+			programArgument '--nogui'
+		}
+	}
+
+	mods {
+		dedsafio4 {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release = 21
+}

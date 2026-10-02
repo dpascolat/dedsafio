@@ -1,0 +1,26 @@
+{
+  "nombre": "Dedsafío 4 (NeoForge)",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.252",
+  "servidor": "",
+  "mods": [
+    {
+      "archivo": "geckolib-neoforge-1.21.1-4.9.2.jar",
+      "url": "https://cdn.modrinth.com/data/8BmcQJ2H/versions/tPkJmim6/geckolib-neoforge-1.21.1-4.9.2.jar",
+      "sha1": "14c64013cadee7d28f3685f94350f9a4d2ec6d86",
+      "nombre": "GeckoLib"
+    },
+    {
+      "archivo": "xaerominimap-neoforge-1.21.1-26.5.0.jar",
+      "url": "https://cdn.modrinth.com/data/1bokaNcj/versions/Q1tuMQBB/xaerominimap-neoforge-1.21.1-26.5.0.jar",
+      "sha1": "7553dddbe478d1c8c15198090217e723d27f79c4",
+      "nombre": "Xaero's Minimap"
+    },
+    {
+      "nombre": "Dedsafío 4",
+      "archivo": "dedsafio4-neoforge.jar",
+      "url": "https://raw.githubusercontent.com/dpascolat/dedsafio/main/dedsafio4-neoforge.jar",
+      "sha1": "0000000000000000000000000000000000000000"
+    }
+  ]
+}

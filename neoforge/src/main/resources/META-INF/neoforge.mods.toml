@@ -1,0 +1,43 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "All-Rights-Reserved"
+
+[[mods]]
+modId = "dedsafio4"
+version = "0.1.0"
+displayName = "Dedsafío 4"
+authors = "Patricio"
+description = '''Recreación de las mecánicas de Dedsafío 4.'''
+
+[[mixins]]
+config = "dedsafio4.mixins.json"
+
+[[mixins]]
+config = "dedsafio4.client.mixins.json"
+
+[[mixins]]
+config = "dedsafio4.neocompat.mixins.json"
+
+[[dependencies.dedsafio4]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.dedsafio4]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.dedsafio4]]
+modId = "geckolib"
+type = "required"
+versionRange = "[4.9,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"

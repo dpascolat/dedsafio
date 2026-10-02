@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "com.dedsafio4.neocompat.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"PlayerListMixin",
+		"ServerPlayerGameModeMixin"
+	],
+	"client": [
+		"LevelRendererCieloMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
