@@ -59,6 +59,7 @@ jobs:
             echo "No cambió nada."
           else
             git commit -m "Actualizar dedsafio4.jar (compilado automáticamente)"
-            git pull --rebase --autostash origin main
+            # Si otra compilación subió un jar mientras tanto, gana el de ésta (que es la más nueva).
+            git pull --rebase --autostash -X theirs origin main
             git push origin HEAD:main
           fi
