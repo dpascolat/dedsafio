@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Camera.class)
 public abstract class CameraNaveMixin {
 	/** Corrimiento de la cámara, en píxeles de la nave (1/16 de bloque): X al costado, Y arriba, Z adelante. */
-	private static final double X = -2 / 16.0, Y = -21 / 16.0, Z = -1 / 16.0;
+	private static final double X = -1 / 16.0, Y = -21 / 16.0, Z = -1 / 16.0;
 
 	@Shadow
 	protected abstract void setPosition(Vec3 posicion);
