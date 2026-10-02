@@ -18,7 +18,6 @@ public class NaveViajeRenderer extends GeoEntityRenderer<NaveViajeEntity> {
 
 	@Override
 	public void render(NaveViajeEntity nave, float giro, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
-		if (nave.estado() == NaveViajeEntity.ESPACIO) return;   // está "en el espacio": la cinemática la muestra
 		pose.pushPose();
 		pose.translate(0, nave.altura(parcial), 0);
 		super.render(nave, giro, parcial, pose, buffers, luz);

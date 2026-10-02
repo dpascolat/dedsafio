@@ -47,8 +47,9 @@ import java.util.UUID;
  * La Nave Espacial Biplaza parada sobre la Plataforma de Despegue, con la punta para arriba.
  * - Click derecho: te subís (entran 2). Apenas sube alguien empieza la cuenta regresiva (5 segundos); si se bajan
  *   todos, se cancela.
- * - Despegue: fuego y humo abajo, sube cada vez más rápido (14 segundos) y, bien arriba, sale al espacio: los
- *   pasajeros ven la cinemática del viaje entre los dos planetas (NaveCinematica) y llegan a la otra dimensión.
+ * - Despegue: fuego y humo abajo, sube cada vez más rápido (14 segundos) y, bien arriba, sale al Espacio (otra
+ *   dimensión, vacía): ahí viajás de verdad unos 15 segundos, con el planeta de donde saliste abajo, alejándose, y
+ *   el de destino arriba, acercándose (ver EspacioCielo en el cliente). Después llega a la otra dimensión.
  * - Llegada: aparece en el cielo de la otra dimensión y baja despacio hasta que toca el piso. Ahí se queda quieta
  *   y te bajás vos (Shift). No vuelve a despegar hasta que alguien se baje y se suba de nuevo.
  * - Desde la Dimensión de los Órganos, subirse de nuevo te lleva de vuelta al Overworld.
@@ -57,12 +58,17 @@ import java.util.UUID;
 public class NaveViajeEntity extends Entity implements GeoEntity {
 	private static final EntityDataAccessor<Integer> ESTADO =
 			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.INT);
+	/** true = va del Overworld al planeta rojo (la Dimensión de los Órganos); false = vuelve. */
+	private static final EntityDataAccessor<Boolean> HACIA_ROJO =
+			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.BOOLEAN);
 	public static final int QUIETA = 0, CUENTA = 1, DESPEGANDO = 2, ATERRIZANDO = 3, ESPACIO = 4;
 
-	/** Cuenta regresiva: 5 segundos. Despegue: 7 segundos subiendo antes de saltar a la otra dimensión. */
+	/** Cuenta regresiva: 5 segundos. Despegue: 14 segundos subiendo antes de salir al Espacio. */
 	public static final int TIEMPO_CUENTA = 100, TIEMPO_DESPEGUE = 280;
-	/** Lo que dura la cinemática en el espacio (NaveCinematica) antes de empezar a aterrizar: 6,5 segundos. */
-	public static final int TIEMPO_ESPACIO = 130;
+	/** Lo que dura el viaje por el Espacio: 15 segundos. */
+	public static final int TIEMPO_ESPACIO = 300;
+	/** A qué altura queda la nave en el Espacio (no hay piso: es todo vacío). */
+	private static final double ALTURA_ESPACIO = 120;
 	/** A cuántos bloques del piso aparece al llegar. */
 	private static final double ALTURA_LLEGADA = 45;
 	private static final int AMARILLO = 0xF0D86A, NARANJA = 0xFFA23C, VIOLETA = 0xC883FF;
@@ -88,10 +94,15 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder datos) {
 		datos.define(ESTADO, QUIETA);
+		datos.define(HACIA_ROJO, true);
 	}
 
 	public int estado() {
 		return entityData.get(ESTADO);
+	}
+
+	public boolean haciaRojo() {
+		return entityData.get(HACIA_ROJO);
 	}
 
 	private void estado(int nuevo) {
@@ -271,12 +282,10 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				}
 			}
 			case ESPACIO -> {
-				// Quieta en el cielo mientras los pasajeros ven la cinemática del viaje; después aterriza.
-				if (tiempo >= TIEMPO_ESPACIO) {
-					estado(ATERRIZANDO);
-					titulo(mundo.dimension().equals(Organos.DIMENSION) ? "Dimensión de los Órganos" : "Overworld",
-							VIOLETA, "Aterrizando...");
-				}
+				// Viajando por el Espacio: el fuego del motor sale abajo; al terminar, llega al planeta de destino.
+				fuego(mundo, 0.6f);
+				if (tiempo % 8 == 0) sonido(mundo, SoundEvents.BLAZE_SHOOT, 1.2f, 0.4f);
+				if (tiempo >= TIEMPO_ESPACIO) llegar(mundo);
 			}
 			default -> estado(QUIETA);
 		}
@@ -360,33 +369,56 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	}
 
 	/** Bien arriba: pasa a la otra dimensión con los pasajeros y aparece en el cielo, lista para aterrizar. */
+	/** Arriba del todo: sale al Espacio con los pasajeros. */
 	private void viajar(ServerLevel mundo) {
-		ResourceKey<Level> hacia = mundo.dimension().equals(Organos.DIMENSION) ? Level.OVERWORLD : Organos.DIMENSION;
-		ServerLevel destino = mundo.getServer().getLevel(hacia);
-		NaveViajeEntity nueva = destino == null ? null : ModDespegue.NAVE_VIAJE.create(destino);
-		if (nueva == null) {
-			estado(ATERRIZANDO);
-			sueloLlegada = Double.NaN;
+		ServerLevel espacio = mundo.getServer().getLevel(ModDespegue.ESPACIO);
+		if (espacio == null) {   // sin Espacio, directo al destino
+			entityData.set(HACIA_ROJO, !mundo.dimension().equals(Organos.DIMENSION));
+			llegar(mundo);
 			return;
 		}
-		List<Entity> pasajeros = new ArrayList<>(getPassengers());
-		ejectPassengers();
+		NaveViajeEntity nueva = saltar(espacio, getX(), ALTURA_ESPACIO, getZ(), ESPACIO);
+		if (nueva != null) {
+			nueva.entityData.set(HACIA_ROJO, !mundo.dimension().equals(Organos.DIMENSION));
+			nueva.titulo("Espacio", VIOLETA, nueva.haciaRojo() ? "Rumbo al planeta rojo..." : "Volviendo al Overworld...");
+		}
+	}
+
+	/** Termina el viaje: aparece en el cielo del planeta de destino, lista para aterrizar. */
+	private void llegar(ServerLevel mundo) {
+		ResourceKey<Level> hacia = haciaRojo() ? Organos.DIMENSION : Level.OVERWORLD;
+		ServerLevel destino = mundo.getServer().getLevel(hacia);
+		if (destino == null) return;
 		BlockPos suelo = Portales.lugarSeguro(destino, blockPosition());
 		double llegadaY = Math.min(suelo.getY() + ALTURA_LLEGADA, destino.getMaxBuildHeight() - 10);
-		nueva.moveTo(suelo.getX() + 0.5, llegadaY, suelo.getZ() + 0.5, getYRot(), 0);
+		NaveViajeEntity nueva = saltar(destino, suelo.getX() + 0.5, llegadaY, suelo.getZ() + 0.5, ATERRIZANDO);
+		if (nueva == null) return;
+		nueva.sueloLlegada = suelo.getY();
+		nueva.titulo(hacia.equals(Organos.DIMENSION) ? "Dimensión de los Órganos" : "Overworld", VIOLETA, "Aterrizando...");
+	}
+
+	/** Pasa la nave (con sus pasajeros) a otra dimensión, en ese lugar y en ese estado. Devuelve la nave nueva. */
+	private NaveViajeEntity saltar(ServerLevel destino, double x, double y, double z, int estadoNuevo) {
+		NaveViajeEntity nueva = ModDespegue.NAVE_VIAJE.create(destino);
+		if (nueva == null) return null;
+		List<Entity> pasajeros = new ArrayList<>(getPassengers());
+		ejectPassengers();
+		nueva.moveTo(x, y, z, getYRot(), 0);
 		nueva.dueno = dueno;
 		nueva.nombreDueno = nombreDueno;
-		nueva.sueloLlegada = suelo.getY();
+		nueva.entityData.set(HACIA_ROJO, haciaRojo());
 		destino.addFreshEntity(nueva);
-		nueva.estado(ESPACIO);
+		nueva.estado(estadoNuevo);
 		for (Entity pasajero : pasajeros) {
 			if (pasajero instanceof ServerPlayer jugador) {
-				jugador.teleportTo(destino, nueva.getX(), llegadaY, nueva.getZ(), jugador.getYRot(), jugador.getXRot());
+				jugador.teleportTo(destino, x, y, z, jugador.getYRot(), jugador.getXRot());
 				jugador.startRiding(nueva, true);
 			}
 		}
 		discard();
+		return nueva;
 	}
+
 
 	private void titulo(String texto, int color, String subtitulo) {
 		for (Entity p : getPassengers()) {
@@ -423,8 +455,11 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		if (datos.hasUUID("Dueno")) dueno = datos.getUUID("Dueno");
 		nombreDueno = datos.getString("NombreDueno");
 		int guardado = datos.getInt("Estado");
-		// Si se guardó en el aire, al volver baja hasta el piso; si estaba contando, vuelve a esperar.
-		if (guardado == DESPEGANDO || guardado == ATERRIZANDO || guardado == ESPACIO) {
+		entityData.set(HACIA_ROJO, !datos.contains("HaciaRojo") || datos.getBoolean("HaciaRojo"));
+		// Si se guardó en el Espacio, vuelve a viajar; en el aire, baja hasta el piso; contando, vuelve a esperar.
+		if (guardado == ESPACIO) {
+			estado(ESPACIO);
+		} else if (guardado == DESPEGANDO || guardado == ATERRIZANDO) {
 			sueloLlegada = datos.contains("Suelo") ? datos.getDouble("Suelo") : Double.NaN;
 			if (guardado == DESPEGANDO) sueloLlegada = Double.NaN;
 			estado(ATERRIZANDO);
@@ -438,6 +473,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		if (dueno != null) datos.putUUID("Dueno", dueno);
 		datos.putString("NombreDueno", nombreDueno);
 		datos.putInt("Estado", estado());
+		datos.putBoolean("HaciaRojo", haciaRojo());
 		if (!Double.isNaN(sueloLlegada)) datos.putDouble("Suelo", sueloLlegada);
 	}
 
