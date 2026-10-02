@@ -94,6 +94,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private void estado(int nuevo) {
 		entityData.set(ESTADO, nuevo);
 		tiempo = 0;
+		altura = alturaAntes = 0;
 	}
 
 	// --- Ponerla en la plataforma (lo llama la Nave Espacial Biplaza) ---
@@ -170,7 +171,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	@Override
 	protected Vec3 getPassengerAttachmentPoint(Entity pasajero, EntityDimensions dimensiones, float escala) {
 		int lugar = Math.max(0, getPassengers().indexOf(pasajero));
-		return new Vec3((lugar == 0 ? -0.4 : 0.4) + AJUSTE_X, 2.0 + AJUSTE_Y, 0).yRot(-getYRot() * Mth.DEG_TO_RAD);
+		return new Vec3((lugar == 0 ? -0.4 : 0.4) + AJUSTE_X, 2.0 + AJUSTE_Y + altura, 0).yRot(-getYRot() * Mth.DEG_TO_RAD);
 	}
 
 	/** Al bajarse queda parado al costado de la nave (busca un lado libre). */
@@ -233,8 +234,10 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				}
 			}
 			case DESPEGANDO -> {
+				// La nave se queda en la plataforma: lo que sube es el dibujo (y los pasajeros), ver altura().
 				velocidad = siguienteVelocidad(velocidad, tiempo);
-				setPos(getX(), getY() + velocidad, getZ());
+				alturaAntes = altura;
+				altura += velocidad;
 				fuego(mundo, 1f);
 				if (tiempo % 6 == 0) sonido(mundo, SoundEvents.BLAZE_SHOOT, 2f, 0.5f);
 				if (tiempo == 70) titulo("", NARANJA, "Saliendo de la atmósfera...");
@@ -288,12 +291,19 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		}
 	}
 
-	// --- En el cliente: la subida se calcula acá mismo (con la misma cuenta que el servidor), así va suave ---
+	// --- La animación de subida: la nave queda en la plataforma y sube el dibujo, cuadro a cuadro (sin tirones) ---
 
+	/** Cuánto subió el dibujo (en bloques), y cuánto en el tick anterior (para ir suave entre ticks). */
+	private double altura, alturaAntes;
 	private int pasosDeslizar, estadoCliente = -1, tiempoCliente;
 	private double destinoX, destinoY, destinoZ, velocidadCliente;
 
-	/** El servidor avisa dónde está. Subiendo, sólo sirve para corregir; si no, se desliza hasta ahí (como los botes). */
+	/** Lo que subió el dibujo en este cuadro (lo usa NaveViajeRenderer). */
+	public double altura(float parcial) {
+		return Mth.lerp(parcial, alturaAntes, altura);
+	}
+
+	/** El servidor avisa dónde está: se desliza hasta ahí en unos ticks (como los botes), así baja suave. */
 	@Override
 	public void lerpTo(double x, double y, double z, float giroY, float giroX, int pasos) {
 		destinoX = x;
@@ -309,20 +319,14 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 			estadoCliente = estado;
 			tiempoCliente = 0;
 			velocidadCliente = 0;
+			altura = alturaAntes = 0;
 		}
 		if (estado == DESPEGANDO) {
-			// La misma cuenta que en tick() del servidor: sube cada vez más rápido.
+			// La misma cuenta que el servidor (tick()): cada vez más rápido.
 			tiempoCliente++;
 			velocidadCliente = siguienteVelocidad(velocidadCliente, tiempoCliente);
-			double y = getY() + velocidadCliente;
-			// Lo que manda el servidor llega un poco tarde (va atrás); sólo si quedó muy lejos se corrige, de a poco.
-			if (pasosDeslizar > 0) {
-				double diferencia = destinoY - y;
-				if (Math.abs(diferencia) > 4) y += diferencia * 0.2;
-				pasosDeslizar = 0;
-			}
-			setPos(getX(), y, getZ());
-			return;
+			alturaAntes = altura;
+			altura += velocidadCliente;
 		}
 		if (pasosDeslizar <= 0) return;
 		setPos(getX() + (destinoX - getX()) / pasosDeslizar, getY() + (destinoY - getY()) / pasosDeslizar,
@@ -338,9 +342,10 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	/** Fuego y humo saliendo del motor (abajo). */
 	private void fuego(ServerLevel mundo, float fuerza) {
 		int mucho = Math.max(1, (int) (10 * fuerza));
-		mundo.sendParticles(ParticleTypes.FLAME, getX(), getY() - 0.2, getZ(), mucho, 0.25, 0.3, 0.25, 0.04);
-		mundo.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() - 0.6, getZ(), mucho / 2 + 1, 0.4, 0.4, 0.4, 0.02);
-		mundo.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, getX(), getY() - 1, getZ(), 1, 0.3, 0.3, 0.3, 0.01);
+		double y = getY() + altura;
+		mundo.sendParticles(ParticleTypes.FLAME, getX(), y - 0.2, getZ(), mucho, 0.25, 0.3, 0.25, 0.04);
+		mundo.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), y - 0.6, getZ(), mucho / 2 + 1, 0.4, 0.4, 0.4, 0.02);
+		mundo.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, getX(), y - 1, getZ(), 1, 0.3, 0.3, 0.3, 0.01);
 	}
 
 	/** Bien arriba: pasa a la otra dimensión con los pasajeros y aparece en el cielo, lista para aterrizar. */
