@@ -233,7 +233,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				}
 			}
 			case DESPEGANDO -> {
-				velocidad = Math.min(1.6, velocidad + 0.01 + tiempo * 0.0004);
+				velocidad = siguienteVelocidad(velocidad, tiempo);
 				setPos(getX(), getY() + velocidad, getZ());
 				fuego(mundo, 1f);
 				if (tiempo % 6 == 0) sonido(mundo, SoundEvents.BLAZE_SHOOT, 2f, 0.5f);
@@ -288,12 +288,12 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		}
 	}
 
-	// --- Suavizado en el cliente: sin esto la nave salta de una posición a la otra (a los tirones al subir) ---
+	// --- En el cliente: la subida se calcula acá mismo (con la misma cuenta que el servidor), así va suave ---
 
-	private int pasosDeslizar;
-	private double destinoX, destinoY, destinoZ;
+	private int pasosDeslizar, estadoCliente = -1, tiempoCliente;
+	private double destinoX, destinoY, destinoZ, velocidadCliente;
 
-	/** El servidor avisa dónde está: en vez de saltar ahí, se va deslizando en unos ticks (como los botes). */
+	/** El servidor avisa dónde está. Subiendo, sólo sirve para corregir; si no, se desliza hasta ahí (como los botes). */
 	@Override
 	public void lerpTo(double x, double y, double z, float giroY, float giroX, int pasos) {
 		destinoX = x;
@@ -304,10 +304,35 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	}
 
 	private void deslizar() {
+		int estado = estado();
+		if (estado != estadoCliente) {
+			estadoCliente = estado;
+			tiempoCliente = 0;
+			velocidadCliente = 0;
+		}
+		if (estado == DESPEGANDO) {
+			// La misma cuenta que en tick() del servidor: sube cada vez más rápido.
+			tiempoCliente++;
+			velocidadCliente = siguienteVelocidad(velocidadCliente, tiempoCliente);
+			double y = getY() + velocidadCliente;
+			// Lo que manda el servidor llega un poco tarde (va atrás); sólo si quedó muy lejos se corrige, de a poco.
+			if (pasosDeslizar > 0) {
+				double diferencia = destinoY - y;
+				if (Math.abs(diferencia) > 4) y += diferencia * 0.2;
+				pasosDeslizar = 0;
+			}
+			setPos(getX(), y, getZ());
+			return;
+		}
 		if (pasosDeslizar <= 0) return;
 		setPos(getX() + (destinoX - getX()) / pasosDeslizar, getY() + (destinoY - getY()) / pasosDeslizar,
 				getZ() + (destinoZ - getZ()) / pasosDeslizar);
 		pasosDeslizar--;
+	}
+
+	/** Cuánto sube en el próximo tick del despegue (la usan el servidor y el cliente, para que vayan iguales). */
+	private static double siguienteVelocidad(double velocidad, int tiempo) {
+		return Math.min(1.6, velocidad + 0.01 + tiempo * 0.0004);
 	}
 
 	/** Fuego y humo saliendo del motor (abajo). */
