@@ -4,6 +4,9 @@ name: Probar el mod (NeoForge)
 
 on: workflow_dispatch
 
+permissions:
+  contents: write
+
 jobs:
   probar:
     runs-on: ubuntu-latest
@@ -53,3 +56,16 @@ jobs:
           grep -E 'Sound engine started|Game crashed|Crash report' juego.log || echo "SIN SEÑALES"
           echo "===== ERRORES Y AVISOS ====="
           grep -nE 'ERROR|Exception|Caused by|INYECCIÓN|dedsafio' juego.log | head -200
+
+      - name: Subir los logs a la rama diagnostico-neoforge
+        if: always()
+        run: |
+          mkdir -p /tmp/diag && cp servidor.log juego.log /tmp/diag/ 2>/dev/null || true
+          cp neoforge/run/logs/latest.log /tmp/diag/servidor-latest.log 2>/dev/null || true
+          cp neoforge/run/crash-reports/*.txt /tmp/diag/ 2>/dev/null || true
+          cd /tmp/diag
+          git init -q -b diagnostico-neoforge
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -q -m "Logs de la prueba NeoForge"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" diagnostico-neoforge
