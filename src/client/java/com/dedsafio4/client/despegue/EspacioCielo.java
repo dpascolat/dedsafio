@@ -44,9 +44,9 @@ public final class EspacioCielo {
 	public static final float SALTO = 0.33f, FIN_SALTO = 0.67f;
 	/**
 	 * Distancia al centro del planeta, en radios del planeta: 1.035 es estar pegado (el planeta llena medio cielo y se ve
-	 * el horizonte curvo); 3 es lejos (se ve la bola entera).
+	 * el horizonte curvo); 1.5 ya es lejos (igual ocupa casi todo el cielo).
 	 */
-	private static final double CERCA = 1.035, LEJOS_SALIDA = 2.2, LEJOS_LLEGADA = 3.2;
+	private static final double CERCA = 1.012, LEJOS_SALIDA = 1.45, LEJOS_LLEGADA = 1.7;
 
 	private static final int ESTRELLAS = 1500;
 	private static final float[][] ESTRELLA = new float[ESTRELLAS][5];   // dirección x, y, z, tamaño, fase
@@ -127,7 +127,7 @@ public final class EspacioCielo {
 	/** De dónde viene la luz del sol (la mitad de cada planeta queda de día y la otra de noche). */
 	private static final Vec3 SOL = new Vec3(1, 0.35, -0.6).normalize();
 	/** Cuántas partes tiene la esfera de cada planeta, alrededor y de polo a polo. */
-	private static final int LONGITUDES = 128, LATITUDES = 64;
+	private static final int LONGITUDES = 192, LATITUDES = 96;
 
 	/**
 	 * Un planeta: una esfera con su mapa envuelto, iluminada de un lado y girando despacio sobre sí misma. Se dibuja
@@ -150,6 +150,8 @@ public final class EspacioCielo {
 
 		RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
 		RenderSystem.setShaderTexture(0, textura);
+		// Suavizado: de tan cerca, si no, se verían los pixeles del mapa.
+		Minecraft.getInstance().getTextureManager().getTexture(textura).setFilter(true, false);
 		BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 		int caras = 0;
 		for (int i = 0; i < LONGITUDES; i++) {
@@ -170,7 +172,7 @@ public final class EspacioCielo {
 		else b.build();
 
 		// La atmósfera: una capa finita alrededor que brilla de color en el borde (el horizonte), del lado de día.
-		double radioAire = radio * 1.02;
+		double radioAire = Math.min(radio * 1.02, CIELO - 0.25);   // la cámara siempre queda afuera
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
 		RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA,
 				com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
