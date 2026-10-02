@@ -17,6 +17,7 @@ public abstract class PlayerAgarreMixin {
 		// En la nave, mientras despega o aterriza, no te podés bajar (te caerías del cielo).
 		if (self.getVehicle() instanceof com.dedsafio4.despegue.NaveViajeEntity nave
 				&& (nave.estado() == com.dedsafio4.despegue.NaveViajeEntity.DESPEGANDO
-				|| nave.estado() == com.dedsafio4.despegue.NaveViajeEntity.ATERRIZANDO)) cir.setReturnValue(false);
+				|| nave.estado() == com.dedsafio4.despegue.NaveViajeEntity.ATERRIZANDO
+				|| nave.estado() == com.dedsafio4.despegue.NaveViajeEntity.ESPACIO)) cir.setReturnValue(false);
 	}
 }

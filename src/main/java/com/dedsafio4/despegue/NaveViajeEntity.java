@@ -47,7 +47,8 @@ import java.util.UUID;
  * La Nave Espacial Biplaza parada sobre la Plataforma de Despegue, con la punta para arriba.
  * - Click derecho: te subís (entran 2). Apenas sube alguien empieza la cuenta regresiva (5 segundos); si se bajan
  *   todos, se cancela.
- * - Despegue: fuego y humo abajo, sube cada vez más rápido y, bien arriba, viaja a la Dimensión de los Órganos.
+ * - Despegue: fuego y humo abajo, sube cada vez más rápido (14 segundos) y, bien arriba, sale al espacio: los
+ *   pasajeros ven la cinemática del viaje entre los dos planetas (NaveCinematica) y llegan a la otra dimensión.
  * - Llegada: aparece en el cielo de la otra dimensión y baja despacio hasta que toca el piso. Ahí se queda quieta
  *   y te bajás vos (Shift). No vuelve a despegar hasta que alguien se baje y se suba de nuevo.
  * - Desde la Dimensión de los Órganos, subirse de nuevo te lleva de vuelta al Overworld.
@@ -56,10 +57,12 @@ import java.util.UUID;
 public class NaveViajeEntity extends Entity implements GeoEntity {
 	private static final EntityDataAccessor<Integer> ESTADO =
 			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.INT);
-	public static final int QUIETA = 0, CUENTA = 1, DESPEGANDO = 2, ATERRIZANDO = 3;
+	public static final int QUIETA = 0, CUENTA = 1, DESPEGANDO = 2, ATERRIZANDO = 3, ESPACIO = 4;
 
 	/** Cuenta regresiva: 5 segundos. Despegue: 7 segundos subiendo antes de saltar a la otra dimensión. */
-	public static final int TIEMPO_CUENTA = 100, TIEMPO_DESPEGUE = 140;
+	public static final int TIEMPO_CUENTA = 100, TIEMPO_DESPEGUE = 280;
+	/** Lo que dura la cinemática en el espacio (NaveCinematica) antes de empezar a aterrizar: 6,5 segundos. */
+	public static final int TIEMPO_ESPACIO = 130;
 	/** A cuántos bloques del piso aparece al llegar. */
 	private static final double ALTURA_LLEGADA = 45;
 	private static final int AMARILLO = 0xF0D86A, NARANJA = 0xFFA23C, VIOLETA = 0xC883FF;
@@ -154,7 +157,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 			discard();
 			return InteractionResult.CONSUME;
 		}
-		if (estado() == DESPEGANDO || estado() == ATERRIZANDO) return InteractionResult.PASS;
+		if (estado() == DESPEGANDO || estado() == ATERRIZANDO || estado() == ESPACIO) return InteractionResult.PASS;
 		if (!canAddPassenger(jugador)) {
 			jugador.displayClientMessage(Component.literal("La nave está llena (entran 2).").withColor(AMARILLO), true);
 			return InteractionResult.CONSUME;
@@ -240,7 +243,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				altura += velocidad;
 				fuego(mundo, 1f);
 				if (tiempo % 6 == 0) sonido(mundo, SoundEvents.BLAZE_SHOOT, 2f, 0.5f);
-				if (tiempo == 70) titulo("", NARANJA, "Saliendo de la atmósfera...");
+				if (tiempo == 140) titulo("", NARANJA, "Saliendo de la atmósfera...");
 				if (tiempo >= TIEMPO_DESPEGUE) viajar(mundo);
 			}
 			case ATERRIZANDO -> {
@@ -265,6 +268,14 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 					setPos(getX(), getY() - bajada, getZ());
 					fuego(mundo, 0.4f);
 					if (tiempo % 10 == 0) sonido(mundo, SoundEvents.BLAZE_SHOOT, 1f, 0.4f);
+				}
+			}
+			case ESPACIO -> {
+				// Quieta en el cielo mientras los pasajeros ven la cinemática del viaje; después aterriza.
+				if (tiempo >= TIEMPO_ESPACIO) {
+					estado(ATERRIZANDO);
+					titulo(mundo.dimension().equals(Organos.DIMENSION) ? "Dimensión de los Órganos" : "Overworld",
+							VIOLETA, "Aterrizando...");
 				}
 			}
 			default -> estado(QUIETA);
@@ -336,7 +347,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 
 	/** Cuánto sube en el próximo tick del despegue (la usan el servidor y el cliente, para que vayan iguales). */
 	private static double siguienteVelocidad(double velocidad, int tiempo) {
-		return Math.min(1.6, velocidad + 0.01 + tiempo * 0.0004);
+		return Math.min(1.2, velocidad + 0.005 + tiempo * 0.0001);
 	}
 
 	/** Fuego y humo saliendo del motor (abajo). */
@@ -367,14 +378,13 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		nueva.nombreDueno = nombreDueno;
 		nueva.sueloLlegada = suelo.getY();
 		destino.addFreshEntity(nueva);
-		nueva.estado(ATERRIZANDO);
+		nueva.estado(ESPACIO);
 		for (Entity pasajero : pasajeros) {
 			if (pasajero instanceof ServerPlayer jugador) {
 				jugador.teleportTo(destino, nueva.getX(), llegadaY, nueva.getZ(), jugador.getYRot(), jugador.getXRot());
 				jugador.startRiding(nueva, true);
 			}
 		}
-		nueva.titulo(hacia.equals(Organos.DIMENSION) ? "Dimensión de los Órganos" : "Overworld", VIOLETA, "Aterrizando...");
 		discard();
 	}
 
@@ -414,7 +424,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		nombreDueno = datos.getString("NombreDueno");
 		int guardado = datos.getInt("Estado");
 		// Si se guardó en el aire, al volver baja hasta el piso; si estaba contando, vuelve a esperar.
-		if (guardado == DESPEGANDO || guardado == ATERRIZANDO) {
+		if (guardado == DESPEGANDO || guardado == ATERRIZANDO || guardado == ESPACIO) {
 			sueloLlegada = datos.contains("Suelo") ? datos.getDouble("Suelo") : Double.NaN;
 			if (guardado == DESPEGANDO) sueloLlegada = Double.NaN;
 			estado(ATERRIZANDO);
