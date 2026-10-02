@@ -180,6 +180,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// En la Dimensión de los Órganos no hay nubes: se cambian por un dibujo vacío.
 		net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry.registerCloudRenderer(
 				com.dedsafio4.dimension.Organos.DIMENSION, contexto -> {});
+		com.dedsafio4.client.despegue.NaveCamara.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.despegue.ModDespegue.NAVE_VIAJE,
 				com.dedsafio4.client.despegue.NaveViajeRenderer::new);
 		EntityRendererRegistry.register(com.dedsafio4.dactylos.ModDactylos.DACTYLO_BEBE, com.dedsafio4.client.dactylos.DactyloBebeRenderer::new);
