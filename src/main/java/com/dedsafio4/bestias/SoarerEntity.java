@@ -200,12 +200,6 @@ public class SoarerEntity extends Monster implements GeoEntity {
 		return new Vec3(0, -pasajero.getBbHeight() + 0.2, 0.3).yRot(-getYRot() * Mth.DEG_TO_RAD);
 	}
 
-	/** El agarrado va colgando, no sentado. */
-	@Override
-	public boolean shouldRiderSit() {
-		return false;
-	}
-
 	@Override
 	public void handleEntityEvent(byte evento) {
 		if (evento == EVENTO_AGARRE) atacando = 20;
