@@ -54,6 +54,8 @@ public final class ModItems {
 	/** Huevo generador de la nave: negro con manchas verdes, como el casco. */
 	public static final Item NAVE_SPAWN_EGG = registrar("nave_spawn_egg",
 			new SpawnEggItem(ModEntidades.NAVE, 0x0F1214, 0x1F9E66, new Item.Properties()));
+	public static final Item NAVE_VELOZ_SPAWN_EGG = registrar("nave_veloz_spawn_egg",
+			new SpawnEggItem(ModEntidades.NAVE_VELOZ, 0x26282C, 0xF2C230, new Item.Properties()));
 
 	/** Martillo de Netherite: repara durabilidad a cambio de experiencia (casi no sirve para pelear). */
 	public static final Item MARTILLO_NETHERITE = registrar("martillo_netherite",
@@ -463,6 +465,7 @@ public final class ModItems {
 						entradas.accept(MANUSCRITO_HERMANDAD);
 						entradas.accept(MANUSCRITO_HERMANDAD_ADMIN);
 						entradas.accept(NAVE_SPAWN_EGG);
+						entradas.accept(NAVE_VELOZ_SPAWN_EGG);
 						entradas.accept(BOMBA_WARDEN_SPAWN_EGG);
 						entradas.accept(SOARER_SPAWN_EGG);
 						entradas.accept(WALKER_SPAWN_EGG);

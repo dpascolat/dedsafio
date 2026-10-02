@@ -1,0 +1,111 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"volar": {
+			"loop": true,
+			"animation_length": 2.0,
+			"bones": {
+				"nave": {
+					"position": [
+						0,
+						"math.sin(query.anim_time * 180) * 1.2",
+						0
+					],
+					"rotation": [
+						"math.sin(query.anim_time * 180 + 90) * 3",
+						0,
+						"math.sin(query.anim_time * 180) * 4"
+					]
+				},
+				"brazo_derecho": {
+					"rotation": [
+						0,
+						"math.sin(query.anim_time * 360) * 12",
+						"math.sin(query.anim_time * 360) * 6"
+					]
+				},
+				"brazo_izquierdo": {
+					"rotation": [
+						0,
+						"math.sin(query.anim_time * 360) * -12",
+						"math.sin(query.anim_time * 360) * -6"
+					]
+				},
+				"ojo_derecho": {
+					"scale": [
+						"1 + math.sin(query.anim_time * 360) * 0.08",
+						"1 + math.sin(query.anim_time * 360) * 0.08",
+						1
+					]
+				},
+				"ojo_izquierdo": {
+					"scale": [
+						"1 + math.sin(query.anim_time * 360) * 0.08",
+						"1 + math.sin(query.anim_time * 360) * 0.08",
+						1
+					]
+				},
+				"motor": {
+					"position": [
+						"math.sin(query.anim_time * 3600) * 0.15",
+						"math.cos(query.anim_time * 3600) * 0.15",
+						0
+					]
+				}
+			}
+		},
+		"atacar": {
+			"loop": true,
+			"animation_length": 0.5,
+			"bones": {
+				"nave": {
+					"position": [
+						0,
+						"math.sin(query.anim_time * 720) * 0.6",
+						0
+					],
+					"rotation": [
+						"-12 + math.sin(query.anim_time * 1440) * 3",
+						0,
+						"math.sin(query.anim_time * 720) * 6"
+					]
+				},
+				"brazo_derecho": {
+					"rotation": [
+						0,
+						"math.sin(query.anim_time * 1440) * 25",
+						"math.sin(query.anim_time * 1440) * 10"
+					]
+				},
+				"brazo_izquierdo": {
+					"rotation": [
+						0,
+						"math.sin(query.anim_time * 1440) * -25",
+						"math.sin(query.anim_time * 1440) * -10"
+					]
+				},
+				"ojo_derecho": {
+					"scale": [
+						1.2,
+						1.2,
+						1
+					]
+				},
+				"ojo_izquierdo": {
+					"scale": [
+						1.2,
+						1.2,
+						1
+					]
+				},
+				"motor": {
+					"position": [
+						"math.sin(query.anim_time * 7200) * 0.35",
+						"math.cos(query.anim_time * 7200) * 0.35",
+						0
+					]
+				}
+			}
+		}
+	}
+}

@@ -169,6 +169,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		WorldRenderEvents.AFTER_TRANSLUCENT.register(LinternaLuz::dibujarHaces);
 
 		EntityRendererRegistry.register(ModEntidades.NAVE, NaveRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.NAVE_VELOZ, com.dedsafio4.client.nave.NaveVelozRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.BOMBA_WARDEN, BombaWardenRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.SOARER, SoarerRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.WALKER, WalkerRenderer::new);

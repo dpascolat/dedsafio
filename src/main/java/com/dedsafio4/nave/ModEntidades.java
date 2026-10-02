@@ -24,6 +24,10 @@ public final class ModEntidades {
 	public static final EntityType<NaveEntity> NAVE = registrar("nave",
 			EntityType.Builder.of(NaveEntity::new, MobCategory.MONSTER).sized(1.3f, 1.0f).clientTrackingRange(10));
 
+	/** Nave Veloz (el modelo "Nave 2"): más o menos 1 bloque de ancho y 0,7 de alto. */
+	public static final EntityType<NaveVelozEntity> NAVE_VELOZ = registrar("nave_veloz",
+			EntityType.Builder.of(NaveVelozEntity::new, MobCategory.MONSTER).sized(1.1f, 0.75f).clientTrackingRange(10));
+
 	/** Bomba Warden: un poco más chica que un bloque de alto, con las alas hacia los costados. */
 	public static final EntityType<BombaWardenEntity> BOMBA_WARDEN = registrar("bomba_warden",
 			EntityType.Builder.of(BombaWardenEntity::new, MobCategory.MONSTER).sized(1.0f, 1.3f).clientTrackingRange(8));
@@ -75,6 +79,7 @@ public final class ModEntidades {
 
 	public static void registrar() {
 		FabricDefaultAttributeRegistry.register(NAVE, NaveEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(NAVE_VELOZ, NaveVelozEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(BOMBA_WARDEN, BombaWardenEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(SOARER, SoarerEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(WALKER, WalkerEntity.crearAtributos());
