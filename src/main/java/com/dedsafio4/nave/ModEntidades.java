@@ -32,9 +32,9 @@ public final class ModEntidades {
 	public static final EntityType<BombaWardenEntity> BOMBA_WARDEN = registrar("bomba_warden",
 			EntityType.Builder.of(BombaWardenEntity::new, MobCategory.MONSTER).sized(1.0f, 1.3f).clientTrackingRange(8));
 
-	/** Soarer: la bestia voladora (el modelo mide unos 7 bloques de punta a punta de las alas). */
+	/** Soarer: la bestia voladora, los nuevos Phantoms (el modelo mide unos 7 bloques de punta a punta de las alas). */
 	public static final EntityType<SoarerEntity> SOARER = registrar("soarer",
-			EntityType.Builder.of(SoarerEntity::new, MobCategory.CREATURE).sized(2.6f, 3.0f).clientTrackingRange(12));
+			EntityType.Builder.of(SoarerEntity::new, MobCategory.MONSTER).sized(2.6f, 3.0f).clientTrackingRange(12));
 
 	// Los cuatro lagartos: mismo cuerpo, distintos colores y adornos.
 	public static final EntityType<LagartoEntity> MIRA = registrar("mira",
