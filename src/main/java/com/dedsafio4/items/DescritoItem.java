@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  */
 public class DescritoItem extends Item {
 	public static final int CELESTE = 0x55D9F0, GRIS = 0xC6CFD6, NARANJA = 0xFFA23C, AMARILLO = 0xF0D86A, ROJO = 0xFF5555;
-	public static final int SALMON = 0xFF6B5A, CELESTE_CLARO = 0x9CE5F6;
+	public static final int SALMON = 0xFF6B5A, CELESTE_CLARO = 0x9CE5F6, VIOLETA = 0xD98CFF;
 
 	private final Consumer<List<Component>> descripcion;
 
@@ -109,6 +109,20 @@ public class DescritoItem extends Item {
 		t.add(Component.empty());
 		t.add(parte("◆ Dáctylo Bebé", SALMON));
 		t.add(parte("◆ Dáctylo Adulto", SALMON));
+	}
+
+	/** Fibra Glebanoide: se hace con Tejido Glebanoide Profundo y Verruga Oscura Glebanoide. */
+	public static void fibraGlebanoide(List<Component> t) {
+		t.add(parte("Combina ", GRIS).append(parte("Tejido Glebanoide", CELESTE)));
+		t.add(parte("Profundo", CELESTE).append(parte(" y ", GRIS)).append(parte("Verruga Oscura", CELESTE)));
+		t.add(parte("Glebanoide", CELESTE).append(parte(" para conseguir.", GRIS)));
+	}
+
+	/** Pelos Glebanoides (el pasto de la Dimensión de los Órganos): con una espada se consigue Pelo Glebanoide. */
+	public static void pelosGlebanoides(List<Component> t) {
+		t.add(parte("Utiliza una ", GRIS).append(parte("Espada", VIOLETA)));
+		t.add(parte("para conseguir ", GRIS).append(parte("Pelo", CELESTE)));
+		t.add(parte("Glebanoide", CELESTE).append(parte(".", GRIS)));
 	}
 
 	/** Cuero Glebanoide: lo sueltan el Gusano de Carne y el Parásito Volador. */

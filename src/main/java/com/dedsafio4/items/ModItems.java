@@ -108,6 +108,9 @@ public final class ModItems {
 	/** Cuero Glebanoide: un ingrediente (lo sueltan el Gusano de Carne y el Parásito Volador). */
 	public static final Item CUERO_GLEBANOIDE = registrar("cuero_glebanoide",
 			new DescritoItem(new Item.Properties(), DescritoItem::cueroGlebanoide));
+	/** Fibra Glebanoide: se hace con Tejido Glebanoide Profundo y Verruga Oscura Glebanoide. */
+	public static final Item FIBRA_GLEBANOIDE = registrar("fibra_glebanoide",
+			new DescritoItem(new Item.Properties(), DescritoItem::fibraGlebanoide));
 
 	/** Insecto: a veces lo sueltan los Dromoraptores. */
 	public static final Item INSECTO = registrar("insecto", new DescritoItem(new Item.Properties(), DescritoItem::insecto));
@@ -457,6 +460,7 @@ public final class ModItems {
 						entradas.accept(PEGAMENTO_PRIMITIVO);
 						entradas.accept(ESCUPITAJO_DACTYLO);
 						entradas.accept(CUERO_GLEBANOIDE);
+						entradas.accept(FIBRA_GLEBANOIDE);
 						entradas.accept(INSECTO);
 						entradas.accept(CUCHARA_MADERA);
 						entradas.accept(CUCHARA_HOJAS);

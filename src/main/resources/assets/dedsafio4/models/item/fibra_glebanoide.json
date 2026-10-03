@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:item/generated",
+	"textures": {
+		"layer0": "dedsafio4:item/fibra_glebanoide"
+	}
+}

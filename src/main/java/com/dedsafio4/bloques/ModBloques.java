@@ -180,12 +180,14 @@ public final class ModBloques {
 	public static final Item GELATINA_ROJA_ITEM = registrarItem("gelatina_roja", GELATINA_ROJA);
 	public static final Item GELATINA_ROSA_ITEM = registrarItem("gelatina_rosa", GELATINA_ROSA);
 
-	/** Pasto Rosa: como el pasto de Minecraft, sobre la carne de la Dimensión de los Órganos. */
+	/** Pelos Glebanoides (id pasto_rosa): como el pasto de Minecraft, sobre la carne de la Dimensión de los Órganos. */
 	public static final Block PASTO_ROSA = registrar("pasto_rosa", new com.dedsafio4.dimension.PastoRosaBlock(
 			BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).replaceable().noCollission().instabreak()
 					.sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XYZ).ignitedByLava()
 					.pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
-	public static final Item PASTO_ROSA_ITEM = registrarItem("pasto_rosa", PASTO_ROSA);
+	public static final Item PASTO_ROSA_ITEM = Registry.register(BuiltInRegistries.ITEM,
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "pasto_rosa"),
+			new com.dedsafio4.items.BloqueDescritoItem(PASTO_ROSA, new Item.Properties(), com.dedsafio4.items.DescritoItem::pelosGlebanoides));
 
 	private static Block bloqueDeGelatina(MapColor color) {
 		return new Block(BlockBehaviour.Properties.of().mapColor(color).strength(1.5f, 3f).sound(SoundType.SLIME_BLOCK)
