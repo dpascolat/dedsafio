@@ -176,6 +176,9 @@ public class Dedsafio4 implements ModInitializer {
 		// Zombis en todo el Nether: sólo aparecen con "zombi 3" (SpawnPlacementsMixin), sin importar la luz.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInTheNether(),
 				MobCategory.MONSTER, EntityType.ZOMBIE, 100, 2, 4);
+		// El Creeper Pastel aparece en cualquier parte del Overworld.
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.CREEPER_PASTEL, 15, 1, 1);
 		// El Creeper Nuclear aparece en la nieve.
 		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.SNOWY_PLAINS, Biomes.SNOWY_TAIGA, Biomes.ICE_SPIKES,
 						Biomes.SNOWY_SLOPES, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.GROVE, Biomes.SNOWY_BEACH, Biomes.FROZEN_RIVER),

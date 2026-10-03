@@ -121,6 +121,15 @@ public final class ModEntidades {
 		SpawnPlacements.register(CREEPER_NUCLEAR, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				Monster::checkMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(CREEPER_PASTEL, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		// Creeper Pastel: en todo el Overworld, a oscuras (como los creepers).
+		SpawnPlacements.register(CREEPER_PASTEL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkMonsterSpawnRules);
+		// Creeper Amarillo: en la Dimensión de los Órganos, con cualquier luz.
+		SpawnPlacements.register(CREEPER_AMARILLO, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkAnyLightMonsterSpawnRules);
+		// Dromoraptor Rojo: en la Sabana del Centro de Quiu, de día o de noche.
+		SpawnPlacements.register(DROMORAPTOR_ROJO, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				net.minecraft.world.entity.Mob::checkMobSpawnRules);
 		FabricDefaultAttributeRegistry.register(ZARINOSA, com.dedsafio4.bestias.ZarinosaEntity.crearAtributos());
 		// Zarinosa: en las cuevas del Centro de Quiu.
 		SpawnPlacements.register(ZARINOSA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

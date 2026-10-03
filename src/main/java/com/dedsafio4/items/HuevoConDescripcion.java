@@ -43,6 +43,9 @@ public class HuevoConDescripcion extends SpawnEggItem {
 	public static void dromoraptorRojo(List<Component> t) {
 		t.add(parte("Depredador que posee una fuerza brutal.", GRIS));
 		t.add(parte("Se desplaza en manada.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("🌴 Aparece en: ", APARECE).append(parte("Sabana del Centro", BLANCO)));
+		t.add(parte("de Quiu.", BLANCO));
 	}
 
 	public static void dromoraptorAzul(List<Component> t) {
@@ -58,6 +61,8 @@ public class HuevoConDescripcion extends SpawnEggItem {
 	public static void creeperPastel(List<Component> t) {
 		t.add(parte("Al explotar mancha la pantalla con", GRIS));
 		t.add(parte("pastel por algunos segundos.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("🌍 Aparece en: ", APARECE).append(parte("todo el Overworld.", BLANCO)));
 	}
 
 	public static void zarinosa(List<Component> t) {
