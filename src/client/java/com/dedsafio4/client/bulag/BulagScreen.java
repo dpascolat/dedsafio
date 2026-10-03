@@ -183,6 +183,7 @@ public class BulagScreen extends Screen {
 		}
 
 		// Las bolitas con los números.
+		com.mojang.blaze3d.systems.RenderSystem.enableBlend();
 		float r = radio();
 		for (int i = 0; i < 10; i++) {
 			float cx = LUGARES[i][0] * width, cy = LUGARES[i][1] * height;

@@ -1,12 +1,15 @@
 package com.dedsafio4.client.despegue;
 
+import com.dedsafio4.Dedsafio4;
 import com.dedsafio4.despegue.NaveViajeEntity;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -15,17 +18,36 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Locale;
 
 /**
- * El tablero que ven los que van arriba de la Nave Espacial Biplaza, medio transparente (como humo):
- * - A la izquierda, al medio: el Combustible (10 barritas, el % y "Reserva" si no alcanza para un viaje).
- * - Arriba al medio: la Altitud (la Y) con su regla de 0 a 1200.
- * - A la derecha: la Ruta de Vuelo, que va marcando cada etapa del viaje; debajo, la Velocidad en m/s.
+ * El tablero que ven los que van arriba de la Nave Espacial Biplaza, hecho con las imágenes del diseño
+ * (textures/gui/nave). A las imágenes se les borraron los valores que cambian (el %, los metros, la etapa,
+ * la velocidad y el nombre) y se dibujan encima. Las medidas de cada imagen están en sus píxeles.
+ * - A la izquierda, al medio: el Combustible (se llenan las barritas y "Reserva" titila si no alcanza).
+ * - Arriba al medio: la Altitud (la Y) con el triangulito en la regla de 0 a 1200.
+ * - A la derecha: la Ruta de Vuelo (los círculos se llenan con cada etapa) y, debajo, la Velocidad.
  * - Mientras hace la cuenta regresiva: "La nave está siendo encendida" con el nombre de quien la enciende.
  */
 public final class NaveTablero {
 	private NaveTablero() {}
 
-	private static final int CIAN = 0xE69FDCE8, GRIS = 0xE6CFCFCF, TENUE = 0x99E8E4D8, BLANCO = 0xF2FFFFFF;
-	private static final int FONDO = 0x55000000, LLENO = 0xE67FE3C4, RESERVA = 0xE6F2B045, VACIO = 0x80D3D3D3;
+	private static final ResourceLocation COMBUSTIBLE = textura("combustible"), PASTILLA = textura("pastilla"),
+			RESERVA = textura("reserva"), ALTITUD = textura("altitud"), TRIANGULO = textura("triangulo"),
+			RUTA = textura("ruta"), CIRCULO = textura("circulo"), VELOCIDAD = textura("velocidad"),
+			ENCENDIDO = textura("encendido");
+
+	private static ResourceLocation textura(String nombre) {
+		return ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/nave/" + nombre + ".png");
+	}
+
+	/** Qué tan transparente se ve todo (como humo). */
+	private static final float OPACIDAD = 0.85f;
+	private static final int TEXTO = 0xFFF4F2EF, CIAN = 0xFFBFE3EA, AMBAR = 0xFFF2B045;
+
+	// Lugares dentro de cada imagen (en sus píxeles).
+	private static final float[] PASTILLAS_Y = {91.5f, 125.75f, 160, 194, 228.25f, 262.5f, 296.5f, 330.75f, 365, 399};
+	private static final float[] CIRCULOS_Y = {135.75f, 189.25f, 242.75f, 294.25f, 347.25f, 400, 452.75f};
+	private static final float[][] RENGLONES_Y = {{128.5f, 143.5f}, {177.5f, 196.75f}, {231.25f, 250.5f},
+			{287.25f, 302.25f}, {335.25f, 354.75f}, {388.25f, 407.5f}, {445.75f, 460.75f}};
+	private static final float[] RAYITAS_X = {77.25f, 117.25f, 157, 197, 236.75f, 276.75f, 316.5f, 356.5f, 396.5f, 436.25f};
 
 	/** Velocidad que se muestra (suavizada), en m/s. */
 	private static float velocidad;
@@ -58,169 +80,152 @@ public final class NaveTablero {
 			if (mc.options.hideGui || mc.player == null || !(mc.player.getVehicle() instanceof NaveViajeEntity nave)) return;
 			Font font = mc.font;
 			int ancho = g.guiWidth(), alto = g.guiHeight();
-			combustible(g, font, nave, 8, alto / 2 - 66);
-			altitud(g, font, (int) Math.floor(mc.player.getY()), ancho / 2, 4);
-			int rutaY = Math.max(64, alto / 2 - 78);
-			ruta(g, font, nave, ancho - 8, rutaY);
-			velocidad(g, font, ancho - 58, rutaY + 136);
-			if (nave.estado() == NaveViajeEntity.CUENTA) encendido(g, font, nave, ancho / 2, alto / 4);
+			RenderSystem.enableBlend();
+			RenderSystem.defaultBlendFunc();
+			combustible(g, font, nave, 6, alto / 2f - 45, 70);
+			altitud(g, font, (int) Math.floor(mc.player.getY()), ancho / 2f - 85, 4, 170);
+			float rutaY = Math.max(56, alto / 2f - 75);
+			ruta(g, font, nave, ancho - 126, rutaY, 120);
+			velocidad(g, font, ancho - 96, rutaY + 124, 90);
+			if (nave.estado() == NaveViajeEntity.CUENTA) encendido(g, font, nave, ancho / 2f - 110, alto / 4f, 220);
+			g.setColor(1, 1, 1, 1);
 		});
+	}
+
+	/** Pone el dibujo en (x, y) con ese ancho, para dibujar adentro en los píxeles de la imagen. */
+	private static void empezar(GuiGraphics g, float x, float y, float ancho, int anchoImagen) {
+		g.pose().pushPose();
+		g.pose().translate(x, y, 0);
+		float escala = ancho / anchoImagen;
+		g.pose().scale(escala, escala, 1);
+	}
+
+	private static void imagen(GuiGraphics g, ResourceLocation textura, int ancho, int alto) {
+		g.setColor(1, 1, 1, OPACIDAD);
+		g.blit(textura, 0, 0, 0, 0, ancho, alto, ancho, alto);
+	}
+
+	/** Un pedacito de la imagen otra vez, teñido de un color (para prender una parte). */
+	private static void tenir(GuiGraphics g, ResourceLocation textura, float x, float y, float w, float h,
+							  int anchoImagen, int altoImagen, int color) {
+		g.setColor((color >> 16 & 255) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f, OPACIDAD);
+		g.pose().pushPose();
+		g.pose().translate(x, y, 0);
+		g.blit(textura, 0, 0, Math.round(w), Math.round(h), x, y, Math.round(w), Math.round(h), anchoImagen, altoImagen);
+		g.pose().popPose();
+	}
+
+	private static void sprite(GuiGraphics g, ResourceLocation textura, float x, float y, int w, int h, int color) {
+		g.setColor((color >> 16 & 255) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f, OPACIDAD);
+		g.pose().pushPose();
+		g.pose().translate(x, y, 0);
+		g.blit(textura, 0, 0, 0, 0, w, h, w, h);
+		g.pose().popPose();
 	}
 
 	// ---------------------------------------------------------------- Combustible
 
-	private static void combustible(GuiGraphics g, Font font, NaveViajeEntity nave, int x, int y) {
+	private static void combustible(GuiGraphics g, Font font, NaveViajeEntity nave, float x, float y, float ancho) {
 		int porcentaje = nave.combustible();
 		boolean alcanza = porcentaje >= NaveViajeEntity.COMBUSTIBLE_VIAJE;
-		g.fill(x - 4, y - 4, x + 88, y + 136, FONDO);
-		texto(g, font, "COMBUSTIBLE", x, y, CIAN, 0.75f, -1);
-
-		int arriba = y + 14, abajo = arriba + 102;
-		// El corchete y las marquitas de 100, 50 y 0.
-		g.fill(x, arriba, x + 1, abajo, TENUE);
-		g.fill(x, arriba, x + 4, arriba + 1, TENUE);
-		g.fill(x, abajo - 1, x + 4, abajo, TENUE);
-		int[] marcas = {arriba, (arriba + abajo) / 2, abajo - 1};
-		String[] numeros = {"100", "50", "0"};
-		for (int i = 0; i < 3; i++) {
-			g.fill(x + 32, marcas[i], x + 36, marcas[i] + 1, TENUE);
-			texto(g, font, numeros[i], x + 38, marcas[i] - 2, TENUE, 0.6f, -1);
-		}
-		// Las 10 barritas: se llenan de abajo para arriba (cada una es un 10%).
+		empezar(g, x, y, ancho, 388);
+		imagen(g, COMBUSTIBLE, 388, 500);
+		// Las barritas se llenan de abajo para arriba (cada una es un 10%).
 		int llenas = Math.round(porcentaje / 10f);
 		for (int i = 0; i < 10; i++) {
-			boolean llena = 9 - i < llenas;
-			pastilla(g, x + 5, arriba + 2 + i * 10, 24, 8, llena ? (alcanza ? LLENO : RESERVA) : VACIO);
+			if (9 - i < llenas) sprite(g, PASTILLA, 62, PASTILLAS_Y[i], 62, 25, alcanza ? 0x7FE3C4 : AMBAR);
 		}
-		texto(g, font, porcentaje + "%", x + 84, (arriba + abajo) / 2 + 8, alcanza ? GRIS : RESERVA, 1.4f, 1);
 		// "Reserva": titila si no alcanza para un viaje.
 		boolean titila = !alcanza && (Util.getMillis() / 500) % 2 == 0;
-		texto(g, font, "RESERVA", x + 6, abajo + 6, titila ? RESERVA : TENUE, 0.75f, -1);
-	}
-
-	/** Una barrita con las puntas redondeadas. */
-	private static void pastilla(GuiGraphics g, int x, int y, int ancho, int alto, int color) {
-		g.fill(x + 2, y, x + ancho - 2, y + alto, color);
-		g.fill(x + 1, y + 1, x + 2, y + alto - 1, color);
-		g.fill(x + ancho - 2, y + 1, x + ancho - 1, y + alto - 1, color);
-		g.fill(x, y + 2, x + 1, y + alto - 2, color);
-		g.fill(x + ancho - 1, y + 2, x + ancho, y + alto - 2, color);
+		sprite(g, RESERVA, 42.5f, 467.5f, 135, 20, titila ? AMBAR : 0xFFFFFF);
+		g.setColor(1, 1, 1, 1);
+		texto(g, font, porcentaje + "%", 379, 244.5f, 23.5f, alcanza ? TEXTO : AMBAR, 1);
+		g.pose().popPose();
 	}
 
 	// ---------------------------------------------------------------- Altitud
 
-	private static void altitud(GuiGraphics g, Font font, int y, int centro, int arriba) {
-		int mitad = 80;
-		g.fill(centro - mitad - 8, arriba - 2, centro + mitad + 8, arriba + 46, FONDO);
-		texto(g, font, "ALTITUD / Y", centro, arriba, CIAN, 0.75f, 0);
-		texto(g, font, y + " m", centro, arriba + 9, GRIS, 1.3f, 0);
-		int regla = arriba + 34;
-		for (int i = 0; i <= 4; i++) {
-			texto(g, font, Integer.toString(i * 300), centro - mitad + i * 2 * mitad / 4, regla - 9, TENUE, 0.6f, 0);
-		}
-		g.fill(centro - mitad, regla, centro + mitad + 1, regla + 1, CIAN);
-		for (int i = 0; i <= 20; i++) {
-			int tx = centro - mitad + i * 2 * mitad / 20;
-			g.fill(tx, regla - 2, tx + 1, regla, CIAN);
-		}
-		// El triangulito que marca la altura.
-		int mx = centro - mitad + Math.round(Mth.clamp(y, 0, 1200) / 1200f * 2 * mitad);
-		for (int k = 0; k < 4; k++) g.fill(mx - k, regla + 3 + k, mx + k + 1, regla + 4 + k, CIAN);
+	private static void altitud(GuiGraphics g, Font font, int y, float x, float arriba, float ancho) {
+		empezar(g, x, arriba, ancho, 500);
+		imagen(g, ALTITUD, 500, 118);
+		float marca = 12.5f + Mth.clamp(y, 0, 1200) / 1200f * (472 - 12.5f);
+		sprite(g, TRIANGULO, marca - 10.5f, 95, 21, 11, CIAN);
+		g.setColor(1, 1, 1, 1);
+		texto(g, font, y + " m", 242, 42, 15, TEXTO, 0);
+		g.pose().popPose();
 	}
 
 	// ---------------------------------------------------------------- Ruta de vuelo
 
-	private static void ruta(GuiGraphics g, Font font, NaveViajeEntity nave, int derecha, int y) {
+	private static void ruta(GuiGraphics g, Font font, NaveViajeEntity nave, float x, float y, float ancho) {
 		int etapa = nave.etapa();
-		g.fill(derecha - 128, y - 4, derecha + 4, y + 130, FONDO);
-		texto(g, font, "RUTA DE VUELO", derecha, y, CIAN, 0.75f, 1);
-		g.fill(derecha - 120, y + 9, derecha, y + 10, CIAN);
+		empezar(g, x, y, ancho, 472);
+		imagen(g, RUTA, 472, 500);
+		boolean parpadeo = (Util.getMillis() / 400) % 2 == 0;
+		for (int i = 1; i <= 7; i++) {
+			boolean hecha = i < etapa, actual = i == etapa;
+			if (!hecha && !actual) continue;
+			int color = actual ? (parpadeo ? 0xFFFFFF : 0xBFE3EA) : 0x7FD8E6;
+			sprite(g, CIRCULO, 429.25f - 11.5f, CIRCULOS_Y[i - 1] - 11.5f, 23, 23, color);
+			float[] renglon = RENGLONES_Y[i - 1];
+			tenir(g, RUTA, 85, renglon[0], 315, renglon[1] - renglon[0], 472, 500, actual ? 0xFFFFFF : 0x9FDCE8);
+		}
+		g.setColor(1, 1, 1, 1);
 		String estado = etapa == 0 && nave.estado() == NaveViajeEntity.CUENTA ? "ENCENDIENDO"
 				: NaveViajeEntity.ETAPAS[etapa].toUpperCase(Locale.ROOT);
-		texto(g, font, estado, derecha, y + 14, TENUE, 0.65f, 1);
-
-		int cx = derecha - 5, primera = y + 30, paso = 14;
-		g.fill(cx, primera, cx + 1, primera + paso * 6, VACIO);
-		for (int i = 1; i <= 7; i++) {
-			int cy = primera + (i - 1) * paso;
-			boolean hecha = i < etapa, actual = i == etapa;
-			int color = actual ? BLANCO : hecha ? CIAN : VACIO;
-			if (actual && (Util.getMillis() / 400) % 2 == 0) color = CIAN;
-			circulo(g, cx, cy, 4, color, hecha || actual);
-			texto(g, font, NaveViajeEntity.ETAPAS[i].toUpperCase(Locale.ROOT), cx - 9, cy - 3,
-					actual ? BLANCO : hecha ? CIAN : GRIS, 0.65f, 1);
-		}
-	}
-
-	/** Un circulito de radio r (relleno o solo el borde). */
-	private static void circulo(GuiGraphics g, int cx, int cy, int r, int color, boolean relleno) {
-		// Por dentro se tapa la línea que une los círculos.
-		for (int dy = -r; dy <= r; dy++) {
-			int dx = (int) Math.round(Math.sqrt(r * r - dy * dy + 0.5));
-			if (relleno) {
-				g.fill(cx - dx, cy + dy, cx + dx + 1, cy + dy + 1, color);
-			} else {
-				g.fill(cx - dx, cy + dy, cx - dx + 1, cy + dy + 1, color);
-				g.fill(cx + dx, cy + dy, cx + dx + 1, cy + dy + 1, color);
-				if (Math.abs(dy) == r) g.fill(cx - dx, cy + dy, cx + dx + 1, cy + dy + 1, color);
-			}
-		}
+		texto(g, font, estado, 427, 98.75f, 15, TEXTO, 1);
+		g.pose().popPose();
 	}
 
 	// ---------------------------------------------------------------- Velocidad
 
-	private static void velocidad(GuiGraphics g, Font font, int centro, int y) {
-		g.fill(centro - 50, y - 4, centro + 54, y + 52, FONDO);
-		texto(g, font, "VELOCIDAD", centro, y, CIAN, 0.75f, 0);
-		String numero = String.format(Locale.ROOT, "%04.1f", velocidad);
-		float escala = 2f;
-		int ancho = Math.round(font.width(numero) * escala);
-		// Número con borde oscuro, como en el diseño.
-		for (int[] d : new int[][]{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) {
-			texto(g, font, numero, centro - ancho / 2 + d[0], y + 11 + d[1], 0xE67E7474, escala, -1);
-		}
-		texto(g, font, numero, centro - ancho / 2, y + 11, 0xF2F4F2EF, escala, -1);
-		texto(g, font, "m/s", centro, y + 30, TENUE, 0.75f, 0);
+	private static void velocidad(GuiGraphics g, Font font, float x, float y, float ancho) {
+		empezar(g, x, y, ancho, 500);
+		imagen(g, VELOCIDAD, 500, 375);
 		// Las rayitas de abajo se prenden según lo rápido que va.
 		int prendidas = Math.round(velocidad / 10f);
-		for (int i = 0; i < 10; i++) {
-			int rx = centro - 45 + i * 10;
-			g.fill(rx, y + 42, rx + 6, y + 43, i < prendidas ? CIAN : VACIO);
+		for (int i = 0; i < prendidas && i < 10; i++) {
+			tenir(g, VELOCIDAD, RAYITAS_X[i], 328, 18, 5, 500, 375, 0x9FDCE8);
 		}
+		g.setColor(1, 1, 1, 1);
+		String numero = String.format(Locale.ROOT, "%04.1f", velocidad);
+		// Número con borde oscuro, como en el diseño.
+		for (int[] d : new int[][]{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) {
+			g.pose().pushPose();
+			g.pose().translate(d[0] * 3, d[1] * 3, 0);
+			texto(g, font, numero, 223.5f, 177, 45, 0xFF7E7474, 0);
+			g.pose().popPose();
+		}
+		texto(g, font, numero, 223.5f, 177, 45, TEXTO, 0);
+		g.pose().popPose();
 	}
 
 	// ---------------------------------------------------------------- Encendido (cuenta regresiva)
 
-	private static void encendido(GuiGraphics g, Font font, NaveViajeEntity nave, int centro, int y) {
+	private static void encendido(GuiGraphics g, Font font, NaveViajeEntity nave, float x, float y, float ancho) {
 		Entity piloto = nave.getPassengers().isEmpty() ? null : nave.getPassengers().get(0);
 		String nombre = piloto == null ? "" : piloto.getName().getString().toUpperCase(Locale.ROOT);
-		int mitad = 110, alto = 64;
-		g.fill(centro - mitad, y, centro + mitad, y + alto, FONDO);
-		// Las esquinas.
-		int l = 12;
-		for (int[] e : new int[][]{{centro - mitad, y, 1, 1}, {centro + mitad - 1, y, -1, 1},
-				{centro - mitad, y + alto - 1, 1, -1}, {centro + mitad - 1, y + alto - 1, -1, -1}}) {
-			int ex = e[0], ey = e[1];
-			g.fill(Math.min(ex, ex + e[2] * l), ey, Math.max(ex, ex + e[2] * l) + 1, ey + 1, VACIO);
-			g.fill(ex, Math.min(ey, ey + e[3] * l), ex + 1, Math.max(ey, ey + e[3] * l) + 1, VACIO);
-		}
-		texto(g, font, "LA NAVE ESTÁ SIENDO ENCENDIDA", centro, y + 7, CIAN, 0.8f, 0);
-		texto(g, font, nombre, centro, y + 18, GRIS, 1.3f, 0);
-		texto(g, font, "SOLO UN TRIPULANTE PUEDE ENCENDERLA", centro, y + 36, TENUE, 0.65f, 0);
-		texto(g, font, "ESPERA A QUE TERMINE LA CARGA", centro, y + 45, TENUE, 0.65f, 0);
+		empezar(g, x, y, ancho, 500);
+		imagen(g, ENCENDIDO, 500, 180);
+		g.setColor(1, 1, 1, 1);
+		texto(g, font, nombre, 250, 67, 12.5f, TEXTO, 0);
 		// La carga.
 		float carga = Mth.clamp(ticksEstado / (float) NaveViajeEntity.TIEMPO_CUENTA, 0, 1);
-		int barra = mitad - 30;
-		g.fill(centro - barra, y + 55, centro + barra, y + 56, VACIO);
-		g.fill(centro - barra, y + 55, centro - barra + Math.round(2 * barra * carga), y + 56, CIAN);
+		g.fill(130, 168, 370, 170, 0x55FFFFFF);
+		g.fill(130, 168, 130 + Math.round(240 * carga), 170, CIAN);
+		g.pose().popPose();
 	}
 
-	/** Texto a cierta escala; alineación -1 = desde x hacia la derecha, 0 = centrado, 1 = termina en x. */
-	private static void texto(GuiGraphics g, Font font, String texto, int x, int y, int color, float escala, int alineacion) {
+	/**
+	 * Texto dentro de la imagen: centrado en alto en {@code yCentro}, de {@code alto} píxeles de la imagen.
+	 * Alineación: -1 = desde x, 0 = centrado, 1 = termina en x.
+	 */
+	private static void texto(GuiGraphics g, Font font, String texto, float x, float yCentro, float alto, int color, int alineacion) {
+		float escala = alto / 7f;
 		float ancho = font.width(texto) * escala;
 		float desde = alineacion < 0 ? x : alineacion == 0 ? x - ancho / 2 : x - ancho;
 		g.pose().pushPose();
-		g.pose().translate(desde, y, 0);
+		g.pose().translate(desde, yCentro - alto / 2, 0);
 		g.pose().scale(escala, escala, 1);
 		g.drawString(font, texto, 0, 0, color, false);
 		g.pose().popPose();
