@@ -37,6 +37,16 @@ public class BulagScreen extends Screen {
 	/** Qué número va en cada lugar. */
 	private final List<Integer> orden = new ArrayList<>(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
 	private long avisoDesde;
+	/** El último latido que sonó (para que suene una vez por latido). */
+	private long ultimoLatido = -1;
+
+	/** Un latido por segundo, doble como un corazón ("pum-pum"): da cuánto late ahora, de 0 a 1. */
+	private static float latido() {
+		float t = (Util.getMillis() % 1000) / 1000f;
+		float primero = (float) Math.exp(-Math.pow((t - 0.08f) / 0.05f, 2));
+		float segundo = 0.6f * (float) Math.exp(-Math.pow((t - 0.28f) / 0.06f, 2));
+		return Math.max(primero, segundo);
+	}
 
 	public BulagScreen(Bulag.PantallaPayload estado) {
 		super(Component.literal("Cráneo Explosivo"));
@@ -112,7 +122,22 @@ public class BulagScreen extends Screen {
 
 	@Override
 	public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float delta) {
+		// El fondo palpita: se agranda un poquito desde el centro y se pone más rojo en cada latido.
+		float pulso = latido();
+		float escala = 1f + 0.035f * pulso;
+		g.pose().pushPose();
+		g.pose().translate(width / 2f, height / 2f, 0);
+		g.pose().scale(escala, escala, 1);
+		g.pose().translate(-width / 2f, -height / 2f, 0);
 		g.blit(FONDO, 0, 0, width, height, 0, 0, 480, 270, 480, 270);
+		g.pose().popPose();
+		g.fill(0, 0, width, height, ((int) (pulso * 60) << 24) | 0xC80010);
+		long latidoActual = Util.getMillis() / 1000;
+		if (latidoActual != ultimoLatido && Util.getMillis() % 1000 > 60) {
+			ultimoLatido = latidoActual;
+			if (minecraft != null) minecraft.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance
+					.forUI(net.minecraft.sounds.SoundEvents.WARDEN_HEARTBEAT, 1f, 0.5f));
+		}
 	}
 
 	@Override
@@ -162,7 +187,7 @@ public class BulagScreen extends Screen {
 		for (int i = 0; i < 10; i++) {
 			float cx = LUGARES[i][0] * width, cy = LUGARES[i][1] * height;
 			boolean encima = (mouseX - cx) * (mouseX - cx) + (mouseY - cy) * (mouseY - cy) <= r * r;
-			float lado = r * (encima && puedeEscribir() ? 2.6f : 2.4f);
+			float lado = r * (encima && puedeEscribir() ? 2.6f : 2.4f) * (1f + 0.12f * latido());
 			g.pose().pushPose();
 			g.pose().translate(cx - lado / 2, cy - lado / 2, 0);
 			g.pose().scale(lado / 64f, lado / 64f, 1);
