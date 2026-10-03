@@ -105,6 +105,9 @@ public final class ModItems {
 	/** Escupitajo de Dáctylo: lo sueltan los Dáctylos (bebé y adulto). */
 	public static final Item ESCUPITAJO_DACTYLO = registrar("escupitajo_dactylo",
 			new DescritoItem(new Item.Properties(), DescritoItem::escupitajoDactylo));
+	/** Cuero Glebanoide: un ingrediente (lo sueltan el Gusano de Carne y el Parásito Volador). */
+	public static final Item CUERO_GLEBANOIDE = registrar("cuero_glebanoide",
+			new DescritoItem(new Item.Properties(), DescritoItem::cueroGlebanoide));
 
 	/** Insecto: a veces lo sueltan los Dromoraptores. */
 	public static final Item INSECTO = registrar("insecto", new DescritoItem(new Item.Properties(), DescritoItem::insecto));
@@ -453,6 +456,7 @@ public final class ModItems {
 						entradas.accept(CUERDA_RESISTENTE);
 						entradas.accept(PEGAMENTO_PRIMITIVO);
 						entradas.accept(ESCUPITAJO_DACTYLO);
+						entradas.accept(CUERO_GLEBANOIDE);
 						entradas.accept(INSECTO);
 						entradas.accept(CUCHARA_MADERA);
 						entradas.accept(CUCHARA_HOJAS);
