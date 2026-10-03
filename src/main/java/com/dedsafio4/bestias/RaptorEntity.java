@@ -18,9 +18,11 @@ import net.minecraft.world.level.Level;
 
 /**
  * Los dinosaurios raptor del diseño:
- * - Dromoraptor Rojo (el naranja, púas azules): depredador de fuerza brutal que se desplaza en manada.
- *   Ataca a los jugadores, pega muy fuerte y, cuando uno pelea, los de su manada que estén cerca se suman.
- * - El Turquesa (púas rojas y brazos largos): por ahora camina, ruge y se defiende si lo atacan.
+ * Los dos se desplazan en manada: atacan a los jugadores y, cuando uno pelea, los de su manada que estén
+ * cerca se suman.
+ * - Dromoraptor Rojo (el naranja, púas azules): depredador de fuerza brutal.
+ * - Dromoraptor Azul (el turquesa, púas rojas y brazos largos): extremadamente veloz. Aparece en la
+ *   Sabana del Centro de Quiu.
  * La animación (caminar, quieto y rugir) la hace RaptorRenderer en el cliente.
  */
 public class RaptorEntity extends PathfinderMob {
@@ -37,8 +39,8 @@ public class RaptorEntity extends PathfinderMob {
 	}
 
 	/** Se mira el tipo (y no un campo) porque los objetivos se arman antes de terminar el constructor. */
-	public boolean turquesa() {
-		return getType() == com.dedsafio4.nave.ModEntidades.RAPTOR_TURQUESA;
+	public boolean azul() {
+		return getType() == com.dedsafio4.nave.ModEntidades.DROMORAPTOR_AZUL;
 	}
 
 	/** Dromoraptor Rojo: fuerza brutal. */
@@ -51,12 +53,13 @@ public class RaptorEntity extends PathfinderMob {
 				.add(Attributes.FOLLOW_RANGE, 32.0);
 	}
 
-	public static AttributeSupplier.Builder crearAtributos() {
+	/** Dromoraptor Azul: extremadamente veloz (pega menos que el Rojo). */
+	public static AttributeSupplier.Builder atributosDromoraptorAzul() {
 		return PathfinderMob.createMobAttributes()
-				.add(Attributes.MAX_HEALTH, 24.0)
-				.add(Attributes.MOVEMENT_SPEED, 0.32)
-				.add(Attributes.ATTACK_DAMAGE, 4.0)
-				.add(Attributes.FOLLOW_RANGE, 24.0);
+				.add(Attributes.MAX_HEALTH, 22.0)
+				.add(Attributes.MOVEMENT_SPEED, 0.45)
+				.add(Attributes.ATTACK_DAMAGE, 5.0)
+				.add(Attributes.FOLLOW_RANGE, 32.0);
 	}
 
 	@Override
@@ -66,19 +69,15 @@ public class RaptorEntity extends PathfinderMob {
 		goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.9));
 		goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 10f));
 		goalSelector.addGoal(7, new RandomLookAroundGoal(this));
-		if (turquesa()) {
-			targetSelector.addGoal(1, new HurtByTargetGoal(this));
-		} else {
-			// El Dromoraptor caza: avisa a la manada y busca jugadores.
-			targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-			targetSelector.addGoal(2, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(this, Player.class, true));
-		}
+		// Cazan: avisan a la manada y buscan jugadores.
+		targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
+		targetSelector.addGoal(2, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(this, Player.class, true));
 	}
 
 	public void rugir() {
 		if (level().isClientSide) return;
 		level().broadcastEntityEvent(this, EVENTO_RUGIDO);
-		playSound(SoundEvents.RAVAGER_ROAR, 1.2f, turquesa() ? 1.7f : 1.5f);
+		playSound(SoundEvents.RAVAGER_ROAR, 1.2f, azul() ? 1.7f : 1.5f);
 	}
 
 	@Override
@@ -97,8 +96,8 @@ public class RaptorEntity extends PathfinderMob {
 		super.setTarget(objetivo);
 		if (!nuevo) return;
 		rugir();
-		// La manada: los Dromoraptores de alrededor que no estén peleando van contra el mismo.
-		if (!turquesa() && !level().isClientSide) {
+		// La manada: los Dromoraptores del mismo color de alrededor que no estén peleando van contra el mismo.
+		if (!level().isClientSide) {
 			for (RaptorEntity otro : level().getEntitiesOfClass(RaptorEntity.class, getBoundingBox().inflate(16),
 					r -> r != this && r.getType() == getType() && r.getTarget() == null)) {
 				otro.setTarget(objetivo);

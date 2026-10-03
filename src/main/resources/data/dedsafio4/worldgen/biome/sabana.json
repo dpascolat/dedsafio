@@ -19,6 +19,12 @@
 	"spawners": {
 		"monster": [
 			{
+				"type": "dedsafio4:dromoraptor_azul",
+				"weight": 30,
+				"minCount": 3,
+				"maxCount": 4
+			},
+			{
 				"type": "dedsafio4:mira",
 				"weight": 100,
 				"minCount": 1,

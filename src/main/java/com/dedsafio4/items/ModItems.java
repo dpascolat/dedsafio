@@ -260,8 +260,9 @@ public final class ModItems {
 	public static final Item DROMORAPTOR_ROJO_SPAWN_EGG = registrar("dromoraptor_rojo_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.DROMORAPTOR_ROJO, 0xB5532A, 0x2A3F8F, new Item.Properties(),
 					HuevoConDescripcion::dromoraptorRojo));
-	public static final Item RAPTOR_TURQUESA_SPAWN_EGG = registrar("raptor_turquesa_spawn_egg",
-			new SpawnEggItem(ModEntidades.RAPTOR_TURQUESA, 0x2E9C9A, 0xC41E24, new Item.Properties()));
+	public static final Item DROMORAPTOR_AZUL_SPAWN_EGG = registrar("dromoraptor_azul_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.DROMORAPTOR_AZUL, 0x2E9C9A, 0xC41E24, new Item.Properties(),
+					HuevoConDescripcion::dromoraptorAzul));
 	public static final Item CREEPER_NUCLEAR_SPAWN_EGG = registrar("creeper_nuclear_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.CREEPER_NUCLEAR, 0xE2C21C, 0xE0261C, new Item.Properties(),
 					HuevoConDescripcion::creeperNuclear));
@@ -521,7 +522,7 @@ public final class ModItems {
 						entradas.accept(SOARER_SPAWN_EGG);
 						entradas.accept(WALKER_SPAWN_EGG);
 						entradas.accept(DROMORAPTOR_ROJO_SPAWN_EGG);
-						entradas.accept(RAPTOR_TURQUESA_SPAWN_EGG);
+						entradas.accept(DROMORAPTOR_AZUL_SPAWN_EGG);
 						entradas.accept(NARVAL_SPAWN_EGG);
 						entradas.accept(CREEPER_NUCLEAR_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.casino.ModCasino.CASINO_SPAWN_EGG);

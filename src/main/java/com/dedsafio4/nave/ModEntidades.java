@@ -78,9 +78,9 @@ public final class ModEntidades {
 	/** Dromoraptor Rojo (el raptor naranja): 1,6 de alto y ~1,8 de largo con la cola. */
 	public static final EntityType<com.dedsafio4.bestias.RaptorEntity> DROMORAPTOR_ROJO = registrar("dromoraptor_rojo",
 			EntityType.Builder.of(com.dedsafio4.bestias.RaptorEntity::new, MobCategory.MONSTER).sized(0.9f, 1.6f).clientTrackingRange(10));
-	/** El raptor turquesa (todavía sin nombre). */
-	public static final EntityType<com.dedsafio4.bestias.RaptorEntity> RAPTOR_TURQUESA = registrar("raptor_turquesa",
-			EntityType.Builder.of(com.dedsafio4.bestias.RaptorEntity::new, MobCategory.CREATURE).sized(0.9f, 1.6f).clientTrackingRange(10));
+	/** Dromoraptor Azul (el raptor turquesa, de brazos largos). */
+	public static final EntityType<com.dedsafio4.bestias.RaptorEntity> DROMORAPTOR_AZUL = registrar("dromoraptor_azul",
+			EntityType.Builder.of(com.dedsafio4.bestias.RaptorEntity::new, MobCategory.MONSTER).sized(0.9f, 1.6f).clientTrackingRange(10));
 	/** Creeper Nuclear: la bomba andante (12 px de ancho y ~19 de alto con el botón). */
 	public static final EntityType<com.dedsafio4.bestias.CreeperNuclearEntity> CREEPER_NUCLEAR = registrar("creeper_nuclear",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperNuclearEntity::new, MobCategory.MONSTER).sized(0.8f, 1.2f).clientTrackingRange(8));
@@ -106,7 +106,10 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(CREEPER_PASTO, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		FabricDefaultAttributeRegistry.register(CREEPER_AMARILLO, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		FabricDefaultAttributeRegistry.register(DROMORAPTOR_ROJO, com.dedsafio4.bestias.RaptorEntity.atributosDromoraptor());
-		FabricDefaultAttributeRegistry.register(RAPTOR_TURQUESA, com.dedsafio4.bestias.RaptorEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(DROMORAPTOR_AZUL, com.dedsafio4.bestias.RaptorEntity.atributosDromoraptorAzul());
+		// Dromoraptor Azul: en la Sabana del Centro de Quiu, de día o de noche.
+		SpawnPlacements.register(DROMORAPTOR_AZUL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				net.minecraft.world.entity.Mob::checkMobSpawnRules);
 		FabricDefaultAttributeRegistry.register(CREEPER_NUCLEAR, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		SpawnPlacements.register(CREEPER_NUCLEAR, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				Monster::checkMonsterSpawnRules);
