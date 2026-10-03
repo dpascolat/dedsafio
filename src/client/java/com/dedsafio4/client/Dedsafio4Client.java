@@ -163,6 +163,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 				CieloCliente.setActivo(payload.rojo(), payload.animar()));
 		ClientPlayNetworking.registerGlobalReceiver(TemporizadorPayload.TYPE, (payload, context) ->
 				TemporizadorCliente.actualizar(payload.segundos()));
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.ruleta.Ruleta.Payload.TYPE, (payload, context) ->
+				com.dedsafio4.client.ruleta.RuletaCliente.mostrar(payload.color()));
 		ClientPlayNetworking.registerGlobalReceiver(MarcasPayload.TYPE, (payload, context) ->
 				MarcasCliente.actualizar(payload));
 		WorldRenderEvents.LAST.register(MarcasCliente::dibujar);
@@ -215,6 +217,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 			CieloCliente.setActivo(false, false);
 			TemporizadorCliente.limpiar();
 			MarcasCliente.limpiar();
+			com.dedsafio4.client.ruleta.RuletaCliente.limpiar();
 		});
 
 		for (Item manuscrito : ModItems.MANUSCRITOS) {
@@ -233,6 +236,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 			com.dedsafio4.client.qumara.AgarreMinijuego.dibujar(graphics);
 			com.dedsafio4.client.qumara.AtraerCliente.dibujar(graphics);
 			Destello.dibujar(graphics);
+			com.dedsafio4.client.ruleta.RuletaCliente.dibujar(graphics);
 			Minecraft mc = Minecraft.getInstance();
 			if (mc.options.hideGui) return;
 			TemporizadorCliente.dibujar(graphics, mc);

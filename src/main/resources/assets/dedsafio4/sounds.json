@@ -10,5 +10,13 @@
 			"dedsafio4:cofre_cerrar"
 		],
 		"subtitle": "subtitles.dedsafio4.cofre_cerrar"
+	},
+	"ruleta_verde": {
+		"sounds": [
+			{
+				"name": "dedsafio4:ruleta_verde",
+				"stream": true
+			}
+		]
 	}
 }

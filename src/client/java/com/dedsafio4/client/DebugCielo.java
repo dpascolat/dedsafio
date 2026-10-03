@@ -1578,6 +1578,24 @@ public final class DebugCielo {
 		if (t == 70) Dedsafio4ClientDebug.info("marco: listo, quedan en la mano=" + mc.player.getMainHandItem().getCount());
 	}
 
+	private static final boolean RULETA = "ruleta".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de /ruleta verde: fotos al principio, a la mitad, cuando se frena y al terminar. */
+	private static void tickRuleta(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) { comando(mc, "time set day"); comando(mc, "gamemode creative"); }
+		if (t == 20) comando(mc, "ruleta verde");
+		if (t == 40) captura(mc, "debug_ruleta1.png");
+		if (t == 90) captura(mc, "debug_ruleta2.png");
+		if (t == 200) captura(mc, "debug_ruleta3.png");
+		if (t == 268) captura(mc, "debug_ruleta4.png");
+		if (t == 320) captura(mc, "debug_ruleta5.png");
+		if (t == 322) Dedsafio4ClientDebug.info("ruleta: listo");
+	}
+
 	private static final boolean STRUCK = "struck".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba de /struck 1: se arma en el cielo, foto desde arriba y desde adentro del cuadrado chiquito. */
@@ -7403,6 +7421,10 @@ public final class DebugCielo {
 		}
 		if (MARCO) {
 			tickMarco(mc);
+			return;
+		}
+		if (RULETA) {
+			tickRuleta(mc);
 			return;
 		}
 		if (STRUCK) {

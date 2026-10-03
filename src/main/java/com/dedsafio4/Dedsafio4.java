@@ -99,6 +99,7 @@ public class Dedsafio4 implements ModInitializer {
 		PayloadTypeRegistry.playS2C().register(com.dedsafio4.marcas.MinimapaPayload.TYPE, com.dedsafio4.marcas.MinimapaPayload.CODEC);
 		com.dedsafio4.catalogo.Catalogo.registrar();
 		com.dedsafio4.catalogo.Misiones.registrar();
+		com.dedsafio4.ruleta.Ruleta.registrar();
 		PayloadTypeRegistry.playS2C().register(CandadoPantallaPayload.TYPE, CandadoPantallaPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(CandadosListaPayload.TYPE, CandadosListaPayload.CODEC);
 
@@ -130,6 +131,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.estructuras.Estructuras.registrar(dispatcher);
 			com.dedsafio4.casino.CasinoPremios.registrarComandos(dispatcher);
 			com.dedsafio4.catalogo.Catalogo.registrarComandos(dispatcher);
+			com.dedsafio4.ruleta.Ruleta.registrarComandos(dispatcher);
 		});
 
 		// Al entrar, cada jugador recibe el estado actual de todo lo que se muestra en su pantalla.
