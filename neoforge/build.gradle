@@ -62,6 +62,11 @@ neoForge {
 	runs {
 		client {
 			client()
+			// Para la prueba automática: entrar directo a un servidor (-PservidorPrueba=localhost:25565).
+			if (project.hasProperty('servidorPrueba')) {
+				programArgument '--quickPlayMultiplayer'
+				programArgument project.property('servidorPrueba').toString()
+			}
 		}
 		server {
 			server()

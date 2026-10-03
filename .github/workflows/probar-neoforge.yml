@@ -36,7 +36,7 @@ jobs:
           done
           echo "===== SERVIDOR =====" && (grep -E 'Done \(' servidor.log || echo "NO LLEGÓ A DONE")
           # El juego en otra carpeta (si no, pisa los archivos del servidor) y entrando directo al servidor.
-          xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew -p neoforge-juego runClient --no-daemon --args="--quickPlayMultiplayer localhost:25565" > juego.log 2>&1 &
+          xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew -p neoforge-juego runClient --no-daemon -PservidorPrueba=localhost:25565 > juego.log 2>&1 &
           for i in $(seq 1 120); do
             if grep -qE 'joined the game|Crash report|Game crashed' servidor.log juego.log; then break; fi
             sleep 5
