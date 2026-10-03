@@ -1,0 +1,64 @@
+[03Oct2026 00:37:42.484] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserverdev, --gameDir, ., --fml.fmlVersion, 4.0.44, --fml.mcVersion, 1.21.1, --fml.neoForgeVersion, 21.1.252, --fml.neoFormVersion, 20240808.144430, --nogui]
+[03Oct2026 00:37:42.486] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: JVM identified as Eclipse Adoptium OpenJDK 64-Bit Server VM 21.0.12.1+1-LTS
+[03Oct2026 00:37:42.487] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 11.0.5+main.901c6ea8 starting: java version 21.0.12.1 by Eclipse Adoptium; OS Linux arch amd64 version 6.17.0-1022-azure
+[03Oct2026 00:37:42.568] [main/INFO] [net.neoforged.fml.loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserverdev
+[03Oct2026 00:37:42.598] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/home/runner/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.2+mixin.0.8.7/2af2f021d8e02a0220dc27a7a72b4666d66d44ca/sponge-mixin-0.15.2+mixin.0.8.7.jar%2394!/ Service=ModLauncher Env=SERVER
+[03Oct2026 00:37:42.807] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 2 dependencies adding them to mods collection
+[03Oct2026 00:37:42.809] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/]: 
+     Mod List:
+		Name Version (Mod Id)
+
+		Dedsafío 4 0.1.0 (dedsafio4)
+		GeckoLib 4 4.9.2 (geckolib)
+		Minecraft 1.21.1 (minecraft)
+		NeoForge 21.1.252 (neoforge)
+[03Oct2026 00:37:43.375] [main/INFO] [mixin/]: Compatibility level set to JAVA_17
+[03Oct2026 00:37:43.377] [main/INFO] [mixin/]: Compatibility level set to JAVA_21
+[03Oct2026 00:37:43.381] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserverdev' with arguments [--gameDir, ., --nogui]
+[03Oct2026 00:37:43.436] [main/WARN] [mixin/]: Reference map 'geckolib.refmap.json' for geckolib.mixins.json could not be read. If this is a development environment you can ignore this message
+[03Oct2026 00:37:44.846] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
+[03Oct2026 00:37:45.128] [main/WARN] [dedsafio4/neoforge/]: INYECCIÓN FALLIDA: wrapOperation$zzl000$dedsafio4$sinBolsasDeAire en net.minecraft.world.entity.LivingEntity (com.dedsafio4.mixin.LivingEntityMixin)
+[03Oct2026 00:37:47.589] [main/WARN] [dedsafio4/neoforge/]: INYECCIÓN FALLIDA: wrapOperation$zbb000$dedsafio4$golpeSinArmadura en net.minecraft.world.entity.projectile.ThrownEnderpearl (com.dedsafio4.mixin.ThrownEnderpearlMixin)
+[03Oct2026 00:37:49.265] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[03Oct2026 00:37:49.267] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
+[03Oct2026 00:37:49.269] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[03Oct2026 00:37:49.270] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[03Oct2026 00:37:49.271] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[03Oct2026 00:37:49.330] [modloading-worker-0/INFO] [net.neoforged.neoforge.common.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.1.252, for MC 1.21.1
+[03Oct2026 00:37:49.761] [main/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[03Oct2026 00:37:49.805] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/dedsafio/dedsafio/neoforge/build/moddev/artifacts/neoforge-21.1.252.jar%23125!/assets/.mcassetsroot' uses unexpected schema
+[03Oct2026 00:37:49.807] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/runner/work/dedsafio/dedsafio/neoforge/build/moddev/artifacts/neoforge-21.1.252.jar%23125!/data/.mcassetsroot' uses unexpected schema
+[03Oct2026 00:37:50.403] [main/INFO] [net.minecraft.server.Main/]: No existing world data, creating new world
+[03Oct2026 00:37:50.798] [main/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 1297 recipes
+[03Oct2026 00:37:50.934] [main/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1399 advancements
+[03Oct2026 00:37:51.328] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting minecraft server version 1.21.1
+[03Oct2026 00:37:51.329] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Loading properties
+[03Oct2026 00:37:51.329] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Default game type: SURVIVAL
+[03Oct2026 00:37:51.329] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[03Oct2026 00:37:51.454] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting Minecraft server on *:25565
+[03Oct2026 00:37:51.491] [Server thread/INFO] [net.minecraft.server.network.ServerConnectionListener/]: Using epoll channel type
+[03Oct2026 00:37:51.518] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[03Oct2026 00:37:51.519] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: The server will make no attempt to authenticate usernames. Beware.
+[03Oct2026 00:37:51.519] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[03Oct2026 00:37:51.519] [Server thread/WARN] [net.minecraft.server.dedicated.DedicatedServer/]: To change this, set "online-mode" to "true" in the server.properties file.
+[03Oct2026 00:37:51.558] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Preparing level "world"
+[03Oct2026 00:37:55.390] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[03Oct2026 00:37:55.431] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 2%
+[03Oct2026 00:37:56.088] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 2%
+[03Oct2026 00:37:56.424] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 2%
+[03Oct2026 00:37:56.895] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 4%
+[03Oct2026 00:37:57.403] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 18%
+[03Oct2026 00:37:57.892] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 18%
+[03Oct2026 00:37:58.395] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 51%
+[03Oct2026 00:37:58.891] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 51%
+[03Oct2026 00:37:59.397] [worldgen/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 51%
+[03Oct2026 00:37:59.579] [Server thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 4189 ms
+[03Oct2026 00:37:59.579] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Done (8.044s)! For help, type "help"
+[03Oct2026 00:37:59.612] [Server thread/INFO] [net.neoforged.neoforge.gametest.GameTestHooks/]: Enabled Gametest Namespaces: []
+[03Oct2026 00:37:59.616] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[03Oct2026 00:38:32.565] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[/[::1]:45600] logged in with entity id 12 at (73.5, 86.0, 139.5)
+[03Oct2026 00:38:32.629] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]:  Dev se ha conectado.
+[03Oct2026 00:44:35.520] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[03Oct2026 00:44:35.521] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[03Oct2026 00:44:35.542] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[03Oct2026 00:44:36.589] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
