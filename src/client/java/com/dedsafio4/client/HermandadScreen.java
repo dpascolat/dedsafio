@@ -514,9 +514,21 @@ public class HermandadScreen extends Screen {
 	private void dibujarGestion(GuiGraphics g, int x, int y) {
 		caja(g, x + 14, y + 46, x + 204, y + 94, PANEL, PANEL_BORDE);
 		g.drawString(font, "Maestro: " + nombreMaestro(), x + 20, y + 52, TEXTO, false);
-		String balance = "Balance: " + info.balance() + " ";
+		// Balance en monedas: 10.000 = 1 Roja, 100 = 1 Verde, el resto en Deditas.
+		String balance = "Balance: ";
 		g.drawString(font, balance, x + 20, y + 65, TEXTO, false);
-		g.blit(ICONO_DEDITA, x + 20 + font.width(balance), y + 64, 9, 9, 0, 0, 16, 16, 16, 16);
+		long total = Math.max(0, info.balance());
+		long[] monedas = {total / 10_000, total / 100 % 100, total % 100};
+		ResourceLocation[] iconos = {com.dedsafio4.client.cajero.EstiloCajero.ICONO_ROJA,
+				com.dedsafio4.client.cajero.EstiloCajero.ICONO_VERDE, ICONO_DEDITA};
+		int bx = x + 20 + font.width(balance);
+		for (int i = 0; i < 3; i++) {
+			String cantidad = Long.toString(monedas[i]);
+			g.drawString(font, cantidad, bx, y + 65, TEXTO, false);
+			bx += font.width(cantidad) + 1;
+			g.blit(iconos[i], bx, y + 64, 9, 9, 0, 0, 16, 16, 16, 16);
+			bx += 9 + 4;
+		}
 		g.drawString(font, "Miembros: " + info.miembros().size(), x + 20, y + 78, TEXTO, false);
 		String banco = "Banco: Nvl " + info.nivelBanco();
 		g.drawString(font, banco, x + 198 - font.width(banco), y + 78, TEXTO, false);
