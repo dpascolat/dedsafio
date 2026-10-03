@@ -1580,20 +1580,28 @@ public final class DebugCielo {
 
 	private static final boolean RULETA = "ruleta".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
-	/** Prueba de /ruleta verde: fotos al principio, a la mitad, cuando se frena y al terminar. */
+	/**
+	 * Prueba de las animaciones: /ruleta rojo (gira, cae en rojo y sigue la criatura), /ruleta rosa (sigue la nutria) y
+	 * la de muerte (el jugador se mata). Fotos en cada parte.
+	 */
 	private static void tickRuleta(Minecraft mc) {
 		int t = ticks - 20;
-		if (mc.screen != null) mc.setScreen(null);
+		if (mc.screen != null && t < 830) mc.setScreen(null);
 		mc.options.pauseOnLostFocus = false;
 		if (t == -5 || t == -3) revivir(mc);
 		if (t == 0) { comando(mc, "time set day"); comando(mc, "gamemode creative"); }
-		if (t == 20) comando(mc, "ruleta verde");
-		if (t == 40) captura(mc, "debug_ruleta1.png");
-		if (t == 90) captura(mc, "debug_ruleta2.png");
-		if (t == 200) captura(mc, "debug_ruleta3.png");
-		if (t == 268) captura(mc, "debug_ruleta4.png");
-		if (t == 320) captura(mc, "debug_ruleta5.png");
-		if (t == 322) Dedsafio4ClientDebug.info("ruleta: listo");
+		if (t == 20) comando(mc, "ruleta rojo");
+		if (t == 120) captura(mc, "debug_ruleta1_rojo.png");
+		if (t == 280) captura(mc, "debug_ruleta2_rojo_final.png");
+		if (t == 360) captura(mc, "debug_ruleta3_criatura.png");
+		if (t == 470) comando(mc, "ruleta rosa");
+		if (t == 600) captura(mc, "debug_ruleta4_rosa.png");
+		if (t == 775) captura(mc, "debug_ruleta5_nutria.png");
+		if (t == 830) comando(mc, "kill @s");
+		if (t == 855) captura(mc, "debug_ruleta6_muerte.png");
+		if (t == 920) captura(mc, "debug_ruleta7_muerte.png");
+		if (t == 1010) revivir(mc);
+		if (t == 1020) Dedsafio4ClientDebug.info("ruleta: listo");
 	}
 
 	private static final boolean STRUCK = "struck".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));

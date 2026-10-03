@@ -2,7 +2,9 @@ package com.dedsafio4.ruleta;
 
 import com.dedsafio4.Dedsafio4;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.netty.buffer.ByteBuf;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
@@ -12,34 +14,49 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * /ruleta verde  a todos los jugadores les aparece en el centro de la pantalla la ruleta girando (cae en verde),
- * con su sonido. La animación la dibuja el cliente (RuletaCliente).
+ * Animaciones en el centro de la pantalla de todos los jugadores, con su sonido (las dibuja el cliente, AnimacionesCliente):
+ * /ruleta verde|morado|rojo|celeste|naranja|amarillo|rosa  la ruleta gira y cae en ese color (la roja termina con la
+ *                                                          criatura y la rosa con la nutria).
+ * Cuando muere un jugador, a todos les aparece la animación de muerte.
  */
 public final class Ruleta {
 	private Ruleta() {}
 
+	public static final String[] COLORES = {"verde", "morado", "rojo", "celeste", "naranja", "amarillo", "rosa"};
+
 	public static void registrar() {
 		PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
+		ServerLivingEntityEvents.AFTER_DEATH.register((entidad, fuente) -> {
+			if (entidad instanceof ServerPlayer jugador) mostrarATodos(jugador.server, "muerte");
+		});
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		dispatcher.register(Commands.literal("ruleta").requires(s -> s.hasPermission(2))
-				.then(Commands.literal("verde").executes(ctx -> {
-					for (ServerPlayer jugador : ctx.getSource().getServer().getPlayerList().getPlayers())
-						ServerPlayNetworking.send(jugador, new Payload("verde"));
-					ctx.getSource().sendSuccess(() -> Component.literal("Ruleta verde."), true);
-					return 1;
-				})));
+		LiteralArgumentBuilder<CommandSourceStack> comando = Commands.literal("ruleta").requires(s -> s.hasPermission(2));
+		for (String color : COLORES) {
+			comando.then(Commands.literal(color).executes(ctx -> {
+				mostrarATodos(ctx.getSource().getServer(), "ruleta_" + color);
+				ctx.getSource().sendSuccess(() -> Component.literal("Ruleta " + color + "."), true);
+				return 1;
+			}));
+		}
+		dispatcher.register(comando);
 	}
 
-	/** Servidor → cliente: mostrar la ruleta de ese color. */
-	public record Payload(String color) implements CustomPacketPayload {
+	public static void mostrarATodos(MinecraftServer server, String animacion) {
+		for (ServerPlayer jugador : server.getPlayerList().getPlayers())
+			ServerPlayNetworking.send(jugador, new Payload(animacion));
+	}
+
+	/** Servidor → cliente: mostrar esa animación (el nombre de un archivo de assets/dedsafio4/animaciones). */
+	public record Payload(String animacion) implements CustomPacketPayload {
 		public static final Type<Payload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "ruleta"));
 		public static final StreamCodec<ByteBuf, Payload> CODEC =
-				ByteBufCodecs.STRING_UTF8.map(Payload::new, Payload::color);
+				ByteBufCodecs.STRING_UTF8.map(Payload::new, Payload::animacion);
 
 		@Override
 		public Type<? extends CustomPacketPayload> type() {

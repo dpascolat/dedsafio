@@ -11,10 +11,34 @@
 		],
 		"subtitle": "subtitles.dedsafio4.cofre_cerrar"
 	},
-	"ruleta_verde": {
+	"ruleta": {
 		"sounds": [
 			{
-				"name": "dedsafio4:ruleta_verde",
+				"name": "dedsafio4:ruleta",
+				"stream": true
+			}
+		]
+	},
+	"criatura_roja": {
+		"sounds": [
+			{
+				"name": "dedsafio4:criatura_roja",
+				"stream": true
+			}
+		]
+	},
+	"nutria_rosa": {
+		"sounds": [
+			{
+				"name": "dedsafio4:nutria_rosa",
+				"stream": true
+			}
+		]
+	},
+	"muerte": {
+		"sounds": [
+			{
+				"name": "dedsafio4:muerte",
 				"stream": true
 			}
 		]
