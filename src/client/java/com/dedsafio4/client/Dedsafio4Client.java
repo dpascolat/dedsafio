@@ -149,6 +149,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 				(tipo, dibujante, registro, contexto) -> {
 					if (dibujante instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer jugador) {
 						registro.register(new CapaEstandarteLayer(jugador, contexto.getModelSet()));
+						registro.register(new com.dedsafio4.client.bulag.CraneoLayer(jugador));
 					}
 				});
 		ClientPlayNetworking.registerGlobalReceiver(HermandadInfoPayload.TYPE, (payload, context) -> {
@@ -194,6 +195,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.despegue.NaveCamara.registrar();
 		com.dedsafio4.client.despegue.NaveCinematica.registrar();
 		com.dedsafio4.client.despegue.NaveTablero.registrar();
+		com.dedsafio4.client.bulag.BulagCliente.registrar();
 		com.dedsafio4.client.despegue.EspacioCielo.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.despegue.ModDespegue.NAVE_VIAJE,
 				com.dedsafio4.client.despegue.NaveViajeRenderer::new);
