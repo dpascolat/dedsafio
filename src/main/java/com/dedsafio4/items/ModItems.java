@@ -121,6 +121,8 @@ public final class ModItems {
 
 	/** Bolsa Primitiva (id bolsa_de_tela): lleva lo mismo que un cofre simple. */
 	public static final Item BOLSA_DE_TELA = registrar("bolsa_de_tela", new BolsaItem(new Item.Properties().stacksTo(1)));
+	/** Saco: como la Bolsa Primitiva pero con 9 lugares más (4 filas, 36). */
+	public static final Item SACO = registrar("saco", new BolsaItem(new Item.Properties().stacksTo(1), 4, "o"));
 
 	/** Semilla de Fruta Solaria: se planta en el costado de los troncos del Centro de Quiu. */
 	public static final Item SEMILLA_SOLARIA = registrar("semilla_solaria",
@@ -473,6 +475,7 @@ public final class ModItems {
 						entradas.accept(AMULETO_VERDE);
 						entradas.accept(EXCREMENTO);
 						entradas.accept(BOLSA_DE_TELA);
+						entradas.accept(SACO);
 						entradas.accept(FRUTA_ESPACIO);
 						entradas.accept(PILDORA_VACIA);
 						entradas.accept(JERINGA);

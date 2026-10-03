@@ -24,14 +24,23 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 
 /**
- * Bolsa Primitiva: una bolsa atada con el mismo espacio que un cofre simple (27 lugares).
+ * Bolsas: la Bolsa Primitiva (3 filas, 27 lugares, como un cofre simple) y el Saco (4 filas, 36 lugares: 9 más).
  * Con click derecho se abre; lo que tiene adentro se guarda en la bolsa misma.
  */
 public class BolsaItem extends Item {
-	public static final int ESPACIOS = 27;
+	/** Cuántas filas de 9 tiene. */
+	private final int filas;
+	/** "a" para la bolsa, "o" para el saco (en la descripción: "Utilízala" / "Utilízalo"). */
+	private final String terminacion;
 
 	public BolsaItem(Properties propiedades) {
+		this(propiedades, 3, "a");
+	}
+
+	public BolsaItem(Properties propiedades, int filas, String terminacion) {
 		super(propiedades);
+		this.filas = filas;
+		this.terminacion = terminacion;
 	}
 
 	@Override
@@ -40,7 +49,7 @@ public class BolsaItem extends Item {
 		if (jugador instanceof ServerPlayer servidor) {
 			// El lugar del inventario donde está la bolsa: mientras está abierta no se puede mover.
 			int lugar = mano == InteractionHand.MAIN_HAND ? jugador.getInventory().selected : Inventory.SLOT_OFFHAND;
-			servidor.openMenu(new SimpleMenuProvider((id, inventario, quien) -> new Menu(id, inventario, bolsa, lugar),
+			servidor.openMenu(new SimpleMenuProvider((id, inventario, quien) -> new Menu(id, inventario, bolsa, lugar, filas),
 					bolsa.getHoverName()));
 			level.playSound(null, jugador.getX(), jugador.getY(), jugador.getZ(), SoundEvents.BUNDLE_INSERT, SoundSource.PLAYERS, 1f, 0.8f);
 		}
@@ -69,27 +78,29 @@ public class BolsaItem extends Item {
 	public void appendHoverText(ItemStack pila, TooltipContext contexto, java.util.List<Component> texto,
 								net.minecraft.world.item.TooltipFlag bandera) {
 		texto.add(Component.empty());
-		texto.add(Component.literal("Utilízala para guardar objetos sin").withColor(GRIS));
+		texto.add(Component.literal("Utilíza" + (terminacion.equals("o") ? "lo" : "la") + " para guardar objetos sin").withColor(GRIS));
 		texto.add(Component.literal("ocupar lugares de tu inventario.").withColor(GRIS));
 	}
 
-	/** El menú de la bolsa: igual que el de un cofre simple, para que se vea con la pantalla de siempre. */
+	/** El menú de la bolsa: igual que el de un cofre, para que se vea con la pantalla de siempre. */
 	private static final class Menu extends ChestMenu {
 		private final ItemStack bolsa;
 		private final int lugar;
+		private final int espacios;
 
-		Menu(int id, Inventory inventario, ItemStack bolsa, int lugar) {
-			this(id, inventario, bolsa, lugar, cargar(bolsa));
+		Menu(int id, Inventory inventario, ItemStack bolsa, int lugar, int filas) {
+			this(id, inventario, bolsa, lugar, filas, cargar(bolsa, filas * 9));
 		}
 
-		private Menu(int id, Inventory inventario, ItemStack bolsa, int lugar, SimpleContainer contenido) {
-			super(MenuType.GENERIC_9x3, id, inventario, contenido, 3);
+		private Menu(int id, Inventory inventario, ItemStack bolsa, int lugar, int filas, SimpleContainer contenido) {
+			super(filas == 4 ? MenuType.GENERIC_9x4 : MenuType.GENERIC_9x3, id, inventario, contenido, filas);
 			this.bolsa = bolsa;
 			this.lugar = lugar;
+			this.espacios = filas * 9;
 			// Cada cambio se guarda en la bolsa al momento.
 			contenido.addListener(c -> guardar(bolsa, (SimpleContainer) c));
 			// No se puede meter una bolsa adentro de otra.
-			for (int i = 0; i < ESPACIOS; i++) {
+			for (int i = 0; i < espacios; i++) {
 				Slot viejo = this.slots.get(i);
 				Slot nuevo = new Slot(contenido, i, viejo.x, viejo.y) {
 					@Override
@@ -102,11 +113,11 @@ public class BolsaItem extends Item {
 			}
 		}
 
-		private static SimpleContainer cargar(ItemStack bolsa) {
-			SimpleContainer contenido = new SimpleContainer(ESPACIOS);
-			NonNullList<ItemStack> cosas = NonNullList.withSize(ESPACIOS, ItemStack.EMPTY);
+		private static SimpleContainer cargar(ItemStack bolsa, int espacios) {
+			SimpleContainer contenido = new SimpleContainer(espacios);
+			NonNullList<ItemStack> cosas = NonNullList.withSize(espacios, ItemStack.EMPTY);
 			bolsa.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(cosas);
-			for (int i = 0; i < ESPACIOS; i++) contenido.setItem(i, cosas.get(i));
+			for (int i = 0; i < espacios; i++) contenido.setItem(i, cosas.get(i));
 			return contenido;
 		}
 
@@ -114,10 +125,10 @@ public class BolsaItem extends Item {
 			bolsa.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(contenido.getItems()));
 		}
 
-		/** El lugar del inventario del jugador en este menú (el inventario va después de los 27 de la bolsa). */
+		/** El lugar del inventario del jugador en este menú (el inventario va después de los lugares de la bolsa). */
 		private int lugarEnMenu() {
 			if (lugar == Inventory.SLOT_OFFHAND) return -1;   // la mano secundaria no está en el menú
-			return ESPACIOS + 27 + lugar;                     // la barra va al final
+			return espacios + 27 + lugar;                     // la barra va al final
 		}
 
 		@Override

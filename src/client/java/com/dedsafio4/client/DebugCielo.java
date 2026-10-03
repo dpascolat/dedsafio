@@ -1845,6 +1845,28 @@ public final class DebugCielo {
 		if (t == 42) Dedsafio4ClientDebug.info("dentadura: listo");
 	}
 
+	private static final boolean SACO = "saco".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba del Saco: se abre con click derecho y tiene que tener 36 lugares (4 filas). */
+	private static void tickSaco(Minecraft mc) {
+		int t = ticks - 20;
+		mc.options.pauseOnLostFocus = false;
+		if (t == 0) {
+			if (mc.screen != null) mc.setScreen(null);
+			comando(mc, "gamemode survival");
+			comando(mc, "item replace entity @s hotbar.0 with dedsafio4:saco");
+			comando(mc, "item replace entity @s hotbar.1 with minecraft:diamond 5");
+		}
+		if (t == 10) { mc.player.getInventory().selected = 0; mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND); }
+		if (t == 25) {
+			var menu = mc.player.containerMenu;
+			Dedsafio4ClientDebug.info("saco: pantalla=" + (mc.screen == null ? "ninguna" : mc.screen.getClass().getSimpleName())
+					+ " lugares del saco=" + (menu.slots.size() - 36) + " titulo=" + (mc.screen == null ? "" : mc.screen.getTitle().getString()));
+			captura(mc, "debug_saco.png");
+		}
+		if (t == 27) Dedsafio4ClientDebug.info("saco: listo");
+	}
+
 	private static final boolean COFRE_NUEVO = "cofre".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba del cofre nuevo: se pone, se abre con la tapa animada, guarda cosas y se rompe entero. */
@@ -7292,6 +7314,10 @@ public final class DebugCielo {
 		}
 		if (DENTADURA) {
 			tickDentadura(mc);
+			return;
+		}
+		if (SACO) {
+			tickSaco(mc);
 			return;
 		}
 		if (PERLAS2) {
