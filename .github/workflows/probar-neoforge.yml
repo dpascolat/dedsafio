@@ -23,7 +23,9 @@ jobs:
       - name: Servidor y juego conectado
         run: |
           chmod +x gradlew
-          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils imagemagick > /dev/null
+          Xvfb :99 -screen 0 1280x720x24 > /dev/null 2>&1 &
+          export DISPLAY=:99
           mkdir -p neoforge/run && echo "eula=true" > neoforge/run/eula.txt
           printf 'online-mode=false\nspawn-protection=0\nenforce-secure-profile=false\n' > neoforge/run/server.properties
           ./gradlew -p neoforge compileJava --no-daemon -q
@@ -36,17 +38,27 @@ jobs:
           done
           echo "===== SERVIDOR =====" && (grep -E 'Done \(' servidor.log || echo "NO LLEGÓ A DONE")
           # El juego en otra carpeta (si no, pisa los archivos del servidor) y entrando directo al servidor.
-          xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew -p neoforge-juego runClient --no-daemon -PservidorPrueba=localhost:25565 > juego.log 2>&1 &
-          for i in $(seq 1 120); do
+          ./gradlew -p neoforge-juego runClient --no-daemon -PservidorPrueba=localhost:25565 > juego.log 2>&1 &
+          for i in $(seq 1 60); do
             if grep -qE 'joined the game|Crash report|Game crashed|BUILD FAILED' servidor.log juego.log; then break; fi
             sleep 5
           done
           echo "===== CONEXIÓN =====" && (grep -E 'joined the game|logged in with entity' servidor.log || echo "NO ENTRÓ")
+          mkdir -p /tmp/diag
+          import -window root /tmp/diag/pantalla-1.png || true
+          PID_JUEGO=""
+          for p in $(pgrep java); do
+            case "$(readlink /proc/$p/cwd)" in *neoforge-juego/run) PID_JUEGO=$p ;; esac
+          done
+          echo "Proceso del juego: $PID_JUEGO"
+          [ -n "$PID_JUEGO" ] && jstack "$PID_JUEGO" > /tmp/diag/hilos-juego-1.txt 2>&1 || true
           sleep 90
+          import -window root /tmp/diag/pantalla-2.png || true
+          [ -n "$PID_JUEGO" ] && jstack "$PID_JUEGO" > /tmp/diag/hilos-juego-2.txt 2>&1 || true
           echo "===== EN EL MUNDO 90 SEGUNDOS ====="
           grep -nE 'Exception|ERROR|Crash|INYECCIÓN' servidor.log | cut -c1-300 | head -60
-          pkill -f 'xvfb-run' || true
           pkill -f java || true
+          pkill Xvfb || true
 
       - name: Código de NeoForge donde no encajan inyecciones
         if: always()
