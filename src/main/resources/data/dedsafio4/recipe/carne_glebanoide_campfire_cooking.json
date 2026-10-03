@@ -1,0 +1,13 @@
+{
+	"type": "minecraft:campfire_cooking",
+	"category": "food",
+	"ingredient": {
+		"item": "dedsafio4:carne_glebanoide"
+	},
+	"result": {
+		"id": "minecraft:raw_gold",
+		"count": 1
+	},
+	"experience": 0.35,
+	"cookingtime": 600
+}

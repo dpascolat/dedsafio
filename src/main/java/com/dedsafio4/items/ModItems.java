@@ -108,6 +108,13 @@ public final class ModItems {
 	/** Cuero Glebanoide: un ingrediente (lo sueltan el Gusano de Carne y el Parásito Volador). */
 	public static final Item CUERO_GLEBANOIDE = registrar("cuero_glebanoide",
 			new DescritoItem(new Item.Properties(), DescritoItem::cueroGlebanoide));
+	/** Diente Glebanoide: sale de romper una Dentadura Glebanoide con espada. */
+	public static final Item DIENTE_GLEBANOIDE = registrar("diente_glebanoide",
+			new DescritoItem(new Item.Properties(), DescritoItem::dienteGlebanoide));
+	/** Carne Glebanoide: comida que saca la Levitación (da Caída Lenta 1 segundo); cocinada da Oro en Bruto. */
+	public static final Item CARNE_GLEBANOIDE = registrar("carne_glebanoide", new CarneGlebanoideItem(new Item.Properties()
+			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(3).saturationModifier(0.3f).alwaysEdible().build()),
+			DescritoItem::carneGlebanoide));
 	/** Fibra Glebanoide: se hace con Tejido Glebanoide Profundo y Verruga Oscura Glebanoide. */
 	public static final Item FIBRA_GLEBANOIDE = registrar("fibra_glebanoide",
 			new DescritoItem(new Item.Properties(), DescritoItem::fibraGlebanoide));
@@ -121,8 +128,10 @@ public final class ModItems {
 
 	/** Bolsa Primitiva (id bolsa_de_tela): lleva lo mismo que un cofre simple. */
 	public static final Item BOLSA_DE_TELA = registrar("bolsa_de_tela", new BolsaItem(new Item.Properties().stacksTo(1)));
-	/** Saco: como la Bolsa Primitiva pero con 9 lugares más (4 filas, 36). */
-	public static final Item SACO = registrar("saco", new BolsaItem(new Item.Properties().stacksTo(1), 4, "o"));
+	/** Bolsa Glebanoide (id saco): como la Bolsa Primitiva pero con 9 lugares más (4 filas, 36). */
+	public static final Item SACO = registrar("saco", new BolsaItem(new Item.Properties().stacksTo(1), 4, "a"));
+	/** Arco Glebanoide: sus flechas rebotan en los enemigos cercanos. */
+	public static final Item ARCO_GLEBANOIDE = registrar("arco_glebanoide", new ArcoGlebanoideItem(new Item.Properties().durability(384)));
 
 	/** Semilla de Fruta Solaria: se planta en el costado de los troncos del Centro de Quiu. */
 	public static final Item SEMILLA_SOLARIA = registrar("semilla_solaria",
@@ -160,7 +169,8 @@ public final class ModItems {
 					.alwaysEdible().fast().build())));
 
 	/** Jeringa (por ahora solo el ítem). */
-	public static final Item JERINGA = registrar("jeringa", new Item(new Item.Properties().stacksTo(16)));
+	/** Cuerno de Narval (id jeringa): lo sueltan el Narval y el Narval con Reptisaurio. */
+	public static final Item JERINGA = registrar("jeringa", new DescritoItem(new Item.Properties().stacksTo(16), DescritoItem::cuernoNarval));
 
 	/** Cápsula de Pastilla Vacía: para crear diferentes tipos de Pastillas o Píldoras. */
 	public static final Item PILDORA_VACIA = registrar("pildora_vacia", new DescritoItem(new Item.Properties(), DescritoItem::capsulaVacia));
@@ -424,7 +434,6 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.bloques.ModBloques.CARNE_CON_VENAS_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.BLOQUE_CARNE_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.BLOQUE_CARNE_ROSA_ITEM);
-						entradas.accept(com.dedsafio4.bloques.ModBloques.DIENTES_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.BLOQUE_DIENTES_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.MUSCULO_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.GELATINA_ROJA_ITEM);
@@ -464,6 +473,8 @@ public final class ModItems {
 						entradas.accept(ESCUPITAJO_DACTYLO);
 						entradas.accept(CUERO_GLEBANOIDE);
 						entradas.accept(FIBRA_GLEBANOIDE);
+						entradas.accept(CARNE_GLEBANOIDE);
+						entradas.accept(DIENTE_GLEBANOIDE);
 						entradas.accept(INSECTO);
 						entradas.accept(CUCHARA_MADERA);
 						entradas.accept(CUCHARA_HOJAS);
@@ -476,6 +487,7 @@ public final class ModItems {
 						entradas.accept(EXCREMENTO);
 						entradas.accept(BOLSA_DE_TELA);
 						entradas.accept(SACO);
+						entradas.accept(ARCO_GLEBANOIDE);
 						entradas.accept(FRUTA_ESPACIO);
 						entradas.accept(PILDORA_VACIA);
 						entradas.accept(JERINGA);

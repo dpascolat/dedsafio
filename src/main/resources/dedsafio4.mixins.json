@@ -6,6 +6,7 @@
 		"BlockBehaviourMixin",
 		"CarvedPumpkinBlockMixin",
 		"ChatTypeMixin",
+		"ArcoReboteMixin",
 		"ChestBlockMixin",
 		"CreeperAccessor",
 		"ExplosionMixin",

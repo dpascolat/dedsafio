@@ -5,8 +5,35 @@
 			"rolls": 1,
 			"entries": [
 				{
-					"type": "minecraft:item",
-					"name": "dedsafio4:bloque_dientes"
+					"type": "minecraft:alternatives",
+					"children": [
+						{
+							"type": "minecraft:item",
+							"name": "dedsafio4:diente_glebanoide",
+							"conditions": [
+								{
+									"condition": "minecraft:match_tool",
+									"predicate": {
+										"items": "#minecraft:swords"
+									}
+								}
+							],
+							"functions": [
+								{
+									"function": "minecraft:set_count",
+									"count": {
+										"type": "minecraft:uniform",
+										"min": 1,
+										"max": 3
+									}
+								}
+							]
+						},
+						{
+							"type": "minecraft:item",
+							"name": "dedsafio4:bloque_dientes"
+						}
+					]
 				}
 			],
 			"conditions": [

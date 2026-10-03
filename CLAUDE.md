@@ -60,7 +60,7 @@ clases y métodos, en `com.dedsafio4.neocompat.fabric.api...`) pero por dentro u
   Espacio (planetas 3D gigantes y salto a la velocidad de la luz en `client/despegue/EspacioCielo.java`) y aterrizaje.
 - Qumara (jefe, `qumara/`), `/boss 1 gente N`, Atraer, Levitación.
 - Almas (`almas/`, `/alma obtener|sacar|ver`), Fruto de Quiu, tótems (Frerico, Concha), Soarer (vuela y agarra
-  jugadores), Nave Veloz, Creeper Amarillo, bloques de carne, Dientes, kit `/function dedsafio4:kit`.
+  jugadores), Nave Veloz, Creeper Amarillo, bloques de carne, Dentadura Glebanoide, ítems Glebanoides, kit `/function dedsafio4:kit`.
 
 ## Al terminar un pedido
 

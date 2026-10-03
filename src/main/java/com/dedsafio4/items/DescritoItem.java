@@ -144,6 +144,44 @@ public class DescritoItem extends Item {
 		t.add(parte("un ", AMARILLO).append(parte("Parásito Volador", ROJO)).append(parte(".", AMARILLO)));
 	}
 
+	/** Carne Glebanoide: saca la Levitación, da Caída Lenta 1 segundo y cocinada da Oro en Bruto. */
+	public static void carneGlebanoide(List<Component> t) {
+		t.add(parte("Caída lenta", 0x5555FF));
+		t.add(Component.empty());
+		t.add(parte("Combina ", GRIS).append(parte("Grasa", CELESTE)).append(parte(" y ", GRIS)).append(parte("Fibra", CELESTE)));
+		t.add(parte("Glebanoide", CELESTE).append(parte(" para conseguir ", GRIS)).append(parte("4", AMARILLO)).append(parte(".", GRIS)));
+		t.add(Component.empty());
+		t.add(parte("Consúmelo para ", GRIS).append(parte("eliminar", VIOLETA)).append(parte(" el", GRIS)));
+		t.add(parte("efecto de Levitación", GRIS));
+		t.add(Component.empty());
+		t.add(parte("Aplica ", GRIS).append(parte("Caída Lenta", VIOLETA)).append(parte(" durante", GRIS)));
+		t.add(parte("1 segundo", AMARILLO).append(parte(". Utilízala con cuidado.", GRIS)));
+		t.add(Component.empty());
+		t.add(parte("Si la cocinas, se convierte en", GRIS));
+		t.add(parte("Oro en Bruto", CELESTE).append(parte(".", GRIS)));
+	}
+
+	/** Diente Glebanoide: sale de romper una Dentadura Glebanoide con espada (y lo suelta el Parásito). */
+	public static void dienteGlebanoide(List<Component> t) {
+		t.add(parte("Utiliza una ", GRIS).append(parte("Espada", VIOLETA)).append(parte(" sobre una", GRIS)));
+		t.add(parte("Dentadura Glebanoide", CELESTE).append(parte(" para obtenerlo.", GRIS)));
+		t.add(Component.empty());
+		t.add(parte("Combínalo con otros ingredientes", GRIS));
+		t.add(parte("para conseguir nuevos objetos.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("Consíguelo al Eliminar:", GRIS));
+		t.add(Component.empty());
+		t.add(parte("◆ Parásito", SALMON));
+	}
+
+	/** Cuerno de Narval (id jeringa): lo sueltan el Narval y el Narval con Reptisaurio. */
+	public static void cuernoNarval(List<Component> t) {
+		t.add(parte("Consíguelo al Eliminar:", GRIS));
+		t.add(Component.empty());
+		t.add(parte("◆ Narval", SALMON));
+		t.add(parte("◆ Narval con Reptisaurio", SALMON));
+	}
+
 	/** Cuero Glebanoide: lo sueltan el Gusano de Carne y el Parásito Volador. */
 	public static void cueroGlebanoide(List<Component> t) {
 		t.add(parte("Combínalo con otros ingredientes", GRIS));

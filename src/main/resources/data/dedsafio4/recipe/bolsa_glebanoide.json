@@ -1,0 +1,24 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"pattern": [
+		"FCF",
+		"CBC",
+		"FCF"
+	],
+	"key": {
+		"F": {
+			"item": "dedsafio4:fibra_glebanoide"
+		},
+		"C": {
+			"item": "dedsafio4:cuero_glebanoide"
+		},
+		"B": {
+			"item": "dedsafio4:bolsa_de_tela"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:saco",
+		"count": 1
+	}
+}

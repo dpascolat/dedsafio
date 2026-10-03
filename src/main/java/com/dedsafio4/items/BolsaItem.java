@@ -24,7 +24,8 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 
 /**
- * Bolsas: la Bolsa Primitiva (3 filas, 27 lugares, como un cofre simple) y el Saco (4 filas, 36 lugares: 9 más).
+ * Bolsas: la Bolsa Primitiva (3 filas, 27 lugares, como un cofre simple) y la Bolsa Glebanoide (id saco: 4 filas,
+ * 36 lugares, 9 más).
  * Con click derecho se abre; lo que tiene adentro se guarda en la bolsa misma.
  */
 public class BolsaItem extends Item {
@@ -80,6 +81,11 @@ public class BolsaItem extends Item {
 		texto.add(Component.empty());
 		texto.add(Component.literal("Utilíza" + (terminacion.equals("o") ? "lo" : "la") + " para guardar objetos sin").withColor(GRIS));
 		texto.add(Component.literal("ocupar lugares de tu inventario.").withColor(GRIS));
+		if (filas != 3) {
+			texto.add(Component.empty());
+			texto.add(Component.literal("Tiene ").withColor(GRIS).append(Component.literal((filas * 9) + " Slots").withColor(0xF0D86A))
+					.append(Component.literal(".").withColor(GRIS)));
+		}
 	}
 
 	/** El menú de la bolsa: igual que el de un cofre, para que se vea con la pantalla de siempre. */

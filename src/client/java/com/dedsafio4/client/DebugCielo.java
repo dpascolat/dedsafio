@@ -1867,6 +1867,99 @@ public final class DebugCielo {
 		if (t == 27) Dedsafio4ClientDebug.info("saco: listo");
 	}
 
+	private static final boolean CARNE_GLEBA = "carneglebanoide".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de la Carne Glebanoide: con Levitación, comerla la saca y da Caída Lenta; en el horno da Oro en Bruto. */
+	private static void tickCarneGleba(Minecraft mc) {
+		int t = ticks - 20;
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (server == null) return;
+		if (t == 0) {
+			if (mc.screen != null) mc.setScreen(null);
+			comando(mc, "gamemode survival");
+			comando(mc, "effect clear @s");
+			comando(mc, "effect give @s minecraft:levitation 30 0");
+			comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:carne_glebanoide 2");
+		}
+		if (t == 10) mc.options.keyUse.setDown(true);
+		if (t == 60) {
+			mc.options.keyUse.setDown(false);
+			Dedsafio4ClientDebug.info("carneglebanoide: quedan=" + mc.player.getMainHandItem().getCount());
+			server.execute(() -> {
+				var j = server.getPlayerList().getPlayers().get(0);
+				Dedsafio4ClientDebug.info("carneglebanoide: levitacion=" + j.hasEffect(net.minecraft.world.effect.MobEffects.LEVITATION)
+						+ " caida lenta=" + j.hasEffect(net.minecraft.world.effect.MobEffects.SLOW_FALLING));
+				var horno = server.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+						new net.minecraft.world.item.crafting.SingleRecipeInput(new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.CARNE_GLEBANOIDE)), j.level());
+				Dedsafio4ClientDebug.info("carneglebanoide: en el horno da " + horno.map(r -> r.value().getResultItem(j.registryAccess()).toString()).orElse("nada"));
+			});
+		}
+		if (t == 70) Dedsafio4ClientDebug.info("carneglebanoide: listo");
+	}
+
+	private static final boolean ARCO_GLEBA = "arcoglebanoide".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba del Arco Glebanoide: una flecha al primer zombi tiene que rebotar a los otros dos. */
+	private static void tickArcoGleba(Minecraft mc) {
+		int t = ticks - 20;
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (server == null) return;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			if (mc.screen != null) mc.setScreen(null);
+			comando(mc, "gamemode creative");
+			comando(mc, "time set day");
+			comando(mc, "execute in minecraft:overworld run forceload add -16 -16 16 16");
+			comando(mc, "execute in minecraft:overworld run fill -8 199 -12 8 199 8 minecraft:smooth_stone");
+			comando(mc, "execute in minecraft:overworld run fill -8 200 -12 8 206 8 minecraft:air");
+			comando(mc, "execute in minecraft:overworld run kill @e[type=minecraft:zombie]");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 6.5 180 0");
+			for (int k = 0; k < 3; k++) comando(mc, "execute in minecraft:overworld run summon minecraft:zombie " + (k * 4 - 4) + ".5 200 -4.5 {NoAI:1b,PersistenceRequired:1b,Health:20f}");
+		}
+		if (t >= 3 && t < 200) { mc.player.setYRot(180f); mc.player.setXRot(5f); mc.player.yRotO = 180f; mc.player.xRotO = 5f; }
+		if (t == 20) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var w = server.overworld();
+			var flecha = new net.minecraft.world.entity.projectile.Arrow(w, j, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW),
+					new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.ARCO_GLEBANOIDE));
+			flecha.setPos(-3.5, 201.5, 4.0);
+			flecha.shoot(0, 0, -1, 2.5f, 0f);
+			flecha.setBaseDamage(2.0);
+			w.addFreshEntity(flecha);
+		});
+		if (t == 28) captura(mc, "debug_arco1.png");
+		if (t == 70) server.execute(() -> {
+			var w = server.overworld();
+			for (var z : w.getEntities(net.minecraft.world.entity.EntityType.ZOMBIE, e -> true)) {
+				Dedsafio4ClientDebug.info("arcoglebanoide: zombi en x=" + Math.round(z.getX()) + " vida=" + z.getHealth());
+			}
+		});
+		if (t == 75) Dedsafio4ClientDebug.info("arcoglebanoide: listo");
+	}
+
+	private static final boolean ORGANOS_CORTE = "organoscorte".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de los colores de los Órganos: lugar nuevo, foto desde arriba y un corte del terreno para ver adentro. */
+	private static void tickOrganosCorte(Minecraft mc) {
+		int t = ticks - 20;
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			if (mc.screen != null) mc.setScreen(null);
+			comando(mc, "gamemode creative");
+			comando(mc, "effect give @s minecraft:night_vision 600 0 true");
+			comando(mc, "execute in dedsafio4:organos run tp @s 9000.5 150 9030.5 180 35");
+		}
+		if (t >= 2 && t < 400) { mc.player.getAbilities().flying = true; }
+		if (t == 120) comando(mc, "execute in dedsafio4:organos run fill 8988 30 9004 9013 160 9012 minecraft:air");
+		if (t >= 3 && t < 400) { mc.player.setYRot(180f); mc.player.setXRot(35f); mc.player.yRotO = 180f; mc.player.xRotO = 35f; }
+		if (t == 100) captura(mc, "debug_organos1.png");
+		if (t == 200) captura(mc, "debug_organos2.png");
+		if (t == 202) Dedsafio4ClientDebug.info("organoscorte: listo");
+	}
+
 	private static final boolean COFRE_NUEVO = "cofre".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba del cofre nuevo: se pone, se abre con la tapa animada, guarda cosas y se rompe entero. */
@@ -7318,6 +7411,18 @@ public final class DebugCielo {
 		}
 		if (SACO) {
 			tickSaco(mc);
+			return;
+		}
+		if (CARNE_GLEBA) {
+			tickCarneGleba(mc);
+			return;
+		}
+		if (ARCO_GLEBA) {
+			tickArcoGleba(mc);
+			return;
+		}
+		if (ORGANOS_CORTE) {
+			tickOrganosCorte(mc);
 			return;
 		}
 		if (PERLAS2) {

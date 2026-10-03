@@ -428,39 +428,6 @@
 									{
 										"type": "minecraft:condition",
 										"if_true": {
-											"type": "minecraft:not",
-											"invert": {
-												"type": "minecraft:water",
-												"offset": 0,
-												"surface_depth_multiplier": 0,
-												"add_stone_depth": false
-											}
-										},
-										"then_run": {
-											"type": "minecraft:block",
-											"result_state": {
-												"Name": "dedsafio4:carne_roja"
-											}
-										}
-									},
-									{
-										"type": "minecraft:condition",
-										"if_true": {
-											"type": "minecraft:noise_threshold",
-											"noise": "minecraft:surface",
-											"min_threshold": -0.35,
-											"max_threshold": -0.05
-										},
-										"then_run": {
-											"type": "minecraft:block",
-											"result_state": {
-												"Name": "dedsafio4:carne_roja"
-											}
-										}
-									},
-									{
-										"type": "minecraft:condition",
-										"if_true": {
 											"type": "minecraft:noise_threshold",
 											"noise": "minecraft:surface",
 											"min_threshold": 0.4,

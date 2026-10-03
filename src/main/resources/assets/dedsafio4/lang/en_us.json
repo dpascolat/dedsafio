@@ -91,7 +91,6 @@
 	"block.dedsafio4.carne_rosa": "Pink Flesh",
 	"block.dedsafio4.bloque_carne": "Bloque de Carne",
 	"block.dedsafio4.bloque_carne_rosa": "Verruga Clara Glebanoide",
-	"block.dedsafio4.dientes": "Dientes",
 	"block.dedsafio4.bloque_dientes": "Dentadura Glebanoide",
 	"block.dedsafio4.carne_roja": "Red Flesh",
 	"block.dedsafio4.carne_con_venas": "Veined Flesh",
@@ -115,12 +114,15 @@
 	"item.dedsafio4.excremento": "Excremento",
 	"item.dedsafio4.pegamento_primitivo": "Pegamento Primitivo",
 	"item.dedsafio4.bolsa_de_tela": "Bolsa Primitiva",
-	"item.dedsafio4.saco": "Saco",
+	"item.dedsafio4.saco": "Bolsa Glebanoide",
+	"item.dedsafio4.arco_glebanoide": "Arco Glebanoide",
 	"item.dedsafio4.fruta_espacio": "Fruta del Espacio entre Dimensiones",
 	"item.dedsafio4.llave_candado": "Llave de Candado",
 	"item.dedsafio4.escupitajo_dactylo": "Escupitajo de Dáctylo",
 	"item.dedsafio4.cuero_glebanoide": "Cuero Glebanoide",
 	"item.dedsafio4.fibra_glebanoide": "Fibra Glebanoide",
+	"item.dedsafio4.carne_glebanoide": "Carne Glebanoide",
+	"item.dedsafio4.diente_glebanoide": "Diente Glebanoide",
 	"block.dedsafio4.mineral_verde": "Mineral Verde",
 	"item.dedsafio4.pildora": "Píldora",
 	"effect.dedsafio4.proteccion_zombificacion": "Protección contra Zombificación",
@@ -217,5 +219,5 @@
 	"key.dedsafio4.jefe_2": "Botón 2 (jefes)",
 	"item.dedsafio4.dedita_mision": "Dedita de Misión",
 	"item.dedsafio4.pildora_vacia": "Cápsula de Pastilla Vacía",
-	"item.dedsafio4.jeringa": "Jeringa"
+	"item.dedsafio4.jeringa": "Cuerno de Narval"
 }
