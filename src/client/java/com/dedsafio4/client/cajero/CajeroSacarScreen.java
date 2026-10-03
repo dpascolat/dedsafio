@@ -71,11 +71,11 @@ public class CajeroSacarScreen extends Screen {
 	private void sacar() {
 		long total = total();
 		if (total <= 0) {
-			mensaje = "Elegí cuántas monedas sacar.";
+			mensaje = "Elige cuántas monedas sacar.";
 			return;
 		}
 		if (total > saldo()) {
-			mensaje = "No tenés suficientes deditas.";
+			mensaje = "No tienes suficientes deditas.";
 			return;
 		}
 		ClientPlayNetworking.send(new ModCajero.SacarPayload(pos, cantidades[0], cantidades[1], cantidades[2]));

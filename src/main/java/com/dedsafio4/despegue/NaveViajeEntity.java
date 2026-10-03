@@ -220,7 +220,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		switch (estado()) {
 			case QUIETA -> {
 				if (!isVehicle()) recienLlegada = false;
-				else if (recienLlegada && tiempo % 60 == 1) aviso("Aterrizaste. Apretá Shift para bajarte.");
+				else if (recienLlegada && tiempo % 60 == 1) aviso("Aterrizaste. Presiona Shift para bajarte.");
 				if (tienePiloto() && !recienLlegada) estado(CUENTA);
 			}
 			case CUENTA -> {
@@ -274,7 +274,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 					recienLlegada = isVehicle();
 					sonido(mundo, SoundEvents.ANVIL_LAND, 1f, 0.6f);
 					mundo.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 0.2, getZ(), 40, 1.5, 0.1, 1.5, 0.05);
-					titulo("Aterrizaste", VIOLETA, "Apretá Shift para bajarte");
+					titulo("Aterrizaste", VIOLETA, "Presiona Shift para bajarte");
 				} else {
 					setPos(getX(), getY() - bajada, getZ());
 					fuego(mundo, 0.4f);

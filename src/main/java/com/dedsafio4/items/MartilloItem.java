@@ -65,7 +65,7 @@ public class MartilloItem extends Item {
 		ItemStack secundaria = jugador.getOffhandItem();
 		if (secundaria.isEmpty() || !secundaria.isDamaged()) {
 			aviso(jugador, secundaria.isEmpty()
-					? "Poné algo en la mano secundaria para repararlo"
+					? "Pon algo en la mano secundaria para repararlo"
 					: "Eso no está roto");
 			return InteractionResultHolder.consume(martillo);
 		}

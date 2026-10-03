@@ -149,7 +149,7 @@ public final class Baneos {
 		InteractionHand mano = esCubierto(jugador.getMainHandItem()) ? InteractionHand.MAIN_HAND
 				: esCubierto(jugador.getOffhandItem()) ? InteractionHand.OFF_HAND : null;
 		if (mano == null) {
-			jugador.displayClientMessage(Component.literal("Necesitás una cuchara o un tenedor en la mano.").withStyle(ChatFormatting.RED), true);
+			jugador.displayClientMessage(Component.literal("Necesitas una cuchara o un tenedor en la mano.").withStyle(ChatFormatting.RED), true);
 			return;
 		}
 		UUID uuid;

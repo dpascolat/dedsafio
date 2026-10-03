@@ -44,7 +44,7 @@ public class CandadoScreen extends Screen {
 	private int izquierda, arriba;
 
 	public CandadoScreen(BlockPos pos, boolean cerrar, String aviso) {
-		super(Component.literal(cerrar ? "Elegí tu código" : "Introduce tu código"));
+		super(Component.literal(cerrar ? "Elige tu código" : "Introduce tu código"));
 		this.pos = pos;
 		this.cerrar = cerrar;
 		this.aviso = aviso;

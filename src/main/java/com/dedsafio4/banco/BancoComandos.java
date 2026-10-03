@@ -25,7 +25,7 @@ public final class BancoComandos {
 		dispatcher.register(Commands.literal("deditas")
 				.executes(ctx -> {
 					ServerPlayer jugador = ctx.getSource().getPlayerOrException();
-					ctx.getSource().sendSuccess(() -> Component.literal("Tenés " + Banco.saldo(jugador) + " deditas"), false);
+					ctx.getSource().sendSuccess(() -> Component.literal("Tienes " + Banco.saldo(jugador) + " deditas"), false);
 					return 1;
 				})
 				.then(Commands.literal("ver").requires(s -> s.hasPermission(2))

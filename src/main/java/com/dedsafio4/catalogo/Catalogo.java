@@ -425,7 +425,7 @@ public final class Catalogo {
 						enviar(p);
 						c.getSource().sendSuccess(() -> Component.literal(p.getGameProfile().getName()
 								+ (dar ? " ahora puede cambiar el Catálogo (G)." : " ya no puede cambiar el Catálogo (G).")).withColor(0x5AD8FF), true);
-						if (dar) p.sendSystemMessage(Component.literal("Ya podés cambiar el Catálogo (G): click para agarrar y poner ítems, click afuera para sacarlos, y la lupa para agregar nuevos.").withColor(0x5AD8FF));
+						if (dar) p.sendSystemMessage(Component.literal("Ya puedes cambiar el Catálogo (G): haz clic para tomar y poner ítems, clic fuera para quitarlos, y la lupa para agregar nuevos.").withColor(0x5AD8FF));
 						return 1;
 					})));
 		}

@@ -101,7 +101,7 @@ public final class ModCajero {
 		}
 		if (costo <= 0) return;
 		if (!Banco.cobrar(jugador, costo)) {
-			jugador.displayClientMessage(Component.literal("No tenés suficientes deditas.").withColor(0xFF5555), true);
+			jugador.displayClientMessage(Component.literal("No tienes suficientes deditas.").withColor(0xFF5555), true);
 			return;
 		}
 		for (int i = 0; i < 3; i++) {

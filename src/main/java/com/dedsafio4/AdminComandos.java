@@ -29,7 +29,7 @@ public final class AdminComandos {
 	public static boolean bloqueado(Player p) {
 		if (puedeManejarJefes(p)) return false;
 		if (!p.level().isClientSide) {
-			p.displayClientMessage(Component.literal("Tenés /admin no_boss: no te podés subir a los jefes (/admin boss para volver).").withColor(0xF0418F), true);
+			p.displayClientMessage(Component.literal("Tienes /admin no_boss: no te puedes subir a los jefes (/admin boss para volver).").withColor(0xF0418F), true);
 		}
 		return true;
 	}
@@ -47,11 +47,11 @@ public final class AdminComandos {
 	private static int cambiar(ServerPlayer p, boolean puede) {
 		if (puede) {
 			p.removeTag(SIN_JEFES);
-			p.sendSystemMessage(Component.literal("Ya te podés subir a los jefes otra vez.").withColor(0xF0418F));
+			p.sendSystemMessage(Component.literal("Ya te puedes subir a los jefes otra vez.").withColor(0xF0418F));
 		} else {
 			p.addTag(SIN_JEFES);
 			if (p.getVehicle() instanceof QumaraEntity q && q.getControllingPassenger() == p || p.getVehicle() instanceof TRexEntity) p.stopRiding();
-			p.sendSystemMessage(Component.literal("Listo: ya no te podés subir a los jefes (para volver: /admin boss).").withColor(0xF0418F));
+			p.sendSystemMessage(Component.literal("Listo: ya no te puedes subir a los jefes (para volver: /admin boss).").withColor(0xF0418F));
 		}
 		return 1;
 	}

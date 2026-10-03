@@ -25,7 +25,7 @@ import java.util.UUID;
 
 /**
  * La pantalla del Bloque de Baneados: a la izquierda la lista de baneados (cara y nombre), a la derecha la cuchara o
- * el tenedor que tenés en la mano y el botón para desbanear al elegido.
+ * el tenedor que tienes en la mano y el botón para desbanear al elegido.
  */
 public class BaneadosScreen extends Screen {
 	private static final ResourceLocation FONDO = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/baneados.png");
@@ -132,7 +132,7 @@ public class BaneadosScreen extends Screen {
 		if (!item.isEmpty()) g.renderItem(item, x0 + CASILLERO_X + 3, y0 + CASILLERO_Y + 3);
 		if (mx >= x0 + CASILLERO_X && mx < x0 + CASILLERO_X + 22 && my >= y0 + CASILLERO_Y && my < y0 + CASILLERO_Y + 22) {
 			if (!item.isEmpty()) g.renderTooltip(font, item, mx, my);
-			else g.renderTooltip(font, Component.literal("Tené una cuchara o un tenedor en la mano"), mx, my);
+			else g.renderTooltip(font, Component.literal("Ten una cuchara o un tenedor en la mano"), mx, my);
 		}
 
 		// El botón.
@@ -141,7 +141,7 @@ public class BaneadosScreen extends Screen {
 		int bx = x0 + BOTON_X, by = y0 + BOTON_Y;
 		g.fill(bx, by, bx + BOTON_W, by + BOTON_H, 0xFF3A2816);
 		g.fill(bx + 1, by + 1, bx + BOTON_W - 1, by + BOTON_H - 1, puede ? (encima ? 0xFF4E9E55 : 0xFF3F7F45) : 0xFF6B5237);
-		String texto = elegido < 0 ? "Elegí a alguien" : item.isEmpty() ? "Falta cubierto" : "Revivir";
+		String texto = elegido < 0 ? "Elige a alguien" : item.isEmpty() ? "Falta cubierto" : "Revivir";
 		g.drawCenteredString(font, texto, bx + BOTON_W / 2, by + 6, puede ? 0xFFFFFFFF : 0xFFC9B79A);
 		if (elegido >= 0) {
 			g.drawCenteredString(font, nombres.get(elegido), bx + BOTON_W / 2, by + BOTON_H + 8, 0xFF4A3420);

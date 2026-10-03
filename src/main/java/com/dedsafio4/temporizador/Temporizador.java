@@ -34,7 +34,7 @@ public final class Temporizador {
 				.then(Commands.argument("duracion", StringArgumentType.greedyString()).executes(ctx -> {
 					int segundos = leerDuracion(StringArgumentType.getString(ctx, "duracion"));
 					if (segundos <= 0) {
-						ctx.getSource().sendFailure(Component.literal("Usá minutos:segundos, por ejemplo /tiempo 5:00 o /tiempo 1:30"));
+						ctx.getSource().sendFailure(Component.literal("Usa minutos:segundos, por ejemplo /tiempo 5:00 o /tiempo 1:30"));
 						return 0;
 					}
 					MinecraftServer server = ctx.getSource().getServer();

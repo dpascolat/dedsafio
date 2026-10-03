@@ -49,7 +49,7 @@ public class PuertaBlock extends BaseEntityBlock {
 	public static final int PRINCIPAL = 1;
 
 	private final Supplier<Item> llave;
-	/** Nombre de la llave para el aviso ("Necesitás la ..."). */
+	/** Nombre de la llave para el aviso ("Necesitas la ..."). */
 	private final String nombreLlave;
 
 	public PuertaBlock(Properties propiedades, Supplier<Item> llave, String nombreLlave) {
@@ -71,7 +71,7 @@ public class PuertaBlock extends BaseEntityBlock {
 
 	// --- Las 9 partes ---
 
-	/** Hacia dónde está la "derecha" de la puerta (mirándola de frente es la izquierda de quien mira). */
+	/** Hacia dónde está la "derecha" de la puerta (mirandola de frente es la izquierda de quien mira). */
 	private static Direction derecha(Direction frente) {
 		return frente.getCounterClockWise();
 	}
@@ -140,7 +140,7 @@ public class PuertaBlock extends BaseEntityBlock {
 	protected InteractionResult useWithoutItem(BlockState estado, Level level, BlockPos pos, Player jugador, BlockHitResult golpe) {
 		if (estado.getValue(ABIERTA)) return InteractionResult.PASS;
 		if (!level.isClientSide) {
-			jugador.displayClientMessage(Component.literal("Está cerrada. Necesitás la " + nombreLlave + ".").withColor(0xFF6B6B), true);
+			jugador.displayClientMessage(Component.literal("Está cerrada. Necesitas la " + nombreLlave + ".").withColor(0xFF6B6B), true);
 			level.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.5f, 0.6f);
 		}
 		return InteractionResult.sidedSuccess(level.isClientSide);

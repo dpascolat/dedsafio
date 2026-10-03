@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 /**
- * En el inventario, a la derecha del libro de recetas, se ve el Alma (si la tenés) o el Sin Alma (si no).
+ * En el inventario, a la derecha del libro de recetas, se ve el Alma (si la tienes) o el Sin Alma (si no).
  * Entre el libro y el alma queda lugar para el ojo, que se agrega después. Con clic en el alma se abre la G.
  */
 @Mixin(InventoryScreen.class)
@@ -47,7 +47,7 @@ public abstract class InventoryScreenAlmaMixin extends EffectRenderingInventoryS
 		g.renderItem(alma, leftPos + ALMA_X, topPos + ALMA_Y);
 		if (dedsafio4$sobreAlma(mouseX, mouseY) && menu.getCarried().isEmpty()) {
 			g.renderComponentTooltip(font, List.of(
-					Component.literal(AlmaCliente.tieneAlma ? "Tenés alma" : "No tenés alma"),
+					Component.literal(AlmaCliente.tieneAlma ? "Tienes alma" : "No tienes alma"),
 					Component.literal("Clic para abrir la G").withColor(0xC6CFD6)), mouseX, mouseY);
 		}
 	}

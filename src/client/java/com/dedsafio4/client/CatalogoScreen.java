@@ -45,7 +45,7 @@ public class CatalogoScreen extends Screen {
 	private Item recetaDe;
 	/** 0: el catálogo de ítems (el libro); 1: las Misiones (el pergamino); 2: el buscador (la lupa). */
 	private int modo;
-	/** El buscador: escribís el nombre de cualquier ítem o bloque (del mod o de Minecraft) y aparece. */
+	/** El buscador: escribes el nombre de cualquier ítem o bloque (del mod o de Minecraft) y aparece. */
 	private net.minecraft.client.gui.components.EditBox buscador;
 	private String textoBuscado = "";
 	private List<Item> resultados = List.of();
@@ -98,7 +98,7 @@ public class CatalogoScreen extends Screen {
 		yGrilla = y0 + 16;
 		filasVisibles = Math.max(1, (alto - 34) / CELDA);
 		buscador = new net.minecraft.client.gui.components.EditBox(font, xIzq, yGrilla, x0 + ancho - 22 - xIzq, 14, Component.literal("Buscar"));
-		buscador.setHint(Component.literal("Escribí un ítem o bloque...").withColor(0xFF8C929C));
+		buscador.setHint(Component.literal("Escribe un ítem o bloque...").withColor(0xFF8C929C));
 		buscador.setMaxLength(50);
 		buscador.setValue(textoBuscado);
 		buscador.setResponder(t -> {
@@ -114,7 +114,7 @@ public class CatalogoScreen extends Screen {
 		sy = y0 + (alto - sh) / 2;
 		String antes = buscadorCasilla == null ? "" : buscadorCasilla.getValue();
 		buscadorCasilla = new net.minecraft.client.gui.components.EditBox(font, sx + 8, sy + 20, sw - 16 - 56, 14, Component.literal("Buscar"));
-		buscadorCasilla.setHint(Component.literal("Buscá cualquier ítem o bloque...").withColor(0xFF8C929C));
+		buscadorCasilla.setHint(Component.literal("Busca cualquier ítem o bloque...").withColor(0xFF8C929C));
 		buscadorCasilla.setMaxLength(50);
 		buscadorCasilla.setValue(antes);
 		buscadorCasilla.setResponder(t -> {
@@ -257,7 +257,7 @@ public class CatalogoScreen extends Screen {
 		g.pose().translate(0, 0, 300);
 		g.fill(sx, sy, sx + sw, sy + sh, 0xFF141820);
 		bordeArcoiris(g, sx, sy, sx + sw, sy + sh, 2);
-		g.drawString(font, "Elegí qué va en esta casilla", sx + 8, sy + 7, 0xFFFFFFFF, true);
+		g.drawString(font, "Elige qué va en esta casilla", sx + 8, sy + 7, 0xFFFFFFFF, true);
 		g.drawString(font, "x", sx + sw - 12, sy + 6, 0xFFFF7070, true);
 		buscadorCasilla.render(g, mx, my, parcial);
 		int bx = sx + sw - 8 - 50;

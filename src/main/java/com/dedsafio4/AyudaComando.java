@@ -23,7 +23,7 @@ public final class AyudaComando {
 		sacarComando(dispatcher.getRoot(), "help");
 		dispatcher.register(Commands.literal("help")
 				.executes(c -> {
-					c.getSource().sendFailure(Component.literal("Escribí tu mensaje: /help <mensaje>"));
+					c.getSource().sendFailure(Component.literal("Escribe tu mensaje: /help <mensaje>"));
 					return 0;
 				})
 				.then(Commands.argument("mensaje", StringArgumentType.greedyString())
