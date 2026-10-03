@@ -102,6 +102,8 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.catalogo.Misiones.registrar();
 		com.dedsafio4.ruleta.Ruleta.registrar();
 		com.dedsafio4.bulag.Bulag.registrar();
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playS2C().register(
+				com.dedsafio4.bestias.CreeperPastelEntity.PastelPayload.TYPE, com.dedsafio4.bestias.CreeperPastelEntity.PastelPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(CandadoPantallaPayload.TYPE, CandadoPantallaPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(CandadosListaPayload.TYPE, CandadosListaPayload.CODEC);
 

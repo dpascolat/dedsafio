@@ -55,6 +55,23 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("de Quiu.", BLANCO));
 	}
 
+	public static void creeperPastel(List<Component> t) {
+		t.add(parte("Al explotar mancha la pantalla con", GRIS));
+		t.add(parte("pastel por algunos segundos.", GRIS));
+	}
+
+	public static void zarinosa(List<Component> t) {
+		t.add(parte("Criatura pequeña pero astuta que", GRIS));
+		t.add(parte("aparece en las Cuevas del Centro de", GRIS));
+		t.add(parte("Quiu. ", GRIS).append(parte("Se abalanza sobre tu cabeza y", VIOLETA)));
+		t.add(parte("drena tu vida hasta matarte.", VIOLETA));
+		t.add(parte("Sólo puedes librarte con la ayuda", GRIS));
+		t.add(parte("de otra persona.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("🌴 Aparece en: ", APARECE).append(parte("Cuevas del", BLANCO)));
+		t.add(parte("Centro de Quiu", BLANCO));
+	}
+
 	public static void creeperNuclear(List<Component> t) {
 		t.add(parte("Provoca grandes explosiones.", GRIS));
 		t.add(Component.empty());

@@ -266,6 +266,12 @@ public final class ModItems {
 	public static final Item CREEPER_NUCLEAR_SPAWN_EGG = registrar("creeper_nuclear_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.CREEPER_NUCLEAR, 0xE2C21C, 0xE0261C, new Item.Properties(),
 					HuevoConDescripcion::creeperNuclear));
+	public static final Item CREEPER_PASTEL_SPAWN_EGG = registrar("creeper_pastel_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.CREEPER_PASTEL, 0xB8692E, 0xF4F0EA, new Item.Properties(),
+					HuevoConDescripcion::creeperPastel));
+	public static final Item ZARINOSA_SPAWN_EGG = registrar("zarinosa_espigueya_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.ZARINOSA, 0x2FAE2A, 0xD8C21A, new Item.Properties(),
+					HuevoConDescripcion::zarinosa));
 	public static final Item NARVAL_SPAWN_EGG = registrar("narval_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.NARVAL, 0x26337E, 0xDCDCD2, new Item.Properties(),
 					HuevoConDescripcion::narval));
@@ -525,6 +531,8 @@ public final class ModItems {
 						entradas.accept(DROMORAPTOR_AZUL_SPAWN_EGG);
 						entradas.accept(NARVAL_SPAWN_EGG);
 						entradas.accept(CREEPER_NUCLEAR_SPAWN_EGG);
+						entradas.accept(CREEPER_PASTEL_SPAWN_EGG);
+						entradas.accept(ZARINOSA_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.casino.ModCasino.CASINO_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.nave.PartesNave.CABINA);
 						entradas.accept(com.dedsafio4.nave.PartesNave.MOTOR);

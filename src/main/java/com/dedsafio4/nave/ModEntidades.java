@@ -85,6 +85,13 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.CreeperNuclearEntity> CREEPER_NUCLEAR = registrar("creeper_nuclear",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperNuclearEntity::new, MobCategory.MONSTER).sized(0.8f, 1.2f).clientTrackingRange(8));
 
+	/** Creeper Pastel: 1 bloque de alto. */
+	public static final EntityType<com.dedsafio4.bestias.CreeperPastelEntity> CREEPER_PASTEL = registrar("creeper_pastel",
+			EntityType.Builder.of(com.dedsafio4.bestias.CreeperPastelEntity::new, MobCategory.MONSTER).sized(0.8f, 1.0f).clientTrackingRange(8));
+	/** Zarinosa Espigüeya: ~10 px de alto y ~24 de largo con la cola. */
+	public static final EntityType<com.dedsafio4.bestias.ZarinosaEntity> ZARINOSA = registrar("zarinosa_espigueya",
+			EntityType.Builder.of(com.dedsafio4.bestias.ZarinosaEntity::new, MobCategory.MONSTER).sized(0.6f, 0.6f).clientTrackingRange(8));
+
 	/** Narval: unos 3 bloques de largo con el cuerno. */
 	public static final EntityType<com.dedsafio4.bestias.NarvalEntity> NARVAL = registrar("narval",
 			EntityType.Builder.of(com.dedsafio4.bestias.NarvalEntity::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(1.4f, 0.9f).clientTrackingRange(10));
@@ -113,6 +120,11 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(CREEPER_NUCLEAR, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		SpawnPlacements.register(CREEPER_NUCLEAR, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				Monster::checkMonsterSpawnRules);
+		FabricDefaultAttributeRegistry.register(CREEPER_PASTEL, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		FabricDefaultAttributeRegistry.register(ZARINOSA, com.dedsafio4.bestias.ZarinosaEntity.crearAtributos());
+		// Zarinosa: en las cuevas del Centro de Quiu.
+		SpawnPlacements.register(ZARINOSA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				com.dedsafio4.bestias.ZarinosaEntity::puedeAparecerEnCueva);
 		FabricDefaultAttributeRegistry.register(NARVAL, com.dedsafio4.bestias.NarvalEntity.crearAtributos());
 		// Narval: en el agua de las cuevas del Centro de Quiu (acuíferos).
 		SpawnPlacements.register(NARVAL, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR,
