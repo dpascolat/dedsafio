@@ -125,6 +125,25 @@ public class DescritoItem extends Item {
 		t.add(parte("Glebanoide", CELESTE).append(parte(".", GRIS)));
 	}
 
+	/** Dentadura Glebanoide (bloque de dientes): con una espada se consigue Diente Glebanoide. */
+	public static void dentaduraGlebanoide(List<Component> t) {
+		t.add(parte("Utiliza una ", GRIS).append(parte("Espada", VIOLETA)));
+		t.add(parte("para conseguir ", GRIS).append(parte("Diente", CELESTE)));
+		t.add(parte("Glebanoide", CELESTE).append(parte(".", GRIS)));
+	}
+
+	/** Verruga Clara Glebanoide (id bloque_carne_rosa): se saca con espada; al romperla sale un Parásito Volador. */
+	public static void verrugaClaraGlebanoide(List<Component> t) {
+		t.add(parte("Utiliza una ", GRIS).append(parte("Espada", VIOLETA)).append(parte(" para", GRIS)));
+		t.add(parte("conseguirla.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("Combínalo con otros ingredientes", GRIS));
+		t.add(parte("para conseguir nuevos objetos.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("⚠ Atención: Al romperla saldrá", AMARILLO));
+		t.add(parte("un ", AMARILLO).append(parte("Parásito Volador", ROJO)).append(parte(".", AMARILLO)));
+	}
+
 	/** Cuero Glebanoide: lo sueltan el Gusano de Carne y el Parásito Volador. */
 	public static void cueroGlebanoide(List<Component> t) {
 		t.add(parte("Combínalo con otros ingredientes", GRIS));

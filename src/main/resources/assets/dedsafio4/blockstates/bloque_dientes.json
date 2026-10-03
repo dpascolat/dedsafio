@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=north": {
+			"model": "dedsafio4:block/bloque_dientes"
+		},
+		"facing=east": {
+			"model": "dedsafio4:block/bloque_dientes",
+			"y": 90
+		},
+		"facing=south": {
+			"model": "dedsafio4:block/bloque_dientes",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "dedsafio4:block/bloque_dientes",
+			"y": 270
+		}
+	}
+}

@@ -1821,6 +1821,30 @@ public final class DebugCielo {
 		if (t == 85) Dedsafio4ClientDebug.info("baneos: listo");
 	}
 
+	private static final boolean DENTADURA = "dentadura".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de la Dentadura Glebanoide: puesta mirando a distintos lados, y su ítem en la mano. */
+	private static void tickDentadura(Minecraft mc) {
+		int t = ticks - 20;
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			if (mc.screen != null) mc.setScreen(null);
+			comando(mc, "gamemode creative");
+			comando(mc, "time set day");
+			comando(mc, "execute in minecraft:overworld run forceload add -16 -16 16 16");
+			comando(mc, "execute in minecraft:overworld run fill -6 199 -6 6 199 6 minecraft:smooth_stone");
+			comando(mc, "execute in minecraft:overworld run fill -6 200 -6 6 205 6 minecraft:air");
+			comando(mc, "execute in minecraft:overworld run setblock -3 200 -2 dedsafio4:bloque_dientes[facing=south]");
+			comando(mc, "execute in minecraft:overworld run setblock 3 200 -2 dedsafio4:bloque_dientes[facing=east]");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 201 4.5 180 20");
+			comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:bloque_dientes");
+		}
+		if (t >= 3 && t < 200) { mc.player.setYRot(180f); mc.player.setXRot(20f); mc.player.yRotO = 180f; mc.player.xRotO = 20f; }
+		if (t == 40) captura(mc, "debug_dentadura.png");
+		if (t == 42) Dedsafio4ClientDebug.info("dentadura: listo");
+	}
+
 	private static final boolean COFRE_NUEVO = "cofre".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba del cofre nuevo: se pone, se abre con la tapa animada, guarda cosas y se rompe entero. */
@@ -7264,6 +7288,10 @@ public final class DebugCielo {
 		}
 		if (BANEOS) {
 			tickBaneos(mc);
+			return;
+		}
+		if (DENTADURA) {
+			tickDentadura(mc);
 			return;
 		}
 		if (PERLAS2) {

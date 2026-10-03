@@ -167,12 +167,22 @@ public final class ModBloques {
 	/** Bloque de Carne Rosa: igual, pero rosita clarito. */
 	public static final Block BLOQUE_CARNE_ROSA = registrar("bloque_carne_rosa", new BloqueCarneBlock(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.COLOR_PINK).strength(0.6f).sound(SoundType.MUD).noOcclusion()));
-	public static final Item BLOQUE_CARNE_ROSA_ITEM = registrarItem("bloque_carne_rosa", BLOQUE_CARNE_ROSA);
+	/** Verruga Clara Glebanoide (id bloque_carne_rosa). */
+	public static final Item BLOQUE_CARNE_ROSA_ITEM = Registry.register(BuiltInRegistries.ITEM,
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "bloque_carne_rosa"),
+			new com.dedsafio4.items.BloqueDescritoItem(BLOQUE_CARNE_ROSA, new Item.Properties(), com.dedsafio4.items.DescritoItem::verrugaClaraGlebanoide));
 	/** Dientes: tres dientes incrustados en el piso. */
 	public static final Block DIENTES = registrar("dientes", new DientesBlock(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.SAND).strength(1f, 3f).sound(SoundType.BONE_BLOCK).noOcclusion()
 			.pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
 	public static final Item DIENTES_ITEM = registrarItem("dientes", DIENTES);
+	/** Dentadura Glebanoide (id bloque_dientes): tres dientes grandes sobre una encía. */
+	public static final Block BLOQUE_DIENTES = registrar("bloque_dientes", new BloqueDientesBlock(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.SAND).strength(1.5f, 3f).sound(SoundType.BONE_BLOCK).noOcclusion()
+			.pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
+	public static final Item BLOQUE_DIENTES_ITEM = Registry.register(BuiltInRegistries.ITEM,
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "bloque_dientes"),
+			new com.dedsafio4.items.BloqueDescritoItem(BLOQUE_DIENTES, new Item.Properties(), com.dedsafio4.items.DescritoItem::dentaduraGlebanoide));
 
 	// Los árboles de la Dimensión de los Órganos: gelatina que tiembla (la textura se mueve). Se pican con pico.
 	public static final Block GELATINA_ROJA = registrar("gelatina_roja", bloqueDeGelatina(MapColor.COLOR_RED));
