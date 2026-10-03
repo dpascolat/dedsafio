@@ -66,7 +66,12 @@ public abstract class CajasRenderer<T extends LivingEntity> extends EntityRender
 		return 0;
 	}
 
-	/** Agrandar todo el bicho (1 = tamaño normal). */
+	/** Los colores que brillan en la oscuridad (se dibujan a plena luz). */
+	protected boolean brilla(int color) {
+		return false;
+	}
+
+		/** Agrandar todo el bicho (1 = tamaño normal). */
 	protected float escala(T bicho, float parcial) {
 		return 1;
 	}
@@ -98,7 +103,7 @@ public abstract class CajasRenderer<T extends LivingEntity> extends EntityRender
 		if (n.ry != 0) pose.mulPose(Axis.YP.rotation(n.ry));
 		if (n.rz != 0) pose.mulPose(Axis.ZP.rotation(n.rz));
 		PoseStack.Pose p = pose.last();
-		for (float[] c : n.cajas) caja(vc, p, c, luz, overlay);
+		for (float[] c : n.cajas) caja(vc, p, c, brilla((int) c[6]) ? net.minecraft.client.renderer.LightTexture.FULL_BRIGHT : luz, overlay);
 		for (Nodo hijo : n.hijos) dibujar(pose, vc, hijo, luz, overlay);
 		pose.popPose();
 	}

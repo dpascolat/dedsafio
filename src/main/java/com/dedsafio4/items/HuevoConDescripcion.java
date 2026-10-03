@@ -77,6 +77,19 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("Centro de Quiu", BLANCO));
 	}
 
+	public static void creeperAzalea(List<Component> t) {
+		t.add(parte("Al explotar, te atrapará con sus raíces.", GRIS));
+		t.add(parte("Debes ser rápido para librarte de ellas.", VIOLETA));
+		t.add(Component.empty());
+		t.add(parte("🏰 Aparece en: ", APARECE).append(parte("una mazmorra.", BLANCO)));
+	}
+
+	public static void zombiePlata(List<Component> t) {
+		t.add(parte("Zombie consumido por Qumara.", GRIS));
+		t.add(parte("Muy rápido y fuerte. ", GRIS).append(parte("Puede escalar", VIOLETA)));
+		t.add(parte("paredes.", VIOLETA));
+	}
+
 	public static void creeperNuclear(List<Component> t) {
 		t.add(parte("Provoca grandes explosiones.", GRIS));
 		t.add(Component.empty());

@@ -92,6 +92,17 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.ZarinosaEntity> ZARINOSA = registrar("zarinosa_espigueya",
 			EntityType.Builder.of(com.dedsafio4.bestias.ZarinosaEntity::new, MobCategory.MONSTER).sized(0.6f, 0.6f).clientTrackingRange(8));
 
+	/** Creeper Raíz de Azalea: 1,5 bloques de alto con la flor. */
+	public static final EntityType<com.dedsafio4.bestias.CreeperAzaleaEntity> CREEPER_AZALEA = registrar("creeper_raiz_azalea",
+			EntityType.Builder.of(com.dedsafio4.bestias.CreeperAzaleaEntity::new, MobCategory.MONSTER).sized(0.8f, 1.5f).clientTrackingRange(8));
+	/** Las raíces que atrapan al jugador (las crea el Creeper Raíz de Azalea al explotar). */
+	public static final EntityType<com.dedsafio4.bestias.RaicesEntity> RAICES = registrar("raices",
+			EntityType.Builder.<com.dedsafio4.bestias.RaicesEntity>of(com.dedsafio4.bestias.RaicesEntity::new, MobCategory.MISC)
+					.sized(1.2f, 1.6f).clientTrackingRange(8).updateInterval(2));
+	/** Zombie Plata: tamaño de zombie. */
+	public static final EntityType<com.dedsafio4.bestias.ZombiePlataEntity> ZOMBIE_PLATA = registrar("zombie_plata",
+			EntityType.Builder.of(com.dedsafio4.bestias.ZombiePlataEntity::new, MobCategory.MONSTER).sized(0.6f, 1.95f).clientTrackingRange(8));
+
 	/** Narval: unos 3 bloques de largo con el cuerno. */
 	public static final EntityType<com.dedsafio4.bestias.NarvalEntity> NARVAL = registrar("narval",
 			EntityType.Builder.of(com.dedsafio4.bestias.NarvalEntity::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(1.4f, 0.9f).clientTrackingRange(10));
@@ -134,6 +145,9 @@ public final class ModEntidades {
 		// Zarinosa: en las cuevas del Centro de Quiu.
 		SpawnPlacements.register(ZARINOSA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				com.dedsafio4.bestias.ZarinosaEntity::puedeAparecerEnCueva);
+		FabricDefaultAttributeRegistry.register(CREEPER_AZALEA, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		FabricDefaultAttributeRegistry.register(ZOMBIE_PLATA, com.dedsafio4.bestias.ZombiePlataEntity.crearAtributos());
+		com.dedsafio4.bestias.RaicesEntity.registrar();
 		FabricDefaultAttributeRegistry.register(NARVAL, com.dedsafio4.bestias.NarvalEntity.crearAtributos());
 		// Narval: en el agua de las cuevas del Centro de Quiu (acuíferos).
 		SpawnPlacements.register(NARVAL, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR,
