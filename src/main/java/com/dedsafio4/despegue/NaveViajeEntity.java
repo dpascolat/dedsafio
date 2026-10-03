@@ -62,6 +62,17 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private static final EntityDataAccessor<Boolean> HACIA_ROJO =
 			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.BOOLEAN);
 	public static final int QUIETA = 0, CUENTA = 1, DESPEGANDO = 2, ATERRIZANDO = 3, ESPACIO = 4;
+	/** Combustible del tanque, de 0 a 100 (%). */
+	private static final EntityDataAccessor<Integer> COMBUSTIBLE =
+			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.INT);
+	/** En qué parte de la Ruta de Vuelo va (para el tablero de los pasajeros): ver ETAPAS. */
+	private static final EntityDataAccessor<Integer> ETAPA =
+			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.INT);
+	/** 0 = en espera; 1..7 = las etapas del viaje; 8 = ya aterrizó (todas completas). */
+	public static final String[] ETAPAS = {"En espera", "Despegue", "Tránsito atmosférico", "Salida de atmósfera",
+			"Salto temporal", "Estabilización", "Aproximación", "Aterrizaje", "Viaje completado"};
+	/** Cada viaje gasta la mitad del tanque (ida y vuelta = 100%); cada Combustible carga un 10%. */
+	public static final int COMBUSTIBLE_VIAJE = 50, COMBUSTIBLE_CARGA = 10;
 
 	/** Cuenta regresiva: 5 segundos. Despegue: 14 segundos subiendo antes de salir al Espacio. */
 	public static final int TIEMPO_CUENTA = 100, TIEMPO_DESPEGUE = 280;
@@ -95,6 +106,40 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	protected void defineSynchedData(SynchedEntityData.Builder datos) {
 		datos.define(ESTADO, QUIETA);
 		datos.define(HACIA_ROJO, true);
+		datos.define(COMBUSTIBLE, 0);
+		datos.define(ETAPA, 0);
+	}
+
+	public int combustible() {
+		return entityData.get(COMBUSTIBLE);
+	}
+
+	private void combustible(int nuevo) {
+		entityData.set(COMBUSTIBLE, Mth.clamp(nuevo, 0, 100));
+	}
+
+	public int etapa() {
+		return entityData.get(ETAPA);
+	}
+
+	private void etapa(int nueva) {
+		entityData.set(ETAPA, nueva);
+	}
+
+	/** Cargar un Combustible (desde afuera con click derecho, o adentro usándolo). */
+	public void cargar(Player jugador, ItemStack combustible) {
+		if (estado() == DESPEGANDO || estado() == ATERRIZANDO || estado() == ESPACIO) {
+			jugador.displayClientMessage(Component.literal("No se puede cargar combustible en pleno vuelo.").withColor(AMARILLO), true);
+			return;
+		}
+		if (combustible() >= 100) {
+			jugador.displayClientMessage(Component.literal("El tanque ya está lleno.").withColor(AMARILLO), true);
+			return;
+		}
+		combustible(combustible() + COMBUSTIBLE_CARGA);
+		if (!jugador.getAbilities().instabuild) combustible.shrink(1);
+		level().playSound(null, blockPosition(), SoundEvents.BUCKET_EMPTY_LAVA, SoundSource.NEUTRAL, 1f, 0.8f);
+		jugador.displayClientMessage(Component.literal("Combustible: " + combustible() + "%").withColor(NARANJA), true);
 	}
 
 	public int estado() {
@@ -142,10 +187,17 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 			nave.dueno = jugador.getUUID();
 			nave.nombreDueno = jugador.getGameProfile().getName();
 		}
+		nave.combustible(combustibleDe(contexto.getItemInHand()));
 		level.addFreshEntity(nave);
 		level.playSound(null, pos, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.5f, 1.4f);
 		if (jugador == null || !jugador.getAbilities().instabuild) contexto.getItemInHand().shrink(1);
 		return InteractionResult.CONSUME;
+	}
+
+	/** El combustible que le quedaba a la nave cuando se guardó en el inventario. */
+	public static int combustibleDe(ItemStack nave) {
+		return nave.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+				net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getInt("Combustible");
 	}
 
 	// --- Subirse, bajarse y guardarla ---
@@ -163,9 +215,20 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				return InteractionResult.CONSUME;
 			}
 			ItemStack nave = new ItemStack(PartesNave.NAVE_BIPLAZA);
+			if (combustible() > 0) {
+				CompoundTag datos = new CompoundTag();
+				datos.putInt("Combustible", combustible());
+				nave.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+						net.minecraft.world.item.component.CustomData.of(datos));
+			}
 			if (!jugador.getInventory().add(nave)) jugador.drop(nave, false);
 			level().playSound(null, blockPosition(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.8f, 0.8f);
 			discard();
+			return InteractionResult.CONSUME;
+		}
+		ItemStack enMano = jugador.getItemInHand(mano);
+		if (enMano.is(ModDespegue.COMBUSTIBLE)) {
+			cargar(jugador, enMano);
 			return InteractionResult.CONSUME;
 		}
 		if (estado() == DESPEGANDO || estado() == ATERRIZANDO || estado() == ESPACIO) return InteractionResult.PASS;
@@ -221,16 +284,21 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 			case QUIETA -> {
 				if (!isVehicle()) recienLlegada = false;
 				else if (recienLlegada && tiempo % 60 == 1) aviso("Aterrizaste. Presiona Shift para bajarte.");
-				if (tienePiloto() && !recienLlegada) estado(CUENTA);
+				etapa(recienLlegada ? 8 : 0);
+				if (tienePiloto() && !recienLlegada) {
+					if (combustible() >= COMBUSTIBLE_VIAJE) estado(CUENTA);
+					else if (tiempo % 60 == 1) aviso("Falta combustible: necesitas " + COMBUSTIBLE_VIAJE + "% (tienes " + combustible() + "%).");
+				}
 			}
 			case CUENTA -> {
 				if (!tienePiloto()) {
 					estado(QUIETA);
 					return;
 				}
+				// El cartel de "La nave está siendo encendida" lo dibuja el tablero (NaveTablero, en el cliente).
+				etapa(0);
 				if (tiempo % 20 == 1) {
 					int falta = 5 - (tiempo - 1) / 20;
-					titulo(String.valueOf(falta), NARANJA, "Despegue en...");
 					sonido(mundo, SoundEvents.NOTE_BLOCK_PLING.value(), 1f, 0.6f + (5 - falta) * 0.15f);
 				}
 				// Humo en la base, cada vez más, y la nave que empieza a temblar (ver NaveViajeModelo).
@@ -238,6 +306,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 						1 + tiempo / 25, 0.7, 0.05, 0.7, 0.01);
 				if (tiempo > 60) mundo.sendParticles(ParticleTypes.FLAME, getX(), getY() + 0.1, getZ(), 2, 0.2, 0.05, 0.2, 0.01);
 				if (tiempo >= TIEMPO_CUENTA) {
+					combustible(combustible() - COMBUSTIBLE_VIAJE);
 					estado(DESPEGANDO);
 					velocidad = 0;
 					titulo("¡Despegue!", NARANJA, "");
@@ -249,6 +318,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 			}
 			case DESPEGANDO -> {
 				// La nave se queda en la plataforma: lo que sube es el dibujo (y los pasajeros), ver altura().
+				etapa(tiempo < 90 ? 1 : tiempo < 200 ? 2 : 3);
 				velocidad = siguienteVelocidad(velocidad, tiempo);
 				alturaAntes = altura;
 				altura += velocidad;
@@ -262,6 +332,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 					sueloLlegada = mundo.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, blockPosition()).getY();
 				}
 				double falta = getY() - sueloLlegada;
+				etapa(falta > 12 ? 6 : 7);
 				double bajada = Mth.clamp(falta * 0.05, 0.08, 0.9);
 				if (falta <= 0) bajada = 0.08;
 				// Frena cuando el motor toca el piso de verdad (si está más abajo de lo calculado al llegar, sigue
@@ -283,6 +354,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 			}
 			case ESPACIO -> {
 				// Viajando por el Espacio: el fuego del motor sale abajo; al terminar, llega al planeta de destino.
+				etapa(tiempo < 260 ? 4 : 5);
 				fuego(mundo, 0.6f);
 				if (tiempo % 8 == 0) sonido(mundo, SoundEvents.BLAZE_SHOOT, 1.2f, 0.4f);
 				if (tiempo >= TIEMPO_ESPACIO) llegar(mundo);
@@ -407,6 +479,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		nueva.dueno = dueno;
 		nueva.nombreDueno = nombreDueno;
 		nueva.entityData.set(HACIA_ROJO, haciaRojo());
+		nueva.combustible(combustible());
 		destino.addFreshEntity(nueva);
 		nueva.estado(estadoNuevo);
 		for (Entity pasajero : pasajeros) {
@@ -454,6 +527,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	protected void readAdditionalSaveData(CompoundTag datos) {
 		if (datos.hasUUID("Dueno")) dueno = datos.getUUID("Dueno");
 		nombreDueno = datos.getString("NombreDueno");
+		combustible(datos.getInt("Combustible"));
 		int guardado = datos.getInt("Estado");
 		entityData.set(HACIA_ROJO, !datos.contains("HaciaRojo") || datos.getBoolean("HaciaRojo"));
 		// Si se guardó en el Espacio, vuelve a viajar; en el aire, baja hasta el piso; contando, vuelve a esperar.
@@ -473,6 +547,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		if (dueno != null) datos.putUUID("Dueno", dueno);
 		datos.putString("NombreDueno", nombreDueno);
 		datos.putInt("Estado", estado());
+		datos.putInt("Combustible", combustible());
 		datos.putBoolean("HaciaRojo", haciaRojo());
 		if (!Double.isNaN(sueloLlegada)) datos.putDouble("Suelo", sueloLlegada);
 	}

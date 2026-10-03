@@ -36,6 +36,10 @@ public final class ModDespegue {
 	public static final Item PLATAFORMA_METAL_ITEM = item("plataforma_metal", PLATAFORMA_METAL);
 	public static final Item PLATAFORMA_BORDE_ITEM = item("plataforma_borde", PLATAFORMA_BORDE);
 
+	/** Combustible para la Nave Espacial Biplaza: cada uno carga un 10% del tanque. */
+	public static final Item COMBUSTIBLE = Registry.register(BuiltInRegistries.ITEM, id("combustible"),
+			new CombustibleItem(new Item.Properties().stacksTo(16)));
+
 	/** La nave parada: unos 4 bloques de alto (el modelo, de punta a motor). */
 	public static final EntityType<NaveViajeEntity> NAVE_VIAJE = Registry.register(BuiltInRegistries.ENTITY_TYPE,
 			id("nave_viaje"),
