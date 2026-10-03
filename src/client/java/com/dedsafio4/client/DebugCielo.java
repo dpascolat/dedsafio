@@ -1950,13 +1950,37 @@ public final class DebugCielo {
 			if (mc.screen != null) mc.setScreen(null);
 			comando(mc, "gamemode creative");
 			comando(mc, "effect give @s minecraft:night_vision 600 0 true");
-			comando(mc, "execute in dedsafio4:organos run tp @s 9000.5 150 9030.5 180 35");
+			comando(mc, "execute in dedsafio4:organos run tp @s " + (System.getenv("DEDSAFIO4_X") != null ? System.getenv("DEDSAFIO4_X") : "9000.5") + " 150 9030.5 180 35");
 		}
 		if (t >= 2 && t < 400) { mc.player.getAbilities().flying = true; }
-		if (t == 120) comando(mc, "execute in dedsafio4:organos run fill 8988 30 9004 9013 160 9012 minecraft:air");
+		if (t == 120 && System.getenv("DEDSAFIO4_X") == null) comando(mc, "execute in dedsafio4:organos run fill 8988 30 9004 9013 160 9012 minecraft:air");
+		if (t == 120 && System.getenv("DEDSAFIO4_X") != null) comando(mc, "execute in dedsafio4:organos run spreadplayers " + System.getenv("DEDSAFIO4_X") + " 9030.5 0 1 false @s");
+		if (t == 140 && System.getenv("DEDSAFIO4_X") != null) comando(mc, "tp @s ~ ~6 ~");
 		if (t >= 3 && t < 400) { mc.player.setYRot(180f); mc.player.setXRot(35f); mc.player.yRotO = 180f; mc.player.xRotO = 35f; }
 		if (t == 100) captura(mc, "debug_organos1.png");
 		if (t == 200) captura(mc, "debug_organos2.png");
+		if (t == 195) {
+			var server = mc.getSingleplayerServer();
+			if (server != null) server.execute(() -> {
+				var w = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+						net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "organos")));
+				if (w == null) return;
+				var centro = server.getPlayerList().getPlayers().get(0).blockPosition();
+				java.util.Map<String, Integer> cuenta = new java.util.TreeMap<>();
+				int columnas = 0;
+				for (int x = -64; x <= 64; x++) for (int z = -64; z <= 64; z++) {
+					if (!w.hasChunkAt(centro.offset(x, 0, z))) continue;
+					columnas++;
+					for (int y = 40; y < 160; y++) {
+						var b = w.getBlockState(new net.minecraft.core.BlockPos(centro.getX() + x, y, centro.getZ() + z)).getBlock();
+						String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
+						if (id.equals("pasto_rosa") || id.equals("bloque_carne") || id.equals("bloque_carne_rosa") || id.equals("bloque_dientes"))
+							cuenta.merge(id, 1, Integer::sum);
+					}
+				}
+				Dedsafio4ClientDebug.info("organoscorte: en " + columnas + " columnas: " + cuenta);
+			});
+		}
 		if (t == 202) Dedsafio4ClientDebug.info("organoscorte: listo");
 	}
 

@@ -1,9 +1,9 @@
 {
-	"feature": "dedsafio4:pasto_rosa",
+	"feature": "dedsafio4:verrugas",
 	"placement": [
 		{
 			"type": "minecraft:count",
-			"count": 2
+			"count": 1
 		},
 		{
 			"type": "minecraft:in_square"
