@@ -16,14 +16,14 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Dentadura Glebanoide: tres dientes grandes sobre una encía (el modelo es de casi dos bloques de ancho y uno y tres
- * cuartos de alto). Queda mirando hacia el que lo pone y va apoyado sobre un bloque sólido.
+ * Dentadura Glebanoide: tres dientes sobre una encía (un bloque de largo y un poco menos de un bloque de alto).
+ * Queda mirando hacia el que lo pone y va apoyado sobre un bloque sólido.
  */
 public class BloqueDientesBlock extends HorizontalDirectionalBlock {
 	public static final MapCodec<BloqueDientesBlock> CODEC = simpleCodec(BloqueDientesBlock::new);
 	/** El largo de la encía va de lado a lado (norte/sur) o adelante-atrás (este/oeste). */
-	private static final VoxelShape A_LO_ANCHO = Block.box(-8, 0, 3, 24, 28, 13);
-	private static final VoxelShape A_LO_LARGO = Block.box(3, 0, -8, 13, 28, 24);
+	private static final VoxelShape A_LO_ANCHO = Block.box(0, 0, 5.5, 16, 14, 10.5);
+	private static final VoxelShape A_LO_LARGO = Block.box(5.5, 0, 0, 10.5, 14, 16);
 
 	public BloqueDientesBlock(Properties propiedades) {
 		super(propiedades);
