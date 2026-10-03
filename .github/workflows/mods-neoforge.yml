@@ -1,0 +1,31 @@
+# Baja los mods que necesita la versión NeoForge (según dedsafio-neoforge.json), comprueba su sha1 y los deja
+# en la rama mods-neoforge, junto con dedsafio4-neoforge.jar. Se corre a mano.
+name: Juntar mods NeoForge
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  juntar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bajar y subir
+        run: |
+          mkdir -p /tmp/mods
+          python3 - <<'PY'
+          import json, hashlib, urllib.request, shutil
+          for m in json.load(open("dedsafio-neoforge.json", encoding="utf-8"))["mods"]:
+              destino = "/tmp/mods/" + m["archivo"]
+              if m["archivo"] == "dedsafio4-neoforge.jar":
+                  shutil.copy("dedsafio4-neoforge.jar", destino)
+              else:
+                  urllib.request.urlretrieve(m["url"], destino)
+              sha1 = hashlib.sha1(open(destino, "rb").read()).hexdigest()
+              print(m["archivo"], "OK" if sha1 == m["sha1"] else "SHA1 DISTINTO " + sha1)
+          PY
+          cd /tmp/mods
+          git init -q -b mods-neoforge
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -q -m "Mods de la versión NeoForge"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" mods-neoforge
