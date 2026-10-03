@@ -163,7 +163,10 @@ public final class ModBloques {
 	/** Bloque de Carne: un trozo chiquito (más bajo que una losa y más angosto). */
 	public static final Block BLOQUE_CARNE = registrar("bloque_carne", new BloqueCarneBlock(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.CRIMSON_NYLIUM).strength(0.6f).sound(SoundType.MUD).noOcclusion()));
-	public static final Item BLOQUE_CARNE_ITEM = registrarItem("bloque_carne", BLOQUE_CARNE);
+	/** Verruga Oscura Glebanoide (id bloque_carne). */
+	public static final Item BLOQUE_CARNE_ITEM = Registry.register(BuiltInRegistries.ITEM,
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "bloque_carne"),
+			new com.dedsafio4.items.BloqueDescritoItem(BLOQUE_CARNE, new Item.Properties(), com.dedsafio4.items.DescritoItem::verrugaClaraGlebanoide));
 	/** Bloque de Carne Rosa: igual, pero rosita clarito. */
 	public static final Block BLOQUE_CARNE_ROSA = registrar("bloque_carne_rosa", new BloqueCarneBlock(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.COLOR_PINK).strength(0.6f).sound(SoundType.MUD).noOcclusion()));

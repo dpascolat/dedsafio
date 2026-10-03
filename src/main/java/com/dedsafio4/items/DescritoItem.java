@@ -132,7 +132,7 @@ public class DescritoItem extends Item {
 		t.add(parte("Glebanoide", CELESTE).append(parte(".", GRIS)));
 	}
 
-	/** Verruga Clara Glebanoide (id bloque_carne_rosa): se saca con espada; al romperla sale un Parásito Volador. */
+	/** Verruga Clara y Oscura Glebanoide (ids bloque_carne_rosa y bloque_carne): se sacan con espada; al romperlas sale un Parásito Volador. */
 	public static void verrugaClaraGlebanoide(List<Component> t) {
 		t.add(parte("Utiliza una ", GRIS).append(parte("Espada", VIOLETA)).append(parte(" para", GRIS)));
 		t.add(parte("conseguirla.", GRIS));
