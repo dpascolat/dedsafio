@@ -214,13 +214,15 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.qumara.AgarreMinijuego.registrar();
 		com.dedsafio4.client.qumara.AtraerCliente.registrar();
 		CatalogoCliente.registrar();
+		EntityRendererRegistry.register(ModEntidades.MIRA, com.dedsafio4.client.bestias.ReptisaurioRenderer::new);
 		for (int i = 0; i < ModEntidades.LAGARTOS.size(); i++) {
-			LagartoEntity.Variante variante = LagartoEntity.Variante.values()[i];
+			LagartoEntity.Variante variante = LagartoEntity.Variante.values()[i + 1];   // la 0 (Mira) ya no es lagarto
 			EntityRendererRegistry.register(ModEntidades.LAGARTOS.get(i),
 					contexto -> new LagartoRenderer(contexto, variante));
 		}
 		EntityRendererRegistry.register(ModEntidades.DROMORAPTOR_ROJO, c -> new com.dedsafio4.client.bestias.RaptorRenderer(c, false));
 		EntityRendererRegistry.register(ModEntidades.RAPTOR_TURQUESA, c -> new com.dedsafio4.client.bestias.RaptorRenderer(c, true));
+		EntityRendererRegistry.register(ModEntidades.CREEPER_NUCLEAR, com.dedsafio4.client.bestias.CreeperNuclearRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NARVAL, com.dedsafio4.client.bestias.NarvalRenderer::new);
 		EntityModelLayerRegistry.registerModelLayer(BombaWardenRenderer.CAPA, BombaWardenModelo::crearCapa);
 		EntityRendererRegistry.register(ModEntidades.RAYO, RayoRenderer::new);

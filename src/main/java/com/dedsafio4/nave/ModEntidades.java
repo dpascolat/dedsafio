@@ -37,9 +37,10 @@ public final class ModEntidades {
 			EntityType.Builder.of(SoarerEntity::new, MobCategory.MONSTER).sized(2.6f, 3.0f).clientTrackingRange(12));
 
 	// Los cuatro lagartos: mismo cuerpo, distintos colores y adornos.
-	public static final EntityType<LagartoEntity> MIRA = registrar("mira",
-			EntityType.Builder.<LagartoEntity>of((tipo, level) -> new LagartoEntity(tipo, level, LagartoEntity.Variante.MIRA), MobCategory.MONSTER)
-					.sized(1.2f, 2.0f).clientTrackingRange(10));
+	/** Reptisaurio Salvaje (id "mira"): el chiquito con caparazón que se entierra. */
+	public static final EntityType<com.dedsafio4.bestias.ReptisaurioEntity> MIRA = registrar("mira",
+			EntityType.Builder.of(com.dedsafio4.bestias.ReptisaurioEntity::new, MobCategory.MONSTER)
+					.sized(0.8f, 1.0f).clientTrackingRange(10));
 
 	public static final EntityType<LagartoEntity> REPTISAURIO_GUERRERO = registrar("reptisaurio_guerrero",
 			EntityType.Builder.<LagartoEntity>of((tipo, level) -> new LagartoEntity(tipo, level, LagartoEntity.Variante.REPTISAURIO_GUERRERO), MobCategory.CREATURE)
@@ -80,11 +81,15 @@ public final class ModEntidades {
 	/** El raptor turquesa (todavía sin nombre). */
 	public static final EntityType<com.dedsafio4.bestias.RaptorEntity> RAPTOR_TURQUESA = registrar("raptor_turquesa",
 			EntityType.Builder.of(com.dedsafio4.bestias.RaptorEntity::new, MobCategory.CREATURE).sized(0.9f, 1.6f).clientTrackingRange(10));
+	/** Creeper Nuclear: la bomba andante (12 px de ancho y ~19 de alto con el botón). */
+	public static final EntityType<com.dedsafio4.bestias.CreeperNuclearEntity> CREEPER_NUCLEAR = registrar("creeper_nuclear",
+			EntityType.Builder.of(com.dedsafio4.bestias.CreeperNuclearEntity::new, MobCategory.MONSTER).sized(0.8f, 1.2f).clientTrackingRange(8));
+
 	/** Narval: unos 3 bloques de largo con el cuerno. */
 	public static final EntityType<com.dedsafio4.bestias.NarvalEntity> NARVAL = registrar("narval",
 			EntityType.Builder.of(com.dedsafio4.bestias.NarvalEntity::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(1.4f, 0.9f).clientTrackingRange(10));
 
-	public static final java.util.List<EntityType<LagartoEntity>> LAGARTOS = java.util.List.of(MIRA, REPTISAURIO_GUERRERO, REPTISAURIO_ARQUERO, REPTISAURIO_LANZA);
+	public static final java.util.List<EntityType<LagartoEntity>> LAGARTOS = java.util.List.of(REPTISAURIO_GUERRERO, REPTISAURIO_ARQUERO, REPTISAURIO_LANZA);
 
 	private static <T extends net.minecraft.world.entity.Entity> EntityType<T> registrar(String nombre, EntityType.Builder<T> builder) {
 		ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, nombre);
@@ -102,6 +107,9 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(CREEPER_AMARILLO, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		FabricDefaultAttributeRegistry.register(DROMORAPTOR_ROJO, com.dedsafio4.bestias.RaptorEntity.atributosDromoraptor());
 		FabricDefaultAttributeRegistry.register(RAPTOR_TURQUESA, com.dedsafio4.bestias.RaptorEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(CREEPER_NUCLEAR, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		SpawnPlacements.register(CREEPER_NUCLEAR, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(NARVAL, com.dedsafio4.bestias.NarvalEntity.crearAtributos());
 		// Narval: en el agua de las cuevas del Centro de Quiu (acuíferos).
 		SpawnPlacements.register(NARVAL, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR,
@@ -118,6 +126,7 @@ public final class ModEntidades {
 				WalkerEntity::puedeAparecer);
 		// Reptisaurio Salvaje: en las cuevas del Centro de Quiu (sin cielo y a oscuras).
 		SpawnPlacements.register(MIRA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-				LagartoEntity::puedeAparecerEnCueva);
+				com.dedsafio4.bestias.ReptisaurioEntity::puedeAparecerEnCueva);
+		FabricDefaultAttributeRegistry.register(MIRA, com.dedsafio4.bestias.ReptisaurioEntity.crearAtributos());
 	}
 }

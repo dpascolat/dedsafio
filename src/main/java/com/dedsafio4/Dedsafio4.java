@@ -174,6 +174,10 @@ public class Dedsafio4 implements ModInitializer {
 		// Zombis en todo el Nether: sólo aparecen con "zombi 3" (SpawnPlacementsMixin), sin importar la luz.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInTheNether(),
 				MobCategory.MONSTER, EntityType.ZOMBIE, 100, 2, 4);
+		// El Creeper Nuclear aparece en la nieve.
+		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.SNOWY_PLAINS, Biomes.SNOWY_TAIGA, Biomes.ICE_SPIKES,
+						Biomes.SNOWY_SLOPES, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.GROVE, Biomes.SNOWY_BEACH, Biomes.FROZEN_RIVER),
+				MobCategory.MONSTER, ModEntidades.CREEPER_NUCLEAR, 40, 1, 1);
 		// Las Bombas Warden aparecen solas en la Oscuridad Profunda.
 		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.DEEP_DARK),
 				MobCategory.MONSTER, ModEntidades.BOMBA_WARDEN, 30, 1, 2);

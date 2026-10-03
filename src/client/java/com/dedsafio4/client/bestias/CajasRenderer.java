@@ -56,6 +56,21 @@ public abstract class CajasRenderer<T extends LivingEntity> extends EntityRender
 	/** Acomoda los huesos para este cuadro. */
 	protected abstract void animar(T bicho, float parcial);
 
+	/** Cuánto hay que girar el diseño para que mire hacia adelante: -90 si la cabeza mira a +X, 0 si mira a +Z. */
+	protected float giroDiseno() {
+		return -90;
+	}
+
+	/** Cuánto titila en blanco (como el creeper a punto de explotar), de 0 a 1. */
+	protected float blanco(T bicho, float parcial) {
+		return 0;
+	}
+
+	/** Agrandar todo el bicho (1 = tamaño normal). */
+	protected float escala(T bicho, float parcial) {
+		return 1;
+	}
+
 	@Override
 	public void render(T bicho, float yaw, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
 		animar(bicho, parcial);
@@ -66,10 +81,11 @@ public abstract class CajasRenderer<T extends LivingEntity> extends EntityRender
 			float caida = Math.min(1f, Mth.sqrt((bicho.deathTime + parcial - 1) / 20f * 1.6f));
 			pose.mulPose(Axis.ZP.rotationDegrees(caida * 90f));
 		}
-		pose.mulPose(Axis.YP.rotationDegrees(-90));   // del diseño (+X adelante) al de Minecraft (+Z adelante)
-		pose.scale(1 / 16f, 1 / 16f, 1 / 16f);
+		pose.mulPose(Axis.YP.rotationDegrees(giroDiseno()));   // del diseño al de Minecraft (+Z adelante)
+		float escala = escala(bicho, parcial) / 16f;
+		pose.scale(escala, escala, escala);
 		VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(bicho)));
-		int overlay = LivingEntityRenderer.getOverlayCoords(bicho, 0);
+		int overlay = LivingEntityRenderer.getOverlayCoords(bicho, blanco(bicho, parcial));
 		dibujar(pose, vc, raiz, luz, overlay);
 		pose.popPose();
 		super.render(bicho, yaw, parcial, pose, buffers, luz);

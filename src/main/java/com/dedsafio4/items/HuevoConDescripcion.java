@@ -45,6 +45,12 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("Se desplaza en manada.", GRIS));
 	}
 
+	public static void creeperNuclear(List<Component> t) {
+		t.add(parte("Provoca grandes explosiones.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("❄ Aparece en: ", APARECE).append(parte("la Nieve.", BLANCO)));
+	}
+
 	public static void narval(List<Component> t) {
 		t.add(parte("Habita los acuíferos del Centro de Quiu.", GRIS));
 		t.add(parte("Si detecta intrusos embestirá a gran", GRIS));
@@ -72,11 +78,11 @@ public class HuevoConDescripcion extends SpawnEggItem {
 
 	/** El Reptisaurio Salvaje (Mira). */
 	public static void reptisaurioSalvaje(List<Component> t) {
-		t.add(parte("Criatura salvaje del Centro", GRIS));
-		t.add(parte("de Quiu. Muy territorial,", GRIS));
-		t.add(parte("dispuesto a defender su", GRIS));
-		t.add(parte("hogar de los intrusos.", GRIS));
-		t.add(parte("Atacará al instante.", VIOLETA));
+		t.add(parte("Criatura pequeña que ataca directamente", GRIS));
+		t.add(parte("a quien se le acerque. ", GRIS).append(parte("Si te acercas", VIOLETA)));
+		t.add(parte("demasiado, se entierra y te acecha", VIOLETA));
+		t.add(parte("hasta encontrarte, saliendo de nuevo", VIOLETA));
+		t.add(parte("para atacar.", VIOLETA));
 		drop(t, "Sangre de Reptisaurio");
 		t.add(Component.empty());
 		t.add(parte("🌴 Aparece en: ", APARECE).append(parte("Cuevas del", BLANCO)));
