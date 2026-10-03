@@ -31,6 +31,8 @@ jobs:
           ./gradlew -p neoforge compileJava --no-daemon -q
           # El juego corre desde una copia (otra carpeta de juego y sin pelearse con el Gradle del servidor).
           cp -r neoforge neoforge-juego
+          # Sin la pantalla de bienvenida de la primera vez (si no, no entra solo al servidor).
+          mkdir -p neoforge-juego/run && printf 'onboardAccessibility:false\nnarrator:0\nskipMultiplayerWarning:true\njoinedFirstServer:true\n' > neoforge-juego/run/options.txt
           ./gradlew -p neoforge runServer --no-daemon > servidor.log 2>&1 &
           for i in $(seq 1 180); do
             if grep -qE 'Done \(|Crash report|Failed to start|BUILD FAILED' servidor.log; then break; fi

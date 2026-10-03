@@ -92,6 +92,7 @@ public final class Puente {
 		mod.addListener(EventPriority.NORMAL, false, net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.class,
 				e -> NeoComun.COLOCACIONES.forEach(c -> c.accept(e)));
 		eventosDelJuego(NeoForge.EVENT_BUS);
+		AjustesNeoForge.registrar(NeoForge.EVENT_BUS);
 		if (lado.isClient()) PuenteCliente.iniciar(mod);
 	}
 
