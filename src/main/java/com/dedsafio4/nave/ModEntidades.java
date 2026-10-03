@@ -74,6 +74,16 @@ public final class ModEntidades {
 			EntityType.Builder.<RayoEntity>of(RayoEntity::new, MobCategory.MISC).sized(0.3125f, 0.3125f)
 					.clientTrackingRange(8).updateInterval(1));
 
+	/** Dromoraptor Rojo (el raptor naranja): 1,6 de alto y ~1,8 de largo con la cola. */
+	public static final EntityType<com.dedsafio4.bestias.RaptorEntity> DROMORAPTOR_ROJO = registrar("dromoraptor_rojo",
+			EntityType.Builder.of(com.dedsafio4.bestias.RaptorEntity::new, MobCategory.MONSTER).sized(0.9f, 1.6f).clientTrackingRange(10));
+	/** El raptor turquesa (todavía sin nombre). */
+	public static final EntityType<com.dedsafio4.bestias.RaptorEntity> RAPTOR_TURQUESA = registrar("raptor_turquesa",
+			EntityType.Builder.of(com.dedsafio4.bestias.RaptorEntity::new, MobCategory.CREATURE).sized(0.9f, 1.6f).clientTrackingRange(10));
+	/** Narval: unos 3 bloques de largo con el cuerno. */
+	public static final EntityType<com.dedsafio4.bestias.NarvalEntity> NARVAL = registrar("narval",
+			EntityType.Builder.of(com.dedsafio4.bestias.NarvalEntity::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(1.4f, 0.9f).clientTrackingRange(10));
+
 	public static final java.util.List<EntityType<LagartoEntity>> LAGARTOS = java.util.List.of(MIRA, REPTISAURIO_GUERRERO, REPTISAURIO_ARQUERO, REPTISAURIO_LANZA);
 
 	private static <T extends net.minecraft.world.entity.Entity> EntityType<T> registrar(String nombre, EntityType.Builder<T> builder) {
@@ -90,6 +100,12 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(ALDEANO_ROBOT, AldeanoRobotEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CREEPER_PASTO, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		FabricDefaultAttributeRegistry.register(CREEPER_AMARILLO, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		FabricDefaultAttributeRegistry.register(DROMORAPTOR_ROJO, com.dedsafio4.bestias.RaptorEntity.atributosDromoraptor());
+		FabricDefaultAttributeRegistry.register(RAPTOR_TURQUESA, com.dedsafio4.bestias.RaptorEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(NARVAL, com.dedsafio4.bestias.NarvalEntity.crearAtributos());
+		// Narval: en el agua de las cuevas del Centro de Quiu (acuíferos).
+		SpawnPlacements.register(NARVAL, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR,
+				com.dedsafio4.bestias.NarvalEntity::puedeAparecer);
 		for (EntityType<LagartoEntity> lagarto : LAGARTOS) {
 			FabricDefaultAttributeRegistry.register(lagarto,
 					lagarto == REPTISAURIO_GUERRERO ? LagartoEntity.atributosGuerrero() : LagartoEntity.crearAtributos());

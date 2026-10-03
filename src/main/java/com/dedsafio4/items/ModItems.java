@@ -257,6 +257,15 @@ public final class ModItems {
 	public static final Item REPTISAURIO_LANZA_SPAWN_EGG = registrar("reptisaurio_lanza_spawn_egg",
 			new SpawnEggItem(ModEntidades.REPTISAURIO_LANZA, 0xC07A1E, 0xE8C870, new Item.Properties()));
 
+	public static final Item DROMORAPTOR_ROJO_SPAWN_EGG = registrar("dromoraptor_rojo_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.DROMORAPTOR_ROJO, 0xB5532A, 0x2A3F8F, new Item.Properties(),
+					HuevoConDescripcion::dromoraptorRojo));
+	public static final Item RAPTOR_TURQUESA_SPAWN_EGG = registrar("raptor_turquesa_spawn_egg",
+			new SpawnEggItem(ModEntidades.RAPTOR_TURQUESA, 0x2E9C9A, 0xC41E24, new Item.Properties()));
+	public static final Item NARVAL_SPAWN_EGG = registrar("narval_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.NARVAL, 0x26337E, 0xDCDCD2, new Item.Properties(),
+					HuevoConDescripcion::narval));
+
 	/** Huevo generador del Plumosaurio (id walker). */
 	public static final Item WALKER_SPAWN_EGG = registrar("walker_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.WALKER, 0x6B5A46, 0xC9B189, new Item.Properties(),
@@ -508,6 +517,9 @@ public final class ModItems {
 						entradas.accept(BOMBA_WARDEN_SPAWN_EGG);
 						entradas.accept(SOARER_SPAWN_EGG);
 						entradas.accept(WALKER_SPAWN_EGG);
+						entradas.accept(DROMORAPTOR_ROJO_SPAWN_EGG);
+						entradas.accept(RAPTOR_TURQUESA_SPAWN_EGG);
+						entradas.accept(NARVAL_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.casino.ModCasino.CASINO_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.nave.PartesNave.CABINA);
 						entradas.accept(com.dedsafio4.nave.PartesNave.MOTOR);

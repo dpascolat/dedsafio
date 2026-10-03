@@ -219,6 +219,9 @@ public class Dedsafio4Client implements ClientModInitializer {
 			EntityRendererRegistry.register(ModEntidades.LAGARTOS.get(i),
 					contexto -> new LagartoRenderer(contexto, variante));
 		}
+		EntityRendererRegistry.register(ModEntidades.DROMORAPTOR_ROJO, c -> new com.dedsafio4.client.bestias.RaptorRenderer(c, false));
+		EntityRendererRegistry.register(ModEntidades.RAPTOR_TURQUESA, c -> new com.dedsafio4.client.bestias.RaptorRenderer(c, true));
+		EntityRendererRegistry.register(ModEntidades.NARVAL, com.dedsafio4.client.bestias.NarvalRenderer::new);
 		EntityModelLayerRegistry.registerModelLayer(BombaWardenRenderer.CAPA, BombaWardenModelo::crearCapa);
 		EntityRendererRegistry.register(ModEntidades.RAYO, RayoRenderer::new);
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
