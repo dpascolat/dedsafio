@@ -48,10 +48,20 @@ jobs:
           pkill -f 'xvfb-run' || true
           pkill -f java || true
 
+      - name: Código de NeoForge donde no encajan inyecciones
+        if: always()
+        run: |
+          mkdir -p /tmp/diag
+          JAR=neoforge/build/moddev/artifacts/neoforge-21.1.252.jar
+          for c in net.minecraft.world.entity.LivingEntity net.minecraft.world.entity.projectile.ThrownEnderpearl; do
+            javap -c -p -cp "$JAR" "$c" > "/tmp/diag/javap-$c.txt" 2>&1 || true
+          done
+          ls -la /tmp/diag
+
       - name: Subir los logs a la rama diagnostico-neoforge
         if: always()
         run: |
-          mkdir -p /tmp/diag && cp servidor.log juego.log /tmp/diag/ 2>/dev/null || true
+          mkdir -p /tmp/diag; cp servidor.log juego.log /tmp/diag/ 2>/dev/null || true
           cp neoforge/run/logs/*.log /tmp/diag/ 2>/dev/null || true
           cp neoforge-juego/run/logs/latest.log /tmp/diag/juego-latest.log 2>/dev/null || true
           cp neoforge-juego/run/crash-reports/*.txt neoforge/run/crash-reports/*.txt /tmp/diag/ 2>/dev/null || true
