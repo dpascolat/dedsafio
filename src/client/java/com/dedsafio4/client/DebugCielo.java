@@ -1593,7 +1593,7 @@ public final class DebugCielo {
 		if (t == 20) comando(mc, "ruleta rojo");
 		if (t == 120) captura(mc, "debug_ruleta1_rojo.png");
 		if (t == 280) captura(mc, "debug_ruleta2_rojo_final.png");
-		if (t == 360) captura(mc, "debug_ruleta3_criatura.png");
+		if (t == 360) { captura(mc, "debug_ruleta3_criatura.png"); var r = mc.player.getEffect(com.dedsafio4.pociones.ModPociones.EFECTO_ROJIZO); Dedsafio4ClientDebug.info("ruleta: rojizo=" + (r == null ? "no" : r.getDuration() + " ticks, particulas=" + r.isVisible())); }
 		if (t == 470) comando(mc, "ruleta rosa");
 		if (t == 600) captura(mc, "debug_ruleta4_rosa.png");
 		if (t == 775) captura(mc, "debug_ruleta5_nutria.png");

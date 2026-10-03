@@ -30,8 +30,8 @@ public final class PocionesCliente {
 	// ---------- Rojizo: el mundo teñido de rojo (el HUD no) ----------
 
 	/** Se multiplica la pantalla por este color y encima va un velo rojo suave. */
-	private static final float ROJO = 1f, VERDE = 0.35f, AZUL = 0.3f;
-	private static final int VELO = 0x30A00000;
+	private static final float ROJO = 1f, VERDE = 0.62f, AZUL = 0.56f;
+	private static final int VELO = 0x18B00000;
 
 	/** Se llama al empezar a dibujar el HUD: en ese momento en la pantalla solo está el mundo. */
 	public static void dibujarRojizo(GuiGraphics graphics) {
