@@ -55,6 +55,7 @@ public class Dedsafio4 implements ModInitializer {
 		ModBloques.registrar();
 		com.dedsafio4.banco.ModCajero.registrar();
 		com.dedsafio4.puertas.ModPuertas.registrar();
+		com.dedsafio4.boveda.ModBoveda.registrar();
 		com.dedsafio4.meteoritos.ModMeteoritos.registrar();
 		com.dedsafio4.marcos.ModMarcos.registrar();
 		com.dedsafio4.casino.ModCasino.registrar();

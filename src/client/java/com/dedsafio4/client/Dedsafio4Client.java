@@ -112,6 +112,13 @@ public class Dedsafio4Client implements ClientModInitializer {
 				Minecraft.getInstance().setScreen(new com.dedsafio4.client.cajero.CajeroScreen(pos));
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.banco.ModCajero.MENU,
 				com.dedsafio4.client.cajero.CajeroIngresarScreen::new);
+		// La Bóveda de la Hermandad: la puerta animada y su pantalla.
+		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+				com.dedsafio4.boveda.ModBoveda.ENTIDAD, com.dedsafio4.client.boveda.BovedaRenderer::new);
+		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.boveda.ModBoveda.MENU,
+				com.dedsafio4.client.boveda.BovedaScreen::new);
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.boveda.ModBoveda.EstadoPayload.TYPE, (payload, context) ->
+				com.dedsafio4.client.boveda.BovedaScreen.recibir(payload));
 		DebugCielo.registrar();
 		ClientTickEvents.END_CLIENT_TICK.register(PocionesCliente::tick);
 

@@ -287,7 +287,8 @@ public final class Hermandades {
 		}
 	}
 
-	private static void avisarMiembros(MinecraftServer server, HermandadesData.Hermandad h, String mensaje, ChatFormatting color) {
+	/** Avisa a los miembros conectados (en el chat normal) y lo deja en el chat de la Hermandad. */
+	public static void avisarMiembros(MinecraftServer server, HermandadesData.Hermandad h, String mensaje, ChatFormatting color) {
 		for (ManuscritoDatos.Inscrito m : h.miembros()) {
 			ServerPlayer conectado = server.getPlayerList().getPlayer(m.uuid());
 			if (conectado != null) conectado.sendSystemMessage(Component.literal(mensaje).withStyle(color));

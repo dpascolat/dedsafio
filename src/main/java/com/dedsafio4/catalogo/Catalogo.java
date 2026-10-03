@@ -62,6 +62,7 @@ public final class Catalogo {
 		if (izquierda == null) izquierda = List.of(
 				fila(ModItems.CUCHARA_MADERA, ModItems.CUCHARA_HOJAS, ModItems.TENEDOR_HOJAS, ModItems.CUCHARA_DORADA_HOJAS, ModItems.MANUSCRITO_HERMANDAD, ModItems.BOLSA_ENDER),
 				fila(ModItems.DEDITA, ModItems.DEDITA_VERDE, ModItems.DEDITA_ROJA, ModItems.DEDITA_MERCADO_NEGRO, ModItems.DEDITA_CASINO, com.dedsafio4.banco.ModCajero.CAJERO_ITEM),
+				fila(com.dedsafio4.boveda.ModBoveda.BOVEDA_ITEM),
 				fila(ModItems.CHIP_PHORA, com.dedsafio4.robots.ModRobots.ROBOT_DORMIDO_ITEM, ModItems.LINTERNA, ModItems.BATERIA_DILITIO, ModItems.TOTEM_FRERICO, ModItems.MANUSCRITO_HERMANDAD_ADMIN),
 				fila(ModItems.MARTILLO_NETHERITE, ModItems.CANDADO, ModItems.LLAVE_CANDADO, ModItems.LLAVE, ModItems.TARJETA_ROSA, ModItems.AMULETO_VERDE),
 				fila(ModItems.TARJETA_PUERTA_ROSA, ModItems.TARJETA_PUERTA_VERDE, com.dedsafio4.puertas.ModPuertas.PUERTA_ROSA_ITEM,

@@ -106,6 +106,12 @@ public class HermandadesData extends SavedData {
 		setDirty();
 	}
 
+	/** Las deditas guardadas en la Bóveda de la Hermandad. */
+	public void setBalance(Hermandad hermandad, long balance) {
+		hermandad.balance = Math.max(0, balance);
+		setDirty();
+	}
+
 	public void setColor(Hermandad hermandad, int color) {
 		hermandad.color = color & 0xFFFFFF;
 		setDirty();
