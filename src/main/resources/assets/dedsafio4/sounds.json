@@ -42,5 +42,18 @@
 				"stream": true
 			}
 		]
+	},
+	"momentito_escalera": {
+		"sounds": [
+			{
+				"name": "dedsafio4:momentito_escalera",
+				"stream": true
+			}
+		]
+	},
+	"amuleto_brillo": {
+		"sounds": [
+			"dedsafio4:amuleto_brillo"
+		]
 	}
 }

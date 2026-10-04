@@ -3,7 +3,12 @@ package com.dedsafio4.client.momentito;
 import com.dedsafio4.momentito.Escena2;
 import com.dedsafio4.momentito.MomentitoEntity;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import com.dedsafio4.Dedsafio4;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -27,6 +32,7 @@ public final class MomentitoCamara {
 	public static void registrar() {
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			escena = buscar(mc);
+			sonidosEscalera(mc);
 			activo = escena != null && escena.enCinematica(0) ? escena : null;
 			// El cielo rojo con la grieta (sin Reviil) durante toda la escena; al terminar, destello y cielo normal.
 			if (escena != null && escena.escena() == 1 && !cieloPuesto) {
@@ -46,6 +52,40 @@ public final class MomentitoCamara {
 				escondiendo = false;
 			}
 		});
+	}
+
+	/** La música de la escalera (selva y tambores aztecas) y el brillo del amuleto, solo para el momentito 2. */
+	private static SoundInstance musica;
+	private static int musicaDe = -1;
+	private static boolean brillo;
+
+	private static void sonidosEscalera(Minecraft mc) {
+		MomentitoEntity e = escena != null && escena.escena() == 2 ? escena : null;
+		if (e == null) {
+			if (musica != null) mc.getSoundManager().stop(musica);
+			musica = null;
+			musicaDe = -1;
+			return;
+		}
+		float t = e.tiempoEscena(0);
+		if (musicaDe != e.getId()) {
+			musicaDe = e.getId();
+			brillo = t > 54.9f;
+			mc.getMusicManager().stopPlaying();   // que no se mezcle con la música normal del juego
+			// Si llega tarde (ya empezó hace rato) no la arranca: quedaría desfasada con la escena.
+			if (t < 2) {
+				musica = SimpleSoundInstance.forUI(sonido("momentito_escalera"), 1f, 1f);
+				mc.getSoundManager().play(musica);
+			}
+		}
+		if (!brillo && t >= 54.9f) {
+			brillo = true;
+			mc.getSoundManager().play(SimpleSoundInstance.forUI(sonido("amuleto_brillo"), 1f, 1f));
+		}
+	}
+
+	private static SoundEvent sonido(String nombre) {
+		return SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, nombre));
 	}
 
 	private static MomentitoEntity buscar(Minecraft mc) {

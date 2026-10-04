@@ -296,8 +296,6 @@ public class MomentitoEntity extends Entity {
 		switch (t) {
 			case 532, 1010 -> sonarEn(p, SoundEvents.STONE_STEP, 1f, 0.7f);   // se arrodilla / se agacha
 			case 932 -> sonarEn(p, SoundEvents.AMETHYST_BLOCK_CHIME, 2f, 0.8f);   // ve el esqueleto
-			case 1098 -> sonarEn(p, SoundEvents.AMETHYST_CLUSTER_PLACE, 1.5f, 1.2f);   // agarra el amuleto
-			case 1124 -> sonarEn(p, SoundEvents.BEACON_ACTIVATE, 2f, 1.3f);
 			case 1150 -> sonarEn(p, SoundEvents.AMETHYST_BLOCK_RESONATE, 2f, 1f);   // el cristal brilla
 			default -> {
 			}
