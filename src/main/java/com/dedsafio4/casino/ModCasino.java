@@ -29,5 +29,6 @@ public final class ModCasino {
 	public static void registrar() {
 		FabricDefaultAttributeRegistry.register(CASINO, CasinoEntity.crearAtributos());
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playS2C().register(TablaPremiosPayload.TYPE, TablaPremiosPayload.CODEC);
+		CasinoEditor.registrar();
 	}
 }

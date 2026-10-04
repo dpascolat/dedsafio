@@ -89,7 +89,7 @@ public final class CasinoPremios {
 	}
 
 	/** Cómo se escribe cada figura en /casino premio → su nombre adentro del mod. */
-	private static final Map<String, String> FIGURAS = new LinkedHashMap<>();
+	static final Map<String, String> FIGURAS = new LinkedHashMap<>();
 	static {
 		FIGURAS.put("hierro", "hierro");
 		FIGURAS.put("experiencia", "botella de experiencia");
@@ -107,6 +107,12 @@ public final class CasinoPremios {
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(Commands.literal("casino").requires(s -> s.hasPermission(2))
+				// /casino editar: la pantalla para elegir los 5 premios posibles de cada figura (ítem y cantidad).
+				.then(Commands.literal("editar").executes(c -> {
+					if (!(c.getSource().getEntity() instanceof ServerPlayer jugador)) return 0;
+					CasinoEditor.abrir(jugador);
+					return 1;
+				}))
 				// /casino premio <figura> <2|3> [agregar|nada|normal]: elegir el premio de una figura.
 				.then(Commands.literal("premio")
 						.then(Commands.argument("figura", StringArgumentType.word())
@@ -190,7 +196,7 @@ public final class CasinoPremios {
 	}
 
 	/** Los premios de siempre de una figura (para empezar la lista cuando se agrega uno). */
-	private static List<ItemStack> porDefecto(MinecraftServer server, String figura, int iguales) {
+	static List<ItemStack> porDefecto(MinecraftServer server, String figura, int iguales) {
 		RandomSource azar = RandomSource.create();
 		HolderLookup.RegistryLookup<Enchantment> enc = server.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
 		return new ArrayList<>(iguales >= 3 ? tres(figura, azar, enc) : dos(figura, azar, enc));
@@ -218,9 +224,13 @@ public final class CasinoPremios {
 		List<ItemStack> opciones = propio != null ? propio
 				: cantidad >= 3 ? tres(figura, azar, encantamientos) : dos(figura, azar, encantamientos);
 		if (opciones.isEmpty()) return;
-		ItemStack item = opciones.get(azar.nextInt(opciones.size())).copy();
-		if (casino != null) tirar(casino, jugador, item);
-		else if (!jugador.getInventory().add(item)) jugador.drop(item, false);
+		ItemStack premio = opciones.get(azar.nextInt(opciones.size())).copy();
+		// Si es más de lo que entra en una pila (por ejemplo 3 espadas), sale en varias.
+		while (!premio.isEmpty()) {
+			ItemStack item = premio.split(premio.getMaxStackSize());
+			if (casino != null) tirar(casino, jugador, item);
+			else if (!jugador.getInventory().add(item)) jugador.drop(item, false);
+		}
 		jugador.sendSystemMessage(Component.literal("¡Casino! " + cantidad + " × " + nombre(figura) + ": ganaste un premio.")
 				.withStyle(cantidad >= 3 ? ChatFormatting.GOLD : ChatFormatting.YELLOW));
 		jugador.level().playSound(null, casino != null ? casino.blockPosition() : jugador.blockPosition(),

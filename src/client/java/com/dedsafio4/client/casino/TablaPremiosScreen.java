@@ -43,6 +43,9 @@ public class TablaPremiosScreen extends Screen {
 		for (TablaPremiosPayload.Fila f : tabla.filas()) total += altoFila(f);
 		addRenderableWidget(Button.builder(Component.literal("Cerrar"), b -> onClose())
 				.bounds(x + ancho - 64, y + alto - 24, 56, 18).build());
+		addRenderableWidget(Button.builder(Component.literal("Editar premios"), b -> {
+			if (minecraft != null && minecraft.player != null) minecraft.player.connection.sendCommand("casino editar");
+		}).bounds(x + ancho - 160, y + alto - 24, 92, 18).build());
 	}
 
 	private static int altoFila(TablaPremiosPayload.Fila f) {
@@ -91,7 +94,7 @@ public class TablaPremiosScreen extends Screen {
 			int by = arriba + (largo - barra) * scroll / Math.max(1, total - largo);
 			g.fill(x + ancho - 4, by, x + ancho - 2, by + barra, DORADO);
 		}
-		String pie = "Sale UNA de las opciones, al azar.";
+		String pie = "Sale UNA, al azar.";
 		g.drawString(font, pie, x + 8, y + alto - 19, GRIS, false);
 	}
 
