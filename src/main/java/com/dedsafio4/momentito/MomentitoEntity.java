@@ -25,8 +25,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * /momentito 1 [radio]  la escena del hacker (30 segundos) en el lugar donde se escribe el comando, mirando
- * hacia donde mira el que lo escribe (el campo de fuerza mide radio × 2 bloques; si no se dice, 750 = 1500 × 1500): llega la nave negra del hacker, tira una TNT hackeada, el héroe busca el
+ * /momentito 1 [largo ancho arriba abajo]  la escena del hacker (30 segundos) en el lugar donde se escribe el
+ * comando, mirando hacia donde mira el que lo escribe. El campo de fuerza es un óvalo centrado en los pies del
+ * héroe: si no se dicen las medidas, 200 de largo, 200 de ancho, 30 bloques para arriba y 180 para abajo. Llega la nave negra del hacker, tira una TNT hackeada, el héroe busca el
  * Cristal del Desierto y lo levanta, aparece el campo de fuerza violeta, la bomba explota contra el campo,
  * el hacker se enoja y se va volando al cielo. Todo es de mentira: no rompe nada ni lastima a nadie.
  * La escena la dibuja el cliente (MomentitoRenderer) y, a los que están cerca, les maneja la cámara con
@@ -42,9 +43,12 @@ public class MomentitoEntity extends Entity {
 
 	/** Tick del mundo en que empezó (así todos los que la ven van sincronizados). */
 	private static final EntityDataAccessor<Integer> INICIO = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.INT);
-	/** Radio del campo de fuerza, en bloques. */
-	private static final EntityDataAccessor<Float> RADIO = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.FLOAT);
-	public static final float RADIO_POR_DEFECTO = 750;
+	/** Medidas del campo de fuerza, en bloques. */
+	private static final EntityDataAccessor<Float> LARGO = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.FLOAT);
+	private static final EntityDataAccessor<Float> ANCHO = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.FLOAT);
+	private static final EntityDataAccessor<Float> ARRIBA = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.FLOAT);
+	private static final EntityDataAccessor<Float> ABAJO = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.FLOAT);
+	public static final float[] CAMPO_POR_DEFECTO = {200, 200, 30, 180};
 
 	public MomentitoEntity(EntityType<? extends MomentitoEntity> tipo, Level level) {
 		super(tipo, level);
@@ -56,12 +60,17 @@ public class MomentitoEntity extends Entity {
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(Commands.literal("momentito").requires(s -> s.hasPermission(2))
 				.then(Commands.argument("escena", IntegerArgumentType.integer(1))
-						.executes(ctx -> empezar(ctx, RADIO_POR_DEFECTO))
-						.then(Commands.argument("radio", IntegerArgumentType.integer(3, 750))
-								.executes(ctx -> empezar(ctx, IntegerArgumentType.getInteger(ctx, "radio"))))));
+						.executes(ctx -> empezar(ctx, CAMPO_POR_DEFECTO))
+						.then(Commands.argument("largo", IntegerArgumentType.integer(2, 1500))
+								.then(Commands.argument("ancho", IntegerArgumentType.integer(2, 1500))
+										.then(Commands.argument("arriba", IntegerArgumentType.integer(1, 750))
+												.then(Commands.argument("abajo", IntegerArgumentType.integer(0, 750))
+														.executes(ctx -> empezar(ctx, new float[]{
+																IntegerArgumentType.getInteger(ctx, "largo"), IntegerArgumentType.getInteger(ctx, "ancho"),
+																IntegerArgumentType.getInteger(ctx, "arriba"), IntegerArgumentType.getInteger(ctx, "abajo")}))))))));
 	}
 
-	private static int empezar(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx, float radio) {
+	private static int empezar(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx, float[] campo) {
 		int escena = IntegerArgumentType.getInteger(ctx, "escena");
 		if (escena != 1) {
 			ctx.getSource().sendFailure(Component.literal("Todavía no existe el momentito " + escena + "."));
@@ -73,22 +82,29 @@ public class MomentitoEntity extends Entity {
 		if (m == null) return 0;
 		m.moveTo(pos.x, pos.y, pos.z, ctx.getSource().getRotation().y, 0);
 		m.entityData.set(INICIO, (int) mundo.getGameTime());
-		m.entityData.set(RADIO, radio);
+		m.entityData.set(LARGO, campo[0]);
+		m.entityData.set(ANCHO, campo[1]);
+		m.entityData.set(ARRIBA, campo[2]);
+		m.entityData.set(ABAJO, campo[3]);
 		mundo.addFreshEntity(m);
-		int lado = Math.round(radio * 2);
 		ctx.getSource().sendSuccess(() -> Component.literal("Momentito 1: la escena del hacker (campo de "
-				+ lado + " × " + lado + " bloques)."), true);
+				+ Math.round(campo[0]) + " de largo × " + Math.round(campo[1]) + " de ancho, " + Math.round(campo[2])
+				+ " para arriba y " + Math.round(campo[3]) + " para abajo)."), true);
 		return 1;
 	}
 
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder datos) {
 		datos.define(INICIO, 0);
-		datos.define(RADIO, RADIO_POR_DEFECTO);
+		datos.define(LARGO, CAMPO_POR_DEFECTO[0]);
+		datos.define(ANCHO, CAMPO_POR_DEFECTO[1]);
+		datos.define(ARRIBA, CAMPO_POR_DEFECTO[2]);
+		datos.define(ABAJO, CAMPO_POR_DEFECTO[3]);
 	}
 
-	public float radio() {
-		return entityData.get(RADIO);
+	/** Las medidas del campo de fuerza: {largo, ancho, arriba, abajo}. */
+	public float[] campo() {
+		return new float[]{entityData.get(LARGO), entityData.get(ANCHO), entityData.get(ARRIBA), entityData.get(ABAJO)};
 	}
 
 	/** La escena es enorme: se dibuja desde cualquier distancia. */

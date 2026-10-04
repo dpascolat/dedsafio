@@ -249,43 +249,49 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 
 	// ---------------------------------------------------------------- La escena (también la usa MomentitoCamara)
 
-	/** Altura a la que flota la nave: siempre arriba del campo de fuerza. */
-	public static float alturaNave(float fr) {
-		return Math.max(40, FC_Y + fr + 30);
+	/** "Radio" del campo: la mitad de lo más largo (largo o ancho). c = {largo (z), ancho (x), arriba, abajo}. */
+	public static float radio(float[] c) {
+		return Math.max(c[0], c[1]) / 2;
 	}
 
-	/** Donde la bomba choca contra el campo de fuerza. */
-	public static float alturaImpacto(float fr) {
-		return FC_Y + fr + 0.3f;
+	/** Altura a la que flota la nave: siempre arriba del campo de fuerza. */
+	public static float alturaNave(float[] c) {
+		return Math.max(40, c[2] + 30);
+	}
+
+	/** Donde la bomba choca contra el campo de fuerza: arriba del todo. */
+	public static float alturaImpacto(float[] c) {
+		return c[2] + 0.5f;
 	}
 
 	/** Dónde está la nave (llega desde lejos, flota y al final sube al cielo). */
-	public static Vector3f posNave(float t, float fr) {
-		float h = alturaNave(fr);
+	public static Vector3f posNave(float t, float[] c) {
+		float h = alturaNave(c);
 		float llega = 1 - (float) Math.pow(1 - seg(t, 0, 6), 3), sube = seg(t, 17, 21);
 		return new Vector3f(lerp(-80, 0, llega) + 10 * sube * sube,
 				lerp(h + 80, h, llega) + Mth.sin(t * 1.6f) * 0.15f + (h + 400) * (float) Math.pow(sube, 2.2), 0);
 	}
 
 	/** Dónde está la bomba mientras cae. */
-	public static Vector3f posBomba(float t, float fr) {
+	public static Vector3f posBomba(float t, float[] c) {
 		float cae = seg(t, TB0, TB1);
 		float temblor = azar((float) Math.floor(t * 12), 9) > 0.8f ? 0.06f : 0;
-		return new Vector3f(temblor, lerp(alturaNave(fr) - 0.6f, alturaImpacto(fr), cae * cae), 0);
+		return new Vector3f(temblor, lerp(alturaNave(c) - 0.6f, alturaImpacto(c), cae * cae), 0);
 	}
 
 	/**
 	 * La toma de cámara de cada momento (como el "director" del diseño): {x, y, z} de la cámara y {x, y, z}
 	 * del punto al que mira, en las medidas de la escena.
 	 */
-	public static float[] toma(float t, float fr) {
-		float w = Math.max(fr, 6), k = Math.max(1, fr / 12), imp = alturaImpacto(fr), h = alturaNave(fr);
-		Vector3f n = posNave(t, fr);
+	public static float[] toma(float t, float[] c) {
+		float fr = radio(c);
+		float w = Math.max(fr, 6), k = Math.max(1, Math.min(fr, c[2] * 2) / 12), imp = alturaImpacto(c), h = alturaNave(c);
+		Vector3f n = posNave(t, c);
 		if (t < 2.5f) return new float[]{n.x + 12, n.y - 3, n.z + 24, n.x, n.y, n.z};
 		if (t < 6) return new float[]{4.5f, 1.2f, 7, 0, 2.2f + 0.8f * seg(t, 3, 4.5f), 0};
 		if (t < 8.5f) return new float[]{n.x + 7, n.y + 2.5f, n.z + 11, n.x, n.y + 0.5f, n.z};
 		if (t < 10) {
-			Vector3f b = posBomba(t, fr);
+			Vector3f b = posBomba(t, c);
 			return new float[]{b.x + 6, b.y + 2, b.z + 10, b.x, b.y, b.z};
 		}
 		if (t < 11.2f) return new float[]{3.2f, 1.6f, 4.8f, 0, 1.4f, 0};
@@ -304,7 +310,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 	@Override
 	public void render(MomentitoEntity m, float yaw, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
 		float t = Mth.clamp(m.tiempo(parcial), 0, MomentitoEntity.DURACION / 20f);
-		float fr = m.radio();
+		float[] fr = m.campo();
 		ultimoGiro = m.getYRot();
 		pose.pushPose();
 		// El héroe mira hacia el que escribió el comando.
@@ -317,7 +323,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		pose.popPose();
 	}
 
-	private void nave(float t, float fr, PoseStack pose, MultiBufferSource buffers, int luz) {
+	private void nave(float t, float[] fr, PoseStack pose, MultiBufferSource buffers, int luz) {
 		if (t >= 21) return;
 		float llega = 1 - (float) Math.pow(1 - seg(t, 0, 6), 3);
 		Vector3f n = posNave(t, fr);
@@ -398,7 +404,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		}
 	}
 
-	private void bomba(float t, float fr, PoseStack pose, MultiBufferSource buffers, int luz) {
+	private void bomba(float t, float[] fr, PoseStack pose, MultiBufferSource buffers, int luz) {
 		if (t < 7.4f || t >= TB1) return;
 		float cae = seg(t, TB0, TB1);
 		Vector3f b = posBomba(t, fr);
@@ -517,48 +523,62 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		pose.popPose();
 	}
 
-	private void campo(float t, float FR, PoseStack pose, MultiBufferSource buffers) {
+	/**
+	 * El campo de fuerza: un óvalo centrado en los pies del héroe, de ancho (x) × largo (z), que sube "arriba"
+	 * bloques y baja "abajo" (las dos mitades son medios elipsoides que comparten el borde a la altura del piso).
+	 * Crece de 0 a su tamaño (11,2 a 11,9 s), tiembla con el golpe y se achica al final.
+	 */
+	private void campo(float t, float[] c, PoseStack pose, MultiBufferSource buffers) {
 		float crece = sm(seg(t, 11.2f, 11.9f)) * (1 - sm(seg(t, 24.5f, 25.5f)));
 		if (crece <= 0.001f) return;
 		float tau = t - TB1;
 		float onda = tau > 0 ? 0.08f * Mth.sin(tau * 24) * (float) Math.exp(-3 * tau) : 0;
 		float choque = tau > 0 ? (float) Math.exp(-2.5 * tau) : 0;
 		float pulso = 0.5f + 0.5f * Mth.sin(t * 6);
-		float radio = FR * crece * (1 + onda);
-		pose.pushPose();
-		pose.translate(0, FC_Y, 0);
-		pose.mulPose(Axis.YP.rotation(t * 0.3f));
-		pose.scale(radio, radio, radio);
-		// El escudo, violeta y transparente (más brillante con el golpe).
+		float e = crece * (1 + onda);
+		float ax = c[1] / 2 * e, az = c[0] / 2 * e, arriba = c[2] * e, abajo = c[3] * e;
+		PoseStack.Pose p = pose.last();
+		// La cáscara violeta transparente (72 × 48 como en el diseño).
 		VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucentEmissive(BLANCO));
 		int alfa = (int) (clamp(0.2f + 0.35f * choque + 0.05f * pulso) * 255);
 		int r = (int) Math.min(255, 185 + 70 * choque), g = (int) Math.min(255, 120 + 100 * choque);
-		PoseStack.Pose p = pose.last();
-		for (Vector3f[] tri : esfera) {
-			for (int i = 0; i < 4; i++) {
-				Vector3f v = tri[Math.min(i, 2)];
-				vc.addVertex(p, v.x, v.y, v.z).setColor(r, g, 255, alfa).setUv(0.5f, 0.5f).setOverlay(OverlayTexture.NO_OVERLAY)
-						.setLight(LightTexture.FULL_BRIGHT).setNormal(p, v.x, v.y, v.z);
+		int lon = 72, lat = 48;
+		for (int i = 0; i < lat; i++) {
+			for (int j = 0; j < lon; j++) {
+				float[][] q = {punto(i, j, lat, lon), punto(i + 1, j, lat, lon), punto(i + 1, j + 1, lat, lon), punto(i, j + 1, lat, lon)};
+				for (float[] v : q) {
+					float y = v[1] * (v[1] > 0 ? arriba : abajo);
+					vc.addVertex(p, v[0] * ax, y, v[2] * az).setColor(r, g, 255, alfa).setUv(0.5f, 0.5f)
+							.setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(p, v[0], v[1], v[2]);
+				}
 			}
 		}
-		// Las líneas.
+		// Las líneas (32 × 20) y el borde en el piso.
 		VertexConsumer lineas = buffers.getBuffer(RenderType.lines());
-		float alfaLineas = (0.55f + 0.4f * choque) * crece;
-		for (Vector3f[] e : aristas) {
-			linea(lineas, p, new float[]{e[0].x * 1.002f, e[0].y * 1.002f, e[0].z * 1.002f},
-					new float[]{e[1].x * 1.002f, e[1].y * 1.002f, e[1].z * 1.002f}, 0xD0A5FF, alfaLineas);
-		}
-		pose.popPose();
-		// El anillo en el suelo.
-		float anillo = Mth.sqrt(Math.max(0.01f, FR * FR - FC_Y * FC_Y)) * crece;
-		VertexConsumer lineas2 = buffers.getBuffer(RenderType.lines());
-		for (float rr : new float[]{anillo * 0.985f, anillo}) {
-			for (int i = 0; i < 192; i++) {
-				float a0 = i / 192f * Mth.TWO_PI, a1 = (i + 1) / 192f * Mth.TWO_PI;
-				linea(lineas2, pose.last(), new float[]{Mth.cos(a0) * rr, 0.012f, Mth.sin(a0) * rr},
-						new float[]{Mth.cos(a1) * rr, 0.012f, Mth.sin(a1) * rr}, 0xD0A5FF, alfaLineas);
+		float alfaGrilla = (0.35f + 0.4f * choque) * crece, alfaBorde = (0.55f + 0.4f * choque) * crece;
+		int lonL = 32, latL = 20;
+		for (int i = 0; i <= latL; i++) {
+			for (int j = 0; j < lonL; j++) {
+				float[] a = escalar(punto(i, j, latL, lonL), ax, arriba, abajo, az), b = escalar(punto(i, j + 1, latL, lonL), ax, arriba, abajo, az);
+				if (i > 0 && i < latL) linea(lineas, p, a, b, 0xD0A5FF, alfaGrilla);
+				if (i < latL) linea(lineas, p, a, escalar(punto(i + 1, j, latL, lonL), ax, arriba, abajo, az), 0xD0A5FF, alfaGrilla);
 			}
 		}
+		for (int i = 0; i < 128; i++) {
+			float a0 = i / 128f * Mth.TWO_PI, a1 = (i + 1) / 128f * Mth.TWO_PI;
+			linea(lineas, p, new float[]{Mth.cos(a0) * c[1] / 2 * crece, 0.03f, Mth.sin(a0) * c[0] / 2 * crece},
+					new float[]{Mth.cos(a1) * c[1] / 2 * crece, 0.03f, Mth.sin(a1) * c[0] / 2 * crece}, 0xD0A5FF, alfaBorde);
+		}
+	}
+
+	/** Un punto de la esfera de radio 1 (fila i de arriba a abajo, columna j). */
+	private static float[] punto(int i, int j, int lat, int lon) {
+		float th = i / (float) lat * Mth.PI, ph = j / (float) lon * Mth.TWO_PI;
+		return new float[]{Mth.sin(th) * Mth.cos(ph), Mth.cos(th), Mth.sin(th) * Mth.sin(ph)};
+	}
+
+	private static float[] escalar(float[] v, float ax, float arriba, float abajo, float az) {
+		return new float[]{v[0] * ax, v[1] * (v[1] > 0 ? arriba : abajo), v[2] * az};
 	}
 
 	/** Una dirección al azar (fija) un poco hacia arriba, como rndDir del diseño. */
@@ -571,10 +591,10 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 	 * La explosión al estilo Minecraft: 40 nubes pixeladas que crecen y se deshacen (0,8 s) y 24 de humo oscuro
 	 * que suben (2,4 s), del tamaño del campo de fuerza y por afuera de él, siempre mirando a la cámara.
 	 */
-	private void explosion(float t, float fr, PoseStack pose, MultiBufferSource buffers) {
+	private void explosion(float t, float[] fr, PoseStack pose, MultiBufferSource buffers) {
 		float tau = t - TB1;
 		if (tau < 0 || tau >= 3.5f) return;
-		float k = Math.max(1, fr / 12), imp = alturaImpacto(fr);
+		float k = Math.max(1, Math.min(radio(fr), fr[2] * 2) / 12), imp = alturaImpacto(fr);
 		float crece = sm(seg(t, 11.2f, 11.9f)) * (1 - sm(seg(t, 24.5f, 25.5f)));
 		VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(EXPLOSION));
 		for (int i = 0; i < 40; i++) {
@@ -592,10 +612,15 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		}
 	}
 
-	/** Si está dentro del campo de fuerza, la empuja hasta su borde. */
-	private static Vector3f afuera(Vector3f v, float fr, float crece) {
-		Vector3f d = new Vector3f(v).sub(0, FC_Y, 0);
-		if (crece > 0.5f && d.length() < fr * 1.02f) return d.normalize().mul(fr * 1.02f).add(0, FC_Y, 0);
+	/** Si está dentro del campo de fuerza (el óvalo), la empuja hasta su borde. */
+	private static Vector3f afuera(Vector3f v, float[] c, float crece) {
+		if (crece < 0.5f) return v;
+		float ax = c[1] / 2 * crece, az = c[0] / 2 * crece, ay = (v.y > 0 ? c[2] : Math.max(c[3], 0.01f)) * crece;
+		float nx = v.x / ax, ny = v.y / ay, nz = v.z / az, n = Mth.sqrt(nx * nx + ny * ny + nz * nz);
+		if (n < 1.02f) {
+			float f = 1.02f / Math.max(n, 1e-4f);
+			return new Vector3f(nx * f * ax, (n < 1e-4f ? 1.02f : ny * f) * ay, nz * f * az);
+		}
 		return v;
 	}
 
