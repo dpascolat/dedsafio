@@ -37,6 +37,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 	private static final float P = 1 / 16f, SS = 2.4f / 16f, FC_Y = 1f, TB0 = 8.5f, TB1 = 12f;
 	private static final ResourceLocation HEROE = tex("heroe"), NAVE = tex("nave"), NAVE_BRILLO = tex("nave_brillo"),
 			CRISTAL = tex("cristal"), TNT_LADO = tex("tnt_lado"), TNT_TAPA = tex("tnt_tapa"), BLANCO = tex("blanco"),
+			TNT_BASE = tex("tnt_base"), TNT_LADO_BRILLO = tex("tnt_lado_brillo"), TNT_TAPA_BRILLO = tex("tnt_tapa_brillo"),
 			EXPLOSION = tex("explosion");
 
 	private static ResourceLocation tex(String n) {
@@ -386,21 +387,31 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		// Al final se infla, como la TNT de Minecraft a punto de explotar.
 		float infla = 1 + 0.2f * seg(t, TB1 - 0.3f, TB1);
 		pose.scale(infla, infla, infla);
+		// La TNT hackeada: bloque de 1 × 1 con "TNT" en verde neón (brilla), la tapa con la mecha y la base gris.
 		float[][] todo = {{0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}};
-		// Los costados con "H4CK" y, arriba y abajo, la tapa.
 		float[][] lados = {todo[0], todo[1], null, null, todo[4], todo[5]};
-		caja(buffers.getBuffer(RenderType.entityCutoutNoCull(TNT_LADO)), pose.last(), 0, 0, 0, 0.8f, 0.8f, 0.8f, lados, 255, 255, 255, 255, luz);
-		float[][] tapas = {null, null, todo[2], todo[3], null, null};
-		caja(buffers.getBuffer(RenderType.entityCutoutNoCull(TNT_TAPA)), pose.last(), 0, 0, 0, 0.8f, 0.8f, 0.8f, tapas, 255, 255, 255, 255, luz);
-		// El aura verde que titila.
+		float[][] tapa = {null, null, todo[2], null, null, null}, base = {null, null, null, todo[3], null, null};
+		caja(buffers.getBuffer(RenderType.entityCutoutNoCull(TNT_LADO)), pose.last(), 0, 0, 0, 1, 1, 1, lados, 255, 255, 255, 255, luz);
+		caja(buffers.getBuffer(RenderType.entityCutoutNoCull(TNT_TAPA)), pose.last(), 0, 0, 0, 1, 1, 1, tapa, 255, 255, 255, 255, luz);
+		caja(buffers.getBuffer(RenderType.entityCutoutNoCull(TNT_BASE)), pose.last(), 0, 0, 0, 1, 1, 1, base, 255, 255, 255, 255, luz);
+		caja(buffers.getBuffer(RenderType.eyes(TNT_LADO_BRILLO)), pose.last(), 0, 0, 0, 1.002f, 1.002f, 1.002f, lados, 255, 255, 255, 255, LightTexture.FULL_BRIGHT);
+		caja(buffers.getBuffer(RenderType.eyes(TNT_TAPA_BRILLO)), pose.last(), 0, 0, 0, 1.002f, 1.002f, 1.002f, tapa, 255, 255, 255, 255, LightTexture.FULL_BRIGHT);
+		// La mecha arriba, con una chispa naranja que parpadea.
+		VertexConsumer liso = buffers.getBuffer(RenderType.entityCutoutNoCull(BLANCO));
+		color(liso, pose.last(), 0, 0.58f, 0, 0.07f, 0.16f, 0.07f, 0x2A2A2A, 255, luz);
+		if (azar((float) Math.floor(t * 20), 4) > 0.25f) {
+			float chispa = 0.07f * (0.7f + azar((float) Math.floor(t * 20), 5) * 0.8f);
+			color(liso, pose.last(), 0, 0.7f, 0, chispa, chispa, chispa, 0xFFC23A, 255, LightTexture.FULL_BRIGHT);
+		}
+		// El borde verde que titila.
 		float alfa = 0.3f + 0.7f * (Mth.sin(t * 22) > 0 ? 1 : 0);
-		// La mecha: titila en blanco (más rápido al final).
+		// La mecha a punto de explotar: destello blanco que se prende y se apaga (más rápido al final).
 		boolean mecha = t > TB1 - 1.8f && Math.floorMod((int) Math.floor((t - TB1) * (t > TB1 - 0.6f ? 10 : 4)), 2) == 0;
 		if (mecha) {
-			color(buffers.getBuffer(RenderType.entityTranslucentEmissive(BLANCO)), pose.last(), 0, 0, 0, 0.81f, 0.81f, 0.81f,
-					0xFFFFFF, 210, LightTexture.FULL_BRIGHT);
+			color(buffers.getBuffer(RenderType.entityTranslucentEmissive(BLANCO)), pose.last(), 0, 0, 0, 1.004f, 1.004f, 1.004f,
+					0xFFFFFF, 178, LightTexture.FULL_BRIGHT);
 		}
-		cajaLineas(buffers.getBuffer(RenderType.lines()), pose.last(), 0.46f, 0x39FF6A, alfa);
+		cajaLineas(buffers.getBuffer(RenderType.lines()), pose.last(), 0.54f, 0x39FF6A, alfa);
 		pose.popPose();
 	}
 
