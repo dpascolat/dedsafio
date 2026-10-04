@@ -279,7 +279,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 
 	@Override
 	public void render(MomentitoEntity m, float yaw, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
-		float t = Mth.clamp(m.tiempo(parcial), 0, MomentitoEntity.DURACION / 20f);
+		float t = Mth.clamp(m.tiempoEscena(parcial), 0, 30);
 		float[] fr = m.campo();
 		ultimoGiro = m.getYRot();
 		pose.pushPose();

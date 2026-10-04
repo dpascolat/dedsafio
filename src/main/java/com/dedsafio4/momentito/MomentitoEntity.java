@@ -42,7 +42,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * tomas de cine (MomentitoCamara); acá solo vive 30 segundos y hace los sonidos.
  */
 public class MomentitoEntity extends Entity {
-	public static final int DURACION = 30 * 20;
+	/**
+	 * Primero, 8 segundos de cielo rojo que se esparce y la grieta que se abre (como /cielo rojo, sin Reviil);
+	 * cuando la nave sale de la grieta empieza la cinemática (el resto de los 30 s de la escena).
+	 */
+	public static final float INTRO = 8f;
+	public static final int DURACION = (int) ((INTRO + 30 - Escena.SALE_GRIETA) * 20);
+	/** Cuántos ticks hay que restarle al tiempo total para tener el de la escena del diseño. */
+	private static final int CORRIMIENTO = (int) ((INTRO - Escena.SALE_GRIETA) * 20);
 
 	public static final EntityType<MomentitoEntity> TIPO = Registry.register(BuiltInRegistries.ENTITY_TYPE,
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "momentito"),
@@ -176,6 +183,20 @@ public class MomentitoEntity extends Entity {
 	}
 
 	/** Segundos desde que empezó la escena. */
+	/**
+	 * Segundos de la escena del diseño (la nave sale de la grieta a los 2,5): durante la introducción del
+	 * cielo rojo da menos de 2,5.
+	 */
+	public float tiempoEscena(float parcial) {
+		return tiempo(parcial) - INTRO + Escena.SALE_GRIETA;
+	}
+
+	/** ¿Ya empezó la cinemática (la nave salió de la grieta)? */
+	public boolean enCinematica(float parcial) {
+		float t = tiempoEscena(parcial);
+		return t >= Escena.SALE_GRIETA && t < 30;
+	}
+
 	public float tiempo(float parcial) {
 		return (level().getGameTime() - entityData.get(INICIO) + parcial) / 20f;
 	}
@@ -189,10 +210,10 @@ public class MomentitoEntity extends Entity {
 			discard();
 			return;
 		}
-		if (level() instanceof ServerLevel mundo) chunksDeLaCamara(mundo, t / 20f);
-		switch (t) {
-			case 0 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.5f);
-			case 60 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.6f);
+		if (level() instanceof ServerLevel mundo && enCinematica(0)) chunksDeLaCamara(mundo, tiempoEscena(0));
+		switch (t - CORRIMIENTO) {
+			case 50 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.5f);   // la nave sale de la grieta
+			case 90 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.6f);
 			case 132 -> sonar(SoundEvents.STONE_BUTTON_CLICK_ON, 1.5f, 1.2f);
 			case 148 -> sonar(SoundEvents.TNT_PRIMED, 2f, 1f);
 			case 150 -> sonar(SoundEvents.WITCH_CELEBRATE, 1.5f, 0.7f);

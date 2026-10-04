@@ -19,21 +19,30 @@ public final class MomentitoCamara {
 	private MomentitoCamara() {}
 
 	private static final double CERCA = 300;
-	private static MomentitoEntity activo;
-	private static boolean interfazAntes, escondiendo;
+	/** La escena cercana (para el cielo) y, si ya empezó la cinemática, la que maneja la cámara. */
+	private static MomentitoEntity escena, activo;
+	private static boolean interfazAntes, escondiendo, cieloPuesto;
 
 	public static void registrar() {
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
-			activo = buscar(mc);
+			escena = buscar(mc);
+			activo = escena != null && escena.enCinematica(0) ? escena : null;
+			// El cielo rojo con la grieta (sin Reviil) durante toda la escena; al terminar, destello y cielo normal.
+			if (escena != null && !cieloPuesto) {
+				com.dedsafio4.client.CieloCliente.momentito(true);
+				cieloPuesto = true;
+			} else if (escena == null && cieloPuesto) {
+				com.dedsafio4.client.CieloCliente.momentito(false);
+				cieloPuesto = false;
+			}
+			// La cámara de cine (y sin interfaz) solo desde que la nave sale de la grieta.
 			if (activo != null && !escondiendo) {
 				interfazAntes = mc.options.hideGui;
 				mc.options.hideGui = true;
 				escondiendo = true;
-				com.dedsafio4.client.CieloCliente.momentito(true);   // todo el cielo rojo, sin Reviil
 			} else if (activo == null && escondiendo) {
 				mc.options.hideGui = interfazAntes;
 				escondiendo = false;
-				com.dedsafio4.client.CieloCliente.momentito(false);
 			}
 		});
 	}
@@ -70,7 +79,7 @@ public final class MomentitoCamara {
 	public static double[] camara(float parcial) {
 		MomentitoEntity m = activo;
 		if (m == null) return null;
-		float t = Mth.clamp(m.tiempo(parcial), 0, MomentitoEntity.DURACION / 20f);
+		float t = Mth.clamp(m.tiempoEscena(parcial), 0, 30);
 		float[] toma = MomentitoRenderer.toma(t, m.campo());
 		Vec3 desde = alMundo(m, toma[0], toma[1], toma[2]), hacia = alMundo(m, toma[3], toma[4], toma[5]);
 		Vec3 d = hacia.subtract(desde);
