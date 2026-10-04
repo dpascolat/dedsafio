@@ -79,7 +79,7 @@ public final class MomentitoCamara {
 	public static double[] camara(float parcial) {
 		MomentitoEntity m = activo;
 		if (m == null) return null;
-		float t = Mth.clamp(m.tiempoEscena(parcial), 0, 30);
+		float t = Mth.clamp(m.tiempoEscena(parcial), 0, MomentitoEntity.FIN);
 		float[] toma = MomentitoRenderer.toma(t, m.campo());
 		Vec3 desde = alMundo(m, toma[0], toma[1], toma[2]), hacia = alMundo(m, toma[3], toma[4], toma[5]);
 		Vec3 d = hacia.subtract(desde);

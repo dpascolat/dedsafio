@@ -47,7 +47,13 @@ public class MomentitoEntity extends Entity {
 	 * cuando la nave sale de la grieta empieza la cinemática (el resto de los 30 s de la escena).
 	 */
 	public static final float INTRO = 8f;
-	public static final int DURACION = (int) ((INTRO + 30 - Escena.SALE_GRIETA) * 20);
+	/**
+	 * La cinemática termina a los 24 s de la escena (antes de que el héroe baje los brazos): que guarde el escudo
+	 * (el campo de fuerza se achica) se ve con la cámara de cada uno, y cuando el escudo desaparece (25,6 s)
+	 * termina todo con el destello.
+	 */
+	public static final float FIN_CINEMATICA = 24f, FIN = 25.6f;
+	public static final int DURACION = (int) ((INTRO + FIN - Escena.SALE_GRIETA) * 20);
 	/** Cuántos ticks hay que restarle al tiempo total para tener el de la escena del diseño. */
 	private static final int CORRIMIENTO = (int) ((INTRO - Escena.SALE_GRIETA) * 20);
 
@@ -194,7 +200,7 @@ public class MomentitoEntity extends Entity {
 	/** ¿Ya empezó la cinemática (la nave salió de la grieta)? */
 	public boolean enCinematica(float parcial) {
 		float t = tiempoEscena(parcial);
-		return t >= Escena.SALE_GRIETA && t < 30;
+		return t >= Escena.SALE_GRIETA && t < FIN_CINEMATICA;
 	}
 
 	public float tiempo(float parcial) {
@@ -210,7 +216,10 @@ public class MomentitoEntity extends Entity {
 			discard();
 			return;
 		}
-		if (level() instanceof ServerLevel mundo && enCinematica(0)) chunksDeLaCamara(mundo, tiempoEscena(0));
+		if (level() instanceof ServerLevel mundo) {
+			if (enCinematica(0)) chunksDeLaCamara(mundo, tiempoEscena(0));
+			else if (tiempoEscena(0) >= FIN_CINEMATICA) soltarCamaras(mundo);   // cada uno vuelve a su lugar
+		}
 		switch (t - CORRIMIENTO) {
 			case 50 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.5f);   // la nave sale de la grieta
 			case 90 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.6f);
