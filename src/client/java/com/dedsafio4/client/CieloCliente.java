@@ -100,7 +100,8 @@ public final class CieloCliente {
 
 	/** 0 → 1 mientras el rojo cubre el cielo. Con 1, el cielo de Minecraft ya no se dibuja. */
 	public static float progresoCielo(float partialTick) {
-		return progreso(partialTick, 0f, DURACION_CIELO);
+		// Con /momentito 1 el rojo cubre el cielo en 1 segundo (la escena dura poco).
+		return progreso(partialTick, 0f, porMomentito ? 20f : DURACION_CIELO);
 	}
 
 	/** Para la niebla y las nubes, que no reciben partialTick. */
@@ -124,11 +125,13 @@ public final class CieloCliente {
 		dibujarCostados(m, avance);
 		dibujarCupula(m, avance);
 
-		float grieta = progreso(partialTick, INICIO_GRIETA, DURACION_GRIETA);
-		if (grieta > 0f && !porMomentito) {
+		// Con /momentito 1 la grieta se abre enseguida (de 0,5 a 2,5 s) y no sale Reviil: sale la nave del hacker.
+		float grieta = porMomentito ? progreso(partialTick, 10f, 40f) : progreso(partialTick, INICIO_GRIETA, DURACION_GRIETA);
+		if (grieta > 0f) {
 			Minecraft mc = Minecraft.getInstance();
 			float tiempo = (mc.level != null ? mc.level.getGameTime() % 100000L : 0) + partialTick;
-			ReviilCielo.dibujar(matrizVista, tiempo, grieta, progreso(partialTick, INICIO_REVIIL, DURACION_REVIIL));
+			ReviilCielo.dibujar(matrizVista, tiempo, grieta,
+					porMomentito ? 0f : progreso(partialTick, INICIO_REVIIL, DURACION_REVIIL));
 		}
 
 		RenderSystem.enableCull();

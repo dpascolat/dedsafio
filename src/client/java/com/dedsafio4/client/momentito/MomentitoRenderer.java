@@ -265,11 +265,14 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 	}
 
 	/** Dónde está la nave (llega desde lejos, flota y al final sube al cielo). */
+	/** La nave sale de la grieta del cielo rojo (bien arriba) a los 2,5 s y baja hasta flotar a los 6 s. */
+	public static final float SALE_GRIETA = 2.5f;
+
 	public static Vector3f posNave(float t, float[] c) {
 		float h = alturaNave(c);
-		float llega = 1 - (float) Math.pow(1 - seg(t, 0, 6), 3), sube = seg(t, 17, 21);
-		return new Vector3f(lerp(-80, 0, llega) + 10 * sube * sube,
-				lerp(h + 80, h, llega) + Mth.sin(t * 1.6f) * 0.15f + (h + 400) * (float) Math.pow(sube, 2.2), 0);
+		float llega = 1 - (float) Math.pow(1 - seg(t, SALE_GRIETA, 6), 3), sube = seg(t, 17, 21);
+		return new Vector3f(10 * sube * sube,
+				lerp(h + 600, h, llega) + Mth.sin(t * 1.6f) * 0.15f + (h + 400) * (float) Math.pow(sube, 2.2), 0);
 	}
 
 	/** Dónde está la bomba mientras cae. */
@@ -287,7 +290,9 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		float fr = radio(c);
 		float w = Math.max(fr, 6), k = Math.max(1, Math.min(fr, c[2] * 2) / 12), imp = alturaImpacto(c), h = alturaNave(c);
 		Vector3f n = posNave(t, c);
-		if (t < 2.5f) return new float[]{n.x + 12, n.y - 3, n.z + 24, n.x, n.y, n.z};
+		// Primero se ve la grieta abriéndose arriba, después la nave saliendo de ella y bajando.
+		if (t < SALE_GRIETA) return new float[]{6, 1.5f, 10, 0.5f, 200, 0.5f};
+		if (t < 4.5f) return new float[]{6, 1.5f, 10, n.x, n.y, n.z};
 		if (t < 6) return new float[]{4.5f, 1.2f, 7, 0, 2.2f + 0.8f * seg(t, 3, 4.5f), 0};
 		if (t < 8.5f) return new float[]{n.x + 7, n.y + 2.5f, n.z + 11, n.x, n.y + 0.5f, n.z};
 		if (t < 10) {
@@ -324,8 +329,8 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 	}
 
 	private void nave(float t, float[] fr, PoseStack pose, MultiBufferSource buffers, int luz) {
-		if (t >= 21) return;
-		float llega = 1 - (float) Math.pow(1 - seg(t, 0, 6), 3);
+		if (t < SALE_GRIETA || t >= 21) return;
+		float llega = 1 - (float) Math.pow(1 - seg(t, SALE_GRIETA, 6), 3);
 		Vector3f n = posNave(t, fr);
 		pose.pushPose();
 		pose.translate(n.x, n.y, n.z);
