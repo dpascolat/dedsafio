@@ -37,6 +37,10 @@ public record HermandadAccionPayload(int accion, String texto) implements Custom
 	public static final int SUBIR_RANGO = 13;
 	/** texto = UUID del Líder que vuelve a ser miembro (solo el Maestro). */
 	public static final int BAJAR_RANGO = 14;
+	/** El Maestro disuelve la Hermandad (se borra para todos). */
+	public static final int DISOLVER = 15;
+	/** Un miembro (que no sea el Maestro) se sale de la Hermandad. */
+	public static final int SALIR = 16;
 
 	/** Largo máximo de un mensaje del chat, como el chat normal. */
 	public static final int LARGO_CHAT = 256;

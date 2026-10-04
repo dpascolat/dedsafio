@@ -96,6 +96,11 @@ public class HermandadesData extends SavedData {
 		return porNombre(nombre).isPresent();
 	}
 
+	public void quitar(Hermandad hermandad) {
+		hermandades.remove(hermandad);
+		setDirty();
+	}
+
 	public void agregar(Hermandad hermandad) {
 		hermandades.add(hermandad);
 		setDirty();

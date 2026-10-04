@@ -91,6 +91,9 @@ public class HermandadScreen extends Screen {
 	private int x() { return (width - ANCHO) / 2; }
 	private int y() { return (height - ALTO) / 2; }
 
+	/** Cuándo se apretó una vez "Disolver" / "Salir" (para pedir que se apriete otra vez); 0 = no se apretó. */
+	private long confirmarIrse;
+
 	private boolean soyMaestro() {
 		return info.maestro().equals(minecraft.player.getUUID());
 	}
@@ -173,7 +176,23 @@ public class HermandadScreen extends Screen {
 		inactivo(Button.builder(Component.literal("Fijar"), b -> {}).bounds(x + 112, y + 146, 44, 18).build());
 		inactivo(Button.builder(Component.literal("Limpiar"), b -> {}).bounds(x + 158, y + 146, 44, 18).build());
 		inactivo(Button.builder(Component.literal("Solicitudes de unión: Cerradas"), b -> {}).bounds(x + 20, y + 170, 180, 18).build());
-		inactivo(Button.builder(Component.literal("Disolver Hermandad"), b -> {}).bounds(x + 44, y + 200, 132, 18).build());
+		// El Maestro la disuelve; los demás se salen. Hay que apretar dos veces (por si fue sin querer).
+		boolean maestro = soyMaestro();
+		String texto = maestro ? "Disolver Hermandad" : "Salir de la Hermandad";
+		Button irse = Button.builder(Component.literal(texto), b -> {
+			if (confirmarIrse == 0 || net.minecraft.Util.getMillis() - confirmarIrse > 3000) {
+				confirmarIrse = net.minecraft.Util.getMillis();
+				b.setMessage(Component.literal("¿Seguro? Aprieta otra vez").withStyle(net.minecraft.ChatFormatting.RED));
+				return;
+			}
+			confirmarIrse = 0;
+			ClientPlayNetworking.send(new HermandadAccionPayload(maestro ? HermandadAccionPayload.DISOLVER : HermandadAccionPayload.SALIR, ""));
+			onClose();
+		}).bounds(x + 44, y + 200, 132, 18).build();
+		irse.setTooltip(Tooltip.create(Component.literal(maestro
+				? "Borra la Hermandad para todos (lo que hay en la Bóveda se pierde)."
+				: "Te vas de la Hermandad.")));
+		addRenderableWidget(irse);
 
 		// Botones ^ y x de cada miembro (solo los ve el Maestro, no en su propia fila).
 		if (!soyMaestro()) return;

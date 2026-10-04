@@ -150,6 +150,8 @@ public final class Hermandades {
 			case HermandadAccionPayload.INVITAR -> invitar(jugador, hermandad.get(), accion.texto().strip());
 			case HermandadAccionPayload.EXPULSAR -> expulsar(jugador, hermandad.get(), accion.texto());
 			case HermandadAccionPayload.COLOR -> cambiarColor(jugador, hermandad.get(), accion.texto());
+			case HermandadAccionPayload.SALIR -> salir(jugador, hermandad.get());
+			case HermandadAccionPayload.DISOLVER -> disolver(jugador, hermandad.get());
 			default -> {}
 		}
 	}
@@ -285,6 +287,37 @@ public final class Hermandades {
 			expulsado.sendSystemMessage(Component.literal("Fuiste expulsado de la Hermandad " + h.nombre() + ".")
 					.withStyle(ChatFormatting.RED));
 		}
+	}
+
+	/** Un miembro se va de la Hermandad (el Maestro no: él la disuelve). */
+	private static void salir(ServerPlayer jugador, HermandadesData.Hermandad h) {
+		if (h.maestro().equals(jugador.getUUID())) {
+			error(jugador, "El Maestro no puede salirse: puede disolver la Hermandad.");
+			return;
+		}
+		String nombre = jugador.getGameProfile().getName();
+		data(jugador).quitarMiembro(h, jugador.getUUID());
+		jugador.sendSystemMessage(Component.literal("Saliste de la Hermandad " + h.nombre() + ".").withStyle(ChatFormatting.YELLOW));
+		avisarMiembros(jugador.server, h, nombre + " se fue de la Hermandad.", ChatFormatting.GRAY);
+		refrescarMiembros(jugador.server, h);
+		sincronizarJugadores(jugador.server);
+	}
+
+	/** El Maestro disuelve la Hermandad: deja de existir para todos (y lo que había en la Bóveda se pierde). */
+	private static void disolver(ServerPlayer maestro, HermandadesData.Hermandad h) {
+		if (!h.maestro().equals(maestro.getUUID())) {
+			error(maestro, "Solo el Maestro puede disolver la Hermandad.");
+			return;
+		}
+		for (ManuscritoDatos.Inscrito m : h.miembros()) {
+			ServerPlayer conectado = maestro.server.getPlayerList().getPlayer(m.uuid());
+			if (conectado != null) {
+				conectado.sendSystemMessage(Component.literal("La Hermandad " + h.nombre() + " fue disuelta por su Maestro.")
+						.withStyle(ChatFormatting.RED));
+			}
+		}
+		data(maestro).quitar(h);
+		sincronizarJugadores(maestro.server);
 	}
 
 	/** Avisa a los miembros conectados (en el chat normal) y lo deja en el chat de la Hermandad. */
