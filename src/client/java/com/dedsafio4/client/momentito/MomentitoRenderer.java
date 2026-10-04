@@ -430,7 +430,9 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 					{c[2], c[3], c[2], c[3]}, {c[2], c[3], c[2], c[3]}, {c[2], c[3], c[2], c[3]}};
 			caja(cr, pose.last(), c[0] * px, c[1] * px, 0, px, px, px * 1.6f, uv, 255, 255, 255, 255, brilloCristal);
 		}
-		color(oro, pose.last(), 0, 8 * px + 0.012f, 0, 0.036f, 0.012f, 0.012f, 0xF2B632, 255, luz);
+		// Hay que volver a pedir el buffer: al pedir el del cristal, el dorado anterior ya se cerró.
+		color(buffers.getBuffer(RenderType.entityCutoutNoCull(BLANCO)), pose.last(), 0, 8 * px + 0.012f, 0, 0.036f, 0.012f, 0.012f,
+				0xF2B632, 255, luz);
 		pose.popPose();
 		pose.popPose();
 	}
