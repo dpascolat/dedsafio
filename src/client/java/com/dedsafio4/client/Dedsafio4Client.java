@@ -233,6 +233,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.RAICES, com.dedsafio4.client.bestias.RaicesRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.ZOMBIE_PLATA, com.dedsafio4.client.bestias.ZombiePlataRenderer::new);
 		com.dedsafio4.client.bestias.RaicesCliente.registrar();
+		EntityRendererRegistry.register(com.dedsafio4.momentito.MomentitoEntity.TIPO, com.dedsafio4.client.momentito.MomentitoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NARVAL, com.dedsafio4.client.bestias.NarvalRenderer::new);
 		EntityModelLayerRegistry.registerModelLayer(BombaWardenRenderer.CAPA, BombaWardenModelo::crearCapa);
 		EntityRendererRegistry.register(ModEntidades.RAYO, RayoRenderer::new);
