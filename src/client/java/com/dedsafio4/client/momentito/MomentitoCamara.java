@@ -1,5 +1,6 @@
 package com.dedsafio4.client.momentito;
 
+import com.dedsafio4.momentito.Escena2;
 import com.dedsafio4.momentito.MomentitoEntity;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
@@ -28,10 +29,10 @@ public final class MomentitoCamara {
 			escena = buscar(mc);
 			activo = escena != null && escena.enCinematica(0) ? escena : null;
 			// El cielo rojo con la grieta (sin Reviil) durante toda la escena; al terminar, destello y cielo normal.
-			if (escena != null && !cieloPuesto) {
+			if (escena != null && escena.escena() == 1 && !cieloPuesto) {
 				com.dedsafio4.client.CieloCliente.momentito(true);
 				cieloPuesto = true;
-			} else if (escena == null && cieloPuesto) {
+			} else if ((escena == null || escena.escena() != 1) && cieloPuesto) {
 				com.dedsafio4.client.CieloCliente.momentito(false);
 				cieloPuesto = false;
 			}
@@ -54,7 +55,7 @@ public final class MomentitoCamara {
 		for (Entity e : mc.level.entitiesForRendering()) {
 			if (!(e instanceof MomentitoEntity m) || m.isRemoved()) continue;
 			float t = m.tiempo(0);
-			if (t < 0 || t >= MomentitoEntity.DURACION / 20f) continue;
+			if (t < 0 || t >= m.duracion() / 20f) continue;
 			double d = m.distanceToSqr(mc.player);
 			if (d < distancia) {
 				distancia = d;
@@ -79,8 +80,8 @@ public final class MomentitoCamara {
 	public static double[] camara(float parcial) {
 		MomentitoEntity m = activo;
 		if (m == null) return null;
-		float t = Mth.clamp(m.tiempoEscena(parcial), 0, MomentitoEntity.FIN);
-		float[] toma = MomentitoRenderer.toma(t, m.campo());
+		float[] toma = m.escena() == 2 ? Escena2.toma(Mth.clamp(m.tiempoEscena(parcial), 0, Escena2.T))
+				: MomentitoRenderer.toma(Mth.clamp(m.tiempoEscena(parcial), 0, MomentitoEntity.FIN), m.campo());
 		Vec3 desde = alMundo(m, toma[0], toma[1], toma[2]), hacia = alMundo(m, toma[3], toma[4], toma[5]);
 		Vec3 d = hacia.subtract(desde);
 		double plano = Math.sqrt(d.x * d.x + d.z * d.z);

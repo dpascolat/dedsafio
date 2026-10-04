@@ -40,7 +40,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 			TNT_BASE = tex("tnt_base"), TNT_LADO_BRILLO = tex("tnt_lado_brillo"), TNT_TAPA_BRILLO = tex("tnt_tapa_brillo"),
 			EXPLOSION = tex("explosion");
 
-	private static ResourceLocation tex(String n) {
+	static ResourceLocation tex(String n) {
 		return ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/momentito/" + n + ".png");
 	}
 
@@ -50,7 +50,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 
 	private final List<CuboNave> nave = new ArrayList<>();
 	/** Cada píxel del Cristal del Desierto: {x, y, u, v}. */
-	private final List<float[]> cristal = new ArrayList<>();
+	final List<float[]> cristal = new ArrayList<>();
 	/** La esfera del campo de fuerza (triángulos) y sus aristas. */
 	private final List<Vector3f[]> esfera = new ArrayList<>();
 	private final List<Vector3f[]> aristas = new ArrayList<>();
@@ -60,7 +60,11 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		cargarNave(contexto);
 		cargarCristal(contexto);
 		armarEsfera();
+		escalera = new MomentitoEscalera(this);
 	}
+
+	/** El momentito 2 (la escalera) se dibuja aparte. */
+	private final MomentitoEscalera escalera;
 
 	// ---------------------------------------------------------------- Carga
 
@@ -202,7 +206,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 	 * Una caja centrada en (cx, cy, cz) de w × h × d. uv: las 6 caras (+x, -x, +y, -y, +z, -z), cada una
 	 * {u0, v0, u1, v1} con (u0, v0) en la esquina de arriba a la izquierda mirando la cara de afuera.
 	 */
-	private static void caja(VertexConsumer vc, PoseStack.Pose p, float cx, float cy, float cz, float w, float h, float d,
+	static void caja(VertexConsumer vc, PoseStack.Pose p, float cx, float cy, float cz, float w, float h, float d,
 							 float[][] uv, int r, int g, int b, int a, int luz) {
 		float x0 = cx - w / 2, x1 = cx + w / 2, y0 = cy - h / 2, y1 = cy + h / 2, z0 = cz - d / 2, z1 = cz + d / 2;
 		float[][][] caras = {
@@ -224,7 +228,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		}
 	}
 
-	private static void vertice(VertexConsumer vc, PoseStack.Pose p, float[] xyz, float u, float v, float[] n,
+	static void vertice(VertexConsumer vc, PoseStack.Pose p, float[] xyz, float u, float v, float[] n,
 								int r, int g, int b, int a, int luz) {
 		vc.addVertex(p, xyz[0], xyz[1], xyz[2]).setColor(r, g, b, a).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY)
 				.setLight(luz).setNormal(p, n[0], n[1], n[2]);
@@ -234,13 +238,13 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 			{0.5f, 0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f, 0.5f}};
 
 	/** Caja de un color liso. */
-	private static void color(VertexConsumer vc, PoseStack.Pose p, float cx, float cy, float cz, float w, float h, float d,
+	static void color(VertexConsumer vc, PoseStack.Pose p, float cx, float cy, float cz, float w, float h, float d,
 							  int rgb, int a, int luz) {
 		caja(vc, p, cx, cy, cz, w, h, d, LISO, rgb >> 16 & 255, rgb >> 8 & 255, rgb & 255, a, luz);
 	}
 
 	/** Las caras de una caja con el mapa de las skins de Minecraft (64 × 64). */
-	private static float[][] uvSkin(float u, float v, float w, float h, float d) {
+	static float[][] uvSkin(float u, float v, float w, float h, float d) {
 		float[][] f = {{u + d + w, v + d, d, h}, {u, v + d, d, h}, {u + d, v, w, d}, {u + d + w, v, w, d},
 				{u + d, v + d, w, h}, {u + 2 * d + w, v + d, w, h}};
 		float[][] r = new float[6][];
@@ -280,6 +284,10 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 
 	@Override
 	public void render(MomentitoEntity m, float yaw, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
+		if (m.escena() == 2) {
+			escalera.render(m, parcial, pose, buffers);
+			return;
+		}
 		float t = Mth.clamp(m.tiempoEscena(parcial), 0, MomentitoEntity.FIN);
 		float[] fr = m.campo();
 		ultimoGiro = m.getYRot();
@@ -492,7 +500,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 	 * Una parte del héroe con su skin: pivote (px, py, pz en píxeles), giro (X, Y, Z), caja de w × h × d corrida
 	 * oy hacia arriba, con la capa de afuera un poco más grande.
 	 */
-	private static void parte(VertexConsumer vc, PoseStack pose, float px, float py, float pz, float rx, float ry, float rz,
+	static void parte(VertexConsumer vc, PoseStack pose, float px, float py, float pz, float rx, float ry, float rz,
 							  float oy, float w, float h, float d, float u, float v, float uo, float vo, float infla, int luz) {
 		pose.pushPose();
 		pose.translate(px * P, py * P, pz * P);

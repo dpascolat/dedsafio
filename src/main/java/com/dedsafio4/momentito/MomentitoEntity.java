@@ -70,6 +70,8 @@ public class MomentitoEntity extends Entity {
 	private static final EntityDataAccessor<Float> ARRIBA = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.FLOAT);
 	private static final EntityDataAccessor<Float> ABAJO = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.FLOAT);
 	public static final float[] CAMPO_POR_DEFECTO = {200, 200, 30, 180};
+	/** Qué momentito es: 1 = el hacker, 2 = la escalera. */
+	private static final EntityDataAccessor<Integer> ESCENA = SynchedEntityData.defineId(MomentitoEntity.class, EntityDataSerializers.INT);
 
 	public MomentitoEntity(EntityType<? extends MomentitoEntity> tipo, Level level) {
 		super(tipo, level);
@@ -104,7 +106,7 @@ public class MomentitoEntity extends Entity {
 	 * cargan en el servidor), así las tomas de lejos no se ven vacías. Al terminar, vuelven los de su lugar.
 	 */
 	private void chunksDeLaCamara(ServerLevel mundo, float t) {
-		float[] toma = Escena.toma(t, campo());
+		float[] toma = escena() == 2 ? Escena2.toma(t) : Escena.toma(t, campo());
 		double[] p = Escena.alMundo(getX(), getY(), getZ(), getYRot(), toma[0], toma[1], toma[2]);
 		ChunkPos chunk = new ChunkPos(Mth.floor(p[0]) >> 4, Mth.floor(p[2]) >> 4);
 		if (chunk.equals(ultimoChunk) && tickCount % 20 != 0) return;
@@ -147,6 +149,7 @@ public class MomentitoEntity extends Entity {
 
 	private static int empezar(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx, float[] campo) {
 		int escena = IntegerArgumentType.getInteger(ctx, "escena");
+		if (escena == 2) return empezarEscalera(ctx);
 		if (escena != 1) {
 			ctx.getSource().sendFailure(Component.literal("Todavía no existe el momentito " + escena + "."));
 			return 0;
@@ -168,8 +171,41 @@ public class MomentitoEntity extends Entity {
 		return 1;
 	}
 
+	/**
+	 * /momentito 2: la escalera (60 s). La escalera la construye el jugador: 13 de ancho, 59 escalones (uno por
+	 * bloque, como una escalera de escalones de piedra) y arriba un descanso plano de 10 bloques. Se escribe
+	 * parado en el piso, en el medio, pegado al primer escalón y mirando hacia arriba de la escalera: la escena
+	 * se acomoda a los bloques (centro del bloque donde está parado y la dirección más cercana).
+	 */
+	private static int empezarEscalera(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) {
+		ServerLevel mundo = ctx.getSource().getLevel();
+		Vec3 pos = ctx.getSource().getPosition();
+		float giro = Math.round(ctx.getSource().getRotation().y / 90f) * 90f;
+		double adelanteX = -Math.sin(giro * Mth.DEG_TO_RAD), adelanteZ = Math.cos(giro * Mth.DEG_TO_RAD);
+		MomentitoEntity m = TIPO.create(mundo);
+		if (m == null) return 0;
+		// El primer escalón empieza justo en el borde del bloque de adelante. El giro guardado va dado vuelta
+		// (+180) para que el render (que gira 180 - giro) deje la escalera subiendo hacia adelante.
+		m.moveTo(Mth.floor(pos.x) + 0.5 + adelanteX * 0.5, Mth.floor(pos.y + 0.01), Mth.floor(pos.z) + 0.5 + adelanteZ * 0.5, giro + 180, 0);
+		m.entityData.set(INICIO, (int) mundo.getGameTime());
+		m.entityData.set(ESCENA, 2);
+		mundo.addFreshEntity(m);
+		ctx.getSource().sendSuccess(() -> Component.literal("Momentito 2: la escalera."), true);
+		return 1;
+	}
+
+	public int escena() {
+		return entityData.get(ESCENA);
+	}
+
+	/** Cuántos ticks dura todo. */
+	public int duracion() {
+		return escena() == 2 ? (int) (Escena2.T * 20) : DURACION;
+	}
+
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder datos) {
+		datos.define(ESCENA, 1);
 		datos.define(INICIO, 0);
 		datos.define(LARGO, CAMPO_POR_DEFECTO[0]);
 		datos.define(ANCHO, CAMPO_POR_DEFECTO[1]);
@@ -194,12 +230,14 @@ public class MomentitoEntity extends Entity {
 	 * cielo rojo da menos de 2,5.
 	 */
 	public float tiempoEscena(float parcial) {
+		if (escena() == 2) return tiempo(parcial);
 		return tiempo(parcial) - INTRO + Escena.SALE_GRIETA;
 	}
 
-	/** ¿Ya empezó la cinemática (la nave salió de la grieta)? */
+	/** ¿Ya empezó la cinemática (la nave salió de la grieta)? La escalera es toda cinemática. */
 	public boolean enCinematica(float parcial) {
 		float t = tiempoEscena(parcial);
+		if (escena() == 2) return t >= 0 && t < Escena2.T;
 		return t >= Escena.SALE_GRIETA && t < FIN_CINEMATICA;
 	}
 
@@ -212,13 +250,17 @@ public class MomentitoEntity extends Entity {
 		super.tick();
 		if (level().isClientSide) return;
 		int t = (int) (level().getGameTime() - entityData.get(INICIO));
-		if (t >= DURACION) {
+		if (t >= duracion()) {
 			discard();
 			return;
 		}
 		if (level() instanceof ServerLevel mundo) {
 			if (enCinematica(0)) chunksDeLaCamara(mundo, tiempoEscena(0));
-			else if (tiempoEscena(0) >= FIN_CINEMATICA) soltarCamaras(mundo);   // cada uno vuelve a su lugar
+			else if (escena() == 1 && tiempoEscena(0) >= FIN_CINEMATICA) soltarCamaras(mundo);   // cada uno vuelve a su lugar
+		}
+		if (escena() == 2) {
+			sonidosEscalera(t);
+			return;
 		}
 		switch (t - CORRIMIENTO) {
 			case 50 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.5f);   // la nave sale de la grieta
@@ -242,6 +284,28 @@ public class MomentitoEntity extends Entity {
 
 	private void sonar(SoundEvent sonido, float volumen, float tono) {
 		level().playSound(null, getX(), getY() + 3, getZ(), sonido, SoundSource.AMBIENT, volumen, tono);
+	}
+
+	/** Los pasos del héroe en la piedra y el amuleto (los sonidos salen de donde está el héroe). */
+	private void sonidosEscalera(int t) {
+		float s = t / 20f;
+		org.joml.Vector3f h = Escena2.pose(s).heroe;
+		double[] p = Escena.alMundo(getX(), getY(), getZ(), getYRot(), h.x, h.y, h.z);
+		float paso = Math.abs(h.z - Escena2.pose(s - 0.2f).heroe.z) + Math.abs(h.x - Escena2.pose(s - 0.2f).heroe.x);
+		if (t % 7 == 0 && paso > 0.15f) sonarEn(p, SoundEvents.STONE_STEP, 0.6f, 1f);
+		switch (t) {
+			case 532, 1010 -> sonarEn(p, SoundEvents.STONE_STEP, 1f, 0.7f);   // se arrodilla / se agacha
+			case 932 -> sonarEn(p, SoundEvents.AMETHYST_BLOCK_CHIME, 2f, 0.8f);   // ve el esqueleto
+			case 1098 -> sonarEn(p, SoundEvents.AMETHYST_CLUSTER_PLACE, 1.5f, 1.2f);   // agarra el amuleto
+			case 1124 -> sonarEn(p, SoundEvents.BEACON_ACTIVATE, 2f, 1.3f);
+			case 1150 -> sonarEn(p, SoundEvents.AMETHYST_BLOCK_RESONATE, 2f, 1f);   // el cristal brilla
+			default -> {
+			}
+		}
+	}
+
+	private void sonarEn(double[] p, SoundEvent sonido, float volumen, float tono) {
+		level().playSound(null, p[0], p[1] + 1, p[2], sonido, SoundSource.AMBIENT, volumen, tono);
 	}
 
 	@Override
