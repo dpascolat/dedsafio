@@ -23,6 +23,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.ChunkPos;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * /momentito 1 [largo ancho arriba abajo]  la escena del hacker (30 segundos) en el lugar donde se escribe el
@@ -56,6 +64,60 @@ public class MomentitoEntity extends Entity {
 	}
 
 	public static void registrar() {}
+
+	// ---------------------------------------------------------------- Chunks donde mira la cámara
+
+	/** Hasta cuántos chunks alrededor de la cámara se cargan y se mandan. */
+	public static final int CHUNKS = 8;
+	/** Los jugadores que están viendo la escena → el chunk donde está su cámara. */
+	private static final Map<UUID, ChunkPos> CAMARAS = new ConcurrentHashMap<>();
+	/** Cada segundo se pone un ticket nuevo (dura 3 s): así los chunks siguen cargados mientras la cámara esté ahí. */
+	private static final TicketType<Integer> TICKET = TicketType.create("dedsafio4_momentito", Integer::compare, 60);
+
+	/** El chunk donde está la cámara de este jugador, o null si no está viendo una escena (lo usa ChunkMapMomentitoMixin). */
+	public static ChunkPos chunkCamara(ServerPlayer jugador) {
+		return CAMARAS.get(jugador.getUUID());
+	}
+
+	/** Cuántos chunks se le mandan a este jugador alrededor de la cámara (como mucho 8). */
+	public static int distanciaCamara(ServerPlayer jugador, int normal) {
+		return CAMARAS.containsKey(jugador.getUUID()) ? Math.min(normal, CHUNKS) : normal;
+	}
+
+	private ChunkPos ultimoChunk;
+
+	/**
+	 * Mientras dura la escena, a los jugadores cercanos se les mandan los chunks de donde está la cámara (y se
+	 * cargan en el servidor), así las tomas de lejos no se ven vacías. Al terminar, vuelven los de su lugar.
+	 */
+	private void chunksDeLaCamara(ServerLevel mundo, float t) {
+		float[] toma = Escena.toma(t, campo());
+		double[] p = Escena.alMundo(getX(), getY(), getZ(), getYRot(), toma[0], toma[1], toma[2]);
+		ChunkPos chunk = new ChunkPos(Mth.floor(p[0]) >> 4, Mth.floor(p[2]) >> 4);
+		if (chunk.equals(ultimoChunk) && tickCount % 20 != 0) return;
+		ultimoChunk = chunk;
+		mundo.getChunkSource().addRegionTicket(TICKET, chunk, CHUNKS, tickCount / 20);
+		for (ServerPlayer jugador : mundo.players()) {
+			if (jugador.distanceToSqr(this) > 300 * 300) continue;
+			ChunkPos antes = CAMARAS.put(jugador.getUUID(), chunk);
+			if (!chunk.equals(antes)) ((com.dedsafio4.mixin.ChunkMapAccessor) mundo.getChunkSource().chunkMap).dedsafio4$actualizarChunks(jugador);
+		}
+	}
+
+	/** Se terminó la escena: cada uno vuelve a recibir los chunks de donde está parado. */
+	private void soltarCamaras(ServerLevel mundo) {
+		for (ServerPlayer jugador : mundo.players()) {
+			if (CAMARAS.remove(jugador.getUUID()) != null) {
+				((com.dedsafio4.mixin.ChunkMapAccessor) mundo.getChunkSource().chunkMap).dedsafio4$actualizarChunks(jugador);
+			}
+		}
+	}
+
+	@Override
+	public void remove(RemovalReason razon) {
+		if (level() instanceof ServerLevel mundo) soltarCamaras(mundo);
+		super.remove(razon);
+	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(Commands.literal("momentito").requires(s -> s.hasPermission(2))
@@ -127,6 +189,7 @@ public class MomentitoEntity extends Entity {
 			discard();
 			return;
 		}
+		if (level() instanceof ServerLevel mundo) chunksDeLaCamara(mundo, t / 20f);
 		switch (t) {
 			case 0 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.5f);
 			case 60 -> sonar(SoundEvents.BEACON_AMBIENT, 2f, 0.6f);
