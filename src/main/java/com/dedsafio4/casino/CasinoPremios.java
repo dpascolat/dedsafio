@@ -3,6 +3,10 @@ package com.dedsafio4.casino;
 import com.dedsafio4.items.ModItems;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -27,7 +31,10 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Los premios del Casino. /casino 1 prende la tabla de premios 1 (hasta que se prenda otra) y le muestra en pantalla
@@ -44,18 +51,54 @@ public final class CasinoPremios {
 	public static final class Modo extends SavedData {
 		public static final SavedData.Factory<Modo> FACTORY = new SavedData.Factory<>(Modo::new, Modo::leer, null);
 		int modo = 0;
+		/**
+		 * Los premios elegidos con /casino premio: "figura|cantidad" → las opciones (sale una). Si una figura no
+		 * está acá, da el premio de siempre; si está con la lista vacía, no da nada.
+		 */
+		final Map<String, List<ItemStack>> propios = new HashMap<>();
 
 		private static Modo leer(CompoundTag tag, HolderLookup.Provider registros) {
 			Modo m = new Modo();
 			m.modo = tag.getInt("modo");
+			CompoundTag premios = tag.getCompound("premios");
+			for (String clave : premios.getAllKeys()) {
+				List<ItemStack> lista = new ArrayList<>();
+				for (Tag t : premios.getList(clave, Tag.TAG_COMPOUND)) ItemStack.parse(registros, t).ifPresent(lista::add);
+				m.propios.put(clave, lista);
+			}
 			return m;
 		}
 
 		@Override
 		public CompoundTag save(CompoundTag tag, HolderLookup.Provider registros) {
 			tag.putInt("modo", modo);
+			CompoundTag premios = new CompoundTag();
+			propios.forEach((clave, lista) -> {
+				ListTag l = new ListTag();
+				for (ItemStack item : lista) if (!item.isEmpty()) l.add(item.save(registros));
+				premios.put(clave, l);
+			});
+			tag.put("premios", premios);
 			return tag;
 		}
+
+		/** Los premios elegidos para esa figura y cantidad, o null si da los de siempre. */
+		public List<ItemStack> propio(String figura, int cantidad) {
+			return propios.get(figura + "|" + cantidad);
+		}
+	}
+
+	/** Cómo se escribe cada figura en /casino premio → su nombre adentro del mod. */
+	private static final Map<String, String> FIGURAS = new LinkedHashMap<>();
+	static {
+		FIGURAS.put("hierro", "hierro");
+		FIGURAS.put("experiencia", "botella de experiencia");
+		FIGURAS.put("pechera", "pechera de hierro");
+		FIGURAS.put("pico", "pico de hierro");
+		FIGURAS.put("libro", "libro de encantamientos");
+		FIGURAS.put("filete", "filete");
+		FIGURAS.put("pocion", "poción");
+		FIGURAS.put("corazon", "corazon");
 	}
 
 	public static Modo modo(MinecraftServer server) {
@@ -64,6 +107,15 @@ public final class CasinoPremios {
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(Commands.literal("casino").requires(s -> s.hasPermission(2))
+				// /casino premio <figura> <2|3> [agregar|nada|normal]: elegir el premio de una figura.
+				.then(Commands.literal("premio")
+						.then(Commands.argument("figura", StringArgumentType.word())
+								.suggests((c, b) -> SharedSuggestionProvider.suggest(FIGURAS.keySet(), b))
+								.then(Commands.argument("iguales", IntegerArgumentType.integer(2, 3))
+										.executes(c -> elegir(c, "poner"))
+										.then(Commands.literal("agregar").executes(c -> elegir(c, "agregar")))
+										.then(Commands.literal("nada").executes(c -> elegir(c, "nada")))
+										.then(Commands.literal("normal").executes(c -> elegir(c, "normal"))))))
 				.then(Commands.argument("tabla", IntegerArgumentType.integer(0))
 						.executes(c -> {
 							int tabla = IntegerArgumentType.getInteger(c, "tabla");
@@ -79,10 +131,69 @@ public final class CasinoPremios {
 									: "Casino: premios de la tabla " + tabla + " prendidos.").withStyle(ChatFormatting.GOLD), true);
 							// Al que prendió la tabla le aparece en pantalla qué da cada figura.
 							if (tabla == 1 && c.getSource().getEntity() instanceof ServerPlayer jugador) {
-								net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(jugador, TablaPremiosPayload.tabla1());
+								net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(jugador, TablaPremiosPayload.tabla1(m));
 							}
 							return 1;
 						})));
+	}
+
+	/**
+	 * /casino premio: con el ítem que tiene en la mano (con su cantidad, encantamientos y todo) cambia el premio de
+	 * esa figura. Sin nada atrás lo deja como único premio; "agregar" lo suma como otra opción (sale una al azar);
+	 * "nada" hace que esa figura no dé nada; "normal" vuelve al premio de siempre.
+	 */
+	private static int elegir(com.mojang.brigadier.context.CommandContext<CommandSourceStack> c, String accion) {
+		String escrita = StringArgumentType.getString(c, "figura").toLowerCase(java.util.Locale.ROOT);
+		String figura = FIGURAS.get(escrita.replace("ó", "o"));
+		if (figura == null) {
+			c.getSource().sendFailure(Component.literal("No existe la figura \"" + escrita + "\". Las figuras son: "
+					+ String.join(", ", FIGURAS.keySet()) + "."));
+			return 0;
+		}
+		int iguales = IntegerArgumentType.getInteger(c, "iguales");
+		Modo m = modo(c.getSource().getServer());
+		String clave = figura + "|" + iguales;
+		String texto;
+		switch (accion) {
+			case "nada" -> {
+				m.propios.put(clave, new ArrayList<>());
+				texto = "no da nada";
+			}
+			case "normal" -> {
+				m.propios.remove(clave);
+				texto = "vuelve a dar el premio de siempre";
+			}
+			default -> {
+				ItemStack mano = c.getSource().getEntity() instanceof ServerPlayer j ? j.getMainHandItem() : ItemStack.EMPTY;
+				if (mano.isEmpty()) {
+					c.getSource().sendFailure(Component.literal("Ten en la mano el ítem del premio (con la cantidad que quieras)."));
+					return 0;
+				}
+				List<ItemStack> lista = new ArrayList<>();
+				if (accion.equals("agregar")) {
+					List<ItemStack> antes = m.propios.get(clave);
+					lista.addAll(antes != null ? antes : porDefecto(c.getSource().getServer(), figura, iguales));
+				}
+				lista.add(mano.copy());
+				m.propios.put(clave, lista);
+				texto = (accion.equals("agregar") ? "ahora también puede dar " : "ahora da ") + mano.getCount() + " × "
+						+ mano.getHoverName().getString() + (mano.isEnchanted() ? " (encantado)" : "");
+			}
+		}
+		m.setDirty();
+		c.getSource().sendSuccess(() -> Component.literal("Casino: " + iguales + " × " + nombre(figura) + " " + texto + ".")
+				.withStyle(ChatFormatting.GOLD), true);
+		if (c.getSource().getEntity() instanceof ServerPlayer jugador) {
+			net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(jugador, TablaPremiosPayload.tabla1(m));
+		}
+		return 1;
+	}
+
+	/** Los premios de siempre de una figura (para empezar la lista cuando se agrega uno). */
+	private static List<ItemStack> porDefecto(MinecraftServer server, String figura, int iguales) {
+		RandomSource azar = RandomSource.create();
+		HolderLookup.RegistryLookup<Enchantment> enc = server.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+		return new ArrayList<>(iguales >= 3 ? tres(figura, azar, enc) : dos(figura, azar, enc));
 	}
 
 	// --- Los premios ---
@@ -103,7 +214,9 @@ public final class CasinoPremios {
 		RandomSource azar = jugador.getRandom();
 		HolderLookup.RegistryLookup<Enchantment> encantamientos =
 				jugador.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-		List<ItemStack> opciones = cantidad >= 3 ? tres(figura, azar, encantamientos) : dos(figura, azar, encantamientos);
+		List<ItemStack> propio = modo(jugador.server).propio(figura, cantidad);
+		List<ItemStack> opciones = propio != null ? propio
+				: cantidad >= 3 ? tres(figura, azar, encantamientos) : dos(figura, azar, encantamientos);
 		if (opciones.isEmpty()) return;
 		ItemStack item = opciones.get(azar.nextInt(opciones.size())).copy();
 		if (casino != null) tirar(casino, jugador, item);
@@ -160,7 +273,7 @@ public final class CasinoPremios {
 		};
 	}
 
-	private static String nombre(String figura) {
+	static String nombre(String figura) {
 		return switch (figura) {
 			case "hierro" -> "Hierro";
 			case "botella de experiencia" -> "Botella de experiencia";

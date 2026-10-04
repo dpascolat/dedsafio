@@ -61,9 +61,9 @@ public record TablaPremiosPayload(int tabla, List<Fila> filas) implements Custom
 	 * La tabla 1, tal como la reparte CasinoPremios.dos() y tres().
 	 * Si se cambian los premios allá, hay que cambiar también este resumen.
 	 */
-	public static TablaPremiosPayload tabla1() {
+	public static TablaPremiosPayload tabla1(CasinoPremios.Modo modo) {
 		ItemStack libro = new ItemStack(Items.ENCHANTED_BOOK);
-		return new TablaPremiosPayload(1, List.of(
+		return new TablaPremiosPayload(1, cambiar(modo, List.of(
 				new Fila(new ItemStack(Items.IRON_INGOT), "Hierro",
 						List.of(op(Items.IRON_INGOT, 5, "Lingotes de hierro"), op(Items.DIAMOND, 1, "Diamante")),
 						List.of(op(Items.DIAMOND, 5, "Diamantes"), op(Items.NETHERITE_SCRAP, 1, "Chatarra de netherita"))),
@@ -94,6 +94,25 @@ public record TablaPremiosPayload(int tabla, List<Fila> filas) implements Custom
 								op(PotionContents.createItemStack(Items.SPLASH_POTION, Potions.STRENGTH), "1 Poción arrojadiza de fuerza"))),
 				new Fila(new ItemStack(ModItems.CORAZON), "Corazón",
 						List.of(),
-						List.of(op(ModItems.CORAZON, 1, "Corazón")))));
+						List.of(op(ModItems.CORAZON, 1, "Corazón"))))));
+	}
+
+	/** Las figuras de la tabla en el orden de las filas (como las llama CasinoPremios). */
+	private static final String[] FIGURAS = {"hierro", "botella de experiencia", "pechera de hierro", "pico de hierro",
+			"libro de encantamientos", "filete", "poción", "corazon"};
+
+	/** Pone los premios elegidos con /casino premio en lugar de los de siempre (texto vacío: lo arma el cliente). */
+	private static List<Fila> cambiar(CasinoPremios.Modo modo, List<Fila> filas) {
+		List<Fila> r = new java.util.ArrayList<>();
+		for (int i = 0; i < filas.size(); i++) {
+			Fila f = filas.get(i);
+			List<ItemStack> dos = modo.propio(FIGURAS[i], 2), tres = modo.propio(FIGURAS[i], 3);
+			r.add(new Fila(f.icono(), f.nombre(), dos == null ? f.dos() : propias(dos), tres == null ? f.tres() : propias(tres)));
+		}
+		return r;
+	}
+
+	private static List<Opcion> propias(List<ItemStack> items) {
+		return items.stream().map(it -> new Opcion(it.copy(), "")).toList();
 	}
 }

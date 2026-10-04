@@ -57,8 +57,11 @@ public class CasinoEntity extends Mob implements GeoEntity {
 			java.util.Map.entry("poción", new Resultado("poción", 3, 162, 200)),
 			java.util.Map.entry("botella de experiencia", new Resultado("botella de experiencia", 3, 176, 220)));
 
-	/** De cada 100 tiradas: cuántas salen con 3 iguales y cuántas con 2 (el resto, ninguna repetida). */
-	private static final int PROBABILIDAD_TRES = 20, PROBABILIDAD_DOS = 30;
+	/**
+	 * De cada 100 tiradas: cuántas salen con 3 iguales y cuántas con 2 (el resto, ninguna repetida). De las de 3
+	 * iguales, los 3 corazones salen solo 1 de cada 100 tiradas (1 %); las otras 19 se reparten entre las demás figuras.
+	 */
+	private static final int PROBABILIDAD_TRES = 20, PROBABILIDAD_DOS = 30, PROBABILIDAD_TRES_CORAZONES = 1;
 	/** Las animaciones que se pueden disparar con animar(nombre). */
 	public static final java.util.List<String> ANIMACIONES = RESULTADOS.keySet().stream().sorted().toList();
 
@@ -160,8 +163,13 @@ public class CasinoEntity extends Mob implements GeoEntity {
 		var azar = getRandom();
 		int suerte = azar.nextInt(100);
 		int iguales = suerte < PROBABILIDAD_TRES ? 3 : suerte < PROBABILIDAD_TRES + PROBABILIDAD_DOS ? 2 : 1;
-		var nombres = ANIMACIONES.stream().filter(n -> RESULTADOS.get(n).cantidad() == iguales).toList();
-		String tirada = nombres.get(azar.nextInt(nombres.size()));
+		String tirada;
+		if (suerte < PROBABILIDAD_TRES_CORAZONES) {
+			tirada = "corazon";
+		} else {
+			var nombres = ANIMACIONES.stream().filter(n -> RESULTADOS.get(n).cantidad() == iguales && !n.equals("corazon")).toList();
+			tirada = nombres.get(azar.nextInt(nombres.size()));
+		}
 		String forzada = System.getenv("DEDSAFIO4_CASINO_FORZAR");   // solo para las pruebas automáticas
 		if (forzada != null && RESULTADOS.containsKey(forzada)) tirada = forzada;
 		animar(tirada);

@@ -109,7 +109,7 @@ public class TablaPremiosScreen extends Screen {
 			g.pose().scale(0.75f, 0.75f, 1);
 			g.renderItem(o.item(), 0, 0);
 			g.pose().popPose();
-			String texto = (i > 0 ? "o " : "") + o.texto();
+			String texto = (i > 0 ? "o " : "") + (o.texto().isEmpty() ? elegido(o.item()) : o.texto());
 			// Si no entra, se achica un poco.
 			float escala = Math.min(1f, (ancho - 52) / (float) font.width(texto));
 			g.pose().pushPose();
@@ -120,6 +120,21 @@ public class TablaPremiosScreen extends Screen {
 			yy += RENGLON;
 		}
 		return yy;
+	}
+
+	/** El texto de un premio elegido con /casino premio: "3 Espada de diamante (Filo III)". */
+	private static String elegido(net.minecraft.world.item.ItemStack item) {
+		StringBuilder t = new StringBuilder(item.getCount() + " " + item.getHoverName().getString());
+		var encantamientos = item.getOrDefault(net.minecraft.core.component.DataComponents.ENCHANTMENTS,
+				net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY);
+		if (encantamientos.isEmpty()) encantamientos = item.getOrDefault(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS,
+				net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY);
+		List<String> nombres = new java.util.ArrayList<>();
+		for (var e : encantamientos.entrySet()) {
+			nombres.add(net.minecraft.world.item.enchantment.Enchantment.getFullname(e.getKey(), e.getIntValue()).getString());
+		}
+		if (!nombres.isEmpty()) t.append(" (").append(String.join(", ", nombres)).append(")");
+		return t.toString();
 	}
 
 	@Override
