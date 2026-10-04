@@ -30,8 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Los premios del Casino. /casino 1 prende la tabla de premios 1 (hasta que se prenda otra); /casino 0 la apaga
- * (las ruedas giran igual, pero no dan nada). Se guarda en el mundo.
+ * Los premios del Casino. /casino 1 prende la tabla de premios 1 (hasta que se prenda otra) y le muestra en pantalla
+ * al que la prendió qué da cada figura (TablaPremiosPayload); /casino 0 la apaga (las ruedas giran igual, pero no
+ * dan nada). Se guarda en el mundo.
  * Con 2 figuras iguales se da el premio chico de esa figura; con 3, el grande. Cada premio tiene varias opciones y
  * sale UNA sola, al azar (por ejemplo: 10 zanahorias de oro O 1 manzana de oro).
  */
@@ -76,6 +77,10 @@ public final class CasinoPremios {
 							c.getSource().sendSuccess(() -> Component.literal(tabla == 0
 									? "Casino: sin premios (las ruedas giran pero no dan nada)."
 									: "Casino: premios de la tabla " + tabla + " prendidos.").withStyle(ChatFormatting.GOLD), true);
+							// Al que prendió la tabla le aparece en pantalla qué da cada figura.
+							if (tabla == 1 && c.getSource().getEntity() instanceof ServerPlayer jugador) {
+								net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(jugador, TablaPremiosPayload.tabla1());
+							}
 							return 1;
 						})));
 	}
@@ -123,7 +128,7 @@ public final class CasinoPremios {
 		casino.level().addFreshEntity(tirado);
 	}
 
-	/** Premio chico (2 figuras iguales): las opciones (sale una). */
+	/** Premio chico (2 figuras iguales): las opciones (sale una). Si se cambian, cambiar también TablaPremiosPayload. */
 	private static List<ItemStack> dos(String figura, RandomSource azar, HolderLookup.RegistryLookup<Enchantment> enc) {
 		return switch (figura) {
 			case "hierro" -> List.of(new ItemStack(Items.IRON_INGOT, 5), new ItemStack(Items.DIAMOND));
