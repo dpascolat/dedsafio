@@ -196,6 +196,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.despegue.NaveCinematica.registrar();
 		com.dedsafio4.client.despegue.NaveTablero.registrar();
 		com.dedsafio4.client.despegue.TunelPantalla.registrar();
+		com.dedsafio4.client.momentito.MomentitoCamara.registrar();
 		com.dedsafio4.client.casino.TablaPremiosScreen.registrar();
 		com.dedsafio4.client.bulag.BulagCliente.registrar();
 		com.dedsafio4.client.despegue.EspacioCielo.registrar();

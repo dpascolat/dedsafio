@@ -58,7 +58,24 @@ public final class CieloCliente {
 	/** Tick del mundo en que empezó la animación; Long.MIN_VALUE = sin animación (todo ya visible). */
 	private static long inicio = Long.MIN_VALUE;
 
+	/** El cielo rojo lo puso /momentito 1 (sin Reviil: en su lugar está la nave del hacker). */
+	private static boolean porMomentito;
+
+	/** Lo llama la escena del hacker al empezar y al terminar (si el cielo ya estaba rojo, no lo toca). */
+	public static void momentito(boolean empieza) {
+		Minecraft mc = Minecraft.getInstance();
+		if (empieza && !activo) {
+			activo = true;
+			porMomentito = true;
+			inicio = mc.level != null ? mc.level.getGameTime() : Long.MIN_VALUE;
+		} else if (!empieza && porMomentito) {
+			activo = false;
+			porMomentito = false;
+		}
+	}
+
 	public static void setActivo(boolean valor, boolean animar) {
+		porMomentito = false;
 		Minecraft mc = Minecraft.getInstance();
 		if (valor && !activo) inicio = animar && mc.level != null ? mc.level.getGameTime() : Long.MIN_VALUE;
 		if (!valor && activo && animar) Destello.iniciar();
@@ -108,7 +125,7 @@ public final class CieloCliente {
 		dibujarCupula(m, avance);
 
 		float grieta = progreso(partialTick, INICIO_GRIETA, DURACION_GRIETA);
-		if (grieta > 0f) {
+		if (grieta > 0f && !porMomentito) {
 			Minecraft mc = Minecraft.getInstance();
 			float tiempo = (mc.level != null ? mc.level.getGameTime() % 100000L : 0) + partialTick;
 			ReviilCielo.dibujar(matrizVista, tiempo, grieta, progreso(partialTick, INICIO_REVIIL, DURACION_REVIIL));

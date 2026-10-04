@@ -34,9 +34,10 @@ import java.util.Set;
  * centro, mirando hacia el que escribió el comando.
  */
 public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
-	private static final float P = 1 / 16f, SS = 2.4f / 16f, FR = 2.6f, FC_Y = 1f, TB0 = 8.5f, TB1 = 12f;
+	private static final float P = 1 / 16f, SS = 2.4f / 16f, FC_Y = 1f, TB0 = 8.5f, TB1 = 12f;
 	private static final ResourceLocation HEROE = tex("heroe"), NAVE = tex("nave"), NAVE_BRILLO = tex("nave_brillo"),
-			CRISTAL = tex("cristal"), TNT_LADO = tex("tnt_lado"), TNT_TAPA = tex("tnt_tapa"), BLANCO = tex("blanco");
+			CRISTAL = tex("cristal"), TNT_LADO = tex("tnt_lado"), TNT_TAPA = tex("tnt_tapa"), BLANCO = tex("blanco"),
+			EXPLOSION = tex("explosion");
 
 	private static ResourceLocation tex(String n) {
 		return ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/momentito/" + n + ".png");
@@ -123,14 +124,14 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		}
 	}
 
-	/** Icosaedro con cada cara partida en 9 (como IcosahedronGeometry(1, 2)), en una esfera de radio 1. */
+	/** Icosaedro con cada cara partida en 16 (como IcosahedronGeometry(1, 3)), en una esfera de radio 1. */
 	private void armarEsfera() {
 		float t = (1 + (float) Math.sqrt(5)) / 2;
 		float[][] v = {{-1, t, 0}, {1, t, 0}, {-1, -t, 0}, {1, -t, 0}, {0, -1, t}, {0, 1, t}, {0, -1, -t}, {0, 1, -t},
 				{t, 0, -1}, {t, 0, 1}, {-t, 0, -1}, {-t, 0, 1}};
 		int[][] caras = {{0, 11, 5}, {0, 5, 1}, {0, 1, 7}, {0, 7, 10}, {0, 10, 11}, {1, 5, 9}, {5, 11, 4}, {11, 10, 2}, {10, 7, 6},
 				{7, 1, 8}, {3, 9, 4}, {3, 4, 2}, {3, 2, 6}, {3, 6, 8}, {3, 8, 9}, {4, 9, 5}, {2, 4, 11}, {6, 2, 10}, {8, 6, 7}, {9, 8, 1}};
-		int n = 3;
+		int n = 4;   // detalle 3: cada cara partida en 16
 		Set<String> vistas = new HashSet<>();
 		for (int[] c : caras) {
 			Vector3f a = new Vector3f(v[c[0]][0], v[c[0]][1], v[c[0]][2]), b = new Vector3f(v[c[1]][0], v[c[1]][1], v[c[1]][2]),
@@ -246,28 +247,82 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		return r;
 	}
 
-	// ---------------------------------------------------------------- La escena
+	// ---------------------------------------------------------------- La escena (también la usa MomentitoCamara)
+
+	/** Altura a la que flota la nave: siempre arriba del campo de fuerza. */
+	public static float alturaNave(float fr) {
+		return Math.max(40, FC_Y + fr + 30);
+	}
+
+	/** Donde la bomba choca contra el campo de fuerza. */
+	public static float alturaImpacto(float fr) {
+		return FC_Y + fr + 0.3f;
+	}
+
+	/** Dónde está la nave (llega desde lejos, flota y al final sube al cielo). */
+	public static Vector3f posNave(float t, float fr) {
+		float h = alturaNave(fr);
+		float llega = 1 - (float) Math.pow(1 - seg(t, 0, 6), 3), sube = seg(t, 17, 21);
+		return new Vector3f(lerp(-80, 0, llega) + 10 * sube * sube,
+				lerp(h + 80, h, llega) + Mth.sin(t * 1.6f) * 0.15f + (h + 400) * (float) Math.pow(sube, 2.2), 0);
+	}
+
+	/** Dónde está la bomba mientras cae. */
+	public static Vector3f posBomba(float t, float fr) {
+		float cae = seg(t, TB0, TB1);
+		float temblor = azar((float) Math.floor(t * 12), 9) > 0.8f ? 0.06f : 0;
+		return new Vector3f(temblor, lerp(alturaNave(fr) - 0.6f, alturaImpacto(fr), cae * cae), 0);
+	}
+
+	/**
+	 * La toma de cámara de cada momento (como el "director" del diseño): {x, y, z} de la cámara y {x, y, z}
+	 * del punto al que mira, en las medidas de la escena.
+	 */
+	public static float[] toma(float t, float fr) {
+		float w = Math.max(fr, 6), k = Math.max(1, fr / 12), imp = alturaImpacto(fr), h = alturaNave(fr);
+		Vector3f n = posNave(t, fr);
+		if (t < 2.5f) return new float[]{n.x + 12, n.y - 3, n.z + 24, n.x, n.y, n.z};
+		if (t < 6) return new float[]{4.5f, 1.2f, 7, 0, 2.2f + 0.8f * seg(t, 3, 4.5f), 0};
+		if (t < 8.5f) return new float[]{n.x + 7, n.y + 2.5f, n.z + 11, n.x, n.y + 0.5f, n.z};
+		if (t < 10) {
+			Vector3f b = posBomba(t, fr);
+			return new float[]{b.x + 6, b.y + 2, b.z + 10, b.x, b.y, b.z};
+		}
+		if (t < 11.2f) return new float[]{3.2f, 1.6f, 4.8f, 0, 1.4f, 0};
+		if (t < 12) {
+			float e = sm(seg(t, 11.2f, 11.95f));
+			return new float[]{lerp(3.2f, w * 1.3f, e), lerp(1.6f, w * 0.45f, e), lerp(4.8f, w * 1.9f, e), 0, lerp(1.4f, w * 0.45f, e), 0};
+		}
+		if (t < 14.5f) return new float[]{14 * k, imp + 5 * k, 22 * k, 0, imp - 2 * k, 0};
+		if (t < 17) return new float[]{n.x + 7, n.y + 2.5f, n.z + 11, n.x, n.y + 0.5f, n.z};
+		if (t < 21) return new float[]{h * 0.15f + 14, h - 6, 26, n.x, n.y, n.z};
+		if (t < 24.5f) return new float[]{2.6f, 0.5f, 4.2f, 0, 2.6f, 0};
+		if (t < 26.5f) return new float[]{w * 1.3f, w * 0.45f, w * 1.9f, 0, w * 0.3f, 0};
+		return new float[]{12, 5, 16.5f, 0, 3.6f, 0};
+	}
 
 	@Override
 	public void render(MomentitoEntity m, float yaw, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
 		float t = Mth.clamp(m.tiempo(parcial), 0, MomentitoEntity.DURACION / 20f);
+		float fr = m.radio();
+		ultimoGiro = m.getYRot();
 		pose.pushPose();
 		// El héroe mira hacia el que escribió el comando.
 		pose.mulPose(Axis.YP.rotationDegrees(180 - m.getYRot()));
-		float impactoY = FC_Y + FR + 0.3f;
-		nave(t, pose, buffers, luz);
-		bomba(t, pose, buffers, luz, impactoY);
+		nave(t, fr, pose, buffers, luz);
+		bomba(t, fr, pose, buffers, luz);
 		heroe(t, pose, buffers, luz);
-		campo(t, pose, buffers);
-		explosion(t, pose, buffers, impactoY);
+		campo(t, fr, pose, buffers);
+		explosion(t, fr, pose, buffers);
 		pose.popPose();
 	}
 
-	private void nave(float t, PoseStack pose, MultiBufferSource buffers, int luz) {
+	private void nave(float t, float fr, PoseStack pose, MultiBufferSource buffers, int luz) {
 		if (t >= 21) return;
-		float llega = 1 - (float) Math.pow(1 - seg(t, 0, 6), 3), sube = seg(t, 17, 21);
+		float llega = 1 - (float) Math.pow(1 - seg(t, 0, 6), 3);
+		Vector3f n = posNave(t, fr);
 		pose.pushPose();
-		pose.translate(lerp(-46, 0, llega) + 6 * sube * sube, 7.6f + Mth.sin(t * 1.6f) * 0.15f + 110 * (float) Math.pow(sube, 2.2), 0);
+		pose.translate(n.x, n.y, n.z);
 		float golpe = seg(t, TB1, TB1 + 1.6f);
 		float rx = (t > TB1 && t < TB1 + 1.6f) ? Mth.sin(t * 40) * 0.07f * (1 - golpe) : 0;
 		float rz = 0.5f * sm(seg(t, 17, 17.8f)) - 0.1f * (1 - llega);
@@ -343,15 +398,18 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		}
 	}
 
-	private void bomba(float t, PoseStack pose, MultiBufferSource buffers, int luz, float impactoY) {
+	private void bomba(float t, float fr, PoseStack pose, MultiBufferSource buffers, int luz) {
 		if (t < 7.4f || t >= TB1) return;
 		float cae = seg(t, TB0, TB1);
-		float temblor = azar((float) Math.floor(t * 12), 9) > 0.8f ? 0.06f : 0;
+		Vector3f b = posBomba(t, fr);
 		pose.pushPose();
-		pose.translate(temblor, lerp(7.5f, impactoY, cae * cae), 0);
+		pose.translate(b.x, b.y, b.z);
 		pose.mulPose(Axis.XP.rotation(cae * 4));
 		pose.mulPose(Axis.YP.rotation(cae * 6));
 		pose.mulPose(Axis.ZP.rotation(cae * 1.4f));
+		// Al final se infla, como la TNT de Minecraft a punto de explotar.
+		float infla = 1 + 0.2f * seg(t, TB1 - 0.3f, TB1);
+		pose.scale(infla, infla, infla);
 		float[][] todo = {{0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}};
 		// Los costados con "H4CK" y, arriba y abajo, la tapa.
 		float[][] lados = {todo[0], todo[1], null, null, todo[4], todo[5]};
@@ -360,6 +418,12 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		caja(buffers.getBuffer(RenderType.entityCutoutNoCull(TNT_TAPA)), pose.last(), 0, 0, 0, 0.8f, 0.8f, 0.8f, tapas, 255, 255, 255, 255, luz);
 		// El aura verde que titila.
 		float alfa = 0.3f + 0.7f * (Mth.sin(t * 22) > 0 ? 1 : 0);
+		// La mecha: titila en blanco (más rápido al final).
+		boolean mecha = t > TB1 - 1.8f && Math.floorMod((int) Math.floor((t - TB1) * (t > TB1 - 0.6f ? 10 : 4)), 2) == 0;
+		if (mecha) {
+			color(buffers.getBuffer(RenderType.entityTranslucentEmissive(BLANCO)), pose.last(), 0, 0, 0, 0.81f, 0.81f, 0.81f,
+					0xFFFFFF, 210, LightTexture.FULL_BRIGHT);
+		}
 		cajaLineas(buffers.getBuffer(RenderType.lines()), pose.last(), 0.46f, 0x39FF6A, alfa);
 		pose.popPose();
 	}
@@ -453,7 +517,7 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		pose.popPose();
 	}
 
-	private void campo(float t, PoseStack pose, MultiBufferSource buffers) {
+	private void campo(float t, float FR, PoseStack pose, MultiBufferSource buffers) {
 		float crece = sm(seg(t, 11.2f, 11.9f)) * (1 - sm(seg(t, 24.5f, 25.5f)));
 		if (crece <= 0.001f) return;
 		float tau = t - TB1;
@@ -488,58 +552,72 @@ public class MomentitoRenderer extends EntityRenderer<MomentitoEntity> {
 		// El anillo en el suelo.
 		float anillo = Mth.sqrt(Math.max(0.01f, FR * FR - FC_Y * FC_Y)) * crece;
 		VertexConsumer lineas2 = buffers.getBuffer(RenderType.lines());
-		for (float rr : new float[]{anillo * 0.93f, anillo}) {
-			for (int i = 0; i < 64; i++) {
-				float a0 = i / 64f * Mth.TWO_PI, a1 = (i + 1) / 64f * Mth.TWO_PI;
+		for (float rr : new float[]{anillo * 0.985f, anillo}) {
+			for (int i = 0; i < 192; i++) {
+				float a0 = i / 192f * Mth.TWO_PI, a1 = (i + 1) / 192f * Mth.TWO_PI;
 				linea(lineas2, pose.last(), new float[]{Mth.cos(a0) * rr, 0.012f, Mth.sin(a0) * rr},
 						new float[]{Mth.cos(a1) * rr, 0.012f, Mth.sin(a1) * rr}, 0xD0A5FF, alfaLineas);
 			}
 		}
 	}
 
-	private void explosion(float t, PoseStack pose, MultiBufferSource buffers, float impactoY) {
+	/** Una dirección al azar (fija) un poco hacia arriba, como rndDir del diseño. */
+	private static Vector3f direccion(int i, int k, float arriba) {
+		float u = azar(i, k) * 2 - 1, th = azar(i, k + 1) * Mth.TWO_PI, sq = Mth.sqrt(1 - u * u);
+		return new Vector3f(sq * Mth.cos(th), Math.abs(u) * arriba + u * (1 - arriba), sq * Mth.sin(th));
+	}
+
+	/**
+	 * La explosión al estilo Minecraft: 40 nubes pixeladas que crecen y se deshacen (0,8 s) y 24 de humo oscuro
+	 * que suben (2,4 s), del tamaño del campo de fuerza y por afuera de él, siempre mirando a la cámara.
+	 */
+	private void explosion(float t, float fr, PoseStack pose, MultiBufferSource buffers) {
 		float tau = t - TB1;
-		if (tau < 0 || tau >= 2.6f) return;
-		VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucentEmissive(BLANCO));
-		// El destello naranja.
-		if (tau < 0.8f) {
-			float f = tau / 0.8f, esc = 0.3f + 2.4f * Mth.sqrt(f);
-			int alfa = (int) (0.9f * (1 - f) * 255);
-			pose.pushPose();
-			pose.translate(0, impactoY, 0);
-			pose.scale(esc, esc, esc);
-			PoseStack.Pose p = pose.last();
-			for (Vector3f[] tri : esfera) {
-				for (int i = 0; i < 4; i++) {
-					Vector3f v = tri[Math.min(i, 2)];
-					vc.addVertex(p, v.x, v.y, v.z).setColor(255, 176, 46, alfa).setUv(0.5f, 0.5f).setOverlay(OverlayTexture.NO_OVERLAY)
-							.setLight(LightTexture.FULL_BRIGHT).setNormal(p, v.x, v.y, v.z);
-				}
-			}
-			pose.popPose();
-		}
-		// 70 pedacitos que saltan, rebotan en el campo de fuerza y caen.
-		int[] colores = {0xFF8A1F, 0xFFD23F, 0x39FF6A, 0x55504C};
-		int alfa = (int) ((1 - seg(tau, 1.2f, 2.6f)) * 255);
+		if (tau < 0 || tau >= 3.5f) return;
+		float k = Math.max(1, fr / 12), imp = alturaImpacto(fr);
 		float crece = sm(seg(t, 11.2f, 11.9f)) * (1 - sm(seg(t, 24.5f, 25.5f)));
-		for (int i = 0; i < 70; i++) {
-			float s = 0.1f + azar(i, 1) * 0.22f;
-			float a = azar(i, 2) * Mth.TWO_PI, up = 0.25f + azar(i, 3) * 0.9f;
-			Vector3f v = new Vector3f(Mth.cos(a), up, Mth.sin(a)).normalize().mul(3 + azar(i, 4) * 5);
-			float tl = (v.y + Mth.sqrt(v.y * v.y + 19.6f * (impactoY - 0.1f))) / 9.8f;
-			float tt = Math.min(tau, tl);
-			Vector3f pos = new Vector3f(v.x * tt, impactoY + v.y * tt - 4.9f * tt * tt, v.z * tt);
-			if (tau >= tl) pos.y = 0.1f;
-			Vector3f desde = new Vector3f(pos).sub(0, FC_Y, 0);
-			if (crece > 0.5f && desde.length() < FR * 1.03f) pos = desde.normalize().mul(FR * 1.03f).add(0, FC_Y, 0);
-			pose.pushPose();
-			pose.translate(pos.x, pos.y, pos.z);
-			pose.mulPose(Axis.XP.rotation(tt * 7 + i));
-			pose.mulPose(Axis.YP.rotation(tt * 5));
-			color(vc, pose.last(), 0, 0, 0, s, s, s, colores[i % 4], alfa, LightTexture.FULL_BRIGHT);
-			pose.popPose();
+		VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(EXPLOSION));
+		for (int i = 0; i < 40; i++) {
+			float lt = tau - azar(i, 14) * 0.5f;
+			if (lt < 0 || lt >= 0.8f) continue;
+			Vector3f pos = direccion(i, 11, 0.6f).mul((0.5f + azar(i, 13) * 3.5f) * k).add(0, imp, 0);
+			nube(vc, pose, afuera(pos, fr, crece), (1.6f + azar(i, 15) * 1.8f) * k, i % 2, (int) (lt / 0.8f * 8));
+		}
+		for (int i = 0; i < 24; i++) {
+			float lt = tau - (0.25f + azar(i, 24) * 0.7f);
+			if (lt < 0 || lt >= 2.4f) continue;
+			Vector3f pos = afuera(direccion(i, 21, 0.8f).mul((1 + azar(i, 23) * 3) * k).add(0, imp, 0), fr, crece);
+			pos.y += (0.8f + azar(i, 26) * 1.2f) * lt * k;
+			nube(vc, pose, pos, (1 + azar(i, 25) * 1.2f) * k, 2, (int) (lt / 2.4f * 8));
 		}
 	}
+
+	/** Si está dentro del campo de fuerza, la empuja hasta su borde. */
+	private static Vector3f afuera(Vector3f v, float fr, float crece) {
+		Vector3f d = new Vector3f(v).sub(0, FC_Y, 0);
+		if (crece > 0.5f && d.length() < fr * 1.02f) return d.normalize().mul(fr * 1.02f).add(0, FC_Y, 0);
+		return v;
+	}
+
+	/** Un cuadrado de la textura de la explosión (juego, cuadro) mirando a la cámara. */
+	private void nube(VertexConsumer vc, PoseStack pose, Vector3f pos, float tam, int juego, int cuadro) {
+		cuadro = Math.min(7, Math.max(0, cuadro));
+		float u0 = cuadro * 16 / 128f, u1 = u0 + 16 / 128f, v0 = juego * 16 / 48f, v1 = v0 + 16 / 48f;
+		pose.pushPose();
+		pose.translate(pos.x, pos.y, pos.z);
+		pose.mulPose(Axis.YP.rotationDegrees(-(180 - ultimoGiro)));   // deshace el giro de la escena
+		pose.mulPose(entityRenderDispatcher.cameraOrientation());
+		pose.scale(tam, tam, tam);
+		PoseStack.Pose p = pose.last();
+		float[] n = {0, 0, 1};
+		vertice(vc, p, new float[]{-0.5f, -0.5f, 0}, u0, v1, n, 255, 255, 255, 255, LightTexture.FULL_BRIGHT);
+		vertice(vc, p, new float[]{0.5f, -0.5f, 0}, u1, v1, n, 255, 255, 255, 255, LightTexture.FULL_BRIGHT);
+		vertice(vc, p, new float[]{0.5f, 0.5f, 0}, u1, v0, n, 255, 255, 255, 255, LightTexture.FULL_BRIGHT);
+		vertice(vc, p, new float[]{-0.5f, 0.5f, 0}, u0, v0, n, 255, 255, 255, 255, LightTexture.FULL_BRIGHT);
+		pose.popPose();
+	}
+
+	private float ultimoGiro;
 
 	@Override
 	public boolean shouldRender(MomentitoEntity m, Frustum frustum, double x, double y, double z) {

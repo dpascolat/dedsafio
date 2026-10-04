@@ -5,6 +5,9 @@
 	"client": [
 		"AbstractTextureAccessor",
 		"CameraNaveMixin",
+		"MomentitoCamaraMixin",
+		"MomentitoNieblaMixin",
+		"MomentitoVistaMixin",
 		"CapeLayerMixin",
 		"ChestRendererMixin",
 		"ClientPacketListenerMixin",
