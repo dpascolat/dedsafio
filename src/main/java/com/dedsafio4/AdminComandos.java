@@ -35,7 +35,7 @@ public final class AdminComandos {
 	}
 
 	public static void registrar(CommandDispatcher<CommandSourceStack> dispatcher) {
-		for (String admin : new String[]{"admin", "Admin"}) {
+		for (String admin : new String[]{"admin"}) {
 			dispatcher.register(Commands.literal(admin).requires(s -> s.hasPermission(2))
 					.then(Commands.literal("no_boss").executes(c -> cambiar(c.getSource().getPlayerOrException(), false)))
 					.then(Commands.literal("boss").executes(c -> cambiar(c.getSource().getPlayerOrException(), true)))

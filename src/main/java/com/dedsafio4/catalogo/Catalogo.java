@@ -360,7 +360,7 @@ public final class Catalogo {
 	 * El ítem se escribe con su nombre del juego (ej. dedsafio4:cristal_verde); lo sugiere al escribir.
 	 */
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		for (String nombre : new String[]{"catalogo", "Catalogo", "catálogo"}) {
+		for (String nombre : new String[]{"catalogo", "catálogo"}) {
 			LiteralArgumentBuilder<CommandSourceStack> raiz = Commands.literal(nombre).requires(s -> s.hasPermission(2));
 			for (boolean ocultar : new boolean[]{true, false}) {
 				raiz.then(Commands.literal(ocultar ? "ocultar" : "mostrar")
@@ -385,8 +385,8 @@ public final class Catalogo {
 			}));
 			dispatcher.register(raiz);
 		}
-		// /G guardar: el código del diseño actual (click para copiarlo). /G cargar <código>: lo pone.
-		for (String nombre : new String[]{"G", "g"}) {
+		// /g guardar: el código del diseño actual (click para copiarlo). /g cargar <código>: lo pone.
+		for (String nombre : new String[]{"g"}) {
 			dispatcher.register(Commands.literal(nombre)
 					.requires(s -> s.hasPermission(2) || (s.getPlayer() != null && esEditor(s.getPlayer())))
 					.then(Commands.literal("guardar").executes(c -> {

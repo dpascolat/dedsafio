@@ -47,7 +47,7 @@ public final class Cinematica {
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		for (String nombre : new String[]{"cinematica", "Cinematica"}) {
+		for (String nombre : new String[]{"cinematica"}) {
 			dispatcher.register(Commands.literal(nombre).requires(s -> s.hasPermission(2))
 					.then(Commands.argument("numero", IntegerArgumentType.integer(1))
 							.executes(c -> pasar(c, c.getSource().getServer().getPlayerList().getPlayers()))

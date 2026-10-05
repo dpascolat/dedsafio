@@ -28,11 +28,11 @@ public final class BossComandos {
 	private static final double BUSCAR = 160;
 
 	public static void registrar(CommandDispatcher<CommandSourceStack> dispatcher) {
-		for (String boss : new String[]{"boss", "Boss"}) {
+		for (String boss : new String[]{"boss"}) {
 			LiteralArgumentBuilder<CommandSourceStack> uno = Commands.literal("1");
-			for (String s : new String[]{"ai", "Ai", "AI", "ia", "IA"}) uno.then(Commands.literal(s).executes(c -> aplicar(c.getSource(), true)));
-			for (String s : new String[]{"jugador", "Jugador", "off"}) uno.then(Commands.literal(s).executes(c -> aplicar(c.getSource(), false)));
-			for (String s : new String[]{"gente", "Gente"}) {
+			for (String s : new String[]{"ai", "ia"}) uno.then(Commands.literal(s).executes(c -> aplicar(c.getSource(), true)));
+			for (String s : new String[]{"jugador", "off"}) uno.then(Commands.literal(s).executes(c -> aplicar(c.getSource(), false)));
+			for (String s : new String[]{"gente"}) {
 				uno.then(Commands.literal(s).then(Commands.argument("cantidad", IntegerArgumentType.integer(1, 100))
 						.executes(c -> gente(c.getSource(), IntegerArgumentType.getInteger(c, "cantidad")))));
 			}
