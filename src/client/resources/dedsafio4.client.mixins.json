@@ -26,6 +26,8 @@
 		"MinecraftMixin",
 		"PlayerModelNaveMixin",
 		"PlayerRendererMixin",
+		"PlayerRendererMobMixin",
+		"WalkAnimationAccessor",
 		"PlayerRendererNaveMixin",
 		"ScreenFondoMixin",
 		"TextureAtlasMixin"
