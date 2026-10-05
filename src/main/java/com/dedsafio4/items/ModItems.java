@@ -278,6 +278,9 @@ public final class ModItems {
 	public static final Item ZOMBIE_PLATA_SPAWN_EGG = registrar("zombie_plata_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.ZOMBIE_PLATA, 0x4A4A1E, 0xD474D4, new Item.Properties(),
 					HuevoConDescripcion::zombiePlata));
+	public static final Item NAUTILUS_OSEO_SPAWN_EGG = registrar("nautilus_oseo_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.NAUTILUS_OSEO, 0xE9DCC6, 0xE0898A, new Item.Properties(),
+					HuevoConDescripcion::nautilusOseo));
 	public static final Item NARVAL_SPAWN_EGG = registrar("narval_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.NARVAL, 0x26337E, 0xDCDCD2, new Item.Properties(),
 					HuevoConDescripcion::narval));
@@ -541,6 +544,7 @@ public final class ModItems {
 						entradas.accept(ZARINOSA_SPAWN_EGG);
 						entradas.accept(CREEPER_AZALEA_SPAWN_EGG);
 						entradas.accept(ZOMBIE_PLATA_SPAWN_EGG);
+						entradas.accept(NAUTILUS_OSEO_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.casino.ModCasino.CASINO_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.nave.PartesNave.CABINA);
 						entradas.accept(com.dedsafio4.nave.PartesNave.MOTOR);

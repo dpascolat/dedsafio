@@ -103,6 +103,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.ZombiePlataEntity> ZOMBIE_PLATA = registrar("zombie_plata",
 			EntityType.Builder.of(com.dedsafio4.bestias.ZombiePlataEntity::new, MobCategory.MONSTER).sized(0.6f, 1.95f).clientTrackingRange(8));
 
+	/** Nautilus Óseo (pequeño): vuela; la caja de choque es chica aunque el caparazón y los tentáculos son largos. */
+	public static final EntityType<com.dedsafio4.bestias.NautilusOseoEntity> NAUTILUS_OSEO = registrar("nautilus_oseo",
+			EntityType.Builder.of(com.dedsafio4.bestias.NautilusOseoEntity::new, MobCategory.MONSTER).sized(0.7f, 0.7f).clientTrackingRange(8));
+
 	/** Narval: unos 3 bloques de largo con el cuerno. */
 	public static final EntityType<com.dedsafio4.bestias.NarvalEntity> NARVAL = registrar("narval",
 			EntityType.Builder.of(com.dedsafio4.bestias.NarvalEntity::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(1.4f, 0.9f).clientTrackingRange(10));
@@ -166,5 +170,9 @@ public final class ModEntidades {
 		SpawnPlacements.register(MIRA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				com.dedsafio4.bestias.ReptisaurioEntity::puedeAparecerEnCueva);
 		FabricDefaultAttributeRegistry.register(MIRA, com.dedsafio4.bestias.ReptisaurioEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(NAUTILUS_OSEO, com.dedsafio4.bestias.NautilusOseoEntity.crearAtributos());
+		// Nautilus Óseo: en la Dimensión de los Órganos, en grupos, volando (no necesita piso) y con cualquier luz.
+		SpawnPlacements.register(NAUTILUS_OSEO, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				com.dedsafio4.bestias.NautilusOseoEntity::puedeAparecer);
 	}
 }

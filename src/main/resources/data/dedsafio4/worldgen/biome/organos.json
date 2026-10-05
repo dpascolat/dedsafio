@@ -23,6 +23,12 @@
 				"weight": 60,
 				"minCount": 1,
 				"maxCount": 2
+			},
+			{
+				"type": "dedsafio4:nautilus_oseo",
+				"weight": 30,
+				"minCount": 3,
+				"maxCount": 5
 			}
 		],
 		"creature": [],

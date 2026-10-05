@@ -84,6 +84,12 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("🏰 Aparece en: ", APARECE).append(parte("una mazmorra.", BLANCO)));
 	}
 
+	public static void nautilusOseo(List<Component> t) {
+		t.add(parte("Vuela en grupo por los Órganos.", GRIS));
+		t.add(parte("Si te acercas te ataca, y su golpe", GRIS));
+		t.add(parte("da ", GRIS).append(parte("Levitación", VIOLETA)).append(parte(".", GRIS)));
+	}
+
 	public static void zombiePlata(List<Component> t) {
 		t.add(parte("Zombie consumido por Qumara.", GRIS));
 		t.add(parte("Muy rápido y fuerte. ", GRIS).append(parte("Puede escalar", VIOLETA)));
