@@ -184,6 +184,9 @@ public class Dedsafio4 implements ModInitializer {
 		// Zombis en todo el Nether: sólo aparecen con "zombi 3" (SpawnPlacementsMixin), sin importar la luz.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInTheNether(),
 				MobCategory.MONSTER, EntityType.ZOMBIE, 100, 2, 4);
+		// El Flashbang aparece en la oscuridad, en cualquier parte del Overworld.
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.FLASHBANG, 12, 1, 1);
 		// El Creeper Pastel aparece en cualquier parte del Overworld.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.CREEPER_PASTEL, 15, 1, 1);

@@ -63,5 +63,15 @@
 				"stream": true
 			}
 		]
+	},
+	"flashbang": {
+		"sounds": [
+			"dedsafio4:flashbang"
+		]
+	},
+	"flashbang_zumbido": {
+		"sounds": [
+			"dedsafio4:flashbang_zumbido"
+		]
 	}
 }

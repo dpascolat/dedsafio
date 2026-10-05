@@ -115,6 +115,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.GarrapataCerebralEntity> GARRAPATA_CEREBRAL = registrar("garrapata_cerebral",
 			EntityType.Builder.of(com.dedsafio4.bestias.GarrapataCerebralEntity::new, MobCategory.MONSTER).sized(0.9f, 1.2f).clientTrackingRange(8));
 
+	/** Flashbang: flaquito y alto (casi 3 bloques con la cabeza). */
+	public static final EntityType<com.dedsafio4.bestias.FlashbangEntity> FLASHBANG = registrar("flashbang",
+			EntityType.Builder.of(com.dedsafio4.bestias.FlashbangEntity::new, MobCategory.MONSTER).sized(0.7f, 2.9f).clientTrackingRange(8));
+
 	/** Narval: unos 3 bloques de largo con el cuerno. */
 	public static final EntityType<com.dedsafio4.bestias.NarvalEntity> NARVAL = registrar("narval",
 			EntityType.Builder.of(com.dedsafio4.bestias.NarvalEntity::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(1.4f, 0.9f).clientTrackingRange(10));
@@ -181,6 +185,11 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(NAUTILUS_OSEO, com.dedsafio4.bestias.NautilusOseoEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CEREBRO_AMARILLO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(GARRAPATA_CEREBRAL, com.dedsafio4.bestias.GarrapataCerebralEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(FLASHBANG, com.dedsafio4.bestias.FlashbangEntity.crearAtributos());
+		com.dedsafio4.bestias.FlashbangEntity.registrar();
+		// Flashbang: en el Overworld, a oscuras (como los zombis y creepers).
+		SpawnPlacements.register(FLASHBANG, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkMonsterSpawnRules);
 		// Garrapata Cerebral: en el piso de la Dimensión de los Órganos, con cualquier luz.
 		SpawnPlacements.register(GARRAPATA_CEREBRAL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				Monster::checkAnyLightMonsterSpawnRules);

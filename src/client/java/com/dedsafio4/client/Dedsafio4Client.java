@@ -239,6 +239,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.NAUTILUS_OSEO, com.dedsafio4.client.bestias.NautilusOseoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.CEREBRO_AMARILLO, c -> new com.dedsafio4.client.bestias.CerebroRenderer<>(c,
 				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/cerebro_amarillo.png")));
+		EntityRendererRegistry.register(ModEntidades.FLASHBANG, com.dedsafio4.client.bestias.FlashbangCliente.Dibujante::new);
+		com.dedsafio4.client.bestias.FlashbangCliente.registrar();
 		EntityRendererRegistry.register(ModEntidades.GARRAPATA_CEREBRAL, c -> new com.dedsafio4.client.bestias.CerebroRenderer<>(c,
 				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/garrapata_cerebral.png")));
 		com.dedsafio4.client.bestias.RaicesCliente.registrar();

@@ -84,6 +84,13 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("🏰 Aparece en: ", APARECE).append(parte("una mazmorra.", BLANCO)));
 	}
 
+	public static void flashbang(List<Component> t) {
+		t.add(parte("Aparece en la oscuridad.", GRIS));
+		t.add(parte("Explota al instante si te toca: ", GRIS));
+		t.add(parte("4 corazones", VIOLETA).append(parte(" aunque tengas armadura,", GRIS)));
+		t.add(parte("y te deja ciego unos segundos.", GRIS));
+	}
+
 	public static void garrapataCerebral(List<Component> t) {
 		t.add(parte("Vaga por el planeta en busca de", GRIS));
 		t.add(parte("su próxima víctima. Ataca de", GRIS));
