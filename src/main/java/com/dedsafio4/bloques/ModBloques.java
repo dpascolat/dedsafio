@@ -56,6 +56,11 @@ public final class ModBloques {
 					.isValidSpawn((estado, mundo, pos, tipo) -> false)
 					.sound(SoundType.STONE)));
 
+	static {
+		// El techo del Centro de Quiu se pone con una feature (después de los árboles).
+		com.dedsafio4.dimension.TechoFeature.registrar();
+	}
+
 	/** La fruta que crece en los troncos de la sabana. */
 	public static final Block HUEVO_EBURIA = registrar("huevo_eburia",
 			new com.dedsafio4.eburia.FrutaTroncoBlock(BlockBehaviour.Properties.of()

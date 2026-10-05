@@ -94,7 +94,8 @@
 			"minecraft:flower_default"
 		],
 		[
-			"minecraft:freeze_top_layer"
+			"minecraft:freeze_top_layer",
+			"dedsafio4:techo_quiu"
 		]
 	]
 }
