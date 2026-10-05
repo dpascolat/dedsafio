@@ -36,8 +36,52 @@ public class ArbolAltoFeature extends Feature<ArbolAltoFeature.Config> {
 		super(Config.CODEC);
 	}
 
+	/** Las hojas y los troncos que va poniendo este árbol (para calcular a qué distancia del tronco queda cada hoja). */
+	private final ThreadLocal<java.util.List<BlockPos>> hojasPuestas = ThreadLocal.withInitial(java.util.ArrayList::new);
+	private final ThreadLocal<java.util.Set<BlockPos>> troncosPuestos = ThreadLocal.withInitial(java.util.HashSet::new);
+
 	@Override
 	public boolean place(FeaturePlaceContext<Config> contexto) {
+		hojasPuestas.get().clear();
+		troncosPuestos.get().clear();
+		boolean puso = armar(contexto);
+		if (puso) distancias(contexto.level());
+		hojasPuestas.get().clear();
+		troncosPuestos.get().clear();
+		return puso;
+	}
+
+	/**
+	 * Como hace Minecraft con sus árboles: a cada hoja le pone a cuántos bloques está del tronco (1 a 6). Si
+	 * quedaban todas en 7 ("lejos del tronco"), se caían solas al rato y el árbol quedaba pelado.
+	 */
+	private void distancias(WorldGenLevel level) {
+		java.util.Set<BlockPos> hojas = new java.util.HashSet<>(hojasPuestas.get());
+		java.util.Map<BlockPos, Integer> distancia = new java.util.HashMap<>();
+		java.util.ArrayDeque<BlockPos> cola = new java.util.ArrayDeque<>();
+		for (BlockPos t : troncosPuestos.get()) {
+			distancia.put(t, 0);
+			cola.add(t);
+		}
+		while (!cola.isEmpty()) {
+			BlockPos p = cola.poll();
+			int d = distancia.get(p);
+			if (d >= 6) continue;
+			for (net.minecraft.core.Direction lado : net.minecraft.core.Direction.values()) {
+				BlockPos v = p.relative(lado);
+				if (!hojas.contains(v) || distancia.containsKey(v)) continue;
+				distancia.put(v, d + 1);
+				cola.add(v);
+			}
+		}
+		for (BlockPos h : hojas) {
+			BlockState estado = level.getBlockState(h);
+			if (!estado.hasProperty(net.minecraft.world.level.block.LeavesBlock.DISTANCE)) continue;
+			level.setBlock(h, estado.setValue(net.minecraft.world.level.block.LeavesBlock.DISTANCE, distancia.getOrDefault(h, 7)), 2);
+		}
+	}
+
+	private boolean armar(FeaturePlaceContext<Config> contexto) {
 		WorldGenLevel level = contexto.level();
 		RandomSource azar = contexto.random();
 		Config config = contexto.config();
@@ -63,7 +107,10 @@ public class ArbolAltoFeature extends Feature<ArbolAltoFeature.Config> {
 			for (int dx = 0; dx <= 1; dx++) {
 				for (int dz = 0; dz <= 1; dz++) {
 					BlockPos pos = base.offset(dx, y, dz);
-					if (level.getBlockState(pos).canBeReplaced()) level.setBlock(pos, config.tronco(), 2);
+					if (level.getBlockState(pos).canBeReplaced()) {
+						level.setBlock(pos, config.tronco(), 2);
+						troncosPuestos.get().add(pos.immutable());
+					}
 				}
 			}
 		}
@@ -93,9 +140,12 @@ public class ArbolAltoFeature extends Feature<ArbolAltoFeature.Config> {
 				// la rama de madera hasta la hoja
 				for (int paso = 1; paso <= 2; paso++) {
 					BlockPos rama = new BlockPos(base.getX() + dx * paso / 2, punta.getY(), base.getZ() + dz * paso / 2);
-					if (level.getBlockState(rama).canBeReplaced()) level.setBlock(rama, config.tronco(), 2);
+					if (level.getBlockState(rama).canBeReplaced()) {
+						level.setBlock(rama, config.tronco(), 2);
+						troncosPuestos.get().add(rama.immutable());
+					}
 				}
-				bolaHojas(level, azar, punta, 2.6f, 2, config.hojas());
+				bolaHojas(level, azar, punta, 2.6f, 2, config.hojas(), hojasPuestas.get());
 			}
 		}
 
@@ -124,16 +174,16 @@ public class ArbolAltoFeature extends Feature<ArbolAltoFeature.Config> {
 
 		// Copa grande arriba de todo.
 		BlockPos centro = new BlockPos(base.getX(), copa - 2, base.getZ());
-		bolaHojas(level, azar, centro, 5.2f, 5, config.hojas());
-		bolaHojas(level, azar, centro.offset(1, 3, 1), 3.6f, 3, config.hojas());
-		bolaHojas(level, azar, centro.offset(0, 5, 0), 2.2f, 2, config.hojas());
+		bolaHojas(level, azar, centro, 5.2f, 5, config.hojas(), hojasPuestas.get());
+		bolaHojas(level, azar, centro.offset(1, 3, 1), 3.6f, 3, config.hojas(), hojasPuestas.get());
+		bolaHojas(level, azar, centro.offset(0, 5, 0), 2.2f, 2, config.hojas(), hojasPuestas.get());
 
 		return true;
 	}
 
 	/** Bola de hojas achatada, con el borde comido para que no quede una pelota perfecta. */
 	private static void bolaHojas(WorldGenLevel level, RandomSource azar, BlockPos centro,
-								  float radio, int alto, BlockState hojas) {
+								  float radio, int alto, BlockState hojas, java.util.List<BlockPos> puestas) {
 		int r = (int) Math.ceil(radio);
 		for (int dx = -r; dx <= r; dx++) {
 			for (int dz = -r; dz <= r; dz++) {
@@ -142,7 +192,10 @@ public class ArbolAltoFeature extends Feature<ArbolAltoFeature.Config> {
 					if (distancia > radio * radio) continue;
 					if (distancia > (radio - 1) * (radio - 1) && azar.nextInt(3) == 0) continue;   // borde irregular
 					BlockPos pos = centro.offset(dx, dy, dz);
-					if (level.getBlockState(pos).canBeReplaced()) level.setBlock(pos, hojas, 2);
+					if (level.getBlockState(pos).canBeReplaced()) {
+						level.setBlock(pos, hojas, 2);
+						puestas.add(pos.immutable());
+					}
 				}
 			}
 		}

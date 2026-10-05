@@ -26,7 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * El techo de roca del Centro de Quiu. Se pone al final de todo (después de los árboles, por eso los árboles salen
  * igual que siempre) y sigue la forma del terreno, como el techo de una cueva gigante: más o menos 40 bloques arriba
- * del piso, con bultos y "estalactitas", y macizo hasta arriba de todo. Es Roca del Techo, que deja pasar la luz.
+ * del piso, con bultos y "estalactitas", y macizo hasta arriba de todo. Donde hay árboles más altos (los gigantes de
+ * la jungla), el techo sube y les deja lugar a la copa. Es Roca del Techo, que deja pasar la luz.
  */
 public class TechoFeature extends Feature<NoneFeatureConfiguration> {
 	/** Cuántos bloques de aire quedan (más o menos) entre el piso y el techo. */
@@ -80,6 +81,15 @@ public class TechoFeature extends Feature<NoneFeatureConfiguration> {
 		BlockState roca = ModBloques.ROCA_TECHO.defaultBlockState();
 		int arriba = mundo.getMaxBuildHeight() - 1;
 		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+		// Lo más alto que hay en cada columna (piso o árbol), para no tapar las copas.
+		int[][] alto = new int[16][16];
+		for (int dx = 0; dx < 16; dx++) {
+			for (int dz = 0; dz < 16; dz++) {
+				int y = arriba;
+				while (y > mundo.getMinBuildHeight() && chunk.getBlockState(pos.set(x0 + dx, y, z0 + dz)).isAir()) y--;
+				alto[dx][dz] = y;
+			}
+		}
 		for (int dx = 0; dx < 16; dx++) {
 			for (int dz = 0; dz < 16; dz++) {
 				int x = x0 + dx, z = z0 + dz;
@@ -91,7 +101,12 @@ public class TechoFeature extends Feature<NoneFeatureConfiguration> {
 						Mth.lerp(fx, alto(generador, mundo, estado, gx, gz + 1), alto(generador, mundo, estado, gx + 1, gz + 1)));
 				double bultos = ruido[0].getValue(x / 40.0, z / 40.0) * 6;
 				double picos = Math.max(0, ruido[1].getValue(x / 5.0, z / 5.0) - 0.55) * 14;
-				int techo = Mth.clamp((int) (base + ALTO_CUEVA + bultos - picos), mundo.getMinBuildHeight() + 20, arriba - 10);
+				int copas = Integer.MIN_VALUE;
+				for (int ax = Math.max(0, dx - 3); ax <= Math.min(15, dx + 3); ax++) {
+					for (int az = Math.max(0, dz - 3); az <= Math.min(15, dz + 3); az++) copas = Math.max(copas, alto[ax][az]);
+				}
+				int techo = Math.max((int) (base + ALTO_CUEVA + bultos - picos), copas + 3);
+				techo = Mth.clamp(techo, mundo.getMinBuildHeight() + 20, arriba - 10);
 				for (int y = techo; y <= arriba; y++) chunk.setBlockState(pos.set(x, y, z), roca, false);
 			}
 		}
