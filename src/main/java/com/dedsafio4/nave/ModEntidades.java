@@ -111,6 +111,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.CerebroAmarilloEntity> CEREBRO_AMARILLO = registrar("cerebro_amarillo",
 			EntityType.Builder.of(com.dedsafio4.bestias.CerebroAmarilloEntity::new, MobCategory.MONSTER).sized(0.9f, 1.2f).clientTrackingRange(8));
 
+	/** Garrapata Cerebral Pequeña: el mismo cuerpo de medusa-cerebro que el Cerebro Amarillo. */
+	public static final EntityType<com.dedsafio4.bestias.GarrapataCerebralEntity> GARRAPATA_CEREBRAL = registrar("garrapata_cerebral",
+			EntityType.Builder.of(com.dedsafio4.bestias.GarrapataCerebralEntity::new, MobCategory.MONSTER).sized(0.9f, 1.2f).clientTrackingRange(8));
+
 	/** Narval: unos 3 bloques de largo con el cuerno. */
 	public static final EntityType<com.dedsafio4.bestias.NarvalEntity> NARVAL = registrar("narval",
 			EntityType.Builder.of(com.dedsafio4.bestias.NarvalEntity::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(1.4f, 0.9f).clientTrackingRange(10));
@@ -176,6 +180,10 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(MIRA, com.dedsafio4.bestias.ReptisaurioEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(NAUTILUS_OSEO, com.dedsafio4.bestias.NautilusOseoEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CEREBRO_AMARILLO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(GARRAPATA_CEREBRAL, com.dedsafio4.bestias.GarrapataCerebralEntity.crearAtributos());
+		// Garrapata Cerebral: en el piso de la Dimensión de los Órganos, con cualquier luz.
+		SpawnPlacements.register(GARRAPATA_CEREBRAL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkAnyLightMonsterSpawnRules);
 		// Cerebro Amarillo: en el piso de la Dimensión de los Órganos, con cualquier luz.
 		SpawnPlacements.register(CEREBRO_AMARILLO, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				Monster::checkAnyLightMonsterSpawnRules);

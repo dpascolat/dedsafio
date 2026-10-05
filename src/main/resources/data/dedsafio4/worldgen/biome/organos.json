@@ -35,6 +35,12 @@
 				"weight": 20,
 				"minCount": 1,
 				"maxCount": 2
+			},
+			{
+				"type": "dedsafio4:garrapata_cerebral",
+				"weight": 30,
+				"minCount": 1,
+				"maxCount": 3
 			}
 		],
 		"creature": [],

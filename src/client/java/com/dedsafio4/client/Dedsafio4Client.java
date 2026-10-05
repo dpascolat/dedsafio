@@ -237,7 +237,10 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.RAICES, com.dedsafio4.client.bestias.RaicesRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.ZOMBIE_PLATA, com.dedsafio4.client.bestias.ZombiePlataRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NAUTILUS_OSEO, com.dedsafio4.client.bestias.NautilusOseoRenderer::new);
-		EntityRendererRegistry.register(ModEntidades.CEREBRO_AMARILLO, com.dedsafio4.client.bestias.CerebroAmarilloRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.CEREBRO_AMARILLO, c -> new com.dedsafio4.client.bestias.CerebroRenderer<>(c,
+				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/cerebro_amarillo.png")));
+		EntityRendererRegistry.register(ModEntidades.GARRAPATA_CEREBRAL, c -> new com.dedsafio4.client.bestias.CerebroRenderer<>(c,
+				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/garrapata_cerebral.png")));
 		com.dedsafio4.client.bestias.RaicesCliente.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.momentito.MomentitoEntity.TIPO, com.dedsafio4.client.momentito.MomentitoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NARVAL, com.dedsafio4.client.bestias.NarvalRenderer::new);
