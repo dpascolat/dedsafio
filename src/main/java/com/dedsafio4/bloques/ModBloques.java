@@ -44,6 +44,18 @@ public final class ModBloques {
 					.sound(SoundType.EMPTY)
 					.pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
 
+	/**
+	 * La Roca del Techo del Centro de Quiu: tapa el cielo como una cueva, pero deja pasar la luz del día.
+	 * No se rompe (como la piedra base) y no tiene ítem.
+	 */
+	public static final Block ROCA_TECHO = registrar("roca_techo", new com.dedsafio4.dimension.TechoBlock(
+			BlockBehaviour.Properties.of()
+					.mapColor(MapColor.STONE)
+					.strength(-1f, 3600000f)
+					.noLootTable()
+					.isValidSpawn((estado, mundo, pos, tipo) -> false)
+					.sound(SoundType.STONE)));
+
 	/** La fruta que crece en los troncos de la sabana. */
 	public static final Block HUEVO_EBURIA = registrar("huevo_eburia",
 			new com.dedsafio4.eburia.FrutaTroncoBlock(BlockBehaviour.Properties.of()

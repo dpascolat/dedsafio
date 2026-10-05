@@ -26,8 +26,10 @@ public final class Portales {
 
 	/** Para no rebotar de un mundo al otro: 5 segundos. */
 	private static final int ESPERA = 100;
-	/** A qué altura queda el círculo de vuelta. */
-	private static final int ALTURA_CIRCULO = 200;
+	/** A qué altura queda el círculo de vuelta (por debajo del techo de roca, que empieza más o menos en Y 184). */
+	private static final int ALTURA_CIRCULO = 170;
+	/** Desde dónde se busca el piso en el Centro de Quiu: justo debajo del techo de roca. */
+	private static final int DEBAJO_DEL_TECHO = 176;
 
 	public static void registrar() {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -88,6 +90,15 @@ public final class Portales {
 	/** Busca el piso en el mismo X/Z, para no aparecer dentro de la tierra ni colgado en el aire. */
 	public static BlockPos lugarSeguro(ServerLevel destino, BlockPos desde) {
 		BlockPos columna = new BlockPos(desde.getX(), 0, desde.getZ());
+		// El Centro de Quiu tiene techo: lo más alto es la roca de arriba, así que se busca el piso desde abajo del techo.
+		if (destino.dimension().equals(DIMENSION_NUEVA)) {
+			for (int y = DEBAJO_DEL_TECHO; y > destino.getMinBuildHeight() + 1; y--) {
+				BlockPos pos = columna.atY(y);
+				if (destino.getBlockState(pos).isAir() && destino.getBlockState(pos.above()).isAir()
+						&& destino.getBlockState(pos.below()).blocksMotion()) return pos;
+			}
+			return columna.atY(100);
+		}
 		BlockPos arriba = destino.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, columna);
 		return arriba.getY() <= destino.getMinBuildHeight() + 1 ? columna.atY(100) : arriba;
 	}
