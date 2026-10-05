@@ -38,7 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * /cambiarmob <mob> [jugadores]: el jugador se ve como ese mob (de Minecraft o de cualquier mod) y tiene su tamaño
- * (la cámara queda a la altura de sus ojos). /cambiarmob quitar [jugadores] lo vuelve a la normalidad.
+ * (la cámara queda a la altura de sus ojos). También los modelos del Skin Pack Dedsafío: /cambiarmob skin:nutria
+ * (ver SkinsDedsafio; esos tienen el tamaño normal del jugador). /cambiarmob quitar [jugadores] lo vuelve a la normalidad.
  * Se guarda en el mundo (sigue transformado aunque salga y vuelva a entrar) y se les manda a todos los clientes,
  * que dibujan el mob en lugar del jugador (ver DisfracesCliente).
  */
@@ -93,6 +94,15 @@ public final class Disfraces {
 		return id == null ? null : BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
 	}
 
+	/** El modelo del Skin Pack en que está transformado (por ejemplo "nutria"), o null. */
+	public static String skin(Player jugador) {
+		ResourceLocation id;
+		if (jugador.level().isClientSide) id = CLIENTE.get(jugador.getUUID());
+		else if (jugador.getServer() != null) id = datos(jugador.getServer()).mobs.get(jugador.getUUID());
+		else return null;
+		return id != null && id.getNamespace().equals(SkinsDedsafio.ESPACIO) ? id.getPath() : null;
+	}
+
 	public static void registrar() {
 		PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -114,8 +124,9 @@ public final class Disfraces {
 						.then(Commands.argument("jugadores", EntityArgument.players())
 								.executes(c -> quitar(c, EntityArgument.getPlayers(c, "jugadores")))))
 				.then(Commands.argument("mob", ResourceLocationArgument.id())
-						.suggests((c, b) -> SharedSuggestionProvider.suggestResource(
-								BuiltInRegistries.ENTITY_TYPE.stream().filter(Disfraces::sirve).map(EntityType::getKey), b))
+						.suggests((c, b) -> SharedSuggestionProvider.suggestResource(java.util.stream.Stream.concat(
+								SkinsDedsafio.NOMBRES.stream().map(n -> ResourceLocation.fromNamespaceAndPath(SkinsDedsafio.ESPACIO, n)),
+								BuiltInRegistries.ENTITY_TYPE.stream().filter(Disfraces::sirve).map(EntityType::getKey)), b))
 						.executes(c -> cambiar(c, List.of(c.getSource().getPlayerOrException())))
 						.then(Commands.argument("jugadores", EntityArgument.players())
 								.executes(c -> cambiar(c, EntityArgument.getPlayers(c, "jugadores"))))));
@@ -128,15 +139,24 @@ public final class Disfraces {
 
 	private static int cambiar(CommandContext<CommandSourceStack> c, Collection<ServerPlayer> jugadores) throws CommandSyntaxException {
 		ResourceLocation id = ResourceLocationArgument.getId(c, "mob");
-		EntityType<?> tipo = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
-		if (tipo == null || !sirve(tipo)) {
-			c.getSource().sendFailure(Component.literal("No existe el mob \"" + id + "\"."));
-			return 0;
+		Component nombre;
+		if (id.getNamespace().equals(SkinsDedsafio.ESPACIO)) {
+			if (!SkinsDedsafio.NOMBRES.contains(id.getPath())) {
+				c.getSource().sendFailure(Component.literal("No existe la skin \"" + id.getPath() + "\"."));
+				return 0;
+			}
+			nombre = Component.literal("la skin " + id.getPath());
+		} else {
+			EntityType<?> tipo = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+			if (tipo == null || !sirve(tipo)) {
+				c.getSource().sendFailure(Component.literal("No existe el mob \"" + id + "\"."));
+				return 0;
+			}
+			nombre = tipo.getDescription();
 		}
 		MinecraftServer server = c.getSource().getServer();
 		for (ServerPlayer p : jugadores) datos(server).mobs.put(p.getUUID(), id);
 		listo(server, jugadores);
-		Component nombre = tipo.getDescription();
 		c.getSource().sendSuccess(() -> Component.literal(cuantos(jugadores) + " ahora " + (jugadores.size() == 1 ? "es " : "son ")
 				+ nombre.getString() + ".").withStyle(ChatFormatting.GOLD), true);
 		return jugadores.size();
