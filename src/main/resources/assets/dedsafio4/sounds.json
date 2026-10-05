@@ -55,5 +55,13 @@
 		"sounds": [
 			"dedsafio4:amuleto_brillo"
 		]
+	},
+	"cinematica1": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cinematica1",
+				"stream": true
+			}
+		]
 	}
 }
