@@ -33,9 +33,6 @@ public final class CambiosComandos {
 
 		for (Cambios.Cambio cambio : Cambios.TODOS) {
 			raiz.then(rama(cambio, cambio.comando()));
-			// También con mayúscula al principio ("/cambio Herobrine 1"), porque los comandos distinguen mayúsculas.
-			String conMayuscula = Character.toUpperCase(cambio.comando().charAt(0)) + cambio.comando().substring(1);
-			if (!conMayuscula.equals(cambio.comando())) raiz.then(rama(cambio, conMayuscula));
 		}
 		dispatcher.register(raiz);
 	}
