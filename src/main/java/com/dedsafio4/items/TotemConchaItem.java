@@ -37,8 +37,9 @@ public class TotemConchaItem extends Item {
 			}
 			for (InteractionHand mano : InteractionHand.values()) {
 				ItemStack pila = jugador.getItemInHand(mano);
-				if (!pila.is(ModItems.TOTEM_CONCHA)) continue;
-				jugador.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(ModItems.TOTEM_CONCHA));
+				// También el Tótem Glebanoide, que funciona igual.
+				if (!pila.is(ModItems.TOTEM_CONCHA) && !pila.is(ModItems.TOTEM_GLEBANOIDE)) continue;
+				jugador.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(pila.getItem()));
 				pila.shrink(1);
 				jugador.setHealth(1f);
 				jugador.removeAllEffects();

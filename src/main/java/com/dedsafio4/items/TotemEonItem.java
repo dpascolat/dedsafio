@@ -36,7 +36,8 @@ public class TotemEonItem extends Item {
 			// Si tiene un tótem en la mano, se usa ése (el de Minecraft, el de Gólem o el de Concha).
 			for (InteractionHand mano : InteractionHand.values()) {
 				ItemStack otra = jugador.getItemInHand(mano);
-				if (otra.is(Items.TOTEM_OF_UNDYING) || otra.is(ModItems.TOTEM_FRERICO) || otra.is(ModItems.TOTEM_CONCHA)) return true;
+				if (otra.is(Items.TOTEM_OF_UNDYING) || otra.is(ModItems.TOTEM_FRERICO) || otra.is(ModItems.TOTEM_CONCHA)
+						|| otra.is(ModItems.TOTEM_GLEBANOIDE)) return true;
 			}
 			var inventario = jugador.getInventory();
 			for (int i = 0; i < inventario.getContainerSize(); i++) {

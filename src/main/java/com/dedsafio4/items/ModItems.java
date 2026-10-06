@@ -220,6 +220,15 @@ public final class ModItems {
 	public static final Item TROZO_AMARILLO = registrar("trozo_amarillo", new Item(new Item.Properties()));
 	/** Tótem de Concha: te salva de la muerte, como el Tótem de la Inmortalidad. */
 	public static final Item TOTEM_CONCHA = registrar("totem_concha", new TotemConchaItem(new Item.Properties()));
+	/** Tótem Glebanoide: variante del Nutritótem; por ahora te salva de morir si lo tienes en la mano. */
+	public static final Item TOTEM_GLEBANOIDE = registrar("totem_glebanoide", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)) {
+		@Override
+		public void appendHoverText(ItemStack pila, TooltipContext contexto, java.util.List<net.minecraft.network.chat.Component> texto,
+									net.minecraft.world.item.TooltipFlag bandera) {
+			texto.add(net.minecraft.network.chat.Component.empty());
+			texto.add(net.minecraft.network.chat.Component.literal("Variante del Nutritótem.").withColor(0xE8E8E8));
+		}
+	});
 	/** Tótem de Eón: te salva aunque esté en cualquier lugar del inventario. */
 	public static final Item TOTEM_EON = registrar("totem_eon", new TotemEonItem(new Item.Properties()));
 	/** Tótem del Ídolo: por ahora no hace nada (se apila de a 1, como el tótem de Minecraft). */
@@ -462,6 +471,7 @@ public final class ModItems {
 						entradas.accept(TOTEM_FRERICO);
 						entradas.accept(TOTEM_CONCHA);
 						entradas.accept(TOTEM_EON);
+						entradas.accept(TOTEM_GLEBANOIDE);
 						entradas.accept(TROZO_AMARILLO);
 						entradas.accept(TOTEM_IDOLO);
 						entradas.accept(SIN_ALMA);

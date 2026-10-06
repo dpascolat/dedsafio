@@ -1,5 +1,6 @@
 package com.dedsafio4.items;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +15,24 @@ public class SinAlmaItem extends Item {
 
 	public SinAlmaItem(Properties propiedades) {
 		super(propiedades);
+	}
+
+	/** El Alma tiene el nombre en verde y dice para qué sirve. */
+	@Override
+	public Component getName(ItemStack pila) {
+		Component nombre = super.getName(pila);
+		return this == ModItems.ALMA ? nombre.copy().withColor(0x55FF55) : nombre;
+	}
+
+	@Override
+	public void appendHoverText(ItemStack pila, TooltipContext contexto, java.util.List<Component> texto,
+								net.minecraft.world.item.TooltipFlag bandera) {
+		if (this != ModItems.ALMA) return;
+		int blanco = 0xE8E8E8, naranja = 0xE8A33C;
+		texto.add(Component.literal("Puedes utilizar tu Alma para").withColor(blanco));
+		texto.add(Component.literal("revivir a otro jugador con una").withColor(blanco));
+		texto.add(Component.literal("Cuchara de la Resurrección").withStyle(s -> s.withColor(naranja).withBold(true)));
+		texto.add(Component.literal("en la Fogata de la Montaña.").withColor(blanco));
 	}
 
 	@Override
