@@ -218,20 +218,8 @@ public final class ModItems {
 	public static final Item TOTEM_FRERICO = registrar("totem_frerico", new TotemFrericoItem(new Item.Properties()));
 	/** Trozo Amarillo: ítem nuevo (por ahora sin uso; el nombre y lo que hace los dice el usuario). */
 	public static final Item TROZO_AMARILLO = registrar("trozo_amarillo", new Item(new Item.Properties()));
-	/** Tótem de Concha: te salva de la muerte, como el Tótem de la Inmortalidad. */
-	public static final Item TOTEM_CONCHA = registrar("totem_concha", new TotemConchaItem(new Item.Properties()));
 	/** Tótem Glebanoide: variante del Nutritótem; por ahora te salva de morir si lo tienes en la mano. */
-	public static final Item TOTEM_GLEBANOIDE = registrar("totem_glebanoide", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)) {
-		@Override
-		public void appendHoverText(ItemStack pila, TooltipContext contexto, java.util.List<net.minecraft.network.chat.Component> texto,
-									net.minecraft.world.item.TooltipFlag bandera) {
-			texto.add(net.minecraft.network.chat.Component.empty());
-			texto.add(net.minecraft.network.chat.Component.literal("Variante del Nutritótem.").withColor(0xE8E8E8));
-		}
-	});
-	/** Tótem de Eón: te salva aunque esté en cualquier lugar del inventario. */
-	public static final Item TOTEM_EON = registrar("totem_eon", new TotemEonItem(new Item.Properties()));
-	/** Tótem del Ídolo: por ahora no hace nada (se apila de a 1, como el tótem de Minecraft). */
+	public static final Item TOTEM_GLEBANOIDE = registrar("totem_glebanoide", new TotemGlebanoideItem(new Item.Properties()));
 	/** Corazón Violeta: por ahora no hace nada. */
 	public static final Item CORAZON_VIOLETA = registrar("corazon_violeta", new Item(new Item.Properties()));
 	/** Corazón Dorado: por ahora no hace nada. */
@@ -240,7 +228,8 @@ public final class ModItems {
 	public static final Item SIN_ALMA = registrar("sin_alma", new SinAlmaItem(new Item.Properties().stacksTo(1)));
 	/** Alma: con click derecho abre la G (como el Sin Alma). */
 	public static final Item ALMA = registrar("alma", new SinAlmaItem(new Item.Properties().stacksTo(1)));
-	public static final Item TOTEM_IDOLO = registrar("totem_idolo", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+	/** Tótem del Ídolo: te salva de morir aunque esté en cualquier lugar del inventario. */
+	public static final Item TOTEM_IDOLO = registrar("totem_idolo", new TotemIdoloItem(new Item.Properties()));
 
 	/** Candado: cierra un cofre con un código. */
 	public static final Item CANDADO = registrar("candado",
@@ -469,8 +458,6 @@ public final class ModItems {
 						entradas.accept(LLAVE_CANDADO);
 						entradas.accept(LINTERNA);
 						entradas.accept(TOTEM_FRERICO);
-						entradas.accept(TOTEM_CONCHA);
-						entradas.accept(TOTEM_EON);
 						entradas.accept(TOTEM_GLEBANOIDE);
 						entradas.accept(TROZO_AMARILLO);
 						entradas.accept(TOTEM_IDOLO);

@@ -78,8 +78,8 @@ public class Dedsafio4 implements ModInitializer {
 		Eburia.registrar();
 		com.dedsafio4.items.Linternas.registrar();
 		com.dedsafio4.items.TotemFrericoItem.registrar();
-		com.dedsafio4.items.TotemConchaItem.registrar();
-		com.dedsafio4.items.TotemEonItem.registrar();
+		com.dedsafio4.items.TotemGlebanoideItem.registrar();
+		com.dedsafio4.items.TotemIdoloItem.registrar();
 		com.dedsafio4.items.CorazonItem.registrar();
 		com.dedsafio4.items.FrutoQuiuItem.registrar();
 		com.dedsafio4.almas.Almas.registrar();

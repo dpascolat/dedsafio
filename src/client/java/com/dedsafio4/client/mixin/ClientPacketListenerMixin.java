@@ -21,15 +21,15 @@ public abstract class ClientPacketListenerMixin {
 		}
 		for (InteractionHand mano : InteractionHand.values()) {
 			ItemStack pila = jugador.getItemInHand(mano);
-			if (pila.is(ModItems.TOTEM_FRERICO) || pila.is(ModItems.TOTEM_CONCHA) || pila.is(ModItems.TOTEM_GLEBANOIDE)) {
+			if (pila.is(ModItems.TOTEM_FRERICO) || pila.is(ModItems.TOTEM_GLEBANOIDE)) {
 				cir.setReturnValue(pila.copy());
 				return;
 			}
 		}
-		// El Tótem de Eón salta desde cualquier lugar del inventario.
+		// El Tótem del Ídolo salta desde cualquier lugar del inventario.
 		var inventario = jugador.getInventory();
 		for (int i = 0; i < inventario.getContainerSize(); i++) {
-			if (inventario.getItem(i).is(ModItems.TOTEM_EON)) {
+			if (inventario.getItem(i).is(ModItems.TOTEM_IDOLO)) {
 				cir.setReturnValue(inventario.getItem(i).copy());
 				return;
 			}
