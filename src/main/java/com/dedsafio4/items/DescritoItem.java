@@ -174,6 +174,16 @@ public class DescritoItem extends Item {
 		t.add(parte("◆ Parásito", SALMON));
 	}
 
+	/** Caparazón: lo sueltan los Nautilus Óseos. */
+	public static void caparazon(List<Component> t) {
+		t.add(parte("Combínalo con otros ingredientes", GRIS));
+		t.add(parte("para conseguir nuevos objetos.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("Consíguelo al Eliminar:", GRIS));
+		t.add(parte("◆ Nautilus Óseo Pequeño", SALMON));
+		t.add(parte("◆ Nautilus Óseo Grande", SALMON));
+	}
+
 	/** Cuerno de Narval (id jeringa): lo sueltan el Narval y el Narval con Reptisaurio. */
 	public static void cuernoNarval(List<Component> t) {
 		t.add(parte("Consíguelo al Eliminar:", GRIS));

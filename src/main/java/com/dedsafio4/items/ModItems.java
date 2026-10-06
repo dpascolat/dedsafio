@@ -408,9 +408,10 @@ public final class ModItems {
 	public static final Item BOLSA_ENDER = registrar("bolsa_ender", new BolsaEnderItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
 
 	/** Signo de Interrogación: no hace nada. */
-	/** Garra Negra y Trozo de Cerebro: ítems nuevos (todavía no hacen nada; falta decidir para qué sirven). */
+	/** Garra Negra: ítem nuevo (todavía no hace nada; falta decidir para qué sirve). */
 	public static final Item GARRA_NEGRA = registrar("garra_negra", new Item(new Item.Properties()));
-	public static final Item TROZO_CEREBRO = registrar("trozo_cerebro", new Item(new Item.Properties()));
+	/** Caparazón: lo suelta el Nautilus Óseo; es un ingrediente. */
+	public static final Item CAPARAZON = registrar("caparazon", new DescritoItem(new Item.Properties(), DescritoItem::caparazon));
 
 	public static final Item SIGNO_INTERROGACION = registrar("signo_interrogacion", new Item(new Item.Properties()) {
 		/** Se llama "???", en dorado. */
@@ -500,7 +501,7 @@ public final class ModItems {
 						entradas.accept(BOTAS_NETHERITA_PLANTA);
 						entradas.accept(SIGNO_INTERROGACION);
 						entradas.accept(GARRA_NEGRA);
-						entradas.accept(TROZO_CEREBRO);
+						entradas.accept(CAPARAZON);
 						entradas.accept(BOLSA_ENDER);
 						entradas.accept(com.dedsafio4.marcos.ModMarcos.MARCO_GRANDE_ITEM);
 						entradas.accept(CHIP_PHORA);
