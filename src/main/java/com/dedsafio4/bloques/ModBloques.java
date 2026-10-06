@@ -204,6 +204,11 @@ public final class ModBloques {
 	public static final Block GELATINA_ROSA = registrar("gelatina_rosa", bloqueDeGelatina(MapColor.COLOR_PINK));
 	public static final Item GELATINA_ROJA_ITEM = registrarItem("gelatina_roja", GELATINA_ROJA);
 	public static final Item GELATINA_ROSA_ITEM = registrarItem("gelatina_rosa", GELATINA_ROSA);
+	/** Gelatina amarilla (fuerte y clara), para armar otro tipo de árbol en la Dimensión de los Órganos. */
+	public static final Block AMARILLO_FUERTE = registrar("amarillo_fuerte", bloqueDeGelatina(MapColor.COLOR_YELLOW));
+	public static final Block AMARILLO_CLARO = registrar("amarillo_claro", bloqueDeGelatina(MapColor.SAND));
+	public static final Item AMARILLO_FUERTE_ITEM = registrarItem("amarillo_fuerte", AMARILLO_FUERTE);
+	public static final Item AMARILLO_CLARO_ITEM = registrarItem("amarillo_claro", AMARILLO_CLARO);
 
 	/** Pelos Glebanoides (id pasto_rosa): como el pasto de Minecraft, sobre la carne de la Dimensión de los Órganos. */
 	public static final Block PASTO_ROSA = registrar("pasto_rosa", new com.dedsafio4.dimension.PastoRosaBlock(

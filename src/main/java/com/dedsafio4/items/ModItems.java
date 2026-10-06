@@ -477,6 +477,8 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.bloques.ModBloques.MUSCULO_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.GELATINA_ROJA_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.GELATINA_ROSA_ITEM);
+						entradas.accept(com.dedsafio4.bloques.ModBloques.AMARILLO_FUERTE_ITEM);
+						entradas.accept(com.dedsafio4.bloques.ModBloques.AMARILLO_CLARO_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.PASTO_ROSA_ITEM);
 						entradas.accept(com.dedsafio4.robots.ModRobots.ROBOT_DORMIDO_ITEM);
 						entradas.accept(LLAVE);
