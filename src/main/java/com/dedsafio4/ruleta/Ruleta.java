@@ -32,10 +32,10 @@ public final class Ruleta {
 	public static final String[] COLORES = {"verde", "morado", "rojo", "celeste", "azul", "naranja", "amarillo", "rosa"};
 
 	/**
-	 * Ticks desde /ruleta rojo hasta que aparece la criatura: la ruleta roja dura 418 cuadros de 33 ms (276 ticks)
-	 * y el cliente tarda un poquito en cargarla.
+	 * Ticks desde /ruleta rojo hasta que aparece la criatura (ahí empieza el Rojizo): la ruleta roja dura 417
+	 * cuadros de 30 ms (250 ticks) y el cliente tarda un poquito en cargarla.
 	 */
-	private static final int TICKS_HASTA_CRIATURA = 290;
+	private static final int TICKS_HASTA_CRIATURA = 264;
 	/** Con la criatura, a todos les da Rojizo por 1 minuto (sin partículas ni ícono). */
 	private static final int TICKS_ROJIZO = 60 * 20;
 	/** Tick del servidor en que hay que dar el Rojizo; -1 = nada pendiente. */
