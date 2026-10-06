@@ -174,6 +174,15 @@ public class DescritoItem extends Item {
 		t.add(parte("◆ Parásito", SALMON));
 	}
 
+	/** Cerebro Glebanoide: lo suelta la Garrapata Cerebral Pequeña. */
+	public static void cerebroGlebanoide(List<Component> t) {
+		t.add(parte("Combínalo con otros ingredientes", GRIS));
+		t.add(parte("para conseguir nuevos objetos.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("Consíguelo al Eliminar:", GRIS));
+		t.add(parte("◆ Garrapata Cerebral Pequeña", SALMON));
+	}
+
 	/** Caparazón: lo sueltan los Nautilus Óseos. */
 	public static void caparazon(List<Component> t) {
 		t.add(parte("Combínalo con otros ingredientes", GRIS));

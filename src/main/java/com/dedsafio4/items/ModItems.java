@@ -413,6 +413,9 @@ public final class ModItems {
 	/** Signo de Interrogación: no hace nada. */
 	/** Garra Negra: ítem nuevo (todavía no hace nada; falta decidir para qué sirve). */
 	public static final Item GARRA_NEGRA = registrar("garra_negra", new Item(new Item.Properties()));
+	/** Cerebro Glebanoide: lo suelta la Garrapata Cerebral; es un ingrediente (la textura es provisoria). */
+	public static final Item CEREBRO_GLEBANOIDE = registrar("cerebro_glebanoide",
+			new DescritoItem(new Item.Properties(), DescritoItem::cerebroGlebanoide));
 	/** Caparazón: lo suelta el Nautilus Óseo; es un ingrediente. */
 	public static final Item CAPARAZON = registrar("caparazon", new DescritoItem(new Item.Properties(), DescritoItem::caparazon));
 
@@ -505,6 +508,7 @@ public final class ModItems {
 						entradas.accept(SIGNO_INTERROGACION);
 						entradas.accept(GARRA_NEGRA);
 						entradas.accept(CAPARAZON);
+						entradas.accept(CEREBRO_GLEBANOIDE);
 						entradas.accept(BOLSA_ENDER);
 						entradas.accept(com.dedsafio4.marcos.ModMarcos.MARCO_GRANDE_ITEM);
 						entradas.accept(CHIP_PHORA);
