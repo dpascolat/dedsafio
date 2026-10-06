@@ -89,6 +89,18 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("🏰 Aparece en: ", APARECE).append(parte("una mazmorra.", BLANCO)));
 	}
 
+	public static void gusanoCarne(List<Component> t) {
+		t.add(parte("Criatura pequeña y lenta que ataca", GRIS));
+		t.add(parte("directamente a quien se le acerque.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("🎁 Drop:", DROP));
+		t.add(Component.empty());
+		t.add(parte("✦ Cuero Glebanoide ", OBJETO).append(parte("(20%)", PORCENTAJE)));
+		t.add(Component.empty());
+		t.add(parte("♨ Aparece en: ", APARECE).append(parte("Gleba (al romper", BLANCO)));
+		t.add(parte("Bloques de Grasa Líquida o Coagulada)", BLANCO));
+	}
+
 	public static void flashbang(List<Component> t) {
 		t.add(parte("Aparece en la oscuridad.", GRIS));
 		t.add(parte("Explota al instante si te toca: ", GRIS));

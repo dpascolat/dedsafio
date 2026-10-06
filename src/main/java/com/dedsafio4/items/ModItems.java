@@ -290,6 +290,9 @@ public final class ModItems {
 	public static final Item FLASHBANG_SPAWN_EGG = registrar("flashbang_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.FLASHBANG, 0x2B2B2B, 0xF4F4F4, new Item.Properties(),
 					HuevoConDescripcion::flashbang));
+	public static final Item GUSANO_CARNE_SPAWN_EGG = registrar("gusano_carne_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.GUSANO_CARNE, 0x9A3A22, 0xB7C23A, new Item.Properties(),
+					HuevoConDescripcion::gusanoCarne));
 	public static final Item NARVAL_SPAWN_EGG = registrar("narval_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.NARVAL, 0x26337E, 0xDCDCD2, new Item.Properties(),
 					HuevoConDescripcion::narval));
@@ -482,8 +485,8 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.bloques.ModBloques.MUSCULO_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.GELATINA_ROJA_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.GELATINA_ROSA_ITEM);
-						entradas.accept(com.dedsafio4.bloques.ModBloques.AMARILLO_FUERTE_ITEM);
-						entradas.accept(com.dedsafio4.bloques.ModBloques.AMARILLO_CLARO_ITEM);
+						entradas.accept(com.dedsafio4.bloques.ModBloques.GRASA_LIQUIDA_ITEM);
+						entradas.accept(com.dedsafio4.bloques.ModBloques.GRASA_COAGULADA_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.PASTO_ROSA_ITEM);
 						entradas.accept(com.dedsafio4.robots.ModRobots.ROBOT_DORMIDO_ITEM);
 						entradas.accept(LLAVE);
@@ -566,6 +569,7 @@ public final class ModItems {
 						entradas.accept(CEREBRO_AMARILLO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
 						entradas.accept(FLASHBANG_SPAWN_EGG);
+						entradas.accept(GUSANO_CARNE_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.casino.ModCasino.CASINO_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.nave.PartesNave.CABINA);
 						entradas.accept(com.dedsafio4.nave.PartesNave.MOTOR);

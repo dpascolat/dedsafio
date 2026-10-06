@@ -119,6 +119,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.FlashbangEntity> FLASHBANG = registrar("flashbang",
 			EntityType.Builder.of(com.dedsafio4.bestias.FlashbangEntity::new, MobCategory.MONSTER).sized(0.7f, 2.9f).clientTrackingRange(8));
 
+	/** Gusano de Carne: chiquito y largo (la caja de choque es la de la cabeza). */
+	public static final EntityType<com.dedsafio4.bestias.GusanoCarneEntity> GUSANO_CARNE = registrar("gusano_carne",
+			EntityType.Builder.of(com.dedsafio4.bestias.GusanoCarneEntity::new, MobCategory.MONSTER).sized(0.5f, 0.45f).clientTrackingRange(8));
+
 	/** Narval: unos 3 bloques de largo con el cuerno. */
 	public static final EntityType<com.dedsafio4.bestias.NarvalEntity> NARVAL = registrar("narval",
 			EntityType.Builder.of(com.dedsafio4.bestias.NarvalEntity::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(1.4f, 0.9f).clientTrackingRange(10));
@@ -186,6 +190,7 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(CEREBRO_AMARILLO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(GARRAPATA_CEREBRAL, com.dedsafio4.bestias.GarrapataCerebralEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(FLASHBANG, com.dedsafio4.bestias.FlashbangEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(GUSANO_CARNE, com.dedsafio4.bestias.GusanoCarneEntity.crearAtributos());
 		com.dedsafio4.bestias.FlashbangEntity.registrar();
 		// Flashbang: en el Overworld, a oscuras (como los zombis y creepers).
 		SpawnPlacements.register(FLASHBANG, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

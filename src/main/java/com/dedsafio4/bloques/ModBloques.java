@@ -204,11 +204,16 @@ public final class ModBloques {
 	public static final Block GELATINA_ROSA = registrar("gelatina_rosa", bloqueDeGelatina(MapColor.COLOR_PINK));
 	public static final Item GELATINA_ROJA_ITEM = registrarItem("gelatina_roja", GELATINA_ROJA);
 	public static final Item GELATINA_ROSA_ITEM = registrarItem("gelatina_rosa", GELATINA_ROSA);
-	/** Gelatina amarilla (fuerte y clara), para armar otro tipo de árbol en la Dimensión de los Órganos. */
-	public static final Block AMARILLO_FUERTE = registrar("amarillo_fuerte", bloqueDeGelatina(MapColor.COLOR_YELLOW));
-	public static final Block AMARILLO_CLARO = registrar("amarillo_claro", bloqueDeGelatina(MapColor.SAND));
-	public static final Item AMARILLO_FUERTE_ITEM = registrarItem("amarillo_fuerte", AMARILLO_FUERTE);
-	public static final Item AMARILLO_CLARO_ITEM = registrarItem("amarillo_claro", AMARILLO_CLARO);
+	/**
+	 * Grasa Líquida (amarillo fuerte) y Grasa Coagulada (amarillo claro) de Gleba, para armar otro tipo de árbol en la
+	 * Dimensión de los Órganos. Al romperlas puede salir un Gusano de Carne (GrasaBlock).
+	 */
+	public static final Block GRASA_LIQUIDA = registrar("grasa_liquida", new GrasaBlock(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.COLOR_YELLOW).strength(1.5f, 3f).sound(SoundType.SLIME_BLOCK).requiresCorrectToolForDrops()));
+	public static final Block GRASA_COAGULADA = registrar("grasa_coagulada", new GrasaBlock(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.SAND).strength(1.5f, 3f).sound(SoundType.SLIME_BLOCK).requiresCorrectToolForDrops()));
+	public static final Item GRASA_LIQUIDA_ITEM = registrarItem("grasa_liquida", GRASA_LIQUIDA);
+	public static final Item GRASA_COAGULADA_ITEM = registrarItem("grasa_coagulada", GRASA_COAGULADA);
 
 	/** Pelos Glebanoides (id pasto_rosa): como el pasto de Minecraft, sobre la carne de la Dimensión de los Órganos. */
 	public static final Block PASTO_ROSA = registrar("pasto_rosa", new com.dedsafio4.dimension.PastoRosaBlock(
