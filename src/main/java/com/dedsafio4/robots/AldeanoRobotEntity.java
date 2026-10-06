@@ -27,12 +27,15 @@ import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
+
+import java.util.List;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Aldeano Robot: un robot con un monitor de cabeza que flota y comercia sin necesitar ninguna mesa de trabajo.
- * Los tradeos son propios del mod (los de abajo son de prueba hasta que lleguen los definitivos).
+ * Los comercios están en OfertasPhora: cada aldeano tiene una de las listas (al azar) y 7 niveles; sube de nivel
+ * comerciando y ahí se desbloquean los comercios de ese nivel. Repone la mercadería cada medio día de Minecraft.
  */
 public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	/** Si alguien está comerciando con él (el cliente lo usa para que salude). */
@@ -42,6 +45,10 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	@Nullable
 	private Player comprando;
 	private MerchantOffers ofertas;
+	/** Qué lista de OfertasPhora tiene (-1: todavía no se eligió), su nivel (1 a 7) y su experiencia. */
+	private int juego = -1, nivel = 1, xp;
+	/** Cuándo repuso la mercadería por última vez (tick del mundo). */
+	private long repuso;
 
 	public AldeanoRobotEntity(EntityType<? extends AldeanoRobotEntity> tipo, Level level) {
 		super(tipo, level);
@@ -82,18 +89,52 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		if (this.getTradingPlayer() != null) return InteractionResult.sidedSuccess(this.level().isClientSide);
 		if (this.level().isClientSide) return InteractionResult.SUCCESS;
 		if (this.getOffers().isEmpty()) return InteractionResult.CONSUME;
+		this.reponer();
 		this.setTradingPlayer(jugador);
-		this.openTradingScreen(jugador, this.getDisplayName(), 1);
+		this.openTradingScreen(jugador, this.getDisplayName(), this.nivel);
 		return InteractionResult.CONSUME;
 	}
 
-	/** Tradeos de prueba, hasta que lleguen los de verdad. */
+	/** Arma la lista: los comercios de su nivel o menos, listos; los de más arriba, bloqueados. */
 	private MerchantOffers armarOfertas() {
+		if (this.juego < 0 || this.juego >= OfertasPhora.JUEGOS.size()) this.juego = this.random.nextInt(OfertasPhora.JUEGOS.size());
 		MerchantOffers lista = new MerchantOffers();
-		lista.add(new MerchantOffer(new ItemCost(Items.EMERALD, 1), new ItemStack(Items.BREAD, 6), 16, 2, 0.05f));
-		lista.add(new MerchantOffer(new ItemCost(Items.EMERALD, 3), new ItemStack(Items.IRON_INGOT, 2), 12, 2, 0.05f));
-		lista.add(new MerchantOffer(new ItemCost(Items.COAL, 15), new ItemStack(Items.EMERALD, 1), 16, 2, 0.05f));
+		for (OfertasPhora.Comercio c : OfertasPhora.JUEGOS.get(this.juego)) lista.add(c.nivel() <= this.nivel ? c.oferta() : c.bloqueada());
 		return lista;
+	}
+
+	/** Al subir de nivel: los comercios de ese nivel se desbloquean (los que ya estaban quedan como están). */
+	private void desbloquear() {
+		List<OfertasPhora.Comercio> lista = OfertasPhora.JUEGOS.get(this.juego);
+		MerchantOffers actuales = this.getOffers();
+		for (int i = 0; i < lista.size() && i < actuales.size(); i++) {
+			if (lista.get(i).nivel() <= this.nivel && actuales.get(i).getCostB().is(Items.BARRIER)) actuales.set(i, lista.get(i).oferta());
+		}
+	}
+
+	/** Cada medio día de Minecraft repone la mercadería (los comercios desbloqueados se pueden volver a hacer). */
+	private void reponer() {
+		long ahora = this.level().getGameTime();
+		if (ahora - this.repuso < 12000) return;
+		this.repuso = ahora;
+		for (MerchantOffer o : this.getOffers()) if (!o.getCostB().is(Items.BARRIER)) o.resetUses();
+	}
+
+	/** Suma la experiencia del comercio y, si alcanza, sube de nivel (hasta el 7). */
+	private void ganarXp(int cuanto) {
+		this.xp += cuanto;
+		boolean subio = false;
+		while (this.nivel < OfertasPhora.NIVEL_MAXIMO && this.xp >= OfertasPhora.XP_NIVEL[this.nivel + 1]) {
+			this.nivel++;
+			subio = true;
+		}
+		if (!subio) return;
+		this.desbloquear();
+		this.playSound(SoundEvents.PLAYER_LEVELUP, 1f, 1.4f);
+		if (this.comprando instanceof net.minecraft.server.level.ServerPlayer jugador
+				&& jugador.containerMenu instanceof net.minecraft.world.inventory.MerchantMenu menu) {
+			jugador.sendMerchantOffers(menu.containerId, this.getOffers(), this.nivel, this.xp, this.showProgressBar(), this.canRestock());
+		}
 	}
 
 	@Override
@@ -122,6 +163,7 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	@Override
 	public void notifyTrade(MerchantOffer oferta) {
 		oferta.increaseUses();
+		if (!this.level().isClientSide) this.ganarXp(oferta.getXp());
 		this.ambientSoundTime = -this.getAmbientSoundInterval();
 		this.playSound(this.getNotifyTradeSound(), 1f, 1f);
 	}
@@ -135,16 +177,22 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 
 	@Override
 	public int getVillagerXp() {
-		return 0;
+		return this.xp;
 	}
 
 	@Override
 	public void overrideXp(int experiencia) {
+		this.xp = experiencia;
 	}
 
 	@Override
 	public boolean showProgressBar() {
-		return false;
+		return true;
+	}
+
+	@Override
+	public boolean canRestock() {
+		return true;
 	}
 
 	@Override
@@ -168,6 +216,10 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	public void addAdditionalSaveData(CompoundTag tag) {
 		super.addAdditionalSaveData(tag);
 		MerchantOffers ofertas = this.getOffers();
+		tag.putInt("Juego", this.juego);
+		tag.putInt("Nivel", this.nivel);
+		tag.putInt("Xp", this.xp);
+		tag.putLong("Repuso", this.repuso);
 		if (!ofertas.isEmpty()) {
 			tag.put("Offers", MerchantOffers.CODEC.encodeStart(
 					this.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), ofertas)
@@ -178,6 +230,12 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	@Override
 	public void readAdditionalSaveData(CompoundTag tag) {
 		super.readAdditionalSaveData(tag);
+		this.nivel = Math.max(1, tag.contains("Nivel") ? tag.getInt("Nivel") : 1);
+		this.xp = tag.getInt("Xp");
+		this.repuso = tag.getLong("Repuso");
+		// Los aldeanos de antes (sin lista) se quedan con los comercios nuevos, no con los de prueba.
+		if (!tag.contains("Juego")) return;
+		this.juego = tag.getInt("Juego");
 		if (tag.contains("Offers")) {
 			MerchantOffers.CODEC.parse(
 					this.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), tag.get("Offers"))
