@@ -17,8 +17,8 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 /**
- * Totem Frerico: mientras lo tenés en la mano (o en la mano secundaria) tenés 2 corazones más de
- * vida máxima (al guardarlo, se van). Y como un Tótem de la Inmortalidad: si vas a morir con él en la
+ * Tótem de Gólem (id totem_frerico): mientras lo tienes en la mano secundaria tienes 2 corazones más de
+ * vida máxima (al sacarlo, se van). Y como un Tótem de la Inmortalidad: si vas a morir con él en la
  * mano, te salva y se gasta.
  */
 public class TotemFrericoItem extends Item {
@@ -31,7 +31,7 @@ public class TotemFrericoItem extends Item {
 	}
 
 	private static boolean loTiene(Player jugador) {
-		return jugador.getMainHandItem().is(ModItems.TOTEM_FRERICO) || jugador.getOffhandItem().is(ModItems.TOTEM_FRERICO);
+		return jugador.getOffhandItem().is(ModItems.TOTEM_FRERICO);
 	}
 
 	/** Pone o saca los 2 corazones según tenga el tótem en alguna mano. */
@@ -53,9 +53,12 @@ public class TotemFrericoItem extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack pila, TooltipContext contexto, List<Component> texto, TooltipFlag bandera) {
-		texto.add(Component.literal("Tenlo en la mano o en la mano").withColor(0xC6CFD6));
-		texto.add(Component.literal("secundaria para tener 2 corazones más.").withColor(0xC6CFD6));
-		texto.add(Component.literal("Te salva de la muerte (y se gasta).").withColor(0xC6CFD6));
+		int blanco = 0xE8E8E8, amarillo = 0xFFD84A, rosa = 0xE070E0;
+		texto.add(Component.empty());
+		texto.add(Component.literal("Al utilizarlo en la ").withColor(blanco).append(Component.literal("Mano").withColor(amarillo)));
+		texto.add(Component.literal("Secundaria").withColor(amarillo).append(Component.literal(" obtienes ").withColor(blanco))
+				.append(Component.literal("dos").withColor(rosa)));
+		texto.add(Component.literal("corazones extra.").withColor(blanco));
 	}
 
 	public static void registrar() {

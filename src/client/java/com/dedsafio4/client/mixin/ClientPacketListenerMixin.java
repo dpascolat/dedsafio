@@ -26,5 +26,13 @@ public abstract class ClientPacketListenerMixin {
 				return;
 			}
 		}
+		// El Tótem de Eón salta desde cualquier lugar del inventario.
+		var inventario = jugador.getInventory();
+		for (int i = 0; i < inventario.getContainerSize(); i++) {
+			if (inventario.getItem(i).is(ModItems.TOTEM_EON)) {
+				cir.setReturnValue(inventario.getItem(i).copy());
+				return;
+			}
+		}
 	}
 }
