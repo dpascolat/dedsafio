@@ -30,6 +30,17 @@ public abstract class SpawnPlacementsMixin {
 	}
 
 	/**
+	 * Los mobs del mod que aparecen solos (los de AnuncioMob.LUGARES) solo aparecen si se habilitaron con /mob.
+	 */
+	@Inject(method = "checkSpawnRules", at = @At("HEAD"), cancellable = true)
+	private static void dedsafio4$mobsHabilitados(EntityType<?> tipo, ServerLevelAccessor level, MobSpawnType razon,
+												  BlockPos pos, RandomSource random, CallbackInfoReturnable<Boolean> cir) {
+		if (razon != MobSpawnType.NATURAL && razon != MobSpawnType.CHUNK_GENERATION) return;
+		if (!com.dedsafio4.bestias.AnuncioMob.controla(tipo)) return;
+		if (!com.dedsafio4.bestias.AnuncioMob.activo(level.getLevel().getServer(), tipo)) cir.setReturnValue(false);
+	}
+
+	/**
 	 * Zombis en el Nether (ver Dedsafio4#onInitialize): solo con "zombi 3", sin importar la luz
 	 * (con suelo firme y fuera de pacífico). Sin el cambio, en el Nether no aparecen, como siempre.
 	 */
