@@ -174,6 +174,15 @@ public class DescritoItem extends Item {
 		t.add(parte("◆ Parásito", SALMON));
 	}
 
+	/** Pelo Glebanoide: se consigue con una espada sobre los Pelos Glebanoides. */
+	public static void peloGlebanoide(List<Component> t) {
+		t.add(parte("Utiliza una ", GRIS).append(parte("Espada", VIOLETA)).append(parte(" sobre unos", GRIS)));
+		t.add(parte("Pelos Glebanoides", CELESTE).append(parte(" para obtenerlo.", GRIS)));
+		t.add(Component.empty());
+		t.add(parte("Combínalo con otros ingredientes", GRIS));
+		t.add(parte("para conseguir nuevos objetos.", GRIS));
+	}
+
 	/** Cerebro Glebanoide: lo suelta la Garrapata Cerebral Pequeña. */
 	public static void cerebroGlebanoide(List<Component> t) {
 		t.add(parte("Combínalo con otros ingredientes", GRIS));

@@ -411,8 +411,9 @@ public final class ModItems {
 	public static final Item BOLSA_ENDER = registrar("bolsa_ender", new BolsaEnderItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
 
 	/** Signo de Interrogación: no hace nada. */
-	/** Garra Negra: ítem nuevo (todavía no hace nada; falta decidir para qué sirve). */
-	public static final Item GARRA_NEGRA = registrar("garra_negra", new Item(new Item.Properties()));
+	/** Pelo Glebanoide: con una espada sobre los Pelos Glebanoides (el pasto de los Órganos); es un ingrediente. */
+	public static final Item PELO_GLEBANOIDE = registrar("pelo_glebanoide",
+			new DescritoItem(new Item.Properties(), DescritoItem::peloGlebanoide));
 	/** Cerebro Glebanoide: lo suelta la Garrapata Cerebral; es un ingrediente (la textura es provisoria). */
 	public static final Item CEREBRO_GLEBANOIDE = registrar("cerebro_glebanoide",
 			new DescritoItem(new Item.Properties(), DescritoItem::cerebroGlebanoide));
@@ -506,7 +507,7 @@ public final class ModItems {
 						entradas.accept(PANTALONES_NETHERITA_PLANTA);
 						entradas.accept(BOTAS_NETHERITA_PLANTA);
 						entradas.accept(SIGNO_INTERROGACION);
-						entradas.accept(GARRA_NEGRA);
+						entradas.accept(PELO_GLEBANOIDE);
 						entradas.accept(CAPARAZON);
 						entradas.accept(CEREBRO_GLEBANOIDE);
 						entradas.accept(BOLSA_ENDER);

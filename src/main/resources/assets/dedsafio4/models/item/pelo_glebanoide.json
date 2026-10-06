@@ -1,6 +1,6 @@
 {
 	"parent": "minecraft:item/generated",
 	"textures": {
-		"layer0": "dedsafio4:item/garra_negra"
+		"layer0": "dedsafio4:item/pelo_glebanoide"
 	}
 }

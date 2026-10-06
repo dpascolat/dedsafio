@@ -5,16 +5,43 @@
 			"rolls": 1,
 			"entries": [
 				{
-					"type": "minecraft:item",
-					"name": "dedsafio4:pasto_rosa"
-				}
-			],
-			"conditions": [
-				{
-					"condition": "minecraft:match_tool",
-					"predicate": {
-						"items": "minecraft:shears"
-					}
+					"type": "minecraft:alternatives",
+					"children": [
+						{
+							"type": "minecraft:item",
+							"name": "dedsafio4:pelo_glebanoide",
+							"conditions": [
+								{
+									"condition": "minecraft:match_tool",
+									"predicate": {
+										"items": "#minecraft:swords"
+									}
+								}
+							],
+							"functions": [
+								{
+									"function": "minecraft:set_count",
+									"count": {
+										"type": "minecraft:uniform",
+										"min": 1,
+										"max": 2
+									}
+								}
+							]
+						},
+						{
+							"type": "minecraft:item",
+							"name": "dedsafio4:pasto_rosa",
+							"conditions": [
+								{
+									"condition": "minecraft:match_tool",
+									"predicate": {
+										"items": "minecraft:shears"
+									}
+								}
+							]
+						}
+					]
 				}
 			]
 		}
