@@ -35,6 +35,11 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		descripcion.accept(texto);
 	}
 
+	/** La descripción del mob (la usa también el cartel de /mob). */
+	public void describir(List<Component> texto) {
+		descripcion.accept(texto);
+	}
+
 	public static MutableComponent parte(String texto, int rgb) {
 		return Component.literal(texto).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(rgb)));
 	}

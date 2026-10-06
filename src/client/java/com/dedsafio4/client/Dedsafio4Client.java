@@ -201,6 +201,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.casino.CasinoEditorScreen.registrar();
 		com.dedsafio4.client.cinematica.CinematicaScreen.registrar();
 		com.dedsafio4.client.disfraz.DisfracesCliente.registrar();
+		com.dedsafio4.client.bestias.AnuncioMobCliente.registrar();
 		com.dedsafio4.client.bulag.BulagCliente.registrar();
 		com.dedsafio4.client.despegue.EspacioCielo.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.despegue.ModDespegue.NAVE_VIAJE,
