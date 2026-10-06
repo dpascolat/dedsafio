@@ -22,14 +22,14 @@ import net.minecraft.world.effect.MobEffectInstance;
 
 /**
  * Animaciones en el centro de la pantalla de todos los jugadores, con su sonido (las dibuja el cliente, AnimacionesCliente):
- * /ruleta verde|morado|rojo|celeste|naranja|amarillo|rosa  la ruleta gira y cae en ese color (la roja termina con la
+ * /ruleta verde|morado|rojo|celeste|azul|naranja|amarillo|rosa  la ruleta gira y cae en ese color (la roja termina con la
  *                                                          criatura, que les da Rojizo 1 minuto, y la rosa con la nutria).
  * Cuando muere un jugador, a todos les aparece la animación de muerte.
  */
 public final class Ruleta {
 	private Ruleta() {}
 
-	public static final String[] COLORES = {"verde", "morado", "rojo", "celeste", "naranja", "amarillo", "rosa"};
+	public static final String[] COLORES = {"verde", "morado", "rojo", "celeste", "azul", "naranja", "amarillo", "rosa"};
 
 	/**
 	 * Ticks desde /ruleta rojo hasta que aparece la criatura: la ruleta roja dura 418 cuadros de 33 ms (276 ticks)
