@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Las animaciones de pantalla (ruletas, la criatura, la nutria, la de muerte): en el centro de la pantalla (o abajo), con su
+ * Las animaciones de pantalla (ruletas, la criatura, la nutria, la de muerte): en el centro de la pantalla (o abajo, o en toda la pantalla), con su
  * sonido. Cada una tiene un JSON en assets/dedsafio4/animaciones/ (tamaño de los cuadros, cuántos hay por hoja, cuánto
  * dura cada cuadro, qué tan grande se ve, si va abajo, el sonido y la animación que va después) y sus hojas de cuadros en
  * textures/gui/animaciones/NOMBRE_N.png. Las hojas se cargan en segundo plano cuando llega la animación (arranca
@@ -30,7 +30,7 @@ public final class AnimacionesCliente {
 	private AnimacionesCliente() {}
 
 	private record Info(String nombre, int ancho, int alto, int columnas, int porHoja, int hojas, int[] fin,
-						ResourceLocation sonido, float altoEnPantalla, boolean abajo, String siguiente) {
+						ResourceLocation sonido, float altoEnPantalla, boolean abajo, boolean completa, String siguiente) {
 		ResourceLocation hoja(int i) {
 			return id("textures/gui/animaciones/" + nombre + "_" + i + ".png");
 		}
@@ -120,7 +120,8 @@ public final class AnimacionesCliente {
 			for (int i = 0; i < fin.length; i++) fin[i] = suma += duraciones.get(i).getAsInt();
 			info = new Info(nombre, j.get("ancho").getAsInt(), j.get("alto").getAsInt(), j.get("columnas").getAsInt(),
 					j.get("por_hoja").getAsInt(), j.get("hojas").getAsInt(), fin, id(j.get("sonido").getAsString()),
-					j.get("alto_en_pantalla").getAsFloat(), j.has("posicion") && "abajo".equals(j.get("posicion").getAsString()), j.has("siguiente") ? j.get("siguiente").getAsString() : null);
+					j.get("alto_en_pantalla").getAsFloat(), j.has("posicion") && "abajo".equals(j.get("posicion").getAsString()),
+					j.has("posicion") && "completa".equals(j.get("posicion").getAsString()), j.has("siguiente") ? j.get("siguiente").getAsString() : null);
 		} catch (Exception e) {
 			Dedsafio4.LOGGER.warn("No se pudo leer la animación {}", nombre, e);
 		}
@@ -148,6 +149,12 @@ public final class AnimacionesCliente {
 		float alto = Math.min(graphics.guiHeight() * info.altoEnPantalla, graphics.guiWidth() * 0.9f * info.alto / info.ancho);
 		int h = Math.round(alto), w = Math.round(alto * info.ancho / info.alto);
 		int x = (graphics.guiWidth() - w) / 2, y = info.abajo ? graphics.guiHeight() - h : (graphics.guiHeight() - h) / 2;
+		if (info.completa) {
+			// Toda la pantalla, sea cual sea la escala de la interfaz.
+			x = y = 0;
+			w = graphics.guiWidth();
+			h = graphics.guiHeight();
+		}
 
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
