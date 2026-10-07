@@ -55,7 +55,7 @@ public final class AvisoCliente {
 		List<FormattedCharSequence> renglones = font.split(Component.literal(actual.texto()), ancho - 12);
 		boolean hayTitulo = !actual.titulo().isEmpty();
 		// Como en el diseño: título grande, el texto, y abajo un buen espacio vacío antes del pie.
-		int alto = 8 + (hayTitulo ? 26 : 0) + renglones.size() * 10 + 26;
+		int alto = 8 + (hayTitulo ? 17 : 0) + renglones.size() * 10 + 26;
 
 		g.pose().pushPose();
 		g.pose().scale(escala, escala, 1);
@@ -67,7 +67,7 @@ public final class AvisoCliente {
 		if (hayTitulo) {
 			g.pose().pushPose();
 			g.pose().translate(x + 5, ty, 0);
-			g.pose().scale(1.5f, 1.5f, 1);
+			g.pose().scale(1.2f, 1.2f, 1);   // un poquito más grande que el texto
 			Component icono = "cambio".equals(actual.icono())
 					? Component.literal(String.valueOf((char) 0xE001)).withStyle(Style.EMPTY.withFont(
 							net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "iconos")))
@@ -77,7 +77,7 @@ public final class AvisoCliente {
 					.append(Component.literal(actual.titulo()).withStyle(Style.EMPTY.withBold(true).withColor(actual.color())));
 			g.drawString(font, titulo, 0, 0, color, true);
 			g.pose().popPose();
-			ty += 24;
+			ty += 15;
 		}
 		for (FormattedCharSequence r : renglones) {
 			g.drawString(font, r, x + 6, ty, color, true);
