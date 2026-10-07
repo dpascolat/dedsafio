@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * El cartel de /aviso pegado arriba a la izquierda: fondo oscuro y transparente, el título en grande con el ícono ◐,
- * el texto en el color del aviso y abajo, en una franja, "[Presiona O] para ocultar aviso". Se dibuja siempre del mismo tamaño (como con escala de
+ * el texto en el color del aviso y abajo, sin fondo, "[Presiona O] para ocultar aviso". Se dibuja siempre del mismo tamaño (como con escala de
  * interfaz 2), sea cual sea la escala que tenga cada uno.
  */
 public final class AvisoCliente {
@@ -77,9 +77,8 @@ public final class AvisoCliente {
 			g.drawString(font, r, x + 6, ty, color, true);
 			ty += 10;
 		}
-		// El pie, pegado abajo del cartel, con la letra más grande.
+		// El pie, abajo del cartel, sin fondo y con la letra más grande.
 		int pie = y + alto;
-		g.fill(x, pie, x + ancho, pie + 22, 0x5A000000);
 		g.pose().pushPose();
 		g.pose().translate(x + 6, pie + 6, 0);
 		g.pose().scale(1.3f, 1.3f, 1);
