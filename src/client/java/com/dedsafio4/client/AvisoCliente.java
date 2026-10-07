@@ -83,12 +83,12 @@ public final class AvisoCliente {
 			g.drawString(font, r, x + 6, ty, color, true);
 			ty += 10;
 		}
-		// El pie, abajo del cartel, sin fondo y con la letra más grande.
+		// El pie, abajo del cartel: sin fondo, chiquito y medio transparente.
 		int pie = y + alto;
 		g.pose().pushPose();
-		g.pose().translate(x + 6, pie + 6, 0);
-		g.pose().scale(1.3f, 1.3f, 1);
-		g.drawString(font, "[Presiona O] para ocultar aviso", 0, 0, 0xFFC8B8AC, true);
+		g.pose().translate(x + 6, pie + 4, 0);
+		g.pose().scale(1.0f, 1.0f, 1);
+		g.drawString(font, "[Presiona O] para ocultar aviso", 0, 0, 0x88C8B8AC, false);
 		g.pose().popPose();
 		g.pose().popPose();
 	}
