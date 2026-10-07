@@ -82,7 +82,7 @@ public final class Cambios {
 
 	public static final List<Cambio> TODOS = List.of(
 			new Cambio(ARBOLES, "arboles", Map.of(
-					1, "Los árboles se volvieron estériles. Ahora las hojas ya no sueltan brotes.")),
+					1, "Ahora no caen brotes de los Árboles. Replantar ya no es una opción.")),
 			new Cambio(WARDENS, "wardens", Map.of(
 					1, "La Oscuridad Profunda despertó. Ahora los Wardens aparecen en su bioma como cualquier otro monstruo.",
 					2, "La Oscuridad Profunda se propaga. Ahora cada Warden que muere deja un Chillador de Sculk donde cayó.")),

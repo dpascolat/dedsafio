@@ -51,7 +51,7 @@ public final class AvisoCliente {
 		float escala = 2f / (float) mc.getWindow().getGuiScale();
 		int anchoPantalla = (int) (g.guiWidth() / escala);
 		int ancho = Math.min(370, anchoPantalla - 4);
-		int color = 0xFF000000 | actual.color();
+		int color = 0xFF000000 | actual.colorTexto();
 		List<FormattedCharSequence> renglones = font.split(Component.literal(actual.texto()), ancho - 12);
 		boolean hayTitulo = !actual.titulo().isEmpty();
 		// Como en el diseño: título grande, el texto, y abajo un buen espacio vacío antes del pie.
@@ -68,7 +68,12 @@ public final class AvisoCliente {
 			g.pose().pushPose();
 			g.pose().translate(x + 5, ty, 0);
 			g.pose().scale(1.5f, 1.5f, 1);
-			Component titulo = Component.literal("◐ ").withColor(actual.color())
+			Component icono = "cambio".equals(actual.icono())
+					? Component.literal(String.valueOf((char) 0xE001)).withStyle(Style.EMPTY.withFont(
+							net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "iconos")))
+							.append(Component.literal(" "))
+					: Component.literal("◐ ").withColor(actual.color());
+			Component titulo = Component.empty().append(icono)
 					.append(Component.literal(actual.titulo()).withStyle(Style.EMPTY.withBold(true).withColor(actual.color())));
 			g.drawString(font, titulo, 0, 0, color, true);
 			g.pose().popPose();

@@ -48,12 +48,15 @@ public final class Aviso {
 		COLORES.put("gris", 0xBDBDBD);
 	}
 
-	/** Servidor → jugador: el aviso (texto vacío = sacarlo). */
-	public record Payload(int color, String titulo, String texto) implements CustomPacketPayload {
+	/**
+	 * Servidor → jugador: el aviso (texto vacío = sacarlo). color es el del título, colorTexto el del texto, e icono
+	 * "cambio" pone el ícono de los Cambios de Dificultad en vez del ◐.
+	 */
+	public record Payload(int color, int colorTexto, String titulo, String texto, String icono) implements CustomPacketPayload {
 		public static final Type<Payload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "aviso"));
 		public static final StreamCodec<RegistryFriendlyByteBuf, Payload> CODEC = StreamCodec.composite(
-				ByteBufCodecs.INT, Payload::color, ByteBufCodecs.STRING_UTF8, Payload::titulo, ByteBufCodecs.STRING_UTF8, Payload::texto,
-				Payload::new);
+				ByteBufCodecs.INT, Payload::color, ByteBufCodecs.INT, Payload::colorTexto, ByteBufCodecs.STRING_UTF8, Payload::titulo,
+				ByteBufCodecs.STRING_UTF8, Payload::texto, ByteBufCodecs.STRING_UTF8, Payload::icono, Payload::new);
 
 		@Override
 		public Type<? extends CustomPacketPayload> type() {
@@ -63,12 +66,14 @@ public final class Aviso {
 
 	public static final class Datos extends SavedData {
 		public static final SavedData.Factory<Datos> FACTORY = new SavedData.Factory<>(Datos::new, Datos::leer, null);
-		int color;
-		String titulo = "", texto = "";
+		int color, colorTexto;
+		String titulo = "", texto = "", icono = "";
 
 		private static Datos leer(CompoundTag tag, HolderLookup.Provider registros) {
 			Datos d = new Datos();
 			d.color = tag.getInt("color");
+			d.colorTexto = tag.contains("color_texto") ? tag.getInt("color_texto") : d.color;
+			d.icono = tag.getString("icono");
 			d.titulo = tag.getString("titulo");
 			d.texto = tag.getString("texto");
 			return d;
@@ -77,13 +82,15 @@ public final class Aviso {
 		@Override
 		public CompoundTag save(CompoundTag tag, HolderLookup.Provider registros) {
 			tag.putInt("color", color);
+			tag.putInt("color_texto", colorTexto);
+			tag.putString("icono", icono);
 			tag.putString("titulo", titulo);
 			tag.putString("texto", texto);
 			return tag;
 		}
 
 		Payload payload() {
-			return new Payload(color, titulo, texto);
+			return new Payload(color, colorTexto, titulo, texto, icono);
 		}
 	}
 
@@ -97,6 +104,18 @@ public final class Aviso {
 			Datos d = datos(server);
 			if (!d.texto.isEmpty()) ServerPlayNetworking.send(handler.player, d.payload());
 		});
+	}
+
+	/** Pone un aviso desde el código (por ejemplo, el de /dificultadcambio). */
+	public static void mostrar(MinecraftServer server, int color, int colorTexto, String titulo, String texto, String icono) {
+		Datos d = datos(server);
+		d.color = color;
+		d.colorTexto = colorTexto;
+		d.titulo = titulo;
+		d.texto = texto;
+		d.icono = icono;
+		d.setDirty();
+		enviarATodos(server, d.payload());
 	}
 
 	private static void enviarATodos(MinecraftServer server, Payload p) {
@@ -136,6 +155,8 @@ public final class Aviso {
 							int barra = todo.indexOf('|');
 							Datos d = datos(c.getSource().getServer());
 							d.color = color;
+							d.colorTexto = color;
+							d.icono = "";
 							d.titulo = barra >= 0 ? todo.substring(0, barra).trim() : "";
 							d.texto = (barra >= 0 ? todo.substring(barra + 1) : todo).trim();
 							d.setDirty();

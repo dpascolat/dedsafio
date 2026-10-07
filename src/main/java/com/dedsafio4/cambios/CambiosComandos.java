@@ -24,8 +24,8 @@ public final class CambiosComandos {
 
 	private static final ResourceLocation FUENTE_ICONOS = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "iconos");
 	private static final String ICONO_CAMBIO = String.valueOf((char) 0xE001);
-	private static final int COLOR_TITULO = 0xFFA526;
-	private static final int COLOR_TEXTO = 0xFFD89A;
+	public static final int COLOR_TITULO = 0xFFA526;
+	public static final int COLOR_TEXTO = 0xFFD89A;
 
 	public static void registrar(CommandDispatcher<CommandSourceStack> dispatcher) {
 		LiteralArgumentBuilder<CommandSourceStack> raiz = Commands.literal("cambio").requires(s -> s.hasPermission(2))
@@ -60,13 +60,20 @@ public final class CambiosComandos {
 	}
 
 	private static int activar(CommandContext<CommandSourceStack> ctx, Cambios.Cambio cambio, int nivel) {
-		Cambios.data(ctx.getSource().getServer()).setNivel(cambio.id(), nivel);
-		CambiosEventos.alActivar(ctx.getSource().getServer(), cambio.id(), nivel);
 		if (nivel == 0) {
+			activar(ctx.getSource().getServer(), cambio, 0);
 			ctx.getSource().sendSuccess(() -> Component.literal("Cambio " + cambio.comando() + " desactivado"), true);
 			return 1;
 		}
+		activar(ctx.getSource().getServer(), cambio, nivel);
+		return 1;
+	}
 
+	/** Activa el cambio y lo anuncia en el chat. Devuelve el texto del anuncio. */
+	public static String activar(net.minecraft.server.MinecraftServer server, Cambios.Cambio cambio, int nivel) {
+		Cambios.data(server).setNivel(cambio.id(), nivel);
+		CambiosEventos.alActivar(server, cambio.id(), nivel);
+		if (nivel == 0) return "";
 		String anuncio = cambio.anuncios().getOrDefault(nivel, "Se activó " + cambio.comando() + " " + nivel + ".");
 		Component mensaje = Component.empty()
 				.append(Component.literal(ICONO_CAMBIO).withStyle(Style.EMPTY.withFont(FUENTE_ICONOS)))
@@ -74,7 +81,7 @@ public final class CambiosComandos {
 						.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(COLOR_TITULO)).withBold(true)))
 				.append(Component.literal("\n" + anuncio)
 						.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(COLOR_TEXTO))));
-		ctx.getSource().getServer().getPlayerList().broadcastSystemMessage(mensaje, false);
-		return 1;
+		server.getPlayerList().broadcastSystemMessage(mensaje, false);
+		return anuncio;
 	}
 }

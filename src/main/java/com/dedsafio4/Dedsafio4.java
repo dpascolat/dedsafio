@@ -63,6 +63,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.disfraz.Disfraces.registrar();
 		com.dedsafio4.bestias.AnuncioMob.registrar();
 		com.dedsafio4.aviso.Aviso.registrar();
+		com.dedsafio4.cambios.DificultadCambio.registrar();
 		com.dedsafio4.nave.PartesNave.registrar();
 		com.dedsafio4.baneos.Baneos.registrar();
 		com.dedsafio4.dactylos.ModDactylos.registrar();
@@ -145,6 +146,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.disfraz.Disfraces.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.AnuncioMob.registrarComandos(dispatcher);
 			com.dedsafio4.aviso.Aviso.registrarComandos(dispatcher);
+			com.dedsafio4.cambios.DificultadCambio.registrarComandos(dispatcher);
 			com.dedsafio4.catalogo.Catalogo.registrarComandos(dispatcher);
 			com.dedsafio4.ruleta.Ruleta.registrarComandos(dispatcher);
 			com.dedsafio4.bulag.Bulag.registrarComandos(dispatcher);
