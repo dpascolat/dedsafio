@@ -18,8 +18,8 @@ import org.lwjgl.glfw.GLFW;
 import java.util.List;
 
 /**
- * El cartel de /aviso arriba a la izquierda: fondo oscuro, el título en grande con su ícono, el texto en el color
- * del aviso y abajo "[Presiona O] para ocultar aviso". Se dibuja siempre del mismo tamaño (como con escala de
+ * El cartel de /aviso pegado arriba a la izquierda: fondo oscuro y transparente, el título en grande con el ícono ◐,
+ * el texto en el color del aviso y abajo, en una franja, "[Presiona O] para ocultar aviso". Se dibuja siempre del mismo tamaño (como con escala de
  * interfaz 2), sea cual sea la escala que tenga cada uno.
  */
 public final class AvisoCliente {
@@ -42,10 +42,6 @@ public final class AvisoCliente {
 		HudRenderCallback.EVENT.register((g, contador) -> dibujar(g));
 	}
 
-	private static int oscurecer(int rgb, float f) {
-		return ((int) ((rgb >> 16 & 255) * f) << 16) | ((int) ((rgb >> 8 & 255) * f) << 8) | (int) ((rgb & 255) * f);
-	}
-
 	private static void dibujar(GuiGraphics g) {
 		if (actual == null || oculto) return;
 		Minecraft mc = Minecraft.getInstance();
@@ -54,36 +50,41 @@ public final class AvisoCliente {
 		// Siempre como con escala de interfaz 2.
 		float escala = 2f / (float) mc.getWindow().getGuiScale();
 		int anchoPantalla = (int) (g.guiWidth() / escala);
-		int ancho = Math.min(370, anchoPantalla - 12);
+		int ancho = Math.min(370, anchoPantalla - 4);
 		int color = 0xFF000000 | actual.color();
-		List<FormattedCharSequence> renglones = font.split(Component.literal(actual.texto()), ancho - 16);
+		List<FormattedCharSequence> renglones = font.split(Component.literal(actual.texto()), ancho - 12);
 		boolean hayTitulo = !actual.titulo().isEmpty();
-		int alto = 10 + (hayTitulo ? 24 : 0) + renglones.size() * 10 + 8;
+		// Como en el diseño: título grande, el texto, y abajo un buen espacio vacío antes del pie.
+		int alto = 8 + (hayTitulo ? 26 : 0) + renglones.size() * 10 + 26;
 
 		g.pose().pushPose();
 		g.pose().scale(escala, escala, 1);
-		int x = 6, y = 6;
-		g.fillGradient(x, y, x + ancho, y + alto, 0xE0281410, 0xD0401C14);
-		g.fill(x, y, x + ancho, y + 1, 0x80000000 | actual.color());
-		int ty = y + 8;
+		int x = 0, y = 0;
+		// Fondo oscuro y transparente (se ve un poco lo de atrás).
+		g.fillGradient(x, y, x + ancho, y + alto, 0x9A140A06, 0x8C1E0E08);
+		int ty = y + 7;
 		if (hayTitulo) {
-			// El título en grande (x1,5), con un circulito del color adelante.
 			g.pose().pushPose();
-			g.pose().translate(x + 8, ty, 0);
+			g.pose().translate(x + 5, ty, 0);
 			g.pose().scale(1.5f, 1.5f, 1);
-			Component titulo = Component.literal("● ").withColor(oscurecer(actual.color(), 0.8f))
+			Component titulo = Component.literal("◐ ").withColor(actual.color())
 					.append(Component.literal(actual.titulo()).withStyle(Style.EMPTY.withBold(true).withColor(actual.color())));
 			g.drawString(font, titulo, 0, 0, color, true);
 			g.pose().popPose();
-			ty += 22;
+			ty += 24;
 		}
 		for (FormattedCharSequence r : renglones) {
-			g.drawString(font, r, x + 8, ty, color, true);
+			g.drawString(font, r, x + 6, ty, color, true);
 			ty += 10;
 		}
-		// Abajo, afuera del cartel.
-		g.fill(x, y + alto, x + ancho, y + alto + 18, 0x90201010);
-		g.drawString(font, "[Presiona O] para ocultar aviso", x + 8, y + alto + 5, 0xFFD8D8D8, true);
+		// El pie, pegado abajo del cartel, con la letra más grande.
+		int pie = y + alto;
+		g.fill(x, pie, x + ancho, pie + 22, 0x5A000000);
+		g.pose().pushPose();
+		g.pose().translate(x + 6, pie + 6, 0);
+		g.pose().scale(1.3f, 1.3f, 1);
+		g.drawString(font, "[Presiona O] para ocultar aviso", 0, 0, 0xFFC8B8AC, true);
+		g.pose().popPose();
 		g.pose().popPose();
 	}
 }
