@@ -18,7 +18,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.List;
 
 /**
- * El cartel de /aviso pegado arriba a la izquierda: fondo oscuro y transparente, el título en grande con el ícono ◐,
+ * El cartel de /aviso pegado arriba a la izquierda: fondo como el del chat, el título en grande con el ícono ◐,
  * el texto en el color del aviso y abajo, sin fondo, "[Presiona O] para ocultar aviso". Se dibuja siempre del mismo tamaño (como con escala de
  * interfaz 2), sea cual sea la escala que tenga cada uno.
  */
@@ -60,8 +60,9 @@ public final class AvisoCliente {
 		g.pose().pushPose();
 		g.pose().scale(escala, escala, 1);
 		int x = 0, y = 0;
-		// Fondo oscuro y transparente (se ve un poco lo de atrás).
-		g.fillGradient(x, y, x + ancho, y + alto, 0x9A140A06, 0x8C1E0E08);
+		// El mismo fondo que el chat (negro, con la transparencia que tenga cada uno en Opciones).
+		int alfa = (int) (mc.options.textBackgroundOpacity().get() * 255);
+		g.fill(x, y, x + ancho, y + alto, alfa << 24);
 		int ty = y + 7;
 		if (hayTitulo) {
 			g.pose().pushPose();
