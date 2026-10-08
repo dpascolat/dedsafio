@@ -34,7 +34,7 @@ public final class ModCajero {
 
 	public static final Block CAJERO = Registry.register(BuiltInRegistries.BLOCK, id("cajero"),
 			new CajeroBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3f, 1200f)
-					.sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(estado -> 6)));
+					.sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion().lightLevel(estado -> 6)));
 	public static final Item CAJERO_ITEM = Registry.register(BuiltInRegistries.ITEM, id("cajero"),
 			new BlockItem(CAJERO, new Item.Properties()));
 

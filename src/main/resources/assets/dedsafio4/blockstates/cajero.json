@@ -1,19 +1,31 @@
 {
 	"variants": {
-		"facing=north": {
-			"model": "dedsafio4:block/cajero"
-		},
-		"facing=east": {
-			"model": "dedsafio4:block/cajero",
-			"y": 90
-		},
-		"facing=south": {
+		"facing=north,half=lower": {
 			"model": "dedsafio4:block/cajero",
 			"y": 180
 		},
-		"facing=west": {
+		"facing=north,half=upper": {
+			"model": "dedsafio4:block/cajero_arriba"
+		},
+		"facing=east,half=lower": {
 			"model": "dedsafio4:block/cajero",
 			"y": 270
+		},
+		"facing=east,half=upper": {
+			"model": "dedsafio4:block/cajero_arriba"
+		},
+		"facing=south,half=lower": {
+			"model": "dedsafio4:block/cajero"
+		},
+		"facing=south,half=upper": {
+			"model": "dedsafio4:block/cajero_arriba"
+		},
+		"facing=west,half=lower": {
+			"model": "dedsafio4:block/cajero",
+			"y": 90
+		},
+		"facing=west,half=upper": {
+			"model": "dedsafio4:block/cajero_arriba"
 		}
 	}
 }
