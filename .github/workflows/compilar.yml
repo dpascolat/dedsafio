@@ -60,6 +60,9 @@ jobs:
           else
             git commit -m "Actualizar dedsafio4.jar (compilado automáticamente)"
             # Si otra compilación subió un jar mientras tanto, gana el de ésta (que es la más nueva).
-            git pull --rebase --autostash -X theirs origin main
-            git push origin HEAD:main
+            # Si otra compilación sube al mismo tiempo, se reintenta.
+            for intento in 1 2 3 4 5; do
+              git pull --rebase --autostash -X theirs origin main && git push origin HEAD:main && break
+              sleep $((intento * 5))
+            done
           fi

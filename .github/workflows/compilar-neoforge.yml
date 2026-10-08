@@ -55,6 +55,9 @@ jobs:
             echo "No cambió nada."
           else
             git commit -m "Actualizar dedsafio4-neoforge.jar (compilado automáticamente)"
-            git pull --rebase --autostash -X theirs origin main
-            git push origin HEAD:main
+            # Si otra compilación sube al mismo tiempo, se reintenta.
+            for intento in 1 2 3 4 5; do
+              git pull --rebase --autostash -X theirs origin main && git push origin HEAD:main && break
+              sleep $((intento * 5))
+            done
           fi
