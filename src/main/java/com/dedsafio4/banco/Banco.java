@@ -25,6 +25,14 @@ public final class Banco {
 		setSaldo(jugador, saldo(jugador) + cantidad);
 	}
 
+	/** Suma deditas a cualquier jugador, aunque no esté conectado (si está, se le actualiza el saldo en pantalla). */
+	public static void sumar(MinecraftServer server, java.util.UUID jugador, long cantidad) {
+		BancoData d = data(server);
+		d.setSaldo(jugador, d.saldo(jugador) + cantidad);
+		ServerPlayer conectado = server.getPlayerList().getPlayer(jugador);
+		if (conectado != null) sincronizar(conectado);
+	}
+
 	/** Descuenta si alcanza el saldo. Devuelve false si no tiene suficientes deditas. */
 	public static boolean cobrar(ServerPlayer jugador, long cantidad) {
 		long actual = saldo(jugador);

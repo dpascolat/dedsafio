@@ -128,6 +128,7 @@ public class Dedsafio4 implements ModInitializer {
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			BancoComandos.registrar(dispatcher);
+			com.dedsafio4.subastas.Subastas.registrar(dispatcher);
 			BloqueoMinimapa.registrarComando(dispatcher);
 			CambiosComandos.registrar(dispatcher);
 			Hermandades.registrarComandos(dispatcher);
