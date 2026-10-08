@@ -114,6 +114,9 @@ public class Dedsafio4Client implements ClientModInitializer {
 				Minecraft.getInstance().setScreen(new com.dedsafio4.client.cajero.CajeroScreen(pos));
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.banco.ModCajero.MENU,
 				com.dedsafio4.client.cajero.CajeroIngresarScreen::new);
+		// La Vitrina del /ah: el ítem a la venta girando.
+		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+				com.dedsafio4.subastas.ModVitrina.ENTIDAD, com.dedsafio4.client.subastas.VitrinaRenderer::new);
 		// La Bóveda de la Hermandad: la puerta animada y su pantalla.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.boveda.ModBoveda.ENTIDAD, com.dedsafio4.client.boveda.BovedaRenderer::new);

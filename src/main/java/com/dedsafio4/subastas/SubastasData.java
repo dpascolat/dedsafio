@@ -20,6 +20,13 @@ public class SubastasData extends SavedData {
 
 	/** De la más nueva a la más vieja. */
 	private final List<Venta> ventas = new ArrayList<>();
+	/** El número que le toca a la próxima Vitrina que se pone. */
+	private int siguienteVitrina;
+
+	public int nuevoNumeroDeVitrina() {
+		setDirty();
+		return siguienteVitrina++;
+	}
 
 	public List<Venta> ventas() {
 		return ventas;
@@ -47,6 +54,7 @@ public class SubastasData extends SavedData {
 
 	private static SubastasData cargar(CompoundTag tag, HolderLookup.Provider registros) {
 		SubastasData data = new SubastasData();
+		data.siguienteVitrina = tag.getInt("siguienteVitrina");
 		for (Tag t : tag.getList("ventas", Tag.TAG_COMPOUND)) {
 			CompoundTag v = (CompoundTag) t;
 			ItemStack item = ItemStack.parse(registros, v.getCompound("item")).orElse(ItemStack.EMPTY);
@@ -70,6 +78,7 @@ public class SubastasData extends SavedData {
 			lista.add(t);
 		}
 		tag.put("ventas", lista);
+		tag.putInt("siguienteVitrina", siguienteVitrina);
 		return tag;
 	}
 }
