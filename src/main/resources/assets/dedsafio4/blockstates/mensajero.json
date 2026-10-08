@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=west": {
+			"model": "dedsafio4:block/mensajero"
+		},
+		"facing=north": {
+			"model": "dedsafio4:block/mensajero",
+			"y": 90
+		},
+		"facing=east": {
+			"model": "dedsafio4:block/mensajero",
+			"y": 180
+		},
+		"facing=south": {
+			"model": "dedsafio4:block/mensajero",
+			"y": 270
+		}
+	}
+}

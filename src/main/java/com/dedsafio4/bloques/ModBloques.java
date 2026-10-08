@@ -198,6 +198,11 @@ public final class ModBloques {
 	public static final Item BLOQUE_DIENTES_ITEM = Registry.register(BuiltInRegistries.ITEM,
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "bloque_dientes"),
 			new com.dedsafio4.items.BloqueDescritoItem(BLOQUE_DIENTES, new Item.Properties(), com.dedsafio4.items.DescritoItem::dentaduraGlebanoide));
+	/** Mensajero: el modelo de Patricio; sólo se pone en una pared. */
+	public static final Block MENSAJERO = registrar("mensajero", new MensajeroBlock(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.METAL).strength(1.5f, 6f).sound(SoundType.METAL).noOcclusion()
+			.pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
+	public static final Item MENSAJERO_ITEM = registrarItem("mensajero", MENSAJERO);
 
 	// Los árboles de la Dimensión de los Órganos: gelatina que tiembla (la textura se mueve). Se pican con pico.
 	public static final Block GELATINA_ROJA = registrar("gelatina_roja", bloqueDeGelatina(MapColor.COLOR_RED));

@@ -66,6 +66,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// El montoncito de la CACA necesita transparencia.
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.CACA, RenderType.cutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(com.dedsafio4.banco.ModCajero.CAJERO, RenderType.cutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.MENSAJERO, RenderType.cutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.PASTO_ROSA, RenderType.cutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.ARANDANO_NOCTURNO, RenderType.cutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.FRUTA_SOLARIA, RenderType.cutout());
