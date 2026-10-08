@@ -34,9 +34,19 @@ import java.util.function.Consumer;
 public class CajeroBlock extends HorizontalDirectionalBlock {
 	public static final MapCodec<CajeroBlock> CODEC = simpleCodec(CajeroBlock::new);
 	public static final EnumProperty<DoubleBlockHalf> MITAD = BlockStateProperties.DOUBLE_BLOCK_HALF;
-	/** El cajero ocupa de 2 a 14 de ancho y de 2,5 a 13,5 de fondo (igual en cualquier dirección); arriba llega a 31. */
-	private static final VoxelShape FORMA_ABAJO = Block.box(2, 0, 2.5, 14, 16, 13.5);
-	private static final VoxelShape FORMA_ARRIBA = Block.box(2, 0, 2.5, 14, 15, 13.5);
+	/**
+	 * El cajero ocupa de 2 a 14 de ancho y está corrido 3 píxeles hacia atrás (de 0 a 10,5 de fondo, con el frente
+	 * mirando a FACING); arriba llega a 31. Una forma por dirección.
+	 */
+	private static final java.util.Map<Direction, VoxelShape> FORMA_ABAJO = formas(16), FORMA_ARRIBA = formas(15);
+
+	private static java.util.Map<Direction, VoxelShape> formas(double alto) {
+		return java.util.Map.of(
+				Direction.SOUTH, Block.box(2, 0, 0, 14, alto, 10.5),
+				Direction.NORTH, Block.box(2, 0, 5.5, 14, alto, 16),
+				Direction.EAST, Block.box(0, 0, 2, 10.5, alto, 14),
+				Direction.WEST, Block.box(5.5, 0, 2, 16, alto, 14));
+	}
 
 	/** Abre la pantalla del Cajero (la pone el cliente al iniciar). */
 	public static Consumer<BlockPos> abrirPantalla = pos -> {};
@@ -72,7 +82,7 @@ public class CajeroBlock extends HorizontalDirectionalBlock {
 
 	@Override
 	protected VoxelShape getShape(BlockState estado, BlockGetter level, BlockPos pos, CollisionContext contexto) {
-		return estado.getValue(MITAD) == DoubleBlockHalf.LOWER ? FORMA_ABAJO : FORMA_ARRIBA;
+		return (estado.getValue(MITAD) == DoubleBlockHalf.LOWER ? FORMA_ABAJO : FORMA_ARRIBA).get(estado.getValue(FACING));
 	}
 
 	/** Si falta la otra mitad, ésta también se va. */

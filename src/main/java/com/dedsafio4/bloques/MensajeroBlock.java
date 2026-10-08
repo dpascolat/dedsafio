@@ -22,10 +22,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class MensajeroBlock extends HorizontalDirectionalBlock {
 	public static final MapCodec<MensajeroBlock> CODEC = simpleCodec(MensajeroBlock::new);
-	private static final VoxelShape OESTE = Block.box(6, 0, 1, 16, 16, 15);
-	private static final VoxelShape NORTE = Block.box(1, 0, 6, 15, 16, 16);
-	private static final VoxelShape ESTE = Block.box(0, 0, 1, 10, 16, 15);
-	private static final VoxelShape SUR = Block.box(1, 0, 0, 15, 16, 10);
+	private static final VoxelShape OESTE = Block.box(8, 0, 1, 16, 16, 15);
+	private static final VoxelShape NORTE = Block.box(1, 0, 8, 15, 16, 16);
+	private static final VoxelShape ESTE = Block.box(0, 0, 1, 8, 16, 15);
+	private static final VoxelShape SUR = Block.box(1, 0, 0, 15, 16, 8);
 
 	public MensajeroBlock(Properties propiedades) {
 		super(propiedades);
