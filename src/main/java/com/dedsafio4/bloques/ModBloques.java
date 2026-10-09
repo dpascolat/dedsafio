@@ -205,8 +205,8 @@ public final class ModBloques {
 	public static final Item MENSAJERO_ITEM = registrarItem("mensajero", MENSAJERO);
 	/** Entrega de Misiones: invisible; con la Dedita de la Misión, Eón te manda el premio al Buzón. */
 	public static final Block ENTREGA_MISION = registrar("entrega_mision", new EntregaMisionBlock(BlockBehaviour.Properties.of()
-			.strength(-1f, 3_600_000f).noLootTable().noOcclusion().noCollission()
-			.pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
+			.strength(-1f, 3_600_000f).noLootTable().noOcclusion().isSuffocating((e, l, p) -> false)
+			.isViewBlocking((e, l, p) -> false).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
 	public static final Item ENTREGA_MISION_ITEM = registrarItem("entrega_mision", ENTREGA_MISION);
 
 	// Los árboles de la Dimensión de los Órganos: gelatina que tiembla (la textura se mueve). Se pican con pico.

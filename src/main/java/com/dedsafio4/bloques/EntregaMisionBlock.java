@@ -22,7 +22,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import java.util.List;
 
 /**
- * Entrega de Misiones: un bloque invisible (como la barrera, se pone y se saca en creativo). Al tocarlo con la
+ * Entrega de Misiones: un bloque invisible pero sólido (como la barrera: se choca con él, no hace sombra en el piso y
+ * se pone y se saca en creativo). Al tocarlo con la
  * Dedita de la Misión en la mano, se la queda y Eón te manda un mensaje al Buzón ("Misión diaria") con el premio
  * que se eligió para esa Misión Principal en el editor de Misiones.
  */
@@ -37,6 +38,18 @@ public class EntregaMisionBlock extends Block {
 	@Override
 	protected RenderShape getRenderShape(BlockState estado) {
 		return RenderShape.INVISIBLE;
+	}
+
+	/** Deja pasar la luz del cielo (si no, el piso de abajo queda oscuro). */
+	@Override
+	protected boolean propagatesSkylightDown(BlockState estado, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+		return true;
+	}
+
+	/** Sin la sombrita en los bloques de al lado. */
+	@Override
+	protected float getShadeBrightness(BlockState estado, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+		return 1f;
 	}
 
 	@Override
