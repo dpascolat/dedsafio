@@ -1,7 +1,9 @@
 package com.dedsafio4.client;
 
 import com.dedsafio4.Dedsafio4;
+import com.dedsafio4.catalogo.Catalogo;
 import com.dedsafio4.catalogo.Misiones;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,19 +16,20 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
  * Las Misiones dentro del Catálogo (la pestaña del pergamino), como la imagen: a la izquierda la lista de
- * tarjetas (punto, pin, ícono, "Misión Guía | + N", la descripción cortada y la barra de progreso); a la
- * derecha la misión elegida en grande. Las completadas se ven verdes con "¡Misión completada!". La casita
- * de abajo vuelve al Catálogo.
+ * tarjetas (punto, pin, ícono, el título, la descripción cortada y la barra de progreso); a la derecha la misión
+ * elegida en grande. Las completadas se ven verdes con "¡Misión completada!". La casita de abajo vuelve al
+ * Catálogo. Los editores además ven botones para crear, cambiar, mover y borrar misiones.
  */
 public final class MisionesVista {
 	private static final ResourceLocation DEDITA = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/dedita.png");
-	private static final int TEAL = 0xFF5ADCC8, VERDE_TEXTO = 0xFF7CFC6A, ALTO_TARJETA = 38;
+	private static final int TEAL = 0xFF5ADCC8, AMARILLO = 0xFFFFFF55, VERDE_TEXTO = 0xFF7CFC6A, ALTO_TARJETA = 38;
 
 	private int elegida, desplazamiento;
 	/** Cuánto está agrandado el lienzo del Catálogo y dónde empieza (para el recorte de la lista). */
@@ -37,10 +40,19 @@ public final class MisionesVista {
 		this.offX = offX;
 		this.offY = offY;
 	}
-	private final Set<Integer> fijadas = new HashSet<>();
+	private final Set<String> fijadas = new HashSet<>();
 	private int x0, y0, ancho, alto, xLista, anchoLista, yLista, altoLista, xCasa, yCasa;
 
-	private boolean completa(int i) {
+	/** Un botón de editor: dónde está y qué hace. */
+	private record Boton(int x, int y, int w, String texto, String accion) {
+		boolean encima(double mx, double my) {
+			return mx >= x && mx < x + w && my >= y && my < y + 12;
+		}
+	}
+
+	private final List<Boton> botones = new ArrayList<>();
+
+	private static boolean completa(int i) {
 		return Misiones.progresoCliente(i) >= Misiones.lista().get(i).cantidad();
 	}
 
@@ -54,27 +66,67 @@ public final class MisionesVista {
 		yCasa = y0 + alto - 34;
 	}
 
-	/** "📖 Misión Guía | + N" con el ícono de la dedita; devuelve dónde terminó. */
-	private static int titulo(GuiGraphics g, Font font, int x, int y, int deditas, float escala) {
+	/**
+	 * El título con su ícono: "📖 Misión Guía | + N 🪙" (verde agua) o "★ Misión Principal - Día N" (amarillo).
+	 * anchoMax: si no entra, sigue en otro renglón (solo en grande). Devuelve el alto que ocupó.
+	 */
+	static int titulo(GuiGraphics g, Font font, Misiones.Mision m, int x, int y, float escala, int anchoMax) {
 		g.pose().pushPose();
 		g.pose().translate(x, y, 0);
 		g.pose().scale(escala, escala, 1);
-		g.pose().pushPose();
-		g.pose().scale(0.55f, 0.55f, 1);
-		g.renderItem(new ItemStack(Items.BOOK), 0, 0);
+		int alto;
+		if (m.principal()) {
+			List<FormattedCharSequence> lineas = anchoMax > 0
+					? font.split(Component.literal("★ " + m.titulo()), (int) (anchoMax / escala))
+					: List.of(Component.literal("★ " + m.titulo()).getVisualOrderText());
+			int ly = 1;
+			for (FormattedCharSequence l : lineas) {
+				int lx = anchoMax > 0 ? ((int) (anchoMax / escala) - font.width(l)) / 2 : 0;
+				g.drawString(font, l, lx, ly, AMARILLO, false);
+				ly += 10;
+			}
+			alto = (int) (ly * escala);
+		} else {
+			String texto = m.titulo();
+			int anchoTodo = 12 + font.width(texto) + 3 + 9;
+			int lx = anchoMax > 0 ? Math.max(0, ((int) (anchoMax / escala) - anchoTodo) / 2) : 0;
+			g.pose().pushPose();
+			g.pose().translate(lx, 0, 0);
+			g.pose().scale(0.55f, 0.55f, 1);
+			g.renderItem(new ItemStack(Items.BOOK), 0, 0);
+			g.pose().popPose();
+			g.drawString(font, texto, lx + 12, 1, TEAL, false);
+			g.blit(DEDITA, lx + 12 + font.width(texto) + 3, 0, 9, 9, 0, 0, 16, 16, 16, 16);
+			alto = (int) (11 * escala);
+		}
 		g.pose().popPose();
-		String texto = "Misión Guía | + " + deditas;
-		g.drawString(font, texto, 12, 1, TEAL, false);
-		int fin = 12 + font.width(texto) + 3;
-		g.blit(DEDITA, fin, 0, 9, 9, 0, 0, 16, 16, 16, 16);
-		g.pose().popPose();
-		return x + (int) ((fin + 9) * escala);
+		return alto;
 	}
 
 	private static void barra(GuiGraphics g, int x0, int y, int x1, float lleno, boolean completa) {
 		g.fill(x0, y, x1, y + 3, 0xFF2A2A2A);
 		int w = Math.round((x1 - x0) * Mth.clamp(lleno, 0, 1));
 		if (w > 0) g.fill(x0, y, x0 + w, y + 3, completa ? 0xFFB9C4B9 : 0xFFA8A8A8);
+	}
+
+	/** La misión en grande: el título arriba, el ítem grande, el texto y la barra con "0/8". */
+	static void detalle(GuiGraphics g, Font font, Misiones.Mision m, int prog, boolean hecha, int xd, int y, int wd) {
+		y += titulo(g, font, m, xd, y, 1.4f, wd) + 6;
+		g.pose().pushPose();
+		g.pose().translate(xd + wd / 2f - 24, y, 0);
+		g.pose().scale(3, 3, 1);
+		g.renderItem(new ItemStack(m.item()), 0, 0);
+		g.pose().popPose();
+		int yt = y + 56;
+		List<FormattedCharSequence> lineas = font.split(hecha ? Component.literal("¡Misión completada!").withColor(VERDE_TEXTO) : m.descripcion(), wd);
+		for (FormattedCharSequence l : lineas) {
+			g.drawString(font, l, xd, yt, 0xFFFFFFFF, true);
+			yt += 10;
+		}
+		yt += 8;
+		barra(g, xd, yt, xd + wd, prog / (float) m.cantidad(), hecha);
+		String cuenta = prog + "/" + m.cantidad();
+		g.drawString(font, cuenta, xd + (wd - font.width(cuenta)) / 2, yt + 7, 0xFFFFFFFF, true);
 	}
 
 	private static void tachuela(GuiGraphics g, int x, int y, int color) {
@@ -97,7 +149,7 @@ public final class MisionesVista {
 	public void dibujar(GuiGraphics g, Font font, int mx, int my, int x0, int y0, int ancho, int alto) {
 		medidas(x0, y0, ancho, alto);
 		List<Misiones.Mision> lista = Misiones.lista();
-		elegida = Mth.clamp(elegida, 0, lista.size() - 1);
+		elegida = Mth.clamp(elegida, 0, Math.max(0, lista.size() - 1));
 		// La lupa arriba a la izquierda.
 		g.renderItem(new ItemStack(Items.SPYGLASS), x0 + 16, y0 + 10);
 
@@ -123,36 +175,45 @@ public final class MisionesVista {
 		g.fill(bx, desde, bx + 2, desde + largo, 0xFFC9CDD4);
 
 		// La elegida, en grande.
-		Misiones.Mision m = lista.get(elegida);
 		int xd = x0 + ancho / 2 + 6, wd = ancho / 2 - 26;
-		float escala = 1.4f;
-		int anchoTitulo = (int) ((12 + font.width("Misión Guía | + " + m.deditas()) + 12) * escala);
-		titulo(g, font, xd + (wd - anchoTitulo) / 2, y0 + 20, m.deditas(), escala);
-		g.pose().pushPose();
-		g.pose().translate(xd + wd / 2f - 24, y0 + 40, 0);
-		g.pose().scale(3, 3, 1);
-		g.renderItem(new ItemStack(m.item()), 0, 0);
-		g.pose().popPose();
-		int yt = y0 + 100;
-		boolean hecha = completa(elegida);
-		List<FormattedCharSequence> lineas = font.split(hecha ? Component.literal("¡Misión completada!").withColor(VERDE_TEXTO) : m.descripcion(), wd);
-		for (FormattedCharSequence l : lineas) {
-			g.drawString(font, l, xd, yt, 0xFFFFFFFF, true);
-			yt += 10;
+		if (lista.isEmpty()) {
+			String t = "No hay misiones.";
+			g.drawString(font, t, xd + (wd - font.width(t)) / 2, y0 + 90, 0xFFA0A0A0, true);
+		} else {
+			detalle(g, font, lista.get(elegida), Misiones.progresoCliente(elegida), completa(elegida), xd, y0 + 20, wd);
 		}
-		yt += 8;
-		int prog = Misiones.progresoCliente(elegida);
-		barra(g, xd, yt, xd + wd, prog / (float) m.cantidad(), hecha);
-		String cuenta = prog + "/" + m.cantidad();
-		g.drawString(font, cuenta, xd + (wd - font.width(cuenta)) / 2, yt + 7, 0xFFFFFFFF, true);
 
 		casita(g, xCasa, yCasa);
+		dibujarBotones(g, font, mx, my, lista.isEmpty());
+	}
+
+	/** Para los editores: "+ Nueva" abajo de la lista y "Editar ▲ ▼ Borrar" abajo de la misión elegida. */
+	private void dibujarBotones(GuiGraphics g, Font font, int mx, int my, boolean vacia) {
+		botones.clear();
+		if (!Catalogo.PUEDE_EDITAR_CLIENTE) return;
+		int y = yCasa + 3;
+		botones.add(new Boton(xLista, y, font.width("+ Nueva misión") + 8, "+ Nueva misión", "nueva"));
+		if (!vacia) {
+			int x = x0 + ancho / 2 + 6;
+			for (String[] b : new String[][]{{"Editar", "editar"}, {"▲", "subir"}, {"▼", "bajar"}, {"Borrar", "borrar"}}) {
+				int w = font.width(b[0]) + 8;
+				botones.add(new Boton(x, y, w, b[0], b[1]));
+				x += w + 3;
+			}
+		}
+		for (Boton b : botones) {
+			boolean encima = b.encima(mx, my);
+			g.fill(b.x(), b.y(), b.x() + b.w(), b.y() + 12, encima ? 0xFFB8B8B8 : 0xFF6A6A6A);
+			g.fill(b.x() + 1, b.y() + 1, b.x() + b.w() - 1, b.y() + 11, b.accion().equals("borrar") ? 0xFF5A2020 : 0xFF2E2E2E);
+			g.drawString(font, b.texto(), b.x() + 4, b.y() + 2, 0xFFFFFFFF, false);
+		}
 	}
 
 	private List<Integer> orden() {
-		List<Integer> orden = new java.util.ArrayList<>();
-		for (int i = 0; i < Misiones.lista().size(); i++) if (fijadas.contains(i)) orden.add(i);
-		for (int i = 0; i < Misiones.lista().size(); i++) if (!fijadas.contains(i)) orden.add(i);
+		List<Misiones.Mision> lista = Misiones.lista();
+		List<Integer> orden = new ArrayList<>();
+		for (int i = 0; i < lista.size(); i++) if (fijadas.contains(lista.get(i).id())) orden.add(i);
+		for (int i = 0; i < lista.size(); i++) if (!fijadas.contains(lista.get(i).id())) orden.add(i);
 		return orden;
 	}
 
@@ -172,14 +233,14 @@ public final class MisionesVista {
 		g.fill(x + 4, y + 7, x + 9, y + 12, punto);
 		g.fill(x + 5, y + 6, x + 8, y + 13, punto);
 		g.fill(x + 3, y + 8, x + 10, y + 11, punto);
-		tachuela(g, x + 3, y + 24, fijadas.contains(i) ? 0xFFF0D060 : 0xFF151515);
+		tachuela(g, x + 3, y + 24, fijadas.contains(m.id()) ? 0xFFF0D060 : 0xFF151515);
 		// El ícono.
 		g.fill(x + 15, y + 5, x + 43, y + 33, 0xFF1A1C1F);
 		g.renderItem(new ItemStack(m.item()), x + 21, y + 11);
 		// Título, descripción y barra.
 		int tx = x + 47, tw = w - 47 - 5;
 		g.fill(tx, y + 4, tx + tw, y + 15, 0xF0101010);
-		titulo(g, font, tx + 2, y + 5, m.deditas(), 1f);
+		titulo(g, font, m, tx + 2, y + 5, 1f, 0);
 		Component texto = hecha ? Component.literal("¡Misión completada!").withColor(VERDE_TEXTO) : m.descripcion();
 		g.drawString(font, recortar(font, texto, tw - 2), tx + 1, y + 18, 0xFFFFFFFF, false);
 		int prog = Misiones.progresoCliente(i);
@@ -201,21 +262,61 @@ public final class MisionesVista {
 	/** true si tocó la casita (volver al Catálogo). */
 	public boolean click(double mx, double my) {
 		if (mx >= xCasa && mx < xCasa + 16 && my >= yCasa && my < yCasa + 16) return true;
+		for (Boton b : botones) {
+			if (!b.encima(mx, my)) continue;
+			sonido();
+			accion(b.accion());
+			return false;
+		}
 		List<Integer> orden = orden();
 		for (int k = 0; k < orden.size(); k++) {
 			int y = yLista + (k - desplazamiento) * (ALTO_TARJETA + 3);
 			if (my < Math.max(y, yLista) || my >= Math.min(y + ALTO_TARJETA, yLista + altoLista) || mx < xLista || mx >= xLista + anchoLista) continue;
 			int i = orden.get(k);
 			if (mx < xLista + 12 && my >= y + 20) {
-				if (!fijadas.remove(i)) fijadas.add(i);   // la chinche fija la misión arriba
+				String id = Misiones.lista().get(i).id();
+				if (!fijadas.remove(id)) fijadas.add(id);   // la chinche fija la misión arriba
 			} else {
 				elegida = i;
 			}
-			Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-					net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1f));
+			sonido();
 			return false;
 		}
 		return false;
+	}
+
+	private static void sonido() {
+		Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+				net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1f));
+	}
+
+	private void accion(String accion) {
+		Minecraft mc = Minecraft.getInstance();
+		List<Misiones.Mision> lista = Misiones.lista();
+		boolean hay = elegida >= 0 && elegida < lista.size();
+		switch (accion) {
+			case "nueva" -> mc.setScreen(new MisionEditorScreen(mc.screen, -1, null));
+			case "editar" -> {
+				if (hay) mc.setScreen(new MisionEditorScreen(mc.screen, elegida, lista.get(elegida)));
+			}
+			case "subir", "bajar" -> {
+				if (!hay) return;
+				ClientPlayNetworking.send(new Misiones.EditarPayload(accion, elegida, lista.get(elegida)));
+				elegida = Mth.clamp(elegida + (accion.equals("subir") ? -1 : 1), 0, lista.size() - 1);
+			}
+			case "borrar" -> {
+				if (!hay) return;
+				net.minecraft.client.gui.screens.Screen volver = mc.screen;
+				int i = elegida;
+				Misiones.Mision m = lista.get(i);
+				mc.setScreen(new net.minecraft.client.gui.screens.ConfirmScreen(si -> {
+					if (si) ClientPlayNetworking.send(new Misiones.EditarPayload("borrar", i, m));
+					mc.setScreen(volver);
+				}, Component.literal("¿Borrar esta misión?"), Component.literal(m.titulo()).append(" · ")
+						.append(Component.translatable(m.item().getDescriptionId()))));
+			}
+			default -> {}
+		}
 	}
 
 	public void scroll(double dy) {

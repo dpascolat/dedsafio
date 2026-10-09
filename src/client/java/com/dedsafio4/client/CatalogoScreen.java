@@ -149,7 +149,7 @@ public class CatalogoScreen extends Screen {
 	 * Los ítems cuyo nombre tiene lo escrito (primero los que empiezan así). paraEditar: también los ocultos,
 	 * y sin escribir nada salen todos.
 	 */
-	private static List<Item> filtrar(String texto, boolean paraEditar) {
+	static List<Item> filtrar(String texto, boolean paraEditar) {
 		String q = normalizar(texto.trim());
 		prepararNombres();
 		if (q.isEmpty()) return paraEditar ? todosLosItems : List.of();

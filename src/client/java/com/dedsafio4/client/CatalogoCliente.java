@@ -8,6 +8,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.List;
+
 /** La tecla G abre el Catálogo, y el servidor avisa qué ítems están ocultos. */
 public final class CatalogoCliente {
 	private CatalogoCliente() {}
@@ -26,6 +28,8 @@ public final class CatalogoCliente {
 			for (int i = 0; i < p.length; i++) p[i] = payload.progreso().get(i);
 			com.dedsafio4.catalogo.Misiones.PROGRESO_CLIENTE = p;
 		});
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.catalogo.Misiones.ListaPayload.TYPE, (payload, context) ->
+				com.dedsafio4.catalogo.Misiones.LISTA_CLIENTE = List.copyOf(payload.misiones()));
 		ClientPlayNetworking.registerGlobalReceiver(Catalogo.Payload.TYPE, (payload, context) -> {
 			Catalogo.OCULTOS_CLIENTE.clear();
 			Catalogo.OCULTOS_CLIENTE.addAll(payload.ocultos());

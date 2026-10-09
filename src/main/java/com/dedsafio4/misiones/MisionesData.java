@@ -27,6 +27,11 @@ public class MisionesData extends SavedData {
 		return nueva;
 	}
 
+	public boolean tiene(UUID jugador, String mision) {
+		Set<String> s = completadas.get(jugador);
+		return s != null && s.contains(mision);
+	}
+
 	private static MisionesData cargar(CompoundTag tag, HolderLookup.Provider registries) {
 		MisionesData data = new MisionesData();
 		CompoundTag jugadores = tag.getCompound("completadas");

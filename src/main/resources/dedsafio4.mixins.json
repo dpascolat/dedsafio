@@ -15,7 +15,6 @@
 		"ExplosionMixin",
 		"HopperBlockEntityMixin",
 		"EspadaRompeMixin",
-		"ItemStackMixin",
 		"LevelEntitiesMixin",
 		"LivingEntityMixin",
 		"MobAccessor",
