@@ -19,7 +19,8 @@ import java.util.Map;
  * El editor de una misión (para los editores del Catálogo). A la izquierda se elige: si es Misión Guía o Misión
  * Principal (y de qué día), el ítem a crear, cuántos, cuántas deditas da y el texto de abajo. Para pintar palabras:
  * se seleccionan en el texto y se toca un color (queda {morado:palabras}); "{item}" pone el nombre del ítem.
- * A la derecha se ve cómo va a quedar.
+ * La Misión Principal tiene además el Premio: lo que manda Eón al entregar la Dedita de la Misión (hasta 18 objetos;
+ * las deditas se ponen como monedas). A la derecha se ve cómo va a quedar.
  */
 public class MisionEditorScreen extends Screen {
 	private final Screen anterior;
@@ -30,8 +31,11 @@ public class MisionEditorScreen extends Screen {
 	private Item item;
 	private EditBox dia, buscarItem, cantidad, deditas, texto;
 	private List<Item> resultados = List.of();
-	private Button tipo;
-	private int xCampos, xVista, yResultados;
+	private Button tipo, manoPremio;
+	private int xCampos, xVista, yResultados, yPremio;
+	/** El premio de la Misión Principal. */
+	private final List<ItemStack> premio = new java.util.ArrayList<>();
+	private static final int COLUMNAS_PREMIO = 9;
 
 	public MisionEditorScreen(Screen anterior, int indice, Misiones.Mision mision) {
 		super(Component.literal(mision == null ? "Nueva misión" : "Editar misión"));
@@ -40,6 +44,7 @@ public class MisionEditorScreen extends Screen {
 		this.original = mision;
 		principal = mision != null && mision.principal();
 		item = mision == null ? Items.DIAMOND : mision.item();
+		if (mision != null) for (ItemStack o : mision.premio()) premio.add(o.copy());
 	}
 
 	private static int numero(EditBox b, int siNo) {
@@ -109,7 +114,14 @@ public class MisionEditorScreen extends Screen {
 			texto.insertText("{item}");
 			setFocused(texto);
 		}).bounds(x + 4, y, 44, 16).build());
-		y += 32;
+		y += 34;
+		// El premio (solo Misión Principal): dos filas de casillas y "+ Mano" para agregar lo que tienes en la mano.
+		yPremio = y;
+		manoPremio = addRenderableWidget(Button.builder(Component.literal("+ Mano"), b -> {
+			ItemStack mano = minecraft.player.getMainHandItem();
+			if (!mano.isEmpty() && premio.size() < Misiones.MAX_PREMIO) premio.add(mano.copy());
+		}).bounds(xCampos + COLUMNAS_PREMIO * 19 + 4, y, 50, 18).build());
+		y += 54;
 		addRenderableWidget(Button.builder(Component.literal("Guardar"), b -> guardar()).bounds(xCampos, y, 80, 20).build());
 		addRenderableWidget(Button.builder(Component.literal("Cancelar"), b -> onClose()).bounds(xCampos + 86, y, 80, 20).build());
 		actualizarTipo();
@@ -119,6 +131,16 @@ public class MisionEditorScreen extends Screen {
 	private void actualizarTipo() {
 		tipo.setMessage(Component.literal(principal ? "★ Misión Principal" : "Misión Guía").withColor(principal ? 0xFFFF55 : 0x5ADCC8));
 		dia.visible = principal;
+		deditas.visible = !principal;
+		manoPremio.visible = principal;
+	}
+
+	/** Suma (o resta, si es negativo) a una casilla del premio; si llega a 0, la saca. */
+	private void cambiarPremio(int i, int cuanto) {
+		ItemStack o = premio.get(i);
+		int n = Math.min(o.getMaxStackSize(), o.getCount() + cuanto);
+		if (n <= 0) premio.remove(i);
+		else o.setCount(n);
 	}
 
 	private void buscar() {
@@ -137,7 +159,7 @@ public class MisionEditorScreen extends Screen {
 	private Misiones.Mision armar() {
 		return new Misiones.Mision(original == null ? "" : original.id(), principal, Math.max(0, numero(dia, 1)),
 				BuiltInRegistries.ITEM.getKey(item).toString(), Math.max(1, numero(cantidad, 1)), Math.max(0, numero(deditas, 0)),
-				texto.getValue());
+				texto.getValue(), List.copyOf(premio));
 	}
 
 	private void guardar() {
@@ -155,7 +177,22 @@ public class MisionEditorScreen extends Screen {
 		for (int i = 0; i < resultados.size(); i++) {
 			int x = xCampos + i * 19;
 			if (mx >= x && mx < x + 18 && my >= yResultados && my < yResultados + 18) {
-				item = resultados.get(i);
+				if (boton == 1 && principal) {
+					// Clic derecho: va al premio (si ya está al final, suma uno).
+					Item r = resultados.get(i);
+					if (!premio.isEmpty() && premio.get(premio.size() - 1).is(r)) cambiarPremio(premio.size() - 1, 1);
+					else if (premio.size() < Misiones.MAX_PREMIO) premio.add(new ItemStack(r));
+				} else {
+					item = resultados.get(i);
+				}
+				return true;
+			}
+		}
+		if (principal) {
+			for (int i = 0; i < premio.size(); i++) {
+				int x = xCampos + (i % COLUMNAS_PREMIO) * 19, y = yPremio + (i / COLUMNAS_PREMIO) * 19;
+				if (mx < x || mx >= x + 18 || my < y || my >= y + 18) continue;
+				cambiarPremio(i, boton == 1 ? -1 : hasShiftDown() ? 10 : 1);
 				return true;
 			}
 		}
@@ -171,10 +208,29 @@ public class MisionEditorScreen extends Screen {
 		if (principal) g.drawString(font, "Día", izq, dia.getY() + 4, 0xFFC0C0C0);
 		g.drawString(font, "Ítem", izq, buscarItem.getY() + 4, 0xFFC0C0C0);
 		g.drawString(font, "Cantidad", izq, cantidad.getY() + 4, 0xFFC0C0C0);
-		g.drawString(font, "Deditas", cantidad.getX() + 66, deditas.getY() + 4, 0xFFC0C0C0);
+		if (!principal) g.drawString(font, "Deditas", cantidad.getX() + 66, deditas.getY() + 4, 0xFFC0C0C0);
 		g.drawString(font, "Texto", izq, texto.getY() + 4, 0xFFC0C0C0);
 		g.drawString(font, "Colores", izq, texto.getY() + 26, 0xFFC0C0C0);
 		g.drawString(font, "Selecciona palabras del texto y toca un color.", xCampos, texto.getY() + 42, 0xFF8C929C);
+		ItemStack encimaPremio = null;
+		if (principal) {
+			g.drawString(font, "Premio", izq, yPremio + 5, 0xFFC0C0C0);
+			for (int i = 0; i < Misiones.MAX_PREMIO; i++) {
+				int x = xCampos + (i % COLUMNAS_PREMIO) * 19, y = yPremio + (i / COLUMNAS_PREMIO) * 19;
+				g.fill(x, y, x + 18, y + 18, 0xFF2E2E2E);
+				g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF151515);
+				if (i >= premio.size()) continue;
+				g.renderItem(premio.get(i), x + 1, y + 1);
+				g.renderItemDecorations(font, premio.get(i), x + 1, y + 1);
+				if (mx >= x && mx < x + 18 && my >= y && my < y + 18) encimaPremio = premio.get(i);
+			}
+			g.pose().pushPose();
+			g.pose().translate(xCampos, yPremio + 40, 0);
+			g.pose().scale(0.75f, 0.75f, 1);
+			g.drawString(font, "Clic: +1 (Shift +10) · Clic derecho: -1", 0, 0, 0xFF8C929C);
+			g.drawString(font, "Clic derecho en un ítem buscado: agregarlo al premio", 0, 10, 0xFF8C929C);
+			g.pose().popPose();
+		}
 
 		// El ítem elegido (al lado del día/tipo) y los resultados de la búsqueda.
 		int xi = tipo.getX() + 158;
@@ -197,5 +253,6 @@ public class MisionEditorScreen extends Screen {
 			MisionesVista.detalle(g, font, armar(), 0, false, xVista, 32, wv);
 		}
 		if (encimaDe != null) g.renderTooltip(font, encimaDe, mx, my);
+		else if (encimaPremio != null) g.renderTooltip(font, encimaPremio, mx, my);
 	}
 }

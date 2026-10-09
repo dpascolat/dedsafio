@@ -62,13 +62,15 @@ public final class Misiones {
 		COLORES.put("gris", 0xA0A0A0);
 	}
 
-	public static final int MAX_TEXTO = 400;
+	public static final int MAX_TEXTO = 400, MAX_PREMIO = 18;
 
 	/**
 	 * Una misión: un id fijo (para saber quién la cobró), si es Principal y de qué día, el ítem a crear (su id,
 	 * como "minecraft:diamond_helmet"), cuántos, cuántas deditas da y el texto de abajo (con colores).
+	 * premio: lo que manda Eón cuando se entrega la Dedita de la Misión (solo la Principal).
 	 */
-	public record Mision(String id, boolean principal, int dia, String itemId, int cantidad, int deditas, String texto) {
+	public record Mision(String id, boolean principal, int dia, String itemId, int cantidad, int deditas, String texto,
+						 List<net.minecraft.world.item.ItemStack> premio) {
 		public static final StreamCodec<RegistryFriendlyByteBuf, Mision> CODEC = StreamCodec.of((buf, m) -> {
 			buf.writeUtf(m.id);
 			buf.writeBoolean(m.principal);
@@ -77,8 +79,9 @@ public final class Misiones {
 			buf.writeVarInt(m.cantidad);
 			buf.writeVarInt(m.deditas);
 			buf.writeUtf(m.texto, MAX_TEXTO * 4);
+			net.minecraft.world.item.ItemStack.OPTIONAL_LIST_STREAM_CODEC.encode(buf, m.premio);
 		}, buf -> new Mision(buf.readUtf(), buf.readBoolean(), buf.readVarInt(), buf.readUtf(), buf.readVarInt(), buf.readVarInt(),
-				buf.readUtf(MAX_TEXTO * 4)));
+				buf.readUtf(MAX_TEXTO * 4), net.minecraft.world.item.ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(buf)));
 
 		public Item item() {
 			ResourceLocation rl = ResourceLocation.tryParse(itemId);
@@ -95,7 +98,7 @@ public final class Misiones {
 			return principal ? "Misión Principal - Día " + dia : "Misión Guía | + " + deditas;
 		}
 
-		CompoundTag guardar() {
+		CompoundTag guardar(HolderLookup.Provider registros) {
 			CompoundTag t = new CompoundTag();
 			t.putString("id", id);
 			t.putBoolean("principal", principal);
@@ -104,12 +107,17 @@ public final class Misiones {
 			t.putInt("cantidad", cantidad);
 			t.putInt("deditas", deditas);
 			t.putString("texto", texto);
+			ListTag l = new ListTag();
+			for (net.minecraft.world.item.ItemStack o : premio) if (!o.isEmpty()) l.add(o.save(registros));
+			t.put("premio", l);
 			return t;
 		}
 
-		static Mision leer(CompoundTag t) {
+		static Mision leer(CompoundTag t, HolderLookup.Provider registros) {
+			List<net.minecraft.world.item.ItemStack> premio = new ArrayList<>();
+			for (Tag o : t.getList("premio", Tag.TAG_COMPOUND)) net.minecraft.world.item.ItemStack.parse(registros, o).ifPresent(premio::add);
 			return new Mision(t.getString("id"), t.getBoolean("principal"), t.getInt("dia"), t.getString("item"),
-					Math.max(1, t.getInt("cantidad")), t.getInt("deditas"), t.getString("texto"));
+					Math.max(1, t.getInt("cantidad")), t.getInt("deditas"), t.getString("texto"), premio);
 		}
 	}
 
@@ -154,11 +162,11 @@ public final class Misiones {
 	private static List<Mision> porDefecto() {
 		String candado = BuiltInRegistries.ITEM.getKey(ModItems.CANDADO).toString();
 		return new ArrayList<>(List.of(
-				new Mision("casco_diamante", false, 0, "minecraft:diamond_helmet", 1, 2, "Crea un {item}" + RULETA),
-				new Mision("pechera_diamante", false, 0, "minecraft:diamond_chestplate", 1, 3, "Crea una {item}" + RULETA),
-				new Mision("pantalones_diamante", false, 0, "minecraft:diamond_leggings", 1, 3, "Crea unos {item}" + RULETA),
-				new Mision("botas_diamante", false, 0, "minecraft:diamond_boots", 1, 2, "Crea unas {item}" + RULETA),
-				new Mision("candado", false, 0, candado, 1, 2, "Crea un {item}. Utilízalo para proteger tus cofres.")));
+				new Mision("casco_diamante", false, 0, "minecraft:diamond_helmet", 1, 2, "Crea un {item}" + RULETA, List.of()),
+				new Mision("pechera_diamante", false, 0, "minecraft:diamond_chestplate", 1, 3, "Crea una {item}" + RULETA, List.of()),
+				new Mision("pantalones_diamante", false, 0, "minecraft:diamond_leggings", 1, 3, "Crea unos {item}" + RULETA, List.of()),
+				new Mision("botas_diamante", false, 0, "minecraft:diamond_boots", 1, 2, "Crea unas {item}" + RULETA, List.of()),
+				new Mision("candado", false, 0, candado, 1, 2, "Crea un {item}. Utilízalo para proteger tus cofres.", List.of())));
 	}
 
 	// --- Guardado ---
@@ -179,7 +187,7 @@ public final class Misiones {
 			Datos d = new Datos();
 			if (tag.contains("misiones")) {
 				d.misiones = new ArrayList<>();
-				for (Tag t : tag.getList("misiones", Tag.TAG_COMPOUND)) d.misiones.add(Mision.leer((CompoundTag) t));
+				for (Tag t : tag.getList("misiones", Tag.TAG_COMPOUND)) d.misiones.add(Mision.leer((CompoundTag) t, registros));
 			}
 			CompoundTag b = tag.getCompound("bases");
 			for (String jugador : b.getAllKeys()) {
@@ -195,7 +203,7 @@ public final class Misiones {
 		public CompoundTag save(CompoundTag tag, HolderLookup.Provider registros) {
 			if (misiones != null) {
 				ListTag l = new ListTag();
-				for (Mision m : misiones) l.add(m.guardar());
+				for (Mision m : misiones) l.add(m.guardar(registros));
 				tag.put("misiones", l);
 			}
 			CompoundTag b = new CompoundTag();
@@ -296,17 +304,38 @@ public final class Misiones {
 	}
 
 	private static void cobrar(ServerPlayer p, Mision m) {
-		if (!com.dedsafio4.misiones.Misiones.completar(p, m.id(), m.principal(), m.item(), m.deditas())) return;
+		// La Principal no da deditas al completarla: da la Dedita de la Misión, que se cambia por el premio.
+		if (!com.dedsafio4.misiones.Misiones.completar(p, m.id(), m.principal(), m.item(), m.principal() ? 0 : m.deditas())) return;
 		// La Misión Principal da además la "Dedita de la Misión (Día N)".
 		if (m.principal()) {
 			net.minecraft.world.item.ItemStack dedita = new net.minecraft.world.item.ItemStack(ModItems.DEDITA_MISION);
 			dedita.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal("Dedita de la Misión (Día " + m.dia() + ")")
 					.withStyle(net.minecraft.network.chat.Style.EMPTY.withItalic(false).withColor(net.minecraft.ChatFormatting.AQUA)));
+			CompoundTag datos = new CompoundTag();
+			datos.putString("mision", m.id());
+			datos.putInt("dia", m.dia());
+			dedita.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(datos));
 			if (!p.getInventory().add(dedita)) p.drop(dedita, false);
 		}
 		p.displayClientMessage(Component.literal("¡Misión completada! ").withColor(0x7CFC6A)
 				.append(Component.translatable(m.item().getDescriptionId()).withColor(0x6FA8FF)), true);
 		p.level().playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.6f, 1.2f);
+	}
+
+	/** La misión de una Dedita de la Misión (la que dio al completarla), o null si no es una o ya no existe. */
+	public static Mision deDedita(MinecraftServer server, net.minecraft.world.item.ItemStack dedita) {
+		if (!dedita.is(ModItems.DEDITA_MISION)) return null;
+		net.minecraft.world.item.component.CustomData datos = dedita.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+		if (datos == null) return null;
+		String id = datos.copyTag().getString("mision");
+		for (Mision m : datos(server).lista()) if (m.id().equals(id)) return m;
+		return null;
+	}
+
+	/** El día que dice una Dedita de la Misión (-1 si no tiene). */
+	public static int diaDeDedita(net.minecraft.world.item.ItemStack dedita) {
+		net.minecraft.world.item.component.CustomData datos = dedita.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+		return datos == null || !datos.copyTag().contains("dia") ? -1 : datos.copyTag().getInt("dia");
 	}
 
 	/** Lo último que se le mandó a cada jugador (para mandar solo cuando cambia). */
@@ -353,8 +382,16 @@ public final class Misiones {
 				// Si cambia el ítem es como una misión nueva (empieza de cero para todos).
 				String id = i >= 0 && i < l.size() && l.get(i).itemId().equals(rl.toString()) ? l.get(i).id()
 						: UUID.randomUUID().toString().substring(0, 8);
+				List<net.minecraft.world.item.ItemStack> premio = new ArrayList<>();
+				for (net.minecraft.world.item.ItemStack o : m.premio()) {
+					if (o.isEmpty() || premio.size() >= MAX_PREMIO) continue;
+					net.minecraft.world.item.ItemStack copia = o.copy();
+					copia.setCount(Math.max(1, Math.min(copia.getMaxStackSize(), copia.getCount())));
+					premio.add(copia);
+				}
 				Mision limpia = new Mision(id, m.principal(), Math.max(0, Math.min(9999, m.dia())), rl.toString(),
-						Math.max(1, Math.min(9999, m.cantidad())), Math.max(0, Math.min(1_000_000, m.deditas())), texto);
+						Math.max(1, Math.min(9999, m.cantidad())), Math.max(0, Math.min(1_000_000, m.deditas())), texto,
+						m.principal() ? premio : List.of());
 				if (i >= 0 && i < l.size()) l.set(i, limpia);
 				else l.add(limpia);
 			}

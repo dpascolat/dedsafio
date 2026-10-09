@@ -83,8 +83,13 @@ public class BuzonScreen extends Screen {
 			g.fill(x0, yf + ALTO_FILA - 2, x1, yf + ALTO_FILA - 1, 0xFF2E3A50);
 			int color = c.leida() ? 0xFFA8B0C0 : 0xFFFFFFFF;
 			String tiempo = hace(CorreoCliente.segundos(c));
-			String nombre = "De: " + c.autor() + (c.conObjetos() ? " ✦" : "");
-			g.drawString(font, font.plainSubstrByWidth(nombre, x1 - x0 - 10 - font.width(tiempo)), x0 + 3, yf + 2, color, false);
+			// "De: Eón · Misión diaria ✦" (el subtítulo en gris; la ✦ si tiene objetos para sacar).
+			Component nombre = Component.literal("De: " + c.autor()).withColor(color);
+			if (!c.asunto().isEmpty()) nombre = nombre.copy().append(Component.literal(" · " + c.asunto()).withColor(0xFF8A90A0));
+			if (c.conObjetos()) nombre = nombre.copy().append(Component.literal(" ✦").withColor(0xFFF4E04A));
+			int anchoNombre = x1 - x0 - 10 - font.width(tiempo);
+			g.drawString(font, font.width(nombre) <= anchoNombre ? nombre.getVisualOrderText()
+					: net.minecraft.locale.Language.getInstance().getVisualOrder(font.substrByWidth(nombre, anchoNombre)), x0 + 3, yf + 2, color, false);
 			g.drawString(font, tiempo, x1 - 3 - font.width(tiempo), yf + 2, color, false);
 		}
 		if (paginas() > 1) {

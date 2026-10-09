@@ -54,19 +54,20 @@ public final class Correo {
 	public static final MenuType<CorreoMenu> MENU = Registry.register(BuiltInRegistries.MENU,
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "correo"), new MenuType<>(CorreoMenu::new, FeatureFlags.VANILLA_SET));
 
-	/** Un mensaje. para == null: es para todos. */
-	record Carta(int id, UUID autor, String autorNombre, UUID para, String texto, List<ItemStack> objetos, long fecha) {}
+	/** Un mensaje. para == null: es para todos. asunto: el subtítulo (puede estar vacío). */
+	record Carta(int id, UUID autor, String autorNombre, UUID para, String asunto, String texto, List<ItemStack> objetos, long fecha) {}
 
 	/** Lo que ve cada jugador de un mensaje en la lista. segundos: hace cuánto llegó. */
-	public record CartaVista(int id, String autor, String texto, long segundos, boolean leida, boolean conObjetos) {
+	public record CartaVista(int id, String autor, String asunto, String texto, long segundos, boolean leida, boolean conObjetos) {
 		public static final StreamCodec<RegistryFriendlyByteBuf, CartaVista> CODEC = StreamCodec.of((buf, c) -> {
 			buf.writeVarInt(c.id);
 			buf.writeUtf(c.autor);
+			buf.writeUtf(c.asunto);
 			buf.writeUtf(c.texto, MAX_TEXTO * 4);
 			buf.writeVarLong(c.segundos);
 			buf.writeBoolean(c.leida);
 			buf.writeBoolean(c.conObjetos);
-		}, buf -> new CartaVista(buf.readVarInt(), buf.readUtf(), buf.readUtf(MAX_TEXTO * 4), buf.readVarLong(), buf.readBoolean(),
+		}, buf -> new CartaVista(buf.readVarInt(), buf.readUtf(), buf.readUtf(), buf.readUtf(MAX_TEXTO * 4), buf.readVarLong(), buf.readBoolean(),
 				buf.readBoolean()));
 	}
 
@@ -184,7 +185,7 @@ public final class Correo {
 			for (Tag t : tag.getList("cartas", Tag.TAG_COMPOUND)) {
 				CompoundTag c = (CompoundTag) t;
 				d.cartas.add(new Carta(c.getInt("id"), c.getUUID("autor"), c.getString("autor_nombre"),
-						c.hasUUID("para") ? c.getUUID("para") : null, c.getString("texto"),
+						c.hasUUID("para") ? c.getUUID("para") : null, c.getString("asunto"), c.getString("texto"),
 						leerObjetos(c.getList("objetos", Tag.TAG_COMPOUND), registros), c.getLong("fecha")));
 			}
 			leerMapa(tag.getCompound("leidas"), d.leidas);
@@ -223,6 +224,7 @@ public final class Correo {
 				t.putUUID("autor", c.autor());
 				t.putString("autor_nombre", c.autorNombre());
 				if (c.para() != null) t.putUUID("para", c.para());
+				t.putString("asunto", c.asunto());
 				t.putString("texto", c.texto());
 				t.put("objetos", guardarObjetos(c.objetos(), registros));
 				t.putLong("fecha", c.fecha());
@@ -265,7 +267,7 @@ public final class Correo {
 			Carta c = d.cartas.get(i);
 			if (!esDe(d, c, p.getUUID())) continue;
 			boolean conObjetos = d.restantes(p.getUUID(), c).stream().anyMatch(o -> !o.isEmpty());
-			l.add(new CartaVista(c.id(), c.autorNombre(), c.texto(), Math.max(0, (ahora - c.fecha()) / 1000),
+			l.add(new CartaVista(c.id(), c.autorNombre(), c.asunto(), c.texto(), Math.max(0, (ahora - c.fecha()) / 1000),
 					Datos.tiene(d.leidas, p.getUUID(), c.id()), conObjetos));
 		}
 		ServerPlayNetworking.send(p, new BuzonPayload(l));
@@ -358,7 +360,7 @@ public final class Correo {
 		}
 		menu.vaciar();   // los objetos se van con el mensaje
 		Datos d = datos(p.server);
-		Carta c = new Carta(d.siguiente++, p.getUUID(), p.getGameProfile().getName(), destino, texto, objetos, System.currentTimeMillis());
+		Carta c = new Carta(d.siguiente++, p.getUUID(), p.getGameProfile().getName(), destino, "", texto, objetos, System.currentTimeMillis());
 		d.cartas.add(c);
 		d.setDirty();
 		// A los que les llegó: el aviso y el buzón al día.
@@ -374,6 +376,24 @@ public final class Correo {
 		p.sendSystemMessage(Component.literal("✉ Mensaje enviado a " + (aTodos ? "todos" : nombre) + ".").withStyle(ChatFormatting.AQUA));
 		p.closeContainer();
 		return "";
+	}
+
+	/**
+	 * Un mensaje que no manda un jugador (por ejemplo, el de Eón con el premio de la Misión Principal). Le llega a
+	 * ese jugador con el aviso en el chat.
+	 */
+	public static void mandar(ServerPlayer para, String autor, String asunto, String texto, List<ItemStack> objetos) {
+		Datos d = datos(para.server);
+		List<ItemStack> copia = new ArrayList<>();
+		for (ItemStack o : objetos) if (!o.isEmpty() && copia.size() < CASILLAS) copia.add(o.copy());
+		Carta c = new Carta(d.siguiente++, new UUID(0, 0), autor, para.getUUID(), asunto, texto, copia, System.currentTimeMillis());
+		d.cartas.add(c);
+		d.setDirty();
+		enviarBuzon(para);
+		para.sendSystemMessage(Component.literal("✉ Tienes un mensaje nuevo de ").withStyle(ChatFormatting.AQUA)
+				.append(Component.literal(autor).withStyle(ChatFormatting.WHITE))
+				.append(Component.literal(". Ábrelo en un Buzón.").withStyle(ChatFormatting.AQUA)));
+		para.level().playSound(null, para.getX(), para.getY(), para.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5f, 0.8f);
 	}
 
 	public static void registrar() {

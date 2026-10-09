@@ -101,8 +101,12 @@ public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
 			Correo.CartaVista c = CorreoCliente.carta(menu.carta());
 			if (c == null) return;
 			g.drawString(font, "De: " + c.autor(), 14, 28, 0xFFFFFFFF, false);
-			List<FormattedCharSequence> lineas = font.split(Component.literal(c.texto()), 162);
 			int y = 40;
+			if (!c.asunto().isEmpty()) {
+				g.drawString(font, c.asunto(), 14, 38, 0xFF55FFFF, false);
+				y = 50;
+			}
+			List<FormattedCharSequence> lineas = font.split(Component.literal(c.texto()), 162);
 			for (FormattedCharSequence linea : lineas) {
 				if (y > CorreoMenu.GRILLA_Y - 10) break;
 				g.drawString(font, linea, 14, y, 0xFFD8DCE4, false);
