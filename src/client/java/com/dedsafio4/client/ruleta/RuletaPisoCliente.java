@@ -66,8 +66,7 @@ public final class RuletaPisoCliente {
 		VertexConsumer vc = buffers.getBuffer(RenderType.debugQuads());
 
 		float salida = Mth.clamp((t - (LLENA + QUIETA)) / SALIDA, 0, 1);
-		// El borde oscuro debajo de todo y el centro oscuro arriba.
-		disco(vc, m, 0, Math.PI * 2, (RADIO + 0.25) * (1 - salida), 0.015f, OSCURO, 96);
+		// Sin borde debajo de los colores: solo el centro oscuro (arriba).
 		for (int k = 0; k < 8; k++) {
 			float p = Mth.clamp((t - k * PASO) / CRECER, 0, 1);
 			if (p <= 0) continue;
