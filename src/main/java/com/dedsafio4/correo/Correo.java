@@ -48,7 +48,7 @@ import java.util.UUID;
 public final class Correo {
 	private Correo() {}
 
-	public static final int MAX_TEXTO = 500, CASILLAS = 18;
+	public static final int MAX_TEXTO = 500, CASILLAS = 27;
 	public static final String TODOS = "todos";
 
 	public static final MenuType<CorreoMenu> MENU = Registry.register(BuiltInRegistries.MENU,

@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * Un mensaje del Buzón, como en las imágenes: "<< ATRÁS" arriba a la izquierda, el título "Mensaje", arriba el texto
- * (o los campos "Para:" y "Mensaje:" si se está escribiendo), la grilla de 6×3 con bordes de arcoíris para los objetos,
+ * (o los campos "Para:" y "Mensaje:" si se está escribiendo), la grilla de 9×3 (como un cofre) con bordes de arcoíris para los objetos,
  * "ENVIAR" (o "BORRAR" si es uno recibido) y el inventario abajo.
  */
 public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
@@ -60,7 +60,10 @@ public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
 			addRenderableWidget(para);
 			texto = new MultiLineEditBox(font, l + 14, t + 54, 162, 42, Component.literal("Escribe tu mensaje...").withColor(0xFF5A6070),
 					Component.literal("Mensaje"));
-			texto.setCharacterLimit(Correo.MAX_TEXTO);
+			// Sin límite en la caja (así no muestra el "0/500"); si se pasa, se corta acá.
+			texto.setValueListener(v -> {
+				if (v.length() > Correo.MAX_TEXTO) texto.setValue(v.substring(0, Correo.MAX_TEXTO));
+			});
 			addRenderableWidget(texto);
 			addRenderableWidget(new BotonCajero(xBoton, yBoton, 50, 13, "ENVIAR", () -> {
 				error = "";

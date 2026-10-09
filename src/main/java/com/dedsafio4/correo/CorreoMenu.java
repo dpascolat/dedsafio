@@ -12,14 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * El menú de un mensaje: la grilla de 6×3 del mensaje y el inventario del jugador.
+ * El menú de un mensaje: la grilla de 9×3 del mensaje (como un cofre) y el inventario del jugador.
  * carta == -1: escribiendo uno nuevo; se ponen objetos en la grilla (si se cierra sin mandarlo, vuelven al jugador).
  * Si no: leyendo ese mensaje; de la grilla solo se sacan objetos, y lo que queda se guarda al cerrar.
  */
 public class CorreoMenu extends AbstractContainerMenu {
 	// Posiciones (las usa también la pantalla).
 	public static final int ANCHO = 190, ALTO = 262;
-	public static final int GRILLA_X = 14, GRILLA_Y = 100, CELDA_W = 27, CELDA_H = 20, COLUMNAS = 6, FILAS = 3;
+	public static final int GRILLA_X = 14, GRILLA_Y = 102, CELDA_W = 18, CELDA_H = 18, COLUMNAS = 9, FILAS = 3;
 	public static final int INVENTARIO_X = 15, INVENTARIO_Y = 180;
 
 	final int carta;
@@ -37,7 +37,7 @@ public class CorreoMenu extends AbstractContainerMenu {
 		boolean leyendo = carta >= 0;
 		for (int fila = 0; fila < FILAS; fila++) {
 			for (int col = 0; col < COLUMNAS; col++) {
-				addSlot(new Slot(grilla, fila * COLUMNAS + col, GRILLA_X + col * CELDA_W + 6, GRILLA_Y + fila * CELDA_H + 2) {
+				addSlot(new Slot(grilla, fila * COLUMNAS + col, GRILLA_X + col * CELDA_W + 1, GRILLA_Y + fila * CELDA_H + 1) {
 					@Override
 					public boolean mayPlace(ItemStack pila) {
 						return !leyendo;
