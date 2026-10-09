@@ -112,11 +112,13 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// El Cajero: el menú se abre al tocar el bloque; la grilla de ingresar la abre el servidor.
 		com.dedsafio4.banco.CajeroBlock.abrirPantalla = pos ->
 				Minecraft.getInstance().setScreen(new com.dedsafio4.client.cajero.CajeroScreen(pos));
+		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.correo.Correo.MENU,
+				com.dedsafio4.client.correo.CorreoScreen::new);
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.banco.ModCajero.MENU,
 				com.dedsafio4.client.cajero.CajeroIngresarScreen::new);
 		// El Mensajero: al tocarlo se abre el Buzón de correo.
 		com.dedsafio4.bloques.MensajeroBlock.abrirPantalla = pos ->
-				Minecraft.getInstance().setScreen(new com.dedsafio4.client.cajero.BuzonScreen(pos));
+				Minecraft.getInstance().setScreen(new com.dedsafio4.client.correo.BuzonScreen());
 		// La Vitrina del /ah: el ítem a la venta girando.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.subastas.ModVitrina.ENTIDAD, com.dedsafio4.client.subastas.VitrinaRenderer::new);
@@ -252,6 +254,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.bestias.FlashbangCliente.registrar();
 		com.dedsafio4.client.bestias.CerebroEncimaCliente.registrar();
 		com.dedsafio4.client.AvisoCliente.registrar();
+		com.dedsafio4.client.correo.CorreoCliente.registrar();
 		EntityRendererRegistry.register(ModEntidades.GARRAPATA_CEREBRAL, c -> new com.dedsafio4.client.bestias.CerebroRenderer<>(c,
 				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/garrapata_cerebral.png")));
 		com.dedsafio4.client.bestias.RaicesCliente.registrar();
@@ -289,6 +292,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 			if (mc.options.hideGui) return;
 			TemporizadorCliente.dibujar(graphics, mc);
 			if (saldo >= 0) dibujarSaldo(graphics, mc);
+			// El sobre de los mensajes, debajo de las deditas.
+			com.dedsafio4.client.correo.CorreoCliente.dibujarSobre(graphics, mc, saldo >= 0 ? 3 + 12 + 2 : 3);
 		});
 	}
 

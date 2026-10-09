@@ -40,7 +40,7 @@ import java.util.UUID;
  *   Misión Principal  "★ Misión Principal - Día N"
  * Cada una pide crear un ítem una cantidad de veces (cuentan los crafteos desde que el jugador vio la misión por
  * primera vez). Al cumplirla, la tarjeta se pone verde con "¡Misión completada!" y se cobran las deditas (una sola
- * vez por jugador).
+ * vez por jugador); la Principal da además la "Dedita de la Misión (Día N)".
  * Los editores del Catálogo (admins y /opop) las crean, cambian, mueven y borran desde la misma pantalla. El texto
  * acepta colores: {morado:Casco Dimensional} pinta esas palabras, y {item} pone el nombre del ítem en azul.
  */
@@ -297,6 +297,13 @@ public final class Misiones {
 
 	private static void cobrar(ServerPlayer p, Mision m) {
 		if (!com.dedsafio4.misiones.Misiones.completar(p, m.id(), m.principal(), m.item(), m.deditas())) return;
+		// La Misión Principal da además la "Dedita de la Misión (Día N)".
+		if (m.principal()) {
+			net.minecraft.world.item.ItemStack dedita = new net.minecraft.world.item.ItemStack(ModItems.DEDITA_MISION);
+			dedita.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal("Dedita de la Misión (Día " + m.dia() + ")")
+					.withStyle(net.minecraft.network.chat.Style.EMPTY.withItalic(false).withColor(net.minecraft.ChatFormatting.AQUA)));
+			if (!p.getInventory().add(dedita)) p.drop(dedita, false);
+		}
 		p.displayClientMessage(Component.literal("¡Misión completada! ").withColor(0x7CFC6A)
 				.append(Component.translatable(m.item().getDescriptionId()).withColor(0x6FA8FF)), true);
 		p.level().playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.6f, 1.2f);
