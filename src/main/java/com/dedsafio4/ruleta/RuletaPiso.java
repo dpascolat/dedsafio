@@ -42,9 +42,13 @@ public final class RuletaPiso {
 
 	/** Pone la ruleta a los pies de ese jugador (la ven todos los de su mundo). */
 	public static void mostrar(ServerPlayer p) {
-		Vec3 pies = p.position();
-		Payload payload = new Payload(pies.x, pies.y, pies.z, p.getYRot());
-		for (ServerPlayer otro : p.serverLevel().players()) ServerPlayNetworking.send(otro, payload);
+		mostrar(p.serverLevel(), p.position(), p.getYRot());
+	}
+
+	/** Pone la ruleta en ese punto del piso, mirando hacia yaw (-90 = hacia +X). */
+	public static void mostrar(net.minecraft.server.level.ServerLevel level, Vec3 centro, float yaw) {
+		Payload payload = new Payload(centro.x, centro.y, centro.z, yaw);
+		for (ServerPlayer otro : level.players()) ServerPlayNetworking.send(otro, payload);
 	}
 
 	/** Cuánto dura la animación (en ticks). */
