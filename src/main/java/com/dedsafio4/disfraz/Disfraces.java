@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * /cambiarmob <mob> [jugadores]: el jugador se ve como ese mob (de Minecraft o de cualquier mod) y tiene su tamaño
  * (la cámara queda a la altura de sus ojos). También los modelos del Skin Pack Dedsafío: /cambiarmob skin:nutria
- * (ver SkinsDedsafio; esos tienen el tamaño normal del jugador). /cambiarmob quitar [jugadores] lo vuelve a la normalidad.
+ * (ver SkinsDedsafio; esos tienen el tamaño normal del jugador). /cambiarmob normal (o quitar) [jugadores] lo vuelve a la normalidad, con su skin.
  * Se guarda en el mundo (sigue transformado aunque salga y vuelva a entrar) y se les manda a todos los clientes,
  * que dibujan el mob en lugar del jugador (ver DisfracesCliente).
  */
@@ -118,11 +118,15 @@ public final class Disfraces {
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		dispatcher.register(Commands.literal("cambiarmob").requires(s -> s.hasPermission(2))
-				.then(Commands.literal("quitar")
-						.executes(c -> quitar(c, List.of(c.getSource().getPlayerOrException())))
-						.then(Commands.argument("jugadores", EntityArgument.players())
-								.executes(c -> quitar(c, EntityArgument.getPlayers(c, "jugadores")))))
+		var comando = Commands.literal("cambiarmob").requires(s -> s.hasPermission(2));
+		// "normal" y "quitar" hacen lo mismo: vuelves a ser tú, con tu skin de siempre.
+		for (String volver : new String[]{"normal", "quitar"}) {
+			comando.then(Commands.literal(volver)
+					.executes(c -> quitar(c, List.of(c.getSource().getPlayerOrException())))
+					.then(Commands.argument("jugadores", EntityArgument.players())
+							.executes(c -> quitar(c, EntityArgument.getPlayers(c, "jugadores")))));
+		}
+		dispatcher.register(comando
 				.then(Commands.argument("mob", ResourceLocationArgument.id())
 						.suggests((c, b) -> SharedSuggestionProvider.suggestResource(java.util.stream.Stream.concat(
 								SkinsDedsafio.NOMBRES.stream().map(n -> ResourceLocation.fromNamespaceAndPath(SkinsDedsafio.ESPACIO, n)),
