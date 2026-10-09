@@ -382,13 +382,16 @@ public final class Correo {
 	 * Un mensaje que no manda un jugador (por ejemplo, el de Eón con el premio de la Misión Principal). Le llega a
 	 * ese jugador con el aviso en el chat.
 	 */
-	public static void mandar(ServerPlayer para, String autor, String asunto, String texto, List<ItemStack> objetos) {
-		Datos d = datos(para.server);
+	public static void mandar(MinecraftServer server, UUID paraId, String autor, String asunto, String texto, List<ItemStack> objetos) {
+		Datos d = datos(server);
 		List<ItemStack> copia = new ArrayList<>();
 		for (ItemStack o : objetos) if (!o.isEmpty() && copia.size() < CASILLAS) copia.add(o.copy());
-		Carta c = new Carta(d.siguiente++, new UUID(0, 0), autor, para.getUUID(), asunto, texto, copia, System.currentTimeMillis());
+		Carta c = new Carta(d.siguiente++, new UUID(0, 0), autor, paraId, asunto, texto, copia, System.currentTimeMillis());
 		d.cartas.add(c);
 		d.setDirty();
+		// Si no está conectado, lo ve cuando entra.
+		ServerPlayer para = server.getPlayerList().getPlayer(paraId);
+		if (para == null) return;
 		enviarBuzon(para);
 		para.sendSystemMessage(Component.literal("✉ Tienes un mensaje nuevo de ").withStyle(ChatFormatting.AQUA)
 				.append(Component.literal(autor).withStyle(ChatFormatting.WHITE))

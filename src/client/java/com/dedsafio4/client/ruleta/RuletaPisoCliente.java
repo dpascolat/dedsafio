@@ -22,7 +22,7 @@ import org.joml.Matrix4f;
 public final class RuletaPisoCliente {
 	private RuletaPisoCliente() {}
 
-	private static final float RADIO = 8f;
+	private static final float RADIO = 9f;
 	private static final int DURACION = 360, PASO = 32, CRECER = 64, LLENA = 7 * PASO + CRECER, QUIETA = 60, SALIDA = 12;
 	/** En orden de aparición: celeste, azul, morado, rosa, naranja, rojo, amarillo, verde. */
 	private static final int[] COLORES = {0x7FD3F5, 0x2A5BD7, 0x7B3FC4, 0xF27BB5, 0xF28A1E, 0xD8261C, 0xF7D531, 0x3FAE3A};
@@ -74,12 +74,19 @@ public final class RuletaPisoCliente {
 			if (radio < 0.01f) continue;
 			int posicion = (k + 1) % 8;   // celeste en el lugar 2, ..., verde en el 1
 			double desde = Math.toRadians(315 + 45 * posicion);
-			int color = COLORES[k];
-			if (p < 1) color = mezclar(color, 0xFFFFFF, 0.3f);   // brilla mientras crece
+			int color = brillante(COLORES[k]);
+			if (p < 1) color = mezclar(color, 0xFFFFFF, 0.4f);   // brilla más mientras crece
 			disco(vc, m, desde, Math.PI / 4, radio, 0.03f, color, 16);
 		}
 		disco(vc, m, 0, Math.PI * 2, 0.7 * (1 - salida), 0.045f, OSCURO, 32);
 		buffers.endBatch(RenderType.debugQuads());
+	}
+
+	/** El mismo color pero lo más brillante posible (el canal más fuerte llega a 255). */
+	private static int brillante(int c) {
+		int r = c >> 16 & 255, g = c >> 8 & 255, b = c & 255;
+		float k = 255f / Math.max(1, Math.max(r, Math.max(g, b)));
+		return Math.min(255, (int) (r * k)) << 16 | Math.min(255, (int) (g * k)) << 8 | Math.min(255, (int) (b * k));
 	}
 
 	private static int mezclar(int a, int b, float k) {

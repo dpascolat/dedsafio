@@ -24,12 +24,29 @@ import java.util.List;
 /**
  * Entrega de Misiones: un bloque invisible pero sólido (como la barrera: se choca con él, no hace sombra en el piso y
  * se pone y se saca en creativo). Al tocarlo con la
- * Dedita de la Misión en la mano, se la queda y Eón te manda un mensaje al Buzón ("Misión diaria") con el premio
- * que se eligió para esa Misión Principal en el editor de Misiones.
+ * Dedita de la Misión en la mano, se la queda, aparece la ruleta de 8 colores en el piso a tus pies y, cuando
+ * termina la animación, Eón te manda un mensaje al Buzón ("Misión diaria") con el premio que se eligió para esa
+ * Misión Principal en el editor de Misiones.
  */
 public class EntregaMisionBlock extends Block {
 	/** Quién manda el mensaje. */
 	public static final String REMITENTE = "Eón";
+
+	/** Los mensajes que se mandan cuando termina la ruleta: a quién, qué dice, el premio y en qué tick. */
+	private record Pendiente(java.util.UUID jugador, String texto, List<ItemStack> premio, long cuando) {}
+
+	private static final List<Pendiente> PENDIENTES = new java.util.ArrayList<>();
+
+	public static void registrar() {
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+			for (var it = PENDIENTES.iterator(); it.hasNext(); ) {
+				Pendiente p = it.next();
+				if (server.getTickCount() < p.cuando()) continue;
+				it.remove();
+				Correo.mandar(server, p.jugador(), REMITENTE, "Misión diaria", p.texto(), p.premio());
+			}
+		});
+	}
 
 	public EntregaMisionBlock(Properties propiedades) {
 		super(propiedades);
@@ -63,7 +80,10 @@ public class EntregaMisionBlock extends Block {
 		String texto = (dia >= 0 ? "¡Completaste la Misión Principal del Día " + dia + "!" : "¡Completaste una Misión Principal!")
 				+ (premio.isEmpty() ? " Gracias por entregar tu Dedita de la Misión." : " Aquí tienes tu premio.");
 		pila.consume(1, jugador);
-		Correo.mandar(servidor, REMITENTE, "Misión diaria", texto, premio);
+		// Primero la ruleta en el piso; el mensaje llega cuando termina.
+		com.dedsafio4.ruleta.RuletaPiso.mostrar(servidor);
+		PENDIENTES.add(new Pendiente(servidor.getUUID(), texto, List.copyOf(premio),
+				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
 		level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1f, 1.2f);
 		return ItemInteractionResult.SUCCESS;
 	}
