@@ -3,8 +3,11 @@ package com.dedsafio4.bloques;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -12,6 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -19,6 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Mensajero: el modelo de Patricio (Mensajero.bbmodel). Sólo se pone en una pared, como las antorchas de pared: queda
  * pegado con la espalda a la pared y la pantalla mirando para afuera. Si se rompe la pared, se cae.
  * FACING es hacia dónde mira la pantalla (la pared está del lado contrario).
+ * Al tocarlo se abre el Buzón de correo.
  */
 public class MensajeroBlock extends HorizontalDirectionalBlock {
 	public static final MapCodec<MensajeroBlock> CODEC = simpleCodec(MensajeroBlock::new);
@@ -26,6 +31,9 @@ public class MensajeroBlock extends HorizontalDirectionalBlock {
 	private static final VoxelShape NORTE = Block.box(1, 0, 8, 15, 16, 16);
 	private static final VoxelShape ESTE = Block.box(0, 0, 1, 8, 16, 15);
 	private static final VoxelShape SUR = Block.box(1, 0, 0, 15, 16, 8);
+
+	/** Lo pone el cliente: abre la pantalla del Buzón de correo. */
+	public static java.util.function.Consumer<BlockPos> abrirPantalla = pos -> {};
 
 	public MensajeroBlock(Properties propiedades) {
 		super(propiedades);
@@ -50,6 +58,12 @@ public class MensajeroBlock extends HorizontalDirectionalBlock {
 			case SOUTH -> SUR;
 			default -> NORTE;
 		};
+	}
+
+	@Override
+	protected InteractionResult useWithoutItem(BlockState estado, Level level, BlockPos pos, Player jugador, BlockHitResult golpe) {
+		if (level.isClientSide) abrirPantalla.accept(pos);
+		return InteractionResult.sidedSuccess(level.isClientSide);
 	}
 
 	/** Busca una pared para pegarse, empezando por la que el jugador está mirando. */

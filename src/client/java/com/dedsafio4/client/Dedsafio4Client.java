@@ -114,6 +114,9 @@ public class Dedsafio4Client implements ClientModInitializer {
 				Minecraft.getInstance().setScreen(new com.dedsafio4.client.cajero.CajeroScreen(pos));
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.banco.ModCajero.MENU,
 				com.dedsafio4.client.cajero.CajeroIngresarScreen::new);
+		// El Mensajero: al tocarlo se abre el Buzón de correo.
+		com.dedsafio4.bloques.MensajeroBlock.abrirPantalla = pos ->
+				Minecraft.getInstance().setScreen(new com.dedsafio4.client.cajero.BuzonScreen(pos));
 		// La Vitrina del /ah: el ítem a la venta girando.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.subastas.ModVitrina.ENTIDAD, com.dedsafio4.client.subastas.VitrinaRenderer::new);
