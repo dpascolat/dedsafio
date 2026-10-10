@@ -24,7 +24,8 @@ import net.minecraft.world.effect.MobEffectInstance;
  * Animaciones en el centro de la pantalla de todos los jugadores, con su sonido (las dibuja el cliente, AnimacionesCliente):
  * /ruleta verde|morado|rojo|celeste|azul|naranja|amarillo|rosa  la ruleta gira y cae en ese color (la roja termina con la
  *                                                          criatura, que les da Rojizo 1 minuto, y la rosa con la nutria).
- * Cuando muere un jugador, a todos les aparece la animación de muerte.
+ * Cuando muere un jugador, a todos les aparece la animación de muerte ("/muerte no" la apaga y "/muerte si" la vuelve a
+ * prender; queda guardado en el mundo).
  */
 public final class Ruleta {
 	private Ruleta() {}
@@ -44,7 +45,7 @@ public final class Ruleta {
 	public static void registrar() {
 		PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
 		ServerLivingEntityEvents.AFTER_DEATH.register((entidad, fuente) -> {
-			if (entidad instanceof ServerPlayer jugador) mostrarATodos(jugador.server, "muerte");
+			if (entidad instanceof ServerPlayer jugador && !muerteApagada(jugador.server)) mostrarATodos(jugador.server, "muerte");
 		});
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (darRojizoEn < 0 || server.getTickCount() < darRojizoEn) return;
@@ -55,7 +56,45 @@ public final class Ruleta {
 		});
 	}
 
+	/** Si la animación de muerte está apagada (/muerte no). */
+	static final class DatosMuerte extends net.minecraft.world.level.saveddata.SavedData {
+		static final Factory<DatosMuerte> FACTORY = new Factory<>(DatosMuerte::new, (tag, registros) -> {
+			DatosMuerte d = new DatosMuerte();
+			d.apagada = tag.getBoolean("apagada");
+			return d;
+		}, null);
+		boolean apagada;
+
+		@Override
+		public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			tag.putBoolean("apagada", apagada);
+			return tag;
+		}
+	}
+
+	private static DatosMuerte datosMuerte(net.minecraft.server.MinecraftServer server) {
+		return server.overworld().getDataStorage().computeIfAbsent(DatosMuerte.FACTORY, "dedsafio4_muerte");
+	}
+
+	public static boolean muerteApagada(net.minecraft.server.MinecraftServer server) {
+		return datosMuerte(server).apagada;
+	}
+
+	private static int muerte(CommandSourceStack fuente, boolean prendida) {
+		DatosMuerte d = datosMuerte(fuente.getServer());
+		d.apagada = !prendida;
+		d.setDirty();
+		fuente.sendSuccess(() -> net.minecraft.network.chat.Component.literal(prendida
+				? "Animación de muerte prendida." : "Animación de muerte apagada: ya no aparece cuando alguien muere.")
+				.withStyle(net.minecraft.ChatFormatting.GOLD), true);
+		return 1;
+	}
+
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
+		dispatcher.register(Commands.literal("muerte").requires(s -> s.hasPermission(2))
+				.then(Commands.literal("no").executes(c -> muerte(c.getSource(), false)))
+				.then(Commands.literal("si").executes(c -> muerte(c.getSource(), true)))
+				.then(Commands.literal("sí").executes(c -> muerte(c.getSource(), true))));
 		LiteralArgumentBuilder<CommandSourceStack> comando = Commands.literal("ruleta").requires(s -> s.hasPermission(2));
 		for (String color : COLORES) {
 			comando.then(Commands.literal(color).executes(ctx -> {
