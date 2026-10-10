@@ -215,9 +215,11 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(TUNG_TUNG_TUNG_SAHUR, com.dedsafio4.bestias.TungSahurEntity.crearAtributos());
 		for (EntityType<com.dedsafio4.bestias.FantasmaEntity> fantasma : java.util.List.of(FANTASMA_AMARILLO, FANTASMA_BLANCO, FANTASMA_ROJO, FANTASMA_NEGRO)) {
 			FabricDefaultAttributeRegistry.register(fantasma, com.dedsafio4.bestias.FantasmaEntity.crearAtributos());
-			// En el Limbo, volando (no necesitan piso); allá siempre está oscuro.
+			// En el Limbo (allá siempre está oscuro), pero nunca sobre la piedra del piso: solo sobre otros bloques
+			// (las tumbas, las ruinas, los árboles muertos, las columnas...).
 			SpawnPlacements.register(fantasma, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-					Monster::checkAnyLightMonsterSpawnRules);
+					(tipo, mundo, razon, pos, azar) -> Monster.checkAnyLightMonsterSpawnRules(tipo, mundo, razon, pos, azar)
+							&& !mundo.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.STONE));
 		}
 		FabricDefaultAttributeRegistry.register(GUSANO_CARNE, com.dedsafio4.bestias.GusanoCarneEntity.crearAtributos());
 		com.dedsafio4.bestias.FlashbangEntity.registrar();
