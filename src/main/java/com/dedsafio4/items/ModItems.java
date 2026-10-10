@@ -302,6 +302,9 @@ public final class ModItems {
 	public static final Item FANTASMA_NEGRO_SPAWN_EGG = registrar("fantasma_negro_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.FANTASMA_NEGRO, 0x1E1E22, 0x6A6A72, new Item.Properties(),
 					HuevoConDescripcion::fantasmaNegro));
+	public static final Item WRAITH_SPAWN_EGG = registrar("wraith_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.WRAITH, 0x2A2D33, 0x9AA0A6, new Item.Properties(),
+					HuevoConDescripcion::wraith));
 	public static final Item GUSANO_CARNE_SPAWN_EGG = registrar("gusano_carne_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.GUSANO_CARNE, 0x9A3A22, 0xB7C23A, new Item.Properties(),
 					HuevoConDescripcion::gusanoCarne));
@@ -589,6 +592,7 @@ public final class ModItems {
 						entradas.accept(CEREBRO_AMARILLO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
 						entradas.accept(FLASHBANG_SPAWN_EGG);
+						entradas.accept(WRAITH_SPAWN_EGG);
 						entradas.accept(FANTASMA_AMARILLO_SPAWN_EGG);
 						entradas.accept(FANTASMA_BLANCO_SPAWN_EGG);
 						entradas.accept(FANTASMA_ROJO_SPAWN_EGG);

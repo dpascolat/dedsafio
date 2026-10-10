@@ -204,6 +204,9 @@ public class Dedsafio4 implements ModInitializer {
 		// El Flashbang aparece en la oscuridad, en cualquier parte del Overworld.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.FLASHBANG, 12, 1, 1);
+		// El Wraith aparece en la oscuridad, en cualquier parte del Overworld (solo después de /mob wraith).
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.WRAITH, 8, 1, 1);
 		// El Creeper Pastel aparece en cualquier parte del Overworld.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.CREEPER_PASTEL, 15, 1, 1);

@@ -36,6 +36,8 @@ import java.util.UUID;
  * nada, hasta que vuelvas a tener más).
  * Los corazones perdidos quedan guardados en el mundo (siguen igual al morir, salir o reiniciar el servidor).
  * "/limbo devolver [jugadores]" se los devuelve; "/limbo ver <jugador>" dice cuántos perdió.
+ * "/spawn_limbo <x y z>" elige adónde llega el que es mandado al Limbo (por ejemplo, por el Wraith); "/spawn_limbo
+ * quitar" lo saca (entonces llega a un lugar seguro cerca de donde estaba).
  * En el Limbo no se pueden poner bloques, romper bloques ni poner agua (ni ningún balde). En creativo, sí (para armarlo).
  */
 public final class Limbo {
@@ -49,16 +51,22 @@ public final class Limbo {
 	static final class Datos extends SavedData {
 		static final SavedData.Factory<Datos> FACTORY = new SavedData.Factory<>(Datos::new, Datos::cargar, null);
 		final Map<UUID, Integer> perdidos = new HashMap<>();
+		/** Adónde llega el que es mandado al Limbo (null = un lugar seguro cerca de donde estaba). */
+		BlockPos spawn;
 
 		private static Datos cargar(CompoundTag tag, HolderLookup.Provider registros) {
 			Datos d = new Datos();
-			for (String k : tag.getAllKeys()) d.perdidos.put(UUID.fromString(k), tag.getInt(k));
+			for (String k : tag.getAllKeys()) {
+				if (k.equals("spawn")) d.spawn = BlockPos.of(tag.getLong(k));
+				else d.perdidos.put(UUID.fromString(k), tag.getInt(k));
+			}
 			return d;
 		}
 
 		@Override
 		public CompoundTag save(CompoundTag tag, HolderLookup.Provider registros) {
 			perdidos.forEach((j, n) -> tag.putInt(j.toString(), n));
+			if (spawn != null) tag.putLong("spawn", spawn.asLong());
 			return tag;
 		}
 	}
@@ -136,6 +144,17 @@ public final class Limbo {
 		if (p.getHealth() > p.getMaxHealth()) p.setHealth(p.getMaxHealth());
 	}
 
+	/** Lo manda al Limbo: a las coordenadas de /spawn_limbo o, si no hay, a un lugar seguro cerca de donde estaba. */
+	public static void mandar(ServerPlayer jugador) {
+		ServerLevel limbo = jugador.server.getLevel(DIMENSION);
+		if (limbo == null) return;
+		BlockPos spawn = datos(jugador.server).spawn;
+		BlockPos llegada = spawn != null ? spawn : Portales.lugarSeguro(limbo, jugador.blockPosition());
+		jugador.teleportTo(limbo, llegada.getX() + 0.5, llegada.getY(), llegada.getZ() + 0.5, jugador.getYRot(), jugador.getXRot());
+		limbo.playSound(null, llegada, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.PLAYERS, 0.8f, 0.5f);
+		jugador.sendSystemMessage(Component.literal("Fuiste arrastrado al Limbo.").withColor(0x8A8AA8));
+	}
+
 	public static int viajar(ServerPlayer jugador) {
 		ServerLevel desde = jugador.serverLevel();
 		boolean volver = desde.dimension().equals(DIMENSION);
@@ -152,6 +171,30 @@ public final class Limbo {
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
+		dispatcher.register(Commands.literal("spawn_limbo").requires(s -> s.hasPermission(2))
+				.executes(c -> {
+					BlockPos spawn = datos(c.getSource().getServer()).spawn;
+					c.getSource().sendSuccess(() -> Component.literal(spawn == null
+							? "No hay spawn del Limbo: se llega a un lugar seguro cerca de donde estabas."
+							: "Spawn del Limbo: " + spawn.getX() + " " + spawn.getY() + " " + spawn.getZ()).withStyle(ChatFormatting.GRAY), false);
+					return 1;
+				})
+				.then(Commands.literal("quitar").executes(c -> {
+					Datos d = datos(c.getSource().getServer());
+					d.spawn = null;
+					d.setDirty();
+					c.getSource().sendSuccess(() -> Component.literal("Spawn del Limbo quitado.").withStyle(ChatFormatting.GRAY), true);
+					return 1;
+				}))
+				.then(Commands.argument("coordenadas", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos()).executes(c -> {
+					BlockPos pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getBlockPos(c, "coordenadas");
+					Datos d = datos(c.getSource().getServer());
+					d.spawn = pos.immutable();
+					d.setDirty();
+					c.getSource().sendSuccess(() -> Component.literal("Spawn del Limbo: " + pos.getX() + " " + pos.getY() + " " + pos.getZ()
+							+ ". Ahí llega el que es mandado al Limbo.").withStyle(ChatFormatting.GRAY), true);
+					return 1;
+				})));
 		dispatcher.register(Commands.literal("limbo").requires(s -> s.hasPermission(2))
 				.then(Commands.literal("devolver")
 						.executes(c -> devolver(c.getSource(), java.util.List.of(c.getSource().getPlayerOrException())))

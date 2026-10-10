@@ -133,6 +133,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.TungSahurEntity> TUNG_TUNG_TUNG_SAHUR = registrar("tung_tung_tung_sahur",
 			EntityType.Builder.of(com.dedsafio4.bestias.TungSahurEntity::new, MobCategory.CREATURE).sized(0.6f, 2.1f).clientTrackingRange(8));
 
+	/** Wraith: el espectro con la guadaña (2,5 bloques de alto, flota). */
+	public static final EntityType<com.dedsafio4.bestias.WraithEntity> WRAITH = registrar("wraith",
+			EntityType.Builder.of(com.dedsafio4.bestias.WraithEntity::new, MobCategory.MONSTER).sized(0.8f, 2.5f).clientTrackingRange(8));
+
 	/** Gusano de Carne: chiquito y largo (la caja de choque es la de la cabeza). */
 	public static final EntityType<com.dedsafio4.bestias.GusanoCarneEntity> GUSANO_CARNE = registrar("gusano_carne",
 			EntityType.Builder.of(com.dedsafio4.bestias.GusanoCarneEntity::new, MobCategory.MONSTER).sized(0.5f, 0.45f).clientTrackingRange(8));
@@ -204,6 +208,10 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(CEREBRO_AMARILLO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(GARRAPATA_CEREBRAL, com.dedsafio4.bestias.GarrapataCerebralEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(FLASHBANG, com.dedsafio4.bestias.FlashbangEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(WRAITH, com.dedsafio4.bestias.WraithEntity.crearAtributos());
+		// Wraith: en el Overworld, a oscuras.
+		SpawnPlacements.register(WRAITH, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(TUNG_TUNG_TUNG_SAHUR, com.dedsafio4.bestias.TungSahurEntity.crearAtributos());
 		for (EntityType<com.dedsafio4.bestias.FantasmaEntity> fantasma : java.util.List.of(FANTASMA_AMARILLO, FANTASMA_BLANCO, FANTASMA_ROJO, FANTASMA_NEGRO)) {
 			FabricDefaultAttributeRegistry.register(fantasma, com.dedsafio4.bestias.FantasmaEntity.crearAtributos());
