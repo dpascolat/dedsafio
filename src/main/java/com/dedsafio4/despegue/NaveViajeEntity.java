@@ -142,7 +142,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		jugador.displayClientMessage(Component.literal("Combustible: " + combustible() + "%").withColor(NARANJA), true);
 	}
 
-	/** Usar una Batería de Nave: el tanque queda al 100%. */
+	/** Usar un Tanque de Dilitio: el tanque queda al 100%. */
 	public void cargarBateria(Player jugador, ItemStack bateria) {
 		if (estado() == DESPEGANDO || estado() == ATERRIZANDO || estado() == ESPACIO) {
 			jugador.displayClientMessage(Component.literal("No se puede cargar la nave en pleno vuelo.").withColor(AMARILLO), true);
@@ -247,7 +247,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 			cargar(jugador, enMano);
 			return InteractionResult.CONSUME;
 		}
-		if (enMano.is(ModDespegue.BATERIA_NAVE)) {
+		if (enMano.is(ModDespegue.TANQUE_DILITIO)) {
 			cargarBateria(jugador, enMano);
 			return InteractionResult.CONSUME;
 		}

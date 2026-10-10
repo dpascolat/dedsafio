@@ -4,8 +4,8 @@
 		64
 	],
 	"textures": {
-		"0": "dedsafio4:item/bateria_nave",
-		"particle": "dedsafio4:item/bateria_nave"
+		"0": "dedsafio4:item/tanque_dilitio",
+		"particle": "dedsafio4:item/tanque_dilitio"
 	},
 	"elements": [
 		{

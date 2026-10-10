@@ -12,17 +12,17 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 /**
- * Batería de Nave: click derecho sobre la Nave Espacial Biplaza (o usarla sentado adentro) le llena el tanque
+ * Tanque de Dilitio: click derecho sobre la Nave Espacial Biplaza (o usarla sentado adentro) le llena el tanque
  * al 100% de una.
  */
-public class BateriaNaveItem extends Item {
-	public BateriaNaveItem(Properties propiedades) {
+public class TanqueDilitioItem extends Item {
+	public TanqueDilitioItem(Properties propiedades) {
 		super(propiedades);
 	}
 
 	@Override
 	public Component getName(ItemStack pila) {
-		return Component.translatable(getDescriptionId()).withColor(0x6CF07A);
+		return Component.translatable(getDescriptionId()).withColor(0x6FD3F5);
 	}
 
 	@Override
@@ -35,9 +35,15 @@ public class BateriaNaveItem extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack pila, TooltipContext contexto, List<Component> texto, TooltipFlag bandera) {
-		texto.add(Component.literal("Carga la nave al ").withColor(0xC6CFD6).append(Component.literal("100%").withColor(0x6CF07A))
-				.append(Component.literal(" de una.").withColor(0xC6CFD6)));
-		texto.add(Component.literal("Click derecho sobre la nave").withColor(0xC6CFD6));
-		texto.add(Component.literal("(o úsala sentado adentro).").withColor(0xC6CFD6));
+		int blanco = 0xE8E8E8, celeste = 0x6FD3F5;
+		texto.add(Component.empty());
+		texto.add(Component.literal("Contenedor de alto rendimiento").withColor(blanco));
+		texto.add(Component.literal("alimentado principalmente por").withColor(blanco));
+		texto.add(Component.literal("Baterías de Dilitio").withColor(celeste).append(Component.literal(". Esencial").withColor(blanco)));
+		texto.add(Component.literal("para la propulsión y vuelo").withColor(blanco));
+		texto.add(Component.literal("de naves.").withColor(blanco));
+		texto.add(Component.empty());
+		texto.add(Component.literal("Este Tanque sirve para ir y").withColor(blanco));
+		texto.add(Component.literal("venir de un planeta.").withColor(blanco));
 	}
 }

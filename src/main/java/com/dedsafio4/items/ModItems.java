@@ -502,7 +502,7 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.subastas.ModVitrina.VITRINA_ITEM);
 						entradas.accept(com.dedsafio4.boveda.ModBoveda.BOVEDA_ITEM);
 						entradas.accept(com.dedsafio4.despegue.ModDespegue.COMBUSTIBLE);
-						entradas.accept(com.dedsafio4.despegue.ModDespegue.BATERIA_NAVE);
+						entradas.accept(com.dedsafio4.despegue.ModDespegue.TANQUE_DILITIO);
 						entradas.accept(com.dedsafio4.puertas.ModPuertas.PUERTA_ROSA_ITEM);
 						entradas.accept(com.dedsafio4.puertas.ModPuertas.PUERTA_VERDE_ITEM);
 						entradas.accept(DEDITA_CASINO);
