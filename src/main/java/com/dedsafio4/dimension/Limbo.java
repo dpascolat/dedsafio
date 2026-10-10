@@ -31,7 +31,7 @@ import java.util.UUID;
 
 /**
  * La Dimensión del Limbo: un lugar oscuro (sin sol ni luz del cielo, siempre de noche, cielo negro y ceniza en el
- * aire), de piedra oscura y polvo negro y gris. Se entra con "/admin limbo" (y con el mismo comando se vuelve).
+ * aire), plano: una sola capa de piedra, con árboles muertos, columnas, tumbas, faroles, arcos y ruinas encima. Se entra con "/admin limbo" (y con el mismo comando se vuelve).
  * El agua del Limbo te saca un corazón PARA SIEMPRE cada segundo que estés adentro (con 1 solo corazón no te saca
  * nada, hasta que vuelvas a tener más).
  * Los corazones perdidos quedan guardados en el mundo (siguen igual al morir, salir o reiniciar el servidor).

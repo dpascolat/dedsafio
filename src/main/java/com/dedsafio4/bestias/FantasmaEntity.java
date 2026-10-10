@@ -80,9 +80,10 @@ public class FantasmaEntity extends Monster implements GeoEntity {
 
 	public static AttributeSupplier.Builder crearAtributos() {
 		return Monster.createMonsterAttributes()
-				.add(Attributes.MAX_HEALTH, 16.0)
-				.add(Attributes.MOVEMENT_SPEED, 0.3)
-				.add(Attributes.FLYING_SPEED, 0.6)
+				// El triple de vida y de velocidad que al principio (16 de vida, 0,3 y 0,6).
+				.add(Attributes.MAX_HEALTH, 48.0)
+				.add(Attributes.MOVEMENT_SPEED, 0.9)
+				.add(Attributes.FLYING_SPEED, 1.8)
 				.add(Attributes.ATTACK_DAMAGE, 3.0)
 				.add(Attributes.FOLLOW_RANGE, 32.0);
 	}
