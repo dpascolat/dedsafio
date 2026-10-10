@@ -62,6 +62,37 @@ public final class Organos {
 				if (jugador.isAlive() && jugador.isInWater()) jugador.hurt(fuente, DANIO);
 			}
 		});
+		// Creepers Amarillos también arriba de las islas (los normales casi solo salen en las minas).
+		ServerTickEvents.END_WORLD_TICK.register(mundo -> {
+			if (!mundo.dimension().equals(DIMENSION) || mundo.getGameTime() % 200 != 0) return;
+			net.minecraft.world.entity.EntityType<?> tipo = com.dedsafio4.nave.ModEntidades.CREEPER_AMARILLO;
+			if (mundo.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL
+					|| !com.dedsafio4.bestias.AnuncioMob.activo(mundo.getServer(), tipo)) return;
+			for (ServerPlayer jugador : mundo.players()) {
+				if (jugador.isSpectator()) continue;
+				int cerca = mundo.getEntities(tipo, jugador.getBoundingBox().inflate(64), e -> e.level().canSeeSky(e.blockPosition())).size();
+				if (cerca >= 4) continue;
+				creeperArriba(mundo, jugador);
+			}
+		});
+	}
+
+	/** Pone un Creeper Amarillo arriba de una isla, a entre 24 y 56 bloques del jugador. */
+	private static void creeperArriba(ServerLevel mundo, ServerPlayer jugador) {
+		var azar = mundo.getRandom();
+		for (int intento = 0; intento < 8; intento++) {
+			double angulo = azar.nextDouble() * Math.PI * 2, distancia = 24 + azar.nextDouble() * 32;
+			int x = (int) Math.floor(jugador.getX() + Math.cos(angulo) * distancia);
+			int z = (int) Math.floor(jugador.getZ() + Math.sin(angulo) * distancia);
+			if (!mundo.hasChunkAt(new BlockPos(x, 0, z))) continue;
+			BlockPos pos = new BlockPos(x, mundo.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z);
+			BlockPos abajo = pos.below();
+			if (!mundo.getFluidState(abajo).isEmpty() || !mundo.getBlockState(abajo).isFaceSturdy(mundo, abajo, net.minecraft.core.Direction.UP)) continue;
+			if (!mundo.getBlockState(pos).getCollisionShape(mundo, pos).isEmpty() || !mundo.getBlockState(pos.above()).getCollisionShape(mundo, pos.above()).isEmpty()) continue;
+			if (mundo.getNearestPlayer(x + 0.5, pos.getY(), z + 0.5, 20, false) != null) continue;
+			com.dedsafio4.nave.ModEntidades.CREEPER_AMARILLO.spawn(mundo, pos, net.minecraft.world.entity.MobSpawnType.NATURAL);
+			return;
+		}
 	}
 
 	/** Arriba de la isla flotante más cercana (buscando en vueltas cada vez más grandes); si no hay, donde se pueda. */
