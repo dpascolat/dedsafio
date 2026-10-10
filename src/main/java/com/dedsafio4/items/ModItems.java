@@ -220,8 +220,9 @@ public final class ModItems {
 	public static final Item TROZO_AMARILLO = registrar("trozo_amarillo", new Item(new Item.Properties()));
 	/** Tótem Glebanoide: variante del Nutritótem; por ahora te salva de morir si lo tienes en la mano. */
 	public static final Item TOTEM_GLEBANOIDE = registrar("totem_glebanoide", new TotemGlebanoideItem(new Item.Properties()));
-	/** Corazón Violeta: por ahora no hace nada. */
-	public static final Item CORAZON_VIOLETA = registrar("corazon_violeta", new Item(new Item.Properties()));
+	/** Corazón del Limbo (el violeta): al comerlo, la barra de salud vuelve a 20 (devuelve los corazones del Limbo, saca los extra). */
+	public static final Item CORAZON_VIOLETA = registrar("corazon_violeta", new CorazonLimboItem(new Item.Properties().rarity(Rarity.RARE)
+			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).alwaysEdible().build())));
 	/** Corazón Dorado: por ahora no hace nada. */
 	public static final Item CORAZON_DORADO = registrar("corazon_dorado", new Item(new Item.Properties()));
 	/** Sin Alma: con click derecho abre la G. */

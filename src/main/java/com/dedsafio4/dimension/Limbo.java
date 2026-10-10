@@ -223,6 +223,13 @@ public final class Limbo {
 				}))));
 	}
 
+	/** Le devuelve todos los corazones que perdió para siempre (lo usa el Corazón del Limbo). */
+	public static void devolverCorazones(ServerPlayer p) {
+		Datos d = datos(p.server);
+		if (d.perdidos.remove(p.getUUID()) != null) d.setDirty();
+		aplicar(p, 0);
+	}
+
 	private static int devolver(CommandSourceStack fuente, Collection<ServerPlayer> jugadores) {
 		Datos d = datos(fuente.getServer());
 		for (ServerPlayer p : jugadores) {

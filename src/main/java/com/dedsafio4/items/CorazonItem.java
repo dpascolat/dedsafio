@@ -38,6 +38,11 @@ public class CorazonItem extends Item {
 		return m == null ? 0 : m.amount();
 	}
 
+	/** Le saca todos los corazones extra que le dieron los Corazones (lo usa el Corazón del Limbo). */
+	public static void sacarExtra(LivingEntity quien) {
+		ponerExtra(quien, 0);
+	}
+
 	private static void ponerExtra(LivingEntity quien, double cantidad) {
 		AttributeInstance vida = quien.getAttribute(Attributes.MAX_HEALTH);
 		if (vida == null) return;
