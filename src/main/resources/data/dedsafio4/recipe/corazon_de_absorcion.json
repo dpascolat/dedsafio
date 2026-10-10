@@ -1,0 +1,21 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"OOO",
+		"OCO",
+		"OOO"
+	],
+	"key": {
+		"O": {
+			"item": "minecraft:gold_block"
+		},
+		"C": {
+			"item": "dedsafio4:corazon_violeta"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:corazon_dorado",
+		"count": 1
+	}
+}

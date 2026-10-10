@@ -223,8 +223,9 @@ public final class ModItems {
 	/** Corazón del Limbo (el violeta): al comerlo, la barra de salud vuelve a 20 (devuelve los corazones del Limbo, saca los extra). */
 	public static final Item CORAZON_VIOLETA = registrar("corazon_violeta", new CorazonLimboItem(new Item.Properties().rarity(Rarity.RARE)
 			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).alwaysEdible().build())));
-	/** Corazón Dorado: por ahora no hace nada. */
-	public static final Item CORAZON_DORADO = registrar("corazon_dorado", new Item(new Item.Properties()));
+	/** Corazón de Absorción (el dorado): al comerlo da Absorción V por 3 minutos. */
+	public static final Item CORAZON_DORADO = registrar("corazon_dorado", new CorazonAbsorcionItem(new Item.Properties().rarity(Rarity.RARE)
+			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).alwaysEdible().build())));
 	/** Sin Alma: con click derecho abre la G. */
 	public static final Item SIN_ALMA = registrar("sin_alma", new SinAlmaItem(new Item.Properties().stacksTo(1)));
 	/** Alma: con click derecho abre la G (como el Sin Alma). */
