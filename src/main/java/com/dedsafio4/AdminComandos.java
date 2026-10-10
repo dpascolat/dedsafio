@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
  * /admin no_boss → el admin que lo usa ya no se puede subir a los jefes (Qumara, T-Rex).
  * /admin boss    → se puede volver a subir.
  * /admin organos → ir a la Dimensión de los Órganos (o volver al Overworld si ya estás ahí).
+ * /admin limbo    → ir al Limbo (o volver al Overworld si ya estás ahí).
  * Se guarda en el jugador (sigue igual después de reiniciar).
  */
 public final class AdminComandos {
@@ -40,7 +41,9 @@ public final class AdminComandos {
 					.then(Commands.literal("no_boss").executes(c -> cambiar(c.getSource().getPlayerOrException(), false)))
 					.then(Commands.literal("boss").executes(c -> cambiar(c.getSource().getPlayerOrException(), true)))
 					.then(Commands.literal("organos").executes(c ->
-							com.dedsafio4.dimension.Organos.viajar(c.getSource().getPlayerOrException()))));
+							com.dedsafio4.dimension.Organos.viajar(c.getSource().getPlayerOrException())))
+					.then(Commands.literal("limbo").executes(c ->
+							com.dedsafio4.dimension.Limbo.viajar(c.getSource().getPlayerOrException()))));
 		}
 	}
 
