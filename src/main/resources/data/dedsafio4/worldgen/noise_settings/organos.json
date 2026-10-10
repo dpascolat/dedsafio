@@ -53,8 +53,8 @@
 									"type": "minecraft:abs",
 									"argument": {
 										"type": "minecraft:y_clamped_gradient",
-										"from_y": 35,
-										"to_y": 215,
+										"from_y": 0,
+										"to_y": 270,
 										"from_value": -3.0,
 										"to_value": 3.0
 									}
@@ -69,7 +69,7 @@
 							"argument1": {
 								"type": "minecraft:noise",
 								"noise": "minecraft:continentalness",
-								"xz_scale": 4.0,
+								"xz_scale": 2.0,
 								"y_scale": 0.0
 							},
 							"argument2": {
@@ -83,7 +83,7 @@
 								}
 							}
 						},
-						"argument2": -1.15
+						"argument2": -1.0
 					}
 				}
 			}
@@ -124,8 +124,8 @@
 								"type": "minecraft:abs",
 								"argument": {
 									"type": "minecraft:y_clamped_gradient",
-									"from_y": 35,
-									"to_y": 215,
+									"from_y": 0,
+									"to_y": 270,
 									"from_value": -3.0,
 									"to_value": 3.0
 								}
@@ -140,7 +140,7 @@
 						"argument1": {
 							"type": "minecraft:noise",
 							"noise": "minecraft:continentalness",
-							"xz_scale": 4.0,
+							"xz_scale": 2.0,
 							"y_scale": 0.0
 						},
 						"argument2": {
@@ -154,7 +154,7 @@
 							}
 						}
 					},
-					"argument2": -1.15
+					"argument2": -1.0
 				}
 			}
 		},
