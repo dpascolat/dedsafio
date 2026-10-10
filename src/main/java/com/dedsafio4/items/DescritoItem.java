@@ -45,6 +45,20 @@ public class DescritoItem extends Item {
 		return Component.literal(texto).withStyle(color(rgb));
 	}
 
+	/** Gema Roja (la sueltan los Fantasmas Rojos). */
+	public static void gemaRoja(List<Component> t) {
+		t.add(parte("Una gema que brilla en la oscuridad", 0xE8E8E8));
+		t.add(parte("del Limbo.", 0xE8E8E8));
+		t.add(Component.empty());
+		t.add(parte("✦ La sueltan los ", GRIS).append(parte("Fantasmas Rojos", ROJO)).append(parte(" (20%)", AMARILLO)));
+	}
+
+	/** Tenedor Simple (se usa para el Tridente del Limbo). */
+	public static void tenedorSimple(List<Component> t) {
+		t.add(parte("Un simple Tenedor", 0xE8E8E8));
+		t.add(parte("de Hierro.", 0xE8E8E8));
+	}
+
 	/** Billete de Autobús (la Tarjeta Rosa). */
 	public static void billeteAutobus(List<Component> t) {
 		t.add(parte("Necesitas uno para", GRIS));

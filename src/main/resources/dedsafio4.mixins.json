@@ -28,7 +28,8 @@
 		"StoredUserEntryAccessor",
 		"ThrownEnderpearlMixin",
 		"TridenteLimboMixin",
-		"TridenteItemMixin"
+		"TridenteItemMixin",
+		"RecetaEnDescripcionMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

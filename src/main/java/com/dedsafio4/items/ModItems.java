@@ -305,6 +305,12 @@ public final class ModItems {
 	public static final Item WRAITH_SPAWN_EGG = registrar("wraith_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.WRAITH, 0x2A2D33, 0x9AA0A6, new Item.Properties(),
 					HuevoConDescripcion::wraith));
+	/** Gema Roja: la sueltan los Fantasmas Rojos (20%). La textura brilla (animada). */
+	public static final Item GEMA_ROJA = registrar("gema_roja",
+			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaRoja));
+	/** Tenedor Simple: de hierro; se usa para el Tridente del Limbo. */
+	public static final Item TENEDOR_SIMPLE = registrar("tenedor_simple",
+			new DescritoItem(new Item.Properties().stacksTo(16), DescritoItem::tenedorSimple));
 	public static final Item GUSANO_CARNE_SPAWN_EGG = registrar("gusano_carne_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.GUSANO_CARNE, 0x9A3A22, 0xB7C23A, new Item.Properties(),
 					HuevoConDescripcion::gusanoCarne));
@@ -591,6 +597,8 @@ public final class ModItems {
 						entradas.accept(NAUTILUS_OSEO_SPAWN_EGG);
 						entradas.accept(CEREBRO_AMARILLO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
+						entradas.accept(TENEDOR_SIMPLE);
+						entradas.accept(GEMA_ROJA);
 						entradas.accept(FLASHBANG_SPAWN_EGG);
 						entradas.accept(WRAITH_SPAWN_EGG);
 						entradas.accept(FANTASMA_AMARILLO_SPAWN_EGG);

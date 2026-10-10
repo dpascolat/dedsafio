@@ -33,7 +33,8 @@
 		"ScreenFondoMixin",
 		"TextureAtlasMixin",
 		"TridenteModeloMixin",
-		"TridenteTooltipMixin"
+		"TridenteTooltipMixin",
+		"RecetaTooltipMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

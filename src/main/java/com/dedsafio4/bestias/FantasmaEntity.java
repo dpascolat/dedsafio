@@ -42,7 +42,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * Los fantasmas del Limbo (del Dedsafío 3). Vuelan y persiguen a los jugadores:
  * - Fantasma Amarillo: si te golpea, te mata al instante (ni el tótem te salva) y desaparece.
  * - Fantasma Blanco: golpea a gran velocidad y te da Lentitud.
- * - Fantasma Rojo: golpea a gran velocidad.
+ * - Fantasma Rojo: golpea a gran velocidad. Suelta una Gema Roja el 20% de las veces.
  * - Fantasma Negro: cada golpe te quita un corazón para siempre (como el agua del Limbo; vuelve con /limbo devolver).
  * Cuando ven a un jugador vuelan derecho hacia él, suave y rápido (el triple que al principio), y como son
  * fantasmas atraviesan las paredes. Sin nadie cerca, flotan despacio por ahí.
@@ -173,6 +173,12 @@ public class FantasmaEntity extends Monster implements GeoEntity {
 			vivo.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 1), this);
 		}
 		return pego;
+	}
+
+	@Override
+	protected void dropCustomDeathLoot(ServerLevel mundo, DamageSource fuente, boolean jugadorLoMato) {
+		super.dropCustomDeathLoot(mundo, fuente, jugadorLoMato);
+		if (rojo() && random.nextFloat() < 0.2f) spawnAtLocation(com.dedsafio4.items.ModItems.GEMA_ROJA);
 	}
 
 	// Vuela: no se cae ni le pasa nada al caer.
