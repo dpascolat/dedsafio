@@ -24,6 +24,7 @@
 		"PlayerGuardarInventarioMixin",
 		"PotionBrewingMixin",
 		"RangedAttributeMixin",
+		"SinIllagersMixin",
 		"SpawnPlacementsMixin",
 		"StoredUserEntryAccessor",
 		"ThrownEnderpearlMixin",

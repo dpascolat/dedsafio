@@ -218,7 +218,7 @@ public final class ModItems {
 	public static final Item TOTEM_FRERICO = registrar("totem_frerico", new TotemFrericoItem(new Item.Properties()));
 	/** Trozo Amarillo: ítem nuevo (por ahora sin uso; el nombre y lo que hace los dice el usuario). */
 	public static final Item TROZO_AMARILLO = registrar("trozo_amarillo", new Item(new Item.Properties()));
-	/** Tótem Glebanoide: variante del Nutritótem; por ahora te salva de morir si lo tienes en la mano. */
+	/** Tótem Glebanoide: variante del Nutritótem (el tótem de Minecraft); por ahora te salva de morir si lo tienes en la mano. */
 	public static final Item TOTEM_GLEBANOIDE = registrar("totem_glebanoide", new TotemGlebanoideItem(new Item.Properties()));
 	/** Tótem Limbo: te salva de morir (en la mano) y deja la barra de salud en 20 (devuelve los corazones del Limbo, saca los extra). */
 	public static final Item TOTEM_LIMBO = registrar("totem_limbo", new TotemLimboItem(new Item.Properties()));
