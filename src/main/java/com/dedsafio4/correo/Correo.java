@@ -41,7 +41,8 @@ import java.util.UUID;
 /**
  * El correo del Buzón (el bloque Mensajero). Con el "+" cualquier jugador escribe un mensaje a otro y pone objetos
  * en la grilla (se le sacan al mandarlo); los admins también pueden mandarlo a "todos" (cada uno recibe una copia de
- * los objetos). El que lo recibe lo abre en el buzón, saca los objetos de la grilla y lo puede borrar.
+ * los objetos). El que lo recibe lo abre en el buzón y saca los objetos de la grilla; cuando lo cierra sin nada
+ * adentro (o si nunca tuvo objetos), el mensaje desaparece.
  * Arriba a la derecha, debajo de las deditas, aparece un sobre con cuántos mensajes tiene sin leer.
  * Todo queda guardado en el mundo.
  */
@@ -283,7 +284,15 @@ public final class Correo {
 		Datos d = datos(p.server);
 		Carta c = buscar(d, p, id);
 		if (c == null) return;
-		d.restantes.computeIfAbsent(p.getUUID(), k -> new HashMap<>()).put(id, objetos);
+		if (objetos.isEmpty()) {
+			// Ya lo leyó y no le queda nada por sacar (o nunca tuvo objetos): el mensaje desaparece.
+			d.marcar(d.borradas, p.getUUID(), c.id());
+			Map<Integer, List<ItemStack>> r = d.restantes.get(p.getUUID());
+			if (r != null) r.remove(c.id());
+			limpiar(d, c);
+		} else {
+			d.restantes.computeIfAbsent(p.getUUID(), k -> new HashMap<>()).put(id, objetos);
+		}
 		d.setDirty();
 		enviarBuzon(p);
 	}

@@ -19,7 +19,8 @@ import java.util.List;
 /**
  * Un mensaje del Buzón, como en las imágenes: "<< ATRÁS" arriba a la izquierda, el título "Mensaje", arriba el texto
  * (o los campos "Para:" y "Mensaje:" si se está escribiendo), la grilla de 9×3 (como un cofre) con bordes de arcoíris para los objetos,
- * "ENVIAR" (o "BORRAR" si es uno recibido) y el inventario abajo.
+ * "ENVIAR" (si se está escribiendo) y el inventario abajo. Un mensaje recibido desaparece solo cuando se cierra sin
+ * objetos adentro.
  */
 public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
 	private EditBox para;
@@ -46,14 +47,7 @@ public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
 		}));
 		int yBoton = t + CorreoMenu.GRILLA_Y + CorreoMenu.FILAS * CorreoMenu.CELDA_H + 3;
 		int xBoton = l + CorreoMenu.GRILLA_X + CorreoMenu.COLUMNAS * CorreoMenu.CELDA_W - 50;
-		if (menu.leyendo()) {
-			addRenderableWidget(new BotonCajero(xBoton, yBoton, 50, 13, "BORRAR", () -> {
-				// Primero se cierra (así el servidor guarda lo que quedó en la grilla y lo devuelve al borrar).
-				minecraft.player.closeContainer();
-				ClientPlayNetworking.send(new Correo.AccionPayload("borrar", menu.carta()));
-				minecraft.setScreen(new BuzonScreen());
-			}));
-		} else {
+		if (!menu.leyendo()) {
 			para = new EditBox(font, l + 44, t + 27, 132, 12, Component.literal("Para"));
 			para.setMaxLength(16);
 			para.setHint(Component.literal("nombre del jugador").withColor(0xFF5A6070));
