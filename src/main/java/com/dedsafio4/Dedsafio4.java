@@ -64,6 +64,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.disfraz.Disfraces.registrar();
 		com.dedsafio4.bestias.AnuncioMob.registrar();
 		com.dedsafio4.aviso.Aviso.registrar();
+		com.dedsafio4.bestias.CreeperAmarilloEntity.registrar();
 		NombreOculto.registrar();
 		com.dedsafio4.dimension.Limbo.registrar();
 		com.dedsafio4.bloques.EntregaMisionBlock.registrar();
