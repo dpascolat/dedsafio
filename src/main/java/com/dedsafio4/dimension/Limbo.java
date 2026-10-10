@@ -32,7 +32,7 @@ import java.util.UUID;
 /**
  * La Dimensión del Limbo: un lugar oscuro (sin sol ni luz del cielo, siempre de noche, cielo negro y ceniza en el
  * aire), plano: una sola capa de piedra, con árboles muertos, columnas, tumbas, faroles, arcos y ruinas encima. Se entra con "/admin limbo" (y con el mismo comando se vuelve).
- * El agua del Limbo te saca un corazón PARA SIEMPRE cada segundo que estés adentro (con 1 solo corazón no te saca
+ * El agua del Limbo te pega (1 corazón por segundo, la armadura no sirve) y te saca un corazón PARA SIEMPRE cada segundo que estés adentro (con 1 solo corazón no te saca
  * nada, hasta que vuelvas a tener más).
  * Los corazones perdidos quedan guardados en el mundo (siguen igual al morir, salir o reiniciar el servidor).
  * "/limbo devolver [jugadores]" se los devuelve; "/limbo ver <jugador>" dice cuántos perdió.
@@ -46,6 +46,8 @@ public final class Limbo {
 
 	public static final ResourceKey<Level> DIMENSION = ResourceKey.create(Registries.DIMENSION,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "limbo"));
+	public static final ResourceKey<net.minecraft.world.damagesource.DamageType> DANIO_AGUA = ResourceKey.create(Registries.DAMAGE_TYPE,
+			ResourceLocation.fromNamespaceAndPath("dedsafio4", "agua_limbo"));
 	private static final ResourceLocation MODIFICADOR = ResourceLocation.fromNamespaceAndPath("dedsafio4", "limbo_corazones");
 
 	/** Cuántos corazones perdió cada jugador en el agua del Limbo. */
@@ -118,8 +120,10 @@ public final class Limbo {
 			if (server.getTickCount() % 20 != 0) return;
 			Datos d = datos(server);
 			for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-				// En el agua del Limbo: un corazón menos, para siempre.
+				// En el agua del Limbo: te pega (1 corazón, la armadura no sirve) y un corazón menos, para siempre.
 				if (p.isAlive() && !p.isCreative() && !p.isSpectator() && p.level().dimension().equals(DIMENSION) && p.isInWater()) {
+					p.hurt(new net.minecraft.world.damagesource.DamageSource(server.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
+							.getHolderOrThrow(DANIO_AGUA)), 2f);
 					quitarCorazon(p, "El agua del Limbo te quitó un corazón para siempre.");
 				}
 				// La vida máxima de cada uno (también después de morir o al entrar al mundo).

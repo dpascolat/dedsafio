@@ -147,6 +147,8 @@
 	"entity.dedsafio4.nave_viaje": "Nave Espacial Biplaza",
 	"death.attack.agua_organos": "%1$s se disolvió en el agua de los Órganos",
 	"death.attack.agua_organos.player": "%1$s se disolvió en el agua de los Órganos escapando de %2$s",
+	"death.attack.agua_limbo": "%1$s se ahogó en el agua del Limbo",
+	"death.attack.agua_limbo.player": "%1$s se ahogó en el agua del Limbo escapando de %2$s",
 	"block.dedsafio4.robot_dormido": "Aldeano Phora Dormido",
 	"item.dedsafio4.llave": "Llave de Cobre",
 	"item.dedsafio4.fruta_solaria": "Fruta Solaria",
