@@ -66,12 +66,11 @@ public class DescritoItem extends Item {
 		t.add(parte("✦ ", 0xFF6E8A).append(parte("Fantasma Amarillo", ROJO)));
 	}
 
-	/** Gema Roja (la sueltan los Fantasmas Rojos). */
+	/** Esencia Roja (la suelta el Fantasma Rojo). */
 	public static void gemaRoja(List<Component> t) {
-		t.add(parte("Una gema que brilla en la oscuridad", 0xE8E8E8));
-		t.add(parte("del Limbo.", 0xE8E8E8));
+		t.add(parte("Consíguelo al Eliminar:", 0xE8E8E8));
 		t.add(Component.empty());
-		t.add(parte("✦ La sueltan los ", GRIS).append(parte("Fantasmas Rojos", ROJO)).append(parte(" (20%)", AMARILLO)));
+		t.add(parte("✦ ", 0xFF6E8A).append(parte("Fantasma Rojo", ROJO)));
 	}
 
 	/** Tenedor Simple (se usa para el Tridente del Limbo). */
