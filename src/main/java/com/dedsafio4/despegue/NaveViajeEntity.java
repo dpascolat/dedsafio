@@ -142,6 +142,22 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		jugador.displayClientMessage(Component.literal("Combustible: " + combustible() + "%").withColor(NARANJA), true);
 	}
 
+	/** Usar una Batería de Nave: el tanque queda al 100%. */
+	public void cargarBateria(Player jugador, ItemStack bateria) {
+		if (estado() == DESPEGANDO || estado() == ATERRIZANDO || estado() == ESPACIO) {
+			jugador.displayClientMessage(Component.literal("No se puede cargar la nave en pleno vuelo.").withColor(AMARILLO), true);
+			return;
+		}
+		if (combustible() >= 100) {
+			jugador.displayClientMessage(Component.literal("La nave ya está al 100%.").withColor(AMARILLO), true);
+			return;
+		}
+		combustible(100);
+		if (!jugador.getAbilities().instabuild) bateria.shrink(1);
+		level().playSound(null, blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.NEUTRAL, 1f, 1.4f);
+		jugador.displayClientMessage(Component.literal("Combustible: 100%").withColor(NARANJA), true);
+	}
+
 	public int estado() {
 		return entityData.get(ESTADO);
 	}
@@ -229,6 +245,10 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		ItemStack enMano = jugador.getItemInHand(mano);
 		if (enMano.is(ModDespegue.COMBUSTIBLE)) {
 			cargar(jugador, enMano);
+			return InteractionResult.CONSUME;
+		}
+		if (enMano.is(ModDespegue.BATERIA_NAVE)) {
+			cargarBateria(jugador, enMano);
 			return InteractionResult.CONSUME;
 		}
 		if (estado() == DESPEGANDO || estado() == ATERRIZANDO || estado() == ESPACIO) return InteractionResult.PASS;
