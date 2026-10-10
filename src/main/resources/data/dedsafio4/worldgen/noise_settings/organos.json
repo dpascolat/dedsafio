@@ -53,10 +53,10 @@
 									"type": "minecraft:abs",
 									"argument": {
 										"type": "minecraft:y_clamped_gradient",
-										"from_y": 95,
-										"to_y": 155,
-										"from_value": -1.0,
-										"to_value": 1.0
+										"from_y": 35,
+										"to_y": 215,
+										"from_value": -3.0,
+										"to_value": 3.0
 									}
 								}
 							}
@@ -124,10 +124,10 @@
 								"type": "minecraft:abs",
 								"argument": {
 									"type": "minecraft:y_clamped_gradient",
-									"from_y": 95,
-									"to_y": 155,
-									"from_value": -1.0,
-									"to_value": 1.0
+									"from_y": 35,
+									"to_y": 215,
+									"from_value": -3.0,
+									"to_value": 3.0
 								}
 							}
 						}
