@@ -32,7 +32,8 @@
 		"PlayerRendererNaveMixin",
 		"ScreenFondoMixin",
 		"TextureAtlasMixin",
-		"TridenteModeloMixin"
+		"TridenteModeloMixin",
+		"TridenteTooltipMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

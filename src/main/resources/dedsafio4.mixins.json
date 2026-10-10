@@ -27,7 +27,8 @@
 		"SpawnPlacementsMixin",
 		"StoredUserEntryAccessor",
 		"ThrownEnderpearlMixin",
-		"TridenteLimboMixin"
+		"TridenteLimboMixin",
+		"TridenteItemMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
