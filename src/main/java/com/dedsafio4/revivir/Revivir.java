@@ -49,8 +49,10 @@ import java.util.UUID;
  *   244    cae al piso (acostado), polvo turquesa al chocar
  *   276    se levanta; 308 queda parado; 340 termina
  * Todo el tiempo giran 4 aros parados (verde azulejo y amarillo) en el centro de la fogata.
- * El servidor mueve al jugador tick por tick (puede mirar para cualquier lado, pero no caminar) y les avisa a todos
- * (Payload); los círculos, aros y ondas los dibuja cada cliente como formas lisas (RevivirCliente).
+ * Hasta que cae, el jugador de verdad está en modo espectador y el que hace todo es una copia con su skin (la dibuja
+ * cada cliente, RevivirCliente). Cuando la copia toca el piso, el jugador vuelve a su modo de juego en ese lugar y él
+ * mismo queda acostado y se levanta (el servidor lo mueve tick por tick). Los círculos, aros y ondas también los dibuja
+ * cada cliente como formas lisas.
  */
 public final class Revivir {
 	private Revivir() {}
@@ -76,12 +78,47 @@ public final class Revivir {
 		return new Vec3(-Mth.sin(r), 0, Mth.cos(r));
 	}
 
-	/** La pose en cada momento (null = la normal). La usan el servidor y el cliente del propio jugador. */
+	/** Cuándo la copia toca el piso y vuelve el jugador de verdad. */
+	public static final int CAIDA = 258;
+
+	/** La pose del jugador de verdad (desde que cae; null = la normal). La usan el servidor y el cliente del propio jugador. */
 	public static Pose pose(int t) {
-		if (t >= 100 && t < 124) return Pose.CROUCHING;   // sale agachado
 		if (t >= 258 && t < 276) return Pose.SLEEPING;    // acostado boca arriba en el piso
 		if (t >= 276 && t < 292) return Pose.CROUCHING;   // sentado → de pie
 		return null;
+	}
+
+	private static double easeOut(double k) {
+		return 1 - (1 - k) * (1 - k);
+	}
+
+	private static double easeInOut(double k) {
+		return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+	}
+
+	/** Dónde están los pies (de la copia o del jugador) en el momento t. La usan el servidor y los clientes. */
+	public static Vec3 posicion(double t, Vec3 centro, Vec3 adelante, double pisoCaida) {
+		double avance = 0, altura = 0;
+		if (t < 100) {
+			altura = 0;
+		} else if (t < 124) {
+			altura = 1.7 * ((t - 100) / 24.0);
+		} else if (t < 184) {
+			altura = 1.7 + (8.3 - 1.7) * easeOut((t - 124) / 60.0);
+		} else if (t < 244) {
+			double k = (t - 184) / 60.0;
+			avance = 9 * easeInOut(k);
+			altura = 8.3 + 0.3 * Math.sin(Math.PI * k);
+		} else if (t < 258) {
+			double k = (t - 244) / 14.0;
+			avance = 9;
+			altura = 8.3 + (pisoCaida - centro.y - 8.3) * k * k;
+		} else {
+			avance = 9;
+			altura = pisoCaida - centro.y;
+			if (t < 262) altura += 0.25 * Math.sin(Math.PI * (t - 258) / 4.0);   // el rebote
+		}
+		return centro.add(adelante.scale(avance)).add(0, altura, 0);
 	}
 
 	/** Una cinemática en curso: el jugador, el centro de la fogata, hacia dónde sale y en qué tick va. */
@@ -91,11 +128,15 @@ public final class Revivir {
 		final Vec3 centro, adelante;
 		final float yaw;
 		final double pisoCaida;
+		/** El modo de juego que tenía (mientras vuela la copia está en espectador). */
+		final net.minecraft.world.level.GameType modo;
+		boolean volvio;
 		int t;
 
 		Escena(ServerPlayer p) {
 			jugador = p.getUUID();
 			level = p.serverLevel();
+			modo = p.gameMode.getGameModeForPlayer();
 			centro = p.position();
 			yaw = p.getYRot();
 			adelante = Revivir.adelante(yaw);
@@ -116,7 +157,7 @@ public final class Revivir {
 				Escena e = it.next();
 				ServerPlayer p = server.getPlayerList().getPlayer(e.jugador);
 				if (p == null || !p.isAlive() || p.serverLevel() != e.level || e.t >= DURACION) {
-					if (p != null) terminar(p);
+					if (p != null) terminar(e, p);
 					it.remove();
 					continue;
 				}
@@ -136,9 +177,16 @@ public final class Revivir {
 
 	private static int empezar(CommandSourceStack fuente, Collection<ServerPlayer> jugadores) {
 		for (ServerPlayer p : jugadores) {
-			ESCENAS.removeIf(e -> e.jugador.equals(p.getUUID()));
+			for (Iterator<Escena> it = ESCENAS.iterator(); it.hasNext(); ) {
+				Escena vieja = it.next();
+				if (!vieja.jugador.equals(p.getUUID())) continue;
+				terminar(vieja, p);
+				it.remove();
+			}
 			Escena e = new Escena(p);
 			ESCENAS.add(e);
+			// El jugador mira como espectador; el que sale de la fogata es la copia con su skin.
+			p.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
 			// Que no le pase nada mientras está en la fogata y cuando cae.
 			p.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, DURACION + 40, 0, false, false, false));
 			p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, DURACION + 40, 4, false, false, false));
@@ -150,54 +198,39 @@ public final class Revivir {
 		return jugadores.size();
 	}
 
-	private static void terminar(ServerPlayer p) {
+	private static void terminar(Escena e, ServerPlayer p) {
+		volver(e, p);
 		p.setForcedPose(null);
 		p.setNoGravity(false);
 		p.fallDistance = 0;
 	}
 
+	/** El jugador vuelve a su modo de juego, donde cayó la copia. */
+	private static void volver(Escena e, ServerPlayer p) {
+		if (e.volvio) return;
+		e.volvio = true;
+		Vec3 pos = posicion(CAIDA, e.centro, e.adelante, e.pisoCaida);
+		p.setGameMode(e.modo);
+		p.connection.teleport(pos.x, pos.y, pos.z, 0, 0, EnumSet.of(RelativeMovement.X_ROT, RelativeMovement.Y_ROT));
+	}
+
 	// --- Cada tick ---
-
-	private static double easeOut(double k) {
-		return 1 - (1 - k) * (1 - k);
-	}
-
-	private static double easeInOut(double k) {
-		return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-	}
 
 	private static void tick(Escena e, ServerPlayer p) {
 		int t = e.t;
 		ServerLevel level = e.level;
 
-		// --- El jugador ---
-		double avance = 0, altura = 0;
-		if (t < 100) {
-			altura = 0;
-		} else if (t < 124) {
-			altura = 1.7 * ((t - 100) / 24.0);
-		} else if (t < 184) {
-			altura = 1.7 + (8.3 - 1.7) * easeOut((t - 124) / 60.0);
-		} else if (t < 244) {
-			double k = (t - 184) / 60.0;
-			avance = 9 * easeInOut(k);
-			altura = 8.3 + 0.3 * Math.sin(Math.PI * k);
-		} else if (t < 258) {
-			double k = (t - 244) / 14.0;
-			avance = 9;
-			altura = 8.3 + (e.pisoCaida - e.centro.y - 8.3) * k * k;
-		} else {
-			avance = 9;
-			altura = e.pisoCaida - e.centro.y;
-			if (t < 262) altura += 0.25 * Math.sin(Math.PI * (t - 258) / 4.0);   // el rebote
+		// --- El jugador: espectador hasta que cae la copia; después, él mismo acostado y levantándose ---
+		if (t >= CAIDA) {
+			volver(e, p);
+			p.setForcedPose(pose(t));
+			p.setNoGravity(true);
+			p.fallDistance = 0;
+			Vec3 pos = posicion(t, e.centro, e.adelante, e.pisoCaida);
+			// Solo la posición: la cámara queda libre.
+			p.connection.teleport(pos.x, pos.y, pos.z, 0, 0, EnumSet.of(RelativeMovement.X_ROT, RelativeMovement.Y_ROT));
+			p.setDeltaMovement(Vec3.ZERO);
 		}
-		p.setForcedPose(pose(t));
-		p.setNoGravity(true);
-		p.fallDistance = 0;
-		Vec3 pos = e.centro.add(e.adelante.scale(avance)).add(0, altura, 0);
-		// Solo la posición: la cámara queda libre.
-		p.connection.teleport(pos.x, pos.y, pos.z, 0, 0, EnumSet.of(RelativeMovement.X_ROT, RelativeMovement.Y_ROT));
-		p.setDeltaMovement(Vec3.ZERO);
 
 		// --- Sonidos y la tierra que salta al caer (los círculos, aros y ondas los dibuja el cliente) ---
 		if (t == 100) {

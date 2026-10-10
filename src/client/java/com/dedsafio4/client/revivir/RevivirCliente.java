@@ -23,7 +23,9 @@ import java.util.UUID;
  *   14,6 bloques en 8 s, aparecen rápido y se desvanecen.
  * - 4 aros parados que giran en el centro de la fogata (verde azulejo y amarillo, alternados).
  * - La onda roja cuando sale el jugador y el anillo de polvo turquesa donde cae.
- * Además, al propio jugador le pone la pose (agachado, acostado) para que también se vea así con F5.
+ * - La copia del jugador, con su skin, que hace todo hasta que cae al piso (el jugador de verdad, mientras, está en
+ *   espectador). Desde que cae, el jugador de verdad hace la animación; al propio jugador le pone la pose (acostado)
+ *   para que también se vea así con F5.
  */
 public final class RevivirCliente {
 	private RevivirCliente() {}
@@ -103,6 +105,66 @@ public final class RevivirCliente {
 			}
 		}
 		buffers.endBatch(RenderType.debugQuads());
+		// La copia con la skin, hasta que cae.
+		for (Escena e : ESCENAS) {
+			float t = mc.level.getGameTime() - e.inicio() + parcial;
+			if (t >= 0 && t < Revivir.CAIDA) copia(mc, buffers, contexto, e, t, camara);
+		}
+	}
+
+	private static net.minecraft.client.model.PlayerModel<net.minecraft.world.entity.LivingEntity> modeloAncho, modeloFino;
+
+	/** La copia del jugador con su skin, en su lugar y pose del momento t (como dibuja Minecraft a un jugador). */
+	private static void copia(Minecraft mc, MultiBufferSource.BufferSource buffers, WorldRenderContext contexto, Escena e, float t, Vec3 camara) {
+		var info = mc.getConnection() == null ? null : mc.getConnection().getPlayerInfo(e.jugador());
+		net.minecraft.client.resources.PlayerSkin skin = info != null ? info.getSkin()
+				: net.minecraft.client.resources.DefaultPlayerSkin.get(e.jugador());
+		boolean fino = skin.model() == net.minecraft.client.resources.PlayerSkin.Model.SLIM;
+		if (modeloAncho == null) {
+			modeloAncho = new net.minecraft.client.model.PlayerModel<>(mc.getEntityModels().bakeLayer(
+					net.minecraft.client.model.geom.ModelLayers.PLAYER), false);
+			modeloFino = new net.minecraft.client.model.PlayerModel<>(mc.getEntityModels().bakeLayer(
+					net.minecraft.client.model.geom.ModelLayers.PLAYER_SLIM), true);
+		}
+		var m = fino ? modeloFino : modeloAncho;
+		// Todo derecho, y después la pose del momento.
+		for (var parte : new net.minecraft.client.model.geom.ModelPart[]{m.head, m.hat, m.body, m.rightArm, m.leftArm, m.rightLeg,
+				m.leftLeg, m.leftSleeve, m.rightSleeve, m.leftPants, m.rightPants, m.jacket}) {
+			parte.resetPose();
+			parte.visible = true;
+		}
+		m.young = false;
+		boolean agachado = RevivirAnimacion.agachado(t);
+		m.crouching = agachado;
+		if (agachado) {
+			// Lo mismo que hace Minecraft al agacharse.
+			m.body.xRot = 0.5f;
+			m.body.y = 3.2f;
+			m.head.y = 4.2f;
+			m.rightArm.y = m.leftArm.y = 5.2f;
+			m.rightLeg.z = m.leftLeg.z = 4.0f;
+			m.rightLeg.y = m.leftLeg.y = 12.2f;
+		}
+		m.hat.copyFrom(m.head);
+		RevivirAnimacion.aplicar(m, t);
+		if (agachado) {
+			m.rightArm.xRot += 0.4f;
+			m.leftArm.xRot += 0.4f;
+			m.leftSleeve.copyFrom(m.leftArm);
+			m.rightSleeve.copyFrom(m.rightArm);
+		}
+
+		Vec3 pies = Revivir.posicion(t, e.centro(), e.adelante(), e.pisoCaida());
+		float yaw = (float) Math.toDegrees(Math.atan2(-e.adelante().x, e.adelante().z));
+		com.mojang.blaze3d.vertex.PoseStack pose = new com.mojang.blaze3d.vertex.PoseStack();
+		pose.translate(pies.x - camara.x, pies.y - camara.y, pies.z - camara.z);
+		pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180 - yaw));
+		pose.scale(-0.9375f, -0.9375f, 0.9375f);
+		pose.translate(0, -1.501f, 0);
+		int luz = net.minecraft.client.renderer.LevelRenderer.getLightColor(mc.level, net.minecraft.core.BlockPos.containing(pies.add(0, 0.5, 0)));
+		RenderType tipo = m.renderType(skin.texture());
+		m.renderToBuffer(pose, buffers.getBuffer(tipo), luz, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+		buffers.endBatch(tipo);
 	}
 
 	/** Los 2 círculos del piso: el relleno aurora (más transparente hacia adentro) y el borde turquesa. */
