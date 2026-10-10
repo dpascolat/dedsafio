@@ -112,11 +112,13 @@ public final class RuletaPisoCliente {
 
 		// --- La esfera aurora (luminosa: se suma a lo de atrás) ---
 		if (radioEsfera > 0) {
-			VertexConsumer luz = buffers.getBuffer(Aurora.TIPO);
 			float sube = 0.03f * Mth.sin(segundos * 1000 / 600f);
 			Vec3 c = esfera.add(0, sube, 0);
-			esferaAurora(luz, new Matrix4f().translate((float) (c.x - camara.x), (float) (c.y - camara.y), (float) (c.z - camara.z)),
-					c.subtract(camara), radioEsfera, segundos);
+			Matrix4f me = new Matrix4f().translate((float) (c.x - camara.x), (float) (c.y - camara.y), (float) (c.z - camara.z));
+			// Primero el cuerpo (colores transparentes normales, así se ve también de día) y encima el brillo.
+			esferaAurora(buffers.getBuffer(RenderType.debugQuads()), me, c.subtract(camara), radioEsfera, segundos, false);
+			buffers.endBatch(RenderType.debugQuads());
+			esferaAurora(buffers.getBuffer(Aurora.TIPO), me, c.subtract(camara), radioEsfera, segundos, true);
 			buffers.endBatch(Aurora.TIPO);
 		}
 	}
@@ -197,7 +199,8 @@ public final class RuletaPisoCliente {
 	 * de la silueta brilla más. Gira despacio sobre su eje (1 vuelta cada 19 s).
 	 * relativa: el centro de la esfera visto desde la cámara.
 	 */
-	private static void esferaAurora(VertexConsumer vc, Matrix4f m, Vec3 relativa, float radio, float segundos) {
+	/** brillo = false: el cuerpo (colores transparentes normales, para que se vea de día); true: la luz que se suma encima. */
+	private static void esferaAurora(VertexConsumer vc, Matrix4f m, Vec3 relativa, float radio, float segundos, boolean brillo) {
 		int lat = 20, lon = 40;
 		double giro = segundos / 3.0;
 		float t = segundos * 0.6f;
@@ -218,7 +221,9 @@ public final class RuletaPisoCliente {
 				}
 				for (int n : new int[]{0, 1, 2, 3, 3, 2, 1, 0}) {
 					float[] w = v[n];
-					vc.addVertex(m, w[0], w[1], w[2]).setColor(w[3], w[4], w[5], w[6]);
+					if (brillo) vc.addVertex(m, w[0], w[1], w[2]).setColor(w[3], w[4], w[5], w[6]);
+					else vc.addVertex(m, w[0], w[1], w[2]).setColor(Math.min(1, 0.15f + w[3] * 1.3f), Math.min(1, 0.35f + w[4] * 1.1f),
+							Math.min(1, 0.3f + w[5] * 1.2f), Math.min(0.85f, 0.3f + w[6] * 0.9f));
 				}
 			}
 		}
