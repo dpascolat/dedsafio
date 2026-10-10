@@ -32,7 +32,8 @@ import java.util.UUID;
 /**
  * La Dimensión del Limbo: un lugar oscuro (sin sol ni luz del cielo, siempre de noche, cielo negro y ceniza en el
  * aire), de piedra oscura y polvo negro y gris. Se entra con "/admin limbo" (y con el mismo comando se vuelve).
- * El agua del Limbo te saca un corazón PARA SIEMPRE cada segundo que estés adentro (te queda como mínimo 1).
+ * El agua del Limbo te saca un corazón PARA SIEMPRE cada segundo que estés adentro (con 1 solo corazón no te saca
+ * nada, hasta que vuelvas a tener más).
  * Los corazones perdidos quedan guardados en el mundo (siguen igual al morir, salir o reiniciar el servidor).
  * "/limbo devolver [jugadores]" se los devuelve; "/limbo ver <jugador>" dice cuántos perdió.
  * En el Limbo no se pueden poner bloques, romper bloques ni poner agua (ni ningún balde). En creativo, sí (para armarlo).
@@ -43,8 +44,6 @@ public final class Limbo {
 	public static final ResourceKey<Level> DIMENSION = ResourceKey.create(Registries.DIMENSION,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "limbo"));
 	private static final ResourceLocation MODIFICADOR = ResourceLocation.fromNamespaceAndPath("dedsafio4", "limbo_corazones");
-	/** La vida normal son 10 corazones: se pueden perder hasta 9. */
-	private static final int MAXIMO_PERDIDOS = 9;
 
 	/** Cuántos corazones perdió cada jugador en el agua del Limbo. */
 	static final class Datos extends SavedData {
@@ -112,13 +111,13 @@ public final class Limbo {
 	}
 
 	/**
-	 * Le saca un corazón para siempre (el agua del Limbo, el Fantasma Negro...), con el aviso y el latido. Siempre le
-	 * queda al menos 1. Se recupera con /limbo devolver.
+	 * Le saca un corazón para siempre (el agua del Limbo, el Fantasma Negro...), con el aviso y el latido. Si tiene un
+	 * solo corazón no le saca nada, hasta que vuelva a tener más de uno. Se recupera con /limbo devolver.
 	 */
 	public static void quitarCorazon(ServerPlayer p, String aviso) {
+		if (p.getMaxHealth() <= 2) return;
 		Datos d = datos(p.server);
 		int antes = d.perdidos.getOrDefault(p.getUUID(), 0);
-		if (antes >= MAXIMO_PERDIDOS) return;
 		d.perdidos.put(p.getUUID(), antes + 1);
 		d.setDirty();
 		aplicar(p, antes + 1);
