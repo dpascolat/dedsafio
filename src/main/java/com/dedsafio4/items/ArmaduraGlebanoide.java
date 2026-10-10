@@ -22,6 +22,7 @@ import java.util.Map;
 
 /**
  * La armadura Glebanoide (sin encantamientos; cada pieza da medio corazón extra mientras la tienes puesta):
+ *   Casco       4 de armadura, 3 de resistencia, 907 de durabilidad, reducción base ~16%
  *   Pechera     9 de armadura, 3 de resistencia, 592 de durabilidad, reducción base ~36%
  *   Pantalones  7 de armadura, 3 de resistencia, 1055 de durabilidad, reducción base ~28%
  *   Botas       4 de armadura, 3 de resistencia, 981 de durabilidad, reducción base ~16%
@@ -34,7 +35,7 @@ public final class ArmaduraGlebanoide {
 	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "glebanoide");
 
 	public static final Holder<ArmorMaterial> MATERIAL = Registry.registerForHolder(BuiltInRegistries.ARMOR_MATERIAL, ID,
-			new ArmorMaterial(Map.of(ArmorItem.Type.HELMET, 3, ArmorItem.Type.CHESTPLATE, 9, ArmorItem.Type.LEGGINGS, 7,
+			new ArmorMaterial(Map.of(ArmorItem.Type.HELMET, 4, ArmorItem.Type.CHESTPLATE, 9, ArmorItem.Type.LEGGINGS, 7,
 					ArmorItem.Type.BOOTS, 4, ArmorItem.Type.BODY, 11), 15, SoundEvents.ARMOR_EQUIP_NETHERITE,
 					() -> Ingredient.of(ModItems.CAPARAZON), List.of(new ArmorMaterial.Layer(ID)), 3f, 0f));
 

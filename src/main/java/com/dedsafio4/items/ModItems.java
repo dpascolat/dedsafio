@@ -324,6 +324,9 @@ public final class ModItems {
 	/** Corazón Glebanoide: con click derecho golpea a las criaturas de Gleba cercanas (enfrente o debajo). */
 	public static final Item CORAZON_GLEBANOIDE = registrar("corazon_glebanoide", new CorazonGlebanoideItem(new Item.Properties().rarity(Rarity.RARE)));
 	/** Pechera Glebanoide: 9 de armadura, 3 de resistencia y medio corazón extra. */
+	/** Casco Glebanoide: 4 de armadura, 3 de resistencia y medio corazón extra. */
+	public static final Item CASCO_GLEBANOIDE = registrar("casco_glebanoide",
+			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.HELMET, 907, 16, new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item PECHERA_GLEBANOIDE = registrar("pechera_glebanoide",
 			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.CHESTPLATE, 592, 36, new Item.Properties().rarity(Rarity.RARE)));
 	/** Pantalones Glebanoides: 7 de armadura, 3 de resistencia y medio corazón extra. */
@@ -628,6 +631,7 @@ public final class ModItems {
 						entradas.accept(TOTEM_LIMBO);
 						entradas.accept(ESPADA_GLEBANOIDE);
 						entradas.accept(CORAZON_GLEBANOIDE);
+						entradas.accept(CASCO_GLEBANOIDE);
 						entradas.accept(PECHERA_GLEBANOIDE);
 						entradas.accept(PANTALONES_GLEBANOIDES);
 						entradas.accept(BOTAS_GLEBANOIDES);
