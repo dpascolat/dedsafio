@@ -102,6 +102,17 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// Las puertas de 3x3 con llave: las dibuja su bloque principal.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.puertas.ModPuertas.PUERTA_ENTIDAD, com.dedsafio4.client.puertas.PuertaRenderer::new);
+		// El Soporte de Nave (2×2): lo dibuja su bloque principal; el ítem, con el mismo modelo achicado.
+		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+				com.dedsafio4.despegue.ModDespegue.SOPORTE_NAVE_ENTIDAD, com.dedsafio4.client.despegue.SoporteNaveRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.INSTANCE.register(
+				com.dedsafio4.despegue.ModDespegue.SOPORTE_NAVE_ITEM, (pila, modo, pose, buffers, luz, overlay) -> {
+					pose.pushPose();
+					pose.translate(0.5, 0.4, 0.5);
+					pose.scale(0.5f, 0.5f, 0.5f);
+					com.dedsafio4.client.despegue.SoporteNaveRenderer.dibujar(pose, buffers, luz, overlay);
+					pose.popPose();
+				});
 		// El Aldeano Robot dormido (bloque), con el mismo modelo del robot.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.robots.ModRobots.ROBOT_DORMIDO_ENTIDAD, com.dedsafio4.client.robots.RobotDormidoRenderer::new);

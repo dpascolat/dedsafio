@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
 /**
- * Dibuja la nave parada (ver NaveViajeModelo). Al despegar la nave se queda en la plataforma y lo que sube es este
+ * Dibuja la nave parada (ver NaveViajeModelo). Al despegar la nave se queda en el soporte y lo que sube es este
  * dibujo, cuadro a cuadro (NaveViajeEntity.altura), así la subida es suave y no a los tirones.
  */
 public class NaveViajeRenderer extends GeoEntityRenderer<NaveViajeEntity> {

@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
-/** La Plataforma de Despegue (sus tres bloques) y la nave que despega hacia la Dimensión de los Órganos. */
+/** El Soporte de Nave y la nave que despega hacia la Dimensión de los Órganos. */
 public final class ModDespegue {
 	private ModDespegue() {}
 
@@ -27,14 +27,13 @@ public final class ModDespegue {
 				.requiresCorrectToolForDrops();
 	}
 
-	/** El centro: se pone éste y arma el resto solo. */
-	public static final Block PLATAFORMA_DESPEGUE = bloque("plataforma_despegue", new PlataformaBlock(metal(MapColor.METAL)));
-	public static final Block PLATAFORMA_METAL = bloque("plataforma_metal", new Block(metal(MapColor.METAL)));
-	public static final Block PLATAFORMA_BORDE = bloque("plataforma_borde", new Block(metal(MapColor.COLOR_YELLOW)));
-
-	public static final Item PLATAFORMA_DESPEGUE_ITEM = item("plataforma_despegue", PLATAFORMA_DESPEGUE);
-	public static final Item PLATAFORMA_METAL_ITEM = item("plataforma_metal", PLATAFORMA_METAL);
-	public static final Item PLATAFORMA_BORDE_ITEM = item("plataforma_borde", PLATAFORMA_BORDE);
+	/** El Soporte de Nave (2×2 bloques): ahí se coloca la Nave Espacial Biplaza. */
+	public static final Block SOPORTE_NAVE = bloque("soporte_nave", new SoporteNaveBlock(metal(MapColor.METAL).noOcclusion()));
+	public static final Item SOPORTE_NAVE_ITEM = item("soporte_nave", SOPORTE_NAVE);
+	public static final net.minecraft.world.level.block.entity.BlockEntityType<SoporteNaveBlockEntity> SOPORTE_NAVE_ENTIDAD =
+			Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("soporte_nave"),
+					net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder
+							.create(SoporteNaveBlockEntity::new, SOPORTE_NAVE).build());
 
 	/** Combustible para la Nave Espacial Biplaza: cada uno carga un 10% del tanque. */
 	public static final Item COMBUSTIBLE = Registry.register(BuiltInRegistries.ITEM, id("combustible"),

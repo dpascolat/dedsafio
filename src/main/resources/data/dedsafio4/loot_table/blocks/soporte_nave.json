@@ -6,7 +6,7 @@
 			"entries": [
 				{
 					"type": "minecraft:item",
-					"name": "dedsafio4:plataforma_despegue"
+					"name": "dedsafio4:soporte_nave"
 				}
 			],
 			"conditions": [

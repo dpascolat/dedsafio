@@ -172,15 +172,15 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		altura = alturaAntes = 0;
 	}
 
-	// --- Ponerla en la plataforma (lo llama la Nave Espacial Biplaza) ---
+	// --- Ponerla en el Soporte de Nave (lo llama la Nave Espacial Biplaza) ---
 
 	public static InteractionResult colocar(UseOnContext contexto) {
 		Level level = contexto.getLevel();
 		BlockPos pos = contexto.getClickedPos();
 		Player jugador = contexto.getPlayer();
-		if (!level.getBlockState(pos).is(ModDespegue.PLATAFORMA_DESPEGUE)) {
+		if (!level.getBlockState(pos).is(ModDespegue.SOPORTE_NAVE)) {
 			if (!level.isClientSide && jugador != null) {
-				jugador.displayClientMessage(Component.literal("Colócala en el centro de una Plataforma de Despegue.")
+				jugador.displayClientMessage(Component.literal("Colócala en un Soporte de Nave.")
 						.withColor(AMARILLO), true);
 			}
 			return InteractionResult.FAIL;
@@ -188,17 +188,18 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		if (level.isClientSide) return InteractionResult.SUCCESS;
 		if (!level.dimension().equals(Level.OVERWORLD)) {
 			if (jugador != null) jugador.displayClientMessage(
-					Component.literal("La Plataforma sólo funciona en el Overworld.").withColor(AMARILLO), true);
+					Component.literal("El Soporte de Nave sólo funciona en el Overworld.").withColor(AMARILLO), true);
 			return InteractionResult.FAIL;
 		}
-		if (!level.getEntitiesOfClass(NaveViajeEntity.class, new AABB(pos.above()).inflate(0.5, 3, 0.5)).isEmpty()) {
+		pos = SoporteNaveBlock.principal(pos, level.getBlockState(pos));
+		if (!level.getEntitiesOfClass(NaveViajeEntity.class, new AABB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 2, pos.getY() + 4, pos.getZ() + 2)).isEmpty()) {
 			if (jugador != null) jugador.displayClientMessage(
-					Component.literal("Ya hay una nave en esta plataforma.").withColor(AMARILLO), true);
+					Component.literal("Ya hay una nave en este soporte.").withColor(AMARILLO), true);
 			return InteractionResult.FAIL;
 		}
 		NaveViajeEntity nave = ModDespegue.NAVE_VIAJE.create(level);
 		if (nave == null) return InteractionResult.FAIL;
-		nave.moveTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, jugador == null ? 0 : jugador.getYRot(), 0);
+		nave.moveTo(pos.getX() + 1, pos.getY() + 0.1, pos.getZ() + 1, jugador == null ? 0 : jugador.getYRot(), 0);
 		if (jugador != null) {
 			nave.dueno = jugador.getUUID();
 			nave.nombreDueno = jugador.getGameProfile().getName();
@@ -340,7 +341,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				}
 			}
 			case DESPEGANDO -> {
-				// La nave se queda en la plataforma: lo que sube es el dibujo (y los pasajeros), ver altura().
+				// La nave se queda en el soporte: lo que sube es el dibujo (y los pasajeros), ver altura().
 				etapa(tiempo < 90 ? 1 : tiempo < 200 ? 2 : 3);
 				velocidad = siguienteVelocidad(velocidad, tiempo);
 				alturaAntes = altura;
@@ -406,7 +407,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		}
 	}
 
-	// --- La animación de subida: la nave queda en la plataforma y sube el dibujo, cuadro a cuadro (sin tirones) ---
+	// --- La animación de subida: la nave queda en el soporte y sube el dibujo, cuadro a cuadro (sin tirones) ---
 
 	/** Cuánto subió el dibujo (en bloques), y cuánto en el tick anterior (para ir suave entre ticks). */
 	private double altura, alturaAntes;
