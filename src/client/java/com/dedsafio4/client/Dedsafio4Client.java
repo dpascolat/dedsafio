@@ -262,6 +262,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.bestias.FlashbangCliente.registrar();
 		com.dedsafio4.client.bestias.CerebroEncimaCliente.registrar();
 		com.dedsafio4.client.AvisoCliente.registrar();
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.NombreOculto.Payload.TYPE, (payload, context) ->
+				com.dedsafio4.NombreOculto.OCULTOS_CLIENTE = java.util.Set.copyOf(payload.ocultos()));
 		com.dedsafio4.client.ruleta.RuletaPisoCliente.registrar();
 		com.dedsafio4.client.revivir.RevivirCliente.registrar();
 		com.dedsafio4.client.correo.CorreoCliente.registrar();

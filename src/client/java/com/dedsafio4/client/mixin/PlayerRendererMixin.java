@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *   vida ❤
  *   Nombre           (del color de su Hermandad, si tiene)
  *   <Hermandad>      (solo si tiene)
+ * Con /nombre esconder no se ve nada de eso.
  */
 @Mixin(PlayerRenderer.class)
 public abstract class PlayerRendererMixin {
@@ -34,6 +35,13 @@ public abstract class PlayerRendererMixin {
 	private static final TextColor COLOR_VIDA = TextColor.fromRgb(0xAAB4FF);
 
 	private static final String RENDER_NAME_TAG = "renderNameTag(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V";
+
+	/** /nombre esconder: arriba de la cabeza no se dibuja nada (ni la vida, ni el nombre, ni la Hermandad). */
+	@Inject(method = RENDER_NAME_TAG, at = @At("HEAD"), cancellable = true)
+	private void dedsafio4$nombreEscondido(AbstractClientPlayer jugador, Component nombre, PoseStack pose,
+										   MultiBufferSource buffers, int luz, float partialTick, CallbackInfo ci) {
+		if (com.dedsafio4.NombreOculto.ocultoEnCliente(jugador.getUUID())) ci.cancel();
+	}
 
 	/** El nombre toma el color de la Hermandad (solo arriba de la cabeza, no en el chat). */
 	@ModifyVariable(method = RENDER_NAME_TAG, at = @At("HEAD"), argsOnly = true)
