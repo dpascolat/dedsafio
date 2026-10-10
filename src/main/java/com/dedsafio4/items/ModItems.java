@@ -299,6 +299,9 @@ public final class ModItems {
 	public static final Item FANTASMA_ROJO_SPAWN_EGG = registrar("fantasma_rojo_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.FANTASMA_ROJO, 0xD8261C, 0x5A0E0E, new Item.Properties(),
 					HuevoConDescripcion::fantasmaRojo));
+	public static final Item FANTASMA_NEGRO_SPAWN_EGG = registrar("fantasma_negro_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.FANTASMA_NEGRO, 0x1E1E22, 0x6A6A72, new Item.Properties(),
+					HuevoConDescripcion::fantasmaNegro));
 	public static final Item GUSANO_CARNE_SPAWN_EGG = registrar("gusano_carne_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.GUSANO_CARNE, 0x9A3A22, 0xB7C23A, new Item.Properties(),
 					HuevoConDescripcion::gusanoCarne));
@@ -589,6 +592,7 @@ public final class ModItems {
 						entradas.accept(FANTASMA_AMARILLO_SPAWN_EGG);
 						entradas.accept(FANTASMA_BLANCO_SPAWN_EGG);
 						entradas.accept(FANTASMA_ROJO_SPAWN_EGG);
+						entradas.accept(FANTASMA_NEGRO_SPAWN_EGG);
 						entradas.accept(GUSANO_CARNE_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.casino.ModCasino.CASINO_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.nave.PartesNave.CABINA);

@@ -43,6 +43,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * - Fantasma Amarillo: si te golpea, te mata al instante (ni el tótem te salva) y desaparece.
  * - Fantasma Blanco: golpea a gran velocidad y te da Lentitud.
  * - Fantasma Rojo: golpea a gran velocidad.
+ * - Fantasma Negro: cada golpe te quita un corazón para siempre (como el agua del Limbo; vuelve con /limbo devolver).
  */
 public class FantasmaEntity extends Monster implements GeoEntity {
 	public static final SoundEvent SONIDO_AMBIENTE = sonido("fantasma_ambiente"), SONIDO_GOLPE = sonido("fantasma_golpe");
@@ -69,6 +70,10 @@ public class FantasmaEntity extends Monster implements GeoEntity {
 		return getType() == ModEntidades.FANTASMA_BLANCO;
 	}
 
+	private boolean negro() {
+		return getType() == ModEntidades.FANTASMA_NEGRO;
+	}
+
 	private boolean rojo() {
 		return getType() == ModEntidades.FANTASMA_ROJO;
 	}
@@ -93,11 +98,11 @@ public class FantasmaEntity extends Monster implements GeoEntity {
 
 	@Override
 	protected void registerGoals() {
-		// El Blanco y el Rojo pegan mucho más seguido (cada 6 ticks; el normal es cada 20).
+		// El Blanco y el Rojo pegan mucho más seguido (cada 6 ticks); el Amarillo y el Negro, normal (cada 20).
 		goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.6, true) {
 			@Override
 			protected int getAttackInterval() {
-				return amarillo() ? 20 : 6;
+				return amarillo() || negro() ? 20 : 6;
 			}
 		});
 		goalSelector.addGoal(5, new WaterAvoidingRandomFlyingGoal(this, 0.8));
@@ -122,6 +127,9 @@ public class FantasmaEntity extends Monster implements GeoEntity {
 			return true;
 		}
 		boolean pego = super.doHurtTarget(objetivo);
+		if (pego && negro() && objetivo instanceof net.minecraft.server.level.ServerPlayer jugador && !jugador.isCreative()) {
+			com.dedsafio4.dimension.Limbo.quitarCorazon(jugador, "El Fantasma Negro te quitó un corazón para siempre.");
+		}
 		if (pego && blanco() && objetivo instanceof LivingEntity vivo) {
 			vivo.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 1), this);
 		}

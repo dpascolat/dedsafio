@@ -65,6 +65,7 @@ public final class AnuncioMob {
 		LUGARES.put("fantasma_amarillo", "el Limbo");
 		LUGARES.put("fantasma_blanco", "el Limbo");
 		LUGARES.put("fantasma_rojo", "el Limbo");
+		LUGARES.put("fantasma_negro", "el Limbo");
 	}
 
 	public static final class Datos extends SavedData {

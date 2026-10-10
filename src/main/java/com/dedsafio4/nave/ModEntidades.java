@@ -126,6 +126,8 @@ public final class ModEntidades {
 			EntityType.Builder.of(com.dedsafio4.bestias.FantasmaEntity::new, MobCategory.MONSTER).sized(0.8f, 1.9f).clientTrackingRange(8));
 	public static final EntityType<com.dedsafio4.bestias.FantasmaEntity> FANTASMA_ROJO = registrar("fantasma_rojo",
 			EntityType.Builder.of(com.dedsafio4.bestias.FantasmaEntity::new, MobCategory.MONSTER).sized(0.8f, 1.9f).clientTrackingRange(8));
+	public static final EntityType<com.dedsafio4.bestias.FantasmaEntity> FANTASMA_NEGRO = registrar("fantasma_negro",
+			EntityType.Builder.of(com.dedsafio4.bestias.FantasmaEntity::new, MobCategory.MONSTER).sized(0.8f, 1.9f).clientTrackingRange(8));
 
 	/** Gusano de Carne: chiquito y largo (la caja de choque es la de la cabeza). */
 	public static final EntityType<com.dedsafio4.bestias.GusanoCarneEntity> GUSANO_CARNE = registrar("gusano_carne",
@@ -198,7 +200,7 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(CEREBRO_AMARILLO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(GARRAPATA_CEREBRAL, com.dedsafio4.bestias.GarrapataCerebralEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(FLASHBANG, com.dedsafio4.bestias.FlashbangEntity.crearAtributos());
-		for (EntityType<com.dedsafio4.bestias.FantasmaEntity> fantasma : java.util.List.of(FANTASMA_AMARILLO, FANTASMA_BLANCO, FANTASMA_ROJO)) {
+		for (EntityType<com.dedsafio4.bestias.FantasmaEntity> fantasma : java.util.List.of(FANTASMA_AMARILLO, FANTASMA_BLANCO, FANTASMA_ROJO, FANTASMA_NEGRO)) {
 			FabricDefaultAttributeRegistry.register(fantasma, com.dedsafio4.bestias.FantasmaEntity.crearAtributos());
 			// En el Limbo, volando (no necesitan piso); allá siempre está oscuro.
 			SpawnPlacements.register(fantasma, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

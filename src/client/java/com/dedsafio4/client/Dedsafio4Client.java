@@ -255,6 +255,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.FANTASMA_AMARILLO, contexto -> com.dedsafio4.client.bestias.FantasmaRenderer.de(contexto, "fantasma_amarillo"));
 		EntityRendererRegistry.register(ModEntidades.FANTASMA_BLANCO, contexto -> com.dedsafio4.client.bestias.FantasmaRenderer.de(contexto, "fantasma_blanco"));
 		EntityRendererRegistry.register(ModEntidades.FANTASMA_ROJO, contexto -> com.dedsafio4.client.bestias.FantasmaRenderer.de(contexto, "fantasma_rojo"));
+		EntityRendererRegistry.register(ModEntidades.FANTASMA_NEGRO, contexto -> com.dedsafio4.client.bestias.FantasmaRenderer.de(contexto, "fantasma_negro"));
 		com.dedsafio4.client.bestias.FlashbangCliente.registrar();
 		com.dedsafio4.client.bestias.CerebroEncimaCliente.registrar();
 		com.dedsafio4.client.AvisoCliente.registrar();

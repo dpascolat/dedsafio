@@ -103,18 +103,27 @@ public final class Limbo {
 			for (ServerPlayer p : server.getPlayerList().getPlayers()) {
 				// En el agua del Limbo: un corazón menos, para siempre.
 				if (p.isAlive() && !p.isCreative() && !p.isSpectator() && p.level().dimension().equals(DIMENSION) && p.isInWater()) {
-					int antes = d.perdidos.getOrDefault(p.getUUID(), 0);
-					if (antes < MAXIMO_PERDIDOS) {
-						d.perdidos.put(p.getUUID(), antes + 1);
-						d.setDirty();
-						p.displayClientMessage(Component.literal("El agua del Limbo te quitó un corazón para siempre.").withColor(0x8A8AA8), true);
-						p.level().playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1f, 0.6f);
-					}
+					quitarCorazon(p, "El agua del Limbo te quitó un corazón para siempre.");
 				}
 				// La vida máxima de cada uno (también después de morir o al entrar al mundo).
 				aplicar(p, d.perdidos.getOrDefault(p.getUUID(), 0));
 			}
 		});
+	}
+
+	/**
+	 * Le saca un corazón para siempre (el agua del Limbo, el Fantasma Negro...), con el aviso y el latido. Siempre le
+	 * queda al menos 1. Se recupera con /limbo devolver.
+	 */
+	public static void quitarCorazon(ServerPlayer p, String aviso) {
+		Datos d = datos(p.server);
+		int antes = d.perdidos.getOrDefault(p.getUUID(), 0);
+		if (antes >= MAXIMO_PERDIDOS) return;
+		d.perdidos.put(p.getUUID(), antes + 1);
+		d.setDirty();
+		aplicar(p, antes + 1);
+		p.displayClientMessage(Component.literal(aviso).withColor(0x8A8AA8), true);
+		p.level().playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1f, 0.6f);
 	}
 
 	private static void aplicar(ServerPlayer p, int perdidos) {
