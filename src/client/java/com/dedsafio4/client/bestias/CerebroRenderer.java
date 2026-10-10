@@ -25,7 +25,6 @@ public class CerebroRenderer<T extends LivingEntity> extends CajasRenderer<T> {
 	private final ResourceLocation textura;
 	private static final float BY = 14, W = 9, H = 7, D = 10, ARRIBA = BY - H / 2 - 1.2f;
 	/** Pegado: cuánto se baja el modelo para que el borde de la campana quede sobre la cabeza del jugador. */
-	private static final float BAJA_PEGADO = 1.2f - (BY - H / 2 - 1.4f) + 0.2f;
 
 	private boolean pegado;
 	private float tiempo;
@@ -65,7 +64,8 @@ public class CerebroRenderer<T extends LivingEntity> extends CajasRenderer<T> {
 	protected void animar(T bicho, float parcial) {
 		pegado = bicho.isPassenger();
 		tiempo = (bicho.tickCount + parcial) / 20f;
-		raiz.y = pegado ? BAJA_PEGADO : 0;
+		// Encima de la cabeza de verdad: parado arriba, con los tentáculos apoyados en la cabeza (no se hunde).
+		raiz.y = 0;
 		// Late despacio (más fuerte cuando está drenando).
 		raiz.x = 0;
 	}
