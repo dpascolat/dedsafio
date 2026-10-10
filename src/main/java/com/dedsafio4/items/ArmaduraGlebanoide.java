@@ -21,25 +21,33 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * La armadura Glebanoide. Por ahora la Pechera: 9 de armadura, 3 de resistencia de armadura, 592 de durabilidad (como
- * la de netherita) y medio corazón extra mientras la tienes puesta. Sin encantamientos. La textura puesta en el cuerpo
- * (textures/models/armor/glebanoide_layer_1.png) es la de diamante pintada con los rojos del ícono.
+ * La armadura Glebanoide (sin encantamientos; cada pieza da medio corazón extra mientras la tienes puesta):
+ *   Pechera     9 de armadura, 3 de resistencia, 592 de durabilidad, reducción base ~36%
+ *   Pantalones  7 de armadura, 3 de resistencia, 1055 de durabilidad, reducción base ~28%
+ * Las texturas puestas en el cuerpo (textures/models/armor/glebanoide_layer_1 y _2) son las de diamante pintadas con
+ * los rojos de los íconos.
  */
 public final class ArmaduraGlebanoide {
 	private ArmaduraGlebanoide() {}
 
 	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "glebanoide");
-	private static final ResourceLocation CORAZON_EXTRA = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "pechera_glebanoide_corazon");
 
 	public static final Holder<ArmorMaterial> MATERIAL = Registry.registerForHolder(BuiltInRegistries.ARMOR_MATERIAL, ID,
-			new ArmorMaterial(Map.of(ArmorItem.Type.HELMET, 3, ArmorItem.Type.CHESTPLATE, 9, ArmorItem.Type.LEGGINGS, 6,
+			new ArmorMaterial(Map.of(ArmorItem.Type.HELMET, 3, ArmorItem.Type.CHESTPLATE, 9, ArmorItem.Type.LEGGINGS, 7,
 					ArmorItem.Type.BOOTS, 3, ArmorItem.Type.BODY, 11), 15, SoundEvents.ARMOR_EQUIP_NETHERITE,
 					() -> Ingredient.of(ModItems.CAPARAZON), List.of(new ArmorMaterial.Layer(ID)), 3f, 0f));
 
-	/** La Pechera Glebanoide (nombre celeste, medio corazón extra). */
-	public static class Pechera extends ArmorItem {
-		public Pechera(Properties propiedades) {
-			super(MATERIAL, Type.CHESTPLATE, propiedades.durability(Type.CHESTPLATE.getDurability(37)));
+	/** Una pieza: nombre celeste, medio corazón extra y su reducción base en la descripción. */
+	public static class Pieza extends ArmorItem {
+		private final ResourceLocation corazon;
+		private final EquipmentSlotGroup lugar;
+		private final int reduccion;
+
+		public Pieza(Type tipo, int durabilidad, int reduccion, Properties propiedades) {
+			super(MATERIAL, tipo, propiedades.durability(durabilidad));
+			this.reduccion = reduccion;
+			this.lugar = EquipmentSlotGroup.bySlot(tipo.getSlot());
+			this.corazon = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "glebanoide_corazon_" + tipo.getName());
 		}
 
 		@Override
@@ -47,18 +55,18 @@ public final class ArmaduraGlebanoide {
 			return Component.translatable(getDescriptionId()).withColor(0x55D9F0);
 		}
 
-		/** La armadura de siempre más medio corazón de vida máxima (en el torso). */
+		/** La armadura de siempre más medio corazón de vida máxima. */
 		@Override
 		public ItemAttributeModifiers getDefaultAttributeModifiers() {
 			return super.getDefaultAttributeModifiers().withModifierAdded(Attributes.MAX_HEALTH,
-					new AttributeModifier(CORAZON_EXTRA, 1.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.CHEST);
+					new AttributeModifier(corazon, 1.0, AttributeModifier.Operation.ADD_VALUE), lugar);
 		}
 
 		@Override
 		public void appendHoverText(ItemStack pila, TooltipContext contexto, List<Component> texto, TooltipFlag bandera) {
 			texto.add(Component.empty());
 			texto.add(Component.literal("♥ Otorga 0.5 Corazones Extra.").withColor(0x7CFC6A));
-			texto.add(Component.literal("⛨ Reducción Base: ~36%").withColor(0x5CE1E6));
+			texto.add(Component.literal("⛨ Reducción Base: ~" + reduccion + "%").withColor(0x5CE1E6));
 		}
 	}
 }

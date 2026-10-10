@@ -324,7 +324,11 @@ public final class ModItems {
 	/** Corazón Glebanoide: con click derecho golpea a las criaturas de Gleba cercanas (enfrente o debajo). */
 	public static final Item CORAZON_GLEBANOIDE = registrar("corazon_glebanoide", new CorazonGlebanoideItem(new Item.Properties().rarity(Rarity.RARE)));
 	/** Pechera Glebanoide: 9 de armadura, 3 de resistencia y medio corazón extra. */
-	public static final Item PECHERA_GLEBANOIDE = registrar("pechera_glebanoide", new ArmaduraGlebanoide.Pechera(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item PECHERA_GLEBANOIDE = registrar("pechera_glebanoide",
+			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.CHESTPLATE, 592, 36, new Item.Properties().rarity(Rarity.RARE)));
+	/** Pantalones Glebanoides: 7 de armadura, 3 de resistencia y medio corazón extra. */
+	public static final Item PANTALONES_GLEBANOIDES = registrar("pantalones_glebanoides",
+			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.LEGGINGS, 1055, 28, new Item.Properties().rarity(Rarity.RARE)));
 	/** Tenedor Simple: de hierro; se usa para el Tridente del Limbo. */
 	public static final Item TENEDOR_SIMPLE = registrar("tenedor_simple",
 			new DescritoItem(new Item.Properties().stacksTo(16), DescritoItem::tenedorSimple));
@@ -622,6 +626,7 @@ public final class ModItems {
 						entradas.accept(ESPADA_GLEBANOIDE);
 						entradas.accept(CORAZON_GLEBANOIDE);
 						entradas.accept(PECHERA_GLEBANOIDE);
+						entradas.accept(PANTALONES_GLEBANOIDES);
 						entradas.accept(TENEDOR_SIMPLE);
 						entradas.accept(GEMA_ROJA);
 						entradas.accept(GEMA_BLANCA);
