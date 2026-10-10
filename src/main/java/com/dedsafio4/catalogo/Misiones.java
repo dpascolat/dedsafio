@@ -309,8 +309,6 @@ public final class Misiones {
 		// La Misión Principal da además la "Dedita de la Misión (Día N)".
 		if (m.principal()) {
 			net.minecraft.world.item.ItemStack dedita = new net.minecraft.world.item.ItemStack(ModItems.DEDITA_MISION);
-			dedita.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal("Dedita de la Misión (Día " + m.dia() + ")")
-					.withStyle(net.minecraft.network.chat.Style.EMPTY.withItalic(false).withColor(net.minecraft.ChatFormatting.AQUA)));
 			CompoundTag datos = new CompoundTag();
 			datos.putString("mision", m.id());
 			datos.putInt("dia", m.dia());

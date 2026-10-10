@@ -49,7 +49,7 @@ public final class ModItems {
 			new Item(new Item.Properties().stacksTo(99).rarity(Rarity.RARE)));
 	/** Dedita de Misión (la del dedsafio3: la celeste en azul oscuro). */
 	public static final Item DEDITA_MISION = registrar("dedita_mision",
-			new Item(new Item.Properties().stacksTo(99).rarity(Rarity.RARE)));
+			new DeditaMisionItem(new Item.Properties().stacksTo(99).rarity(Rarity.RARE)));
 
 	/** Huevo generador de la nave: negro con manchas verdes, como el casco. */
 	public static final Item NAVE_SPAWN_EGG = registrar("nave_spawn_egg",

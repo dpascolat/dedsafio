@@ -15,7 +15,7 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 /**
- * Tótem Limbo: si vas a morir con él en la mano (o en la mano secundaria), te salva como un tótem y además deja tu
+ * Nutritótem (antes "Tótem Limbo"): si vas a morir con él en la mano (o en la mano secundaria), te salva como un tótem y además deja tu
  * barra de salud en 10 corazones (20), llena: te devuelve los corazones que te sacaron para siempre el agua del Limbo o
  * el Fantasma Negro y te saca los corazones extra (los de comer Corazones). Si también tienes otro tótem en la mano,
  * se usa ése primero.
