@@ -329,6 +329,9 @@ public final class ModItems {
 	/** Pantalones Glebanoides: 7 de armadura, 3 de resistencia y medio corazón extra. */
 	public static final Item PANTALONES_GLEBANOIDES = registrar("pantalones_glebanoides",
 			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.LEGGINGS, 1055, 28, new Item.Properties().rarity(Rarity.RARE)));
+	/** Botas Glebanoides: 4 de armadura, 3 de resistencia y medio corazón extra. */
+	public static final Item BOTAS_GLEBANOIDES = registrar("botas_glebanoides",
+			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.BOOTS, 981, 16, new Item.Properties().rarity(Rarity.RARE)));
 	/** Tenedor Simple: de hierro; se usa para el Tridente del Limbo. */
 	public static final Item TENEDOR_SIMPLE = registrar("tenedor_simple",
 			new DescritoItem(new Item.Properties().stacksTo(16), DescritoItem::tenedorSimple));
@@ -627,6 +630,7 @@ public final class ModItems {
 						entradas.accept(CORAZON_GLEBANOIDE);
 						entradas.accept(PECHERA_GLEBANOIDE);
 						entradas.accept(PANTALONES_GLEBANOIDES);
+						entradas.accept(BOTAS_GLEBANOIDES);
 						entradas.accept(TENEDOR_SIMPLE);
 						entradas.accept(GEMA_ROJA);
 						entradas.accept(GEMA_BLANCA);
