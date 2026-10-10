@@ -1,0 +1,31 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"pattern": [
+		" D ",
+		"CCC",
+		" P "
+	],
+	"key": {
+		"D": {
+			"item": "dedsafio4:diente_glebanoide"
+		},
+		"C": {
+			"item": "dedsafio4:cerebro_glebanoide"
+		},
+		"P": {
+			"item": "minecraft:stick"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:espada_glebanoide",
+		"count": 1,
+		"components": {
+			"minecraft:enchantments": {
+				"levels": {
+					"dedsafio4:perdicion_de_gleba": 1
+				}
+			}
+		}
+	}
+}

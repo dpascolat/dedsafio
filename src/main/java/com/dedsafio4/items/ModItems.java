@@ -319,6 +319,8 @@ public final class ModItems {
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaGris));
 	public static final Item GEMA_DORADA = registrar("gema_dorada",
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaDorada));
+	/** Espada Glebanoide: 11 de daño, ya encantada con Perdición de Gleba (33% más contra las criaturas de Gleba). */
+	public static final Item ESPADA_GLEBANOIDE = registrar("espada_glebanoide", new EspadaGlebanoideItem(new Item.Properties().rarity(Rarity.RARE)));
 	/** Tenedor Simple: de hierro; se usa para el Tridente del Limbo. */
 	public static final Item TENEDOR_SIMPLE = registrar("tenedor_simple",
 			new DescritoItem(new Item.Properties().stacksTo(16), DescritoItem::tenedorSimple));
@@ -612,6 +614,7 @@ public final class ModItems {
 						entradas.accept(CEREBRO_AMARILLO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
 						entradas.accept(TOTEM_LIMBO);
+						entradas.accept(ESPADA_GLEBANOIDE);
 						entradas.accept(TENEDOR_SIMPLE);
 						entradas.accept(GEMA_ROJA);
 						entradas.accept(GEMA_BLANCA);

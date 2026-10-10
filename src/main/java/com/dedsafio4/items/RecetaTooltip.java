@@ -13,6 +13,6 @@ import java.util.Set;
 public record RecetaTooltip(Item item) implements TooltipComponent {
 	/** Los ítems que muestran su receta en la descripción. */
 	public static Set<Item> conReceta() {
-		return Set.of(Items.TRIDENT, ModItems.TENEDOR_SIMPLE, ModItems.CORAZON_DORADO);
+		return Set.of(Items.TRIDENT, ModItems.TENEDOR_SIMPLE, ModItems.CORAZON_DORADO, ModItems.ESPADA_GLEBANOIDE);
 	}
 }

@@ -1,0 +1,37 @@
+{
+	"description": {
+		"translate": "enchantment.dedsafio4.perdicion_de_gleba"
+	},
+	"supported_items": "#minecraft:enchantable/sword",
+	"weight": 1,
+	"max_level": 1,
+	"min_cost": {
+		"base": 20,
+		"per_level_above_first": 0
+	},
+	"max_cost": {
+		"base": 50,
+		"per_level_above_first": 0
+	},
+	"anvil_cost": 4,
+	"slots": [
+		"mainhand"
+	],
+	"effects": {
+		"minecraft:damage": [
+			{
+				"effect": {
+					"type": "minecraft:multiply",
+					"factor": 1.33
+				},
+				"requirements": {
+					"condition": "minecraft:entity_properties",
+					"entity": "this",
+					"predicate": {
+						"type": "#dedsafio4:glebanoides"
+					}
+				}
+			}
+		]
+	}
+}
