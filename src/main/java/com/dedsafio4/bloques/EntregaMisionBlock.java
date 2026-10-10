@@ -26,7 +26,7 @@ import java.util.List;
  * se pone y se saca en creativo). Al tocarlo con la
  * Dedita de la Misión en la mano, se la queda, aparece la ruleta de 8 colores en el piso, centrada en el bloque y
  * siempre mirando hacia +X (si hay varios bloques uno encima del otro, en el de más abajo), con la esfera aurora
- * chiquita arriba del bloque de abajo (donde está el de arriba, si hay dos) y, cuando
+ * chiquita apoyada arriba del bloque de más arriba y, cuando
  * termina la animación, Eón te manda un mensaje al Buzón ("Misión diaria") con el premio que se eligió para esa
  * Misión Principal en el editor de Misiones.
  */
@@ -83,12 +83,13 @@ public class EntregaMisionBlock extends Block {
 				+ (premio.isEmpty() ? " Gracias por entregar tu Dedita de la Misión." : " Aquí tienes tu premio.");
 		pila.consume(1, jugador);
 		// Primero la ruleta en el piso, en el bloque de más abajo; el mensaje llega cuando termina.
-		BlockPos abajo = pos;
+		BlockPos abajo = pos, arriba = pos;
 		while (level.getBlockState(abajo.below()).is(this)) abajo = abajo.below();
+		while (level.getBlockState(arriba.above()).is(this)) arriba = arriba.above();
 		com.dedsafio4.ruleta.RuletaPiso.mostrar(servidor.serverLevel(),
 				new net.minecraft.world.phys.Vec3(abajo.getX() + 0.5, abajo.getY(), abajo.getZ() + 0.5), -90f,
-				// La esfera chiquita (0,5 de diámetro), apoyada arriba del bloque de abajo.
-				new net.minecraft.world.phys.Vec3(abajo.getX() + 0.5, abajo.getY() + 1 + 0.25 + 0.05, abajo.getZ() + 0.5), 0.25f);
+				// La esfera chiquita (0,5 de diámetro), apoyada arriba del bloque de más arriba.
+				new net.minecraft.world.phys.Vec3(arriba.getX() + 0.5, arriba.getY() + 1 + 0.25 + 0.05, arriba.getZ() + 0.5), 0.25f);
 		PENDIENTES.add(new Pendiente(servidor.getUUID(), texto, List.copyOf(premio),
 				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
 		level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1f, 1.2f);
