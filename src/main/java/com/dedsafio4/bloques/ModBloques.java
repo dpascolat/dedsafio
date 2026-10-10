@@ -177,6 +177,10 @@ public final class ModBloques {
 	public static final Item CARNE_ROJA_ITEM = registrarItem("carne_roja", CARNE_ROJA);
 	public static final Item CARNE_CON_VENAS_ITEM = registrarItem("carne_con_venas", CARNE_CON_VENAS);
 	public static final Item MUSCULO_ITEM = registrarItem("musculo", MUSCULO);
+	/** Mineral de Grasa: en las minas de Gleba (dentro del Músculo); se pica con pico. */
+	public static final Block MINERAL_DE_GRASA = registrar("mineral_de_grasa", new Block(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.CRIMSON_NYLIUM).strength(3f, 3f).sound(SoundType.WART_BLOCK).requiresCorrectToolForDrops()));
+	public static final Item MINERAL_DE_GRASA_ITEM = registrarItem("mineral_de_grasa", MINERAL_DE_GRASA);
 	/** Bloque de Carne: un trozo chiquito (más bajo que una losa y más angosto). */
 	public static final Block BLOQUE_CARNE = registrar("bloque_carne", new BloqueCarneBlock(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.CRIMSON_NYLIUM).strength(0.6f).sound(SoundType.MUD).noOcclusion()));
