@@ -39,6 +39,7 @@ import java.util.UUID;
  * "/spawn_limbo <x y z>" elige adónde llega el que es mandado al Limbo (por ejemplo, por el Wraith); "/spawn_limbo
  * quitar" lo saca (entonces llega a un lugar seguro cerca de donde estaba).
  * En el Limbo no se pueden poner bloques, romper bloques ni poner agua (ni ningún balde). En creativo, sí (para armarlo).
+ * El tridente (el modelo nuevo) solo sirve en el Limbo: afuera no se puede tirar ni pegar con él.
  */
 public final class Limbo {
 	private Limbo() {}
@@ -97,6 +98,15 @@ public final class Limbo {
 			if (!bloqueado(jugador, mundo) || !esBloqueOBalde(jugador.getItemInHand(mano))) return net.minecraft.world.InteractionResult.PASS;
 			jugador.displayClientMessage(Component.literal("En el Limbo no se puede poner nada.").withColor(0x8A8AA8), true);
 			return net.minecraft.world.InteractionResult.FAIL;
+		});
+		// El tridente solo sirve en el Limbo: afuera no se carga ni se tira (pegar con él lo frena TridenteLimboMixin).
+		net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((jugador, mundo, mano) -> {
+			net.minecraft.world.item.ItemStack pila = jugador.getItemInHand(mano);
+			if (!pila.is(net.minecraft.world.item.Items.TRIDENT) || mundo.dimension().equals(DIMENSION)) {
+				return net.minecraft.world.InteractionResultHolder.pass(pila);
+			}
+			if (!mundo.isClientSide) jugador.displayClientMessage(Component.literal("El tridente solo sirve en el Limbo.").withColor(0x8A8AA8), true);
+			return net.minecraft.world.InteractionResultHolder.fail(pila);
 		});
 		// Usar un balde apuntando al aire o al agua: tampoco.
 		net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((jugador, mundo, mano) -> {

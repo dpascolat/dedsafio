@@ -31,7 +31,8 @@
 		"WalkAnimationAccessor",
 		"PlayerRendererNaveMixin",
 		"ScreenFondoMixin",
-		"TextureAtlasMixin"
+		"TextureAtlasMixin",
+		"TridenteModeloMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

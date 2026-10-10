@@ -8,6 +8,7 @@
 		"ChatTypeMixin",
 		"ArcoReboteMixin",
 		"ChestBlockMixin",
+		"DrownedSinTridenteMixin",
 		"ChunkMapAccessor",
 		"ChunkMapAccessorDistancia",
 		"ChunkMapMomentitoMixin",
@@ -25,7 +26,8 @@
 		"RangedAttributeMixin",
 		"SpawnPlacementsMixin",
 		"StoredUserEntryAccessor",
-		"ThrownEnderpearlMixin"
+		"ThrownEnderpearlMixin",
+		"TridenteLimboMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
