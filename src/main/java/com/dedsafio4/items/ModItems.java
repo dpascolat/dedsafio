@@ -310,7 +310,7 @@ public final class ModItems {
 	/** Gema Roja: la sueltan los Fantasmas Rojos (20%). La textura brilla (animada). */
 	public static final Item GEMA_ROJA = registrar("gema_roja",
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaRoja));
-	/** Lo que sueltan los fantasmas (20%): Gema Blanca (Blanco), Esencia Negra (Negro) y Esencia Amarilla (Amarillo). Brillan (animadas). */
+	/** Lo que sueltan los fantasmas (20%): Esencia Blanca (Blanco), Esencia Negra (Negro) y Esencia Amarilla (Amarillo). Brillan (animadas). */
 	public static final Item GEMA_BLANCA = registrar("gema_blanca",
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaBlanca));
 	public static final Item GEMA_GRIS = registrar("gema_gris",

@@ -45,12 +45,11 @@ public class DescritoItem extends Item {
 		return Component.literal(texto).withStyle(color(rgb));
 	}
 
-	/** Gema Blanca (la sueltan los Fantasmas Blancos). */
+	/** Esencia Blanca (la suelta el Fantasma Blanco). */
 	public static void gemaBlanca(List<Component> t) {
-		t.add(parte("Una gema que brilla en la oscuridad", 0xE8E8E8));
-		t.add(parte("del Limbo.", 0xE8E8E8));
+		t.add(parte("Consíguelo al Eliminar:", 0xE8E8E8));
 		t.add(Component.empty());
-		t.add(parte("✦ La sueltan los ", GRIS).append(parte("Fantasmas Blancos", 0xF4F4F4)).append(parte(" (20%)", AMARILLO)));
+		t.add(parte("✦ ", 0xFF6E8A).append(parte("Fantasma Blanco", ROJO)));
 	}
 
 	/** Esencia Negra (la suelta el Fantasma Negro). */
