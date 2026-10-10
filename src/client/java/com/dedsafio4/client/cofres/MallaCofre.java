@@ -49,9 +49,10 @@ public final class MallaCofre {
 
 	private void cargar() {
 		if (base != null) return;
-		try (InputStream in = MallaCofre.class.getResourceAsStream("/assets/dedsafio4/modelos/" + archivo)) {
-			if (in == null) throw new IllegalStateException("Falta assets/dedsafio4/modelos/" + archivo);
-			JsonObject json = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
+		// Con los recursos del juego (en NeoForge, getResourceAsStream no ve esta carpeta y el juego se cerraba).
+		net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "modelos/" + archivo);
+		try (java.io.Reader lector = net.minecraft.client.Minecraft.getInstance().getResourceManager().openAsReader(id)) {
+			JsonObject json = JsonParser.parseReader(lector).getAsJsonObject();
 			base = leer(json.getAsJsonArray("base"));
 			tapa = leer(json.getAsJsonArray("tapa"));
 		} catch (Exception e) {

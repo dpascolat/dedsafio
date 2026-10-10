@@ -75,7 +75,14 @@
 		[],
 		[],
 		[],
-		[],
+		[
+			"dedsafio4:limbo_arbol",
+			"dedsafio4:limbo_columna",
+			"dedsafio4:limbo_tumba",
+			"dedsafio4:limbo_farol",
+			"dedsafio4:limbo_arco",
+			"dedsafio4:limbo_ruina"
+		],
 		[]
 	]
 }
