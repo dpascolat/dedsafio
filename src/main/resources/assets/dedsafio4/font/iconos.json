@@ -5,21 +5,36 @@
 			"file": "dedsafio4:font/conectado.png",
 			"height": 8,
 			"ascent": 7,
-			"chars": [""]
+			"chars": [
+				""
+			]
 		},
 		{
 			"type": "bitmap",
 			"file": "dedsafio4:font/cambio.png",
 			"height": 8,
 			"ascent": 7,
-			"chars": [""]
+			"chars": [
+				""
+			]
 		},
 		{
 			"type": "bitmap",
 			"file": "dedsafio4:gui/dedita.png",
 			"height": 8,
 			"ascent": 7,
-			"chars": [""]
+			"chars": [
+				""
+			]
+		},
+		{
+			"type": "bitmap",
+			"file": "dedsafio4:font/despegue.png",
+			"height": 8,
+			"ascent": 7,
+			"chars": [
+				""
+			]
 		}
 	]
 }

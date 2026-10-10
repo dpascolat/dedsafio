@@ -328,6 +328,9 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				if (tiempo >= TIEMPO_CUENTA) {
 					combustible(combustible() - COMBUSTIBLE_VIAJE);
 					estado(DESPEGANDO);
+					List<Player> viajeros = new ArrayList<>();
+					for (Entity p : getPassengers()) if (p instanceof Player jugador) viajeros.add(jugador);
+					PrimerViaje.alDespegar(mundo.getServer(), viajeros);
 					velocidad = 0;
 					titulo("¡Despegue!", NARANJA, "");
 					sonido(mundo, SoundEvents.FIREWORK_ROCKET_LAUNCH, 4f, 0.5f);
