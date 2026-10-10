@@ -18,8 +18,8 @@ import net.minecraft.world.level.Level;
  * La Dimensión de los Órganos: todo el piso es carne (rosa, roja y con venas), con pasto rosa y árboles de gelatina.
  * Por ahora se entra con "/admin organos" (y con el mismo comando se vuelve al Overworld).
  * El agua de esta dimensión es rosa y lastima: medio corazón por segundo mientras estés adentro. No hay nubes.
- * Gleba son islas de carne en medio del mar (abajo de todo hay agua) y llega hasta 2.000 bloques hacia cada lado del
- * centro: más allá no se puede ir.
+ * Gleba son islas de carne flotando en el aire, con el mar abajo de todo, y llega hasta 2.000 bloques hacia cada lado
+ * del centro: más allá no se puede ir. Al entrar, se llega arriba de la isla más cercana.
  */
 public final class Organos {
 	private Organos() {}
@@ -64,6 +64,22 @@ public final class Organos {
 		});
 	}
 
+	/** Arriba de la isla flotante más cercana (buscando en vueltas cada vez más grandes); si no hay, donde se pueda. */
+	private static BlockPos islaCercana(ServerLevel mundo, BlockPos desde) {
+		for (int radio = 0; radio <= 400; radio += 16) {
+			for (int dx = -radio; dx <= radio; dx += 16) {
+				for (int dz = -radio; dz <= radio; dz += 16) {
+					if (Math.max(Math.abs(dx), Math.abs(dz)) != radio) continue;
+					BlockPos col = BlockPos.containing(dentro(desde.getX() + dx), 0, dentro(desde.getZ() + dz));
+					BlockPos arriba = mundo.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, col);
+					// Una isla: piso firme bien arriba del mar (no el agua).
+					if (arriba.getY() > mundo.getSeaLevel() + 10 && mundo.getFluidState(arriba.below()).isEmpty()) return arriba;
+				}
+			}
+		}
+		return Portales.lugarSeguro(mundo, desde);
+	}
+
 	public static int viajar(ServerPlayer jugador) {
 		ServerLevel desde = jugador.serverLevel();
 		boolean volver = desde.dimension().equals(DIMENSION);
@@ -73,7 +89,7 @@ public final class Organos {
 		BlockPos desdeAca = jugador.blockPosition();
 		// Al entrar a Gleba, siempre dentro de su borde.
 		if (!volver) desdeAca = BlockPos.containing(dentro(desdeAca.getX()), desdeAca.getY(), dentro(desdeAca.getZ()));
-		BlockPos llegada = Portales.lugarSeguro(destino, desdeAca);
+		BlockPos llegada = volver ? Portales.lugarSeguro(destino, desdeAca) : islaCercana(destino, desdeAca);
 		jugador.teleportTo(destino, llegada.getX() + 0.5, llegada.getY(), llegada.getZ() + 0.5,
 				jugador.getYRot(), jugador.getXRot());
 		destino.playSound(null, llegada, SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1f, 0.8f);
