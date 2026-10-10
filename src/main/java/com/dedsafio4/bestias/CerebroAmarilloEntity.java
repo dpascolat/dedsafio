@@ -103,6 +103,17 @@ public class CerebroAmarilloEntity extends Monster {
 				stopRiding();
 				return;
 			}
+			// Se metió con él en un lugar de 2 bloques con techo: el cerebro choca contra el techo y queda aplastado.
+			if (aplastado()) {
+				playSound(SoundEvents.SLIME_DEATH, 1.2f, 0.5f);
+				if (level() instanceof net.minecraft.server.level.ServerLevel mundo) {
+					mundo.sendParticles(new net.minecraft.core.particles.ItemParticleOption(net.minecraft.core.particles.ParticleTypes.ITEM,
+							new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SLIME_BALL)), getX(), getY() + 0.4, getZ(), 25, 0.3, 0.2, 0.3, 0.1);
+				}
+				stopRiding();
+				kill();
+				return;
+			}
 			jugador.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40, 0, false, false, true));
 			if (++drenando % CADA == 0) drenar(jugador);
 		} else if (getTarget() instanceof Player jugador && sirve(jugador)
@@ -137,12 +148,26 @@ public class CerebroAmarilloEntity extends Monster {
 		}
 	}
 
-	/** El que lo tiene encima no le puede hacer daño (ni con flechas): otro se lo tiene que quitar. */
+	/**
+	 * El que lo tiene encima no le puede pegar. Sí lo mata: otro jugador, una flecha (también la suya) que le cae desde
+	 * arriba, o meterse en un lugar con techo bajo (ver aplastado()).
+	 */
 	@Override
 	public boolean hurt(DamageSource fuente, float cantidad) {
 		Entity vehiculo = getVehicle();
-		if (vehiculo != null && (fuente.getEntity() == vehiculo || fuente.getDirectEntity() == vehiculo)) return false;
+		if (vehiculo != null && (fuente.getEntity() == vehiculo || fuente.getDirectEntity() == vehiculo)) {
+			boolean flechaQueCae = fuente.getDirectEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow flecha
+					&& flecha.getDeltaMovement().y < 0;
+			if (!flechaQueCae) return false;
+		}
 		return super.hurt(fuente, cantidad);
+	}
+
+	/** ¿Arriba de la cabeza del jugador hay techo justo donde está el cerebro? (2 bloques de alto con techo) */
+	private boolean aplastado() {
+		net.minecraft.world.phys.AABB arriba = new net.minecraft.world.phys.AABB(getX() - 0.25, getY() + 0.2, getZ() - 0.25,
+				getX() + 0.25, getY() + getBbHeight() - 0.1, getZ() + 0.25);
+		return !level().noCollision(arriba);
 	}
 
 	@Override

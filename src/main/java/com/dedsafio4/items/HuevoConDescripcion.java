@@ -155,8 +155,9 @@ public class HuevoConDescripcion extends SpawnEggItem {
 	public static void cerebroAmarillo(List<Component> t) {
 		t.add(parte("Se abalanza sobre tu cabeza,", GRIS));
 		t.add(parte("cegándote y drenando tu vida", GRIS));
-		t.add(parte("hasta matarte. ", GRIS).append(parte("Necesitas ayuda", VIOLETA)));
-		t.add(parte("de otra persona para quitártelo.", VIOLETA));
+		t.add(parte("hasta matarte. No le puedes pegar:", GRIS));
+		t.add(parte("aplástalo contra un techo bajo, tírale", VIOLETA));
+		t.add(parte("una flecha hacia arriba o pide ayuda.", VIOLETA));
 	}
 
 	public static void nautilusOseo(List<Component> t) {
