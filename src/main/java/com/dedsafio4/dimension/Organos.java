@@ -18,6 +18,8 @@ import net.minecraft.world.level.Level;
  * La Dimensión de los Órganos: todo el piso es carne (rosa, roja y con venas), con pasto rosa y árboles de gelatina.
  * Por ahora se entra con "/admin organos" (y con el mismo comando se vuelve al Overworld).
  * El agua de esta dimensión es rosa y lastima: medio corazón por segundo mientras estés adentro. No hay nubes.
+ * Gleba son islas de carne en medio del mar (abajo de todo hay agua) y llega hasta 2.000 bloques hacia cada lado del
+ * centro: más allá no se puede ir.
  */
 public final class Organos {
 	private Organos() {}
@@ -31,7 +33,27 @@ public final class Organos {
 	private static final int CADA = 20;
 	private static final float DANIO = 1f;
 
+	/** Hasta dónde llega Gleba, hacia cada lado del centro. */
+	public static final int BORDE = 2000;
+
+	/** Una posición dentro del borde de Gleba. */
+	private static double dentro(double v) {
+		return Math.max(-BORDE + 0.5, Math.min(BORDE - 0.5, v));
+	}
+
 	public static void registrar() {
+		// El borde: el que se pasa de los 2.000 bloques vuelve adentro.
+		ServerTickEvents.END_WORLD_TICK.register(mundo -> {
+			if (!mundo.dimension().equals(DIMENSION)) return;
+			for (ServerPlayer jugador : mundo.players()) {
+				double x = jugador.getX(), z = jugador.getZ();
+				if (Math.abs(x) <= BORDE && Math.abs(z) <= BORDE) continue;
+				if (jugador.isPassenger()) jugador.stopRiding();
+				jugador.teleportTo(dentro(x), jugador.getY(), dentro(z));
+				jugador.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+				jugador.displayClientMessage(Component.literal("Llegaste al borde de Gleba.").withColor(0xE0607A), true);
+			}
+		});
 		ServerTickEvents.END_WORLD_TICK.register(mundo -> {
 			if (!mundo.dimension().equals(DIMENSION) || mundo.getGameTime() % CADA != 0) return;
 			DamageSource fuente = new DamageSource(mundo.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
@@ -48,7 +70,10 @@ public final class Organos {
 		ServerLevel destino = volver ? desde.getServer().overworld() : desde.getServer().getLevel(DIMENSION);
 		if (destino == null) return 0;
 
-		BlockPos llegada = Portales.lugarSeguro(destino, jugador.blockPosition());
+		BlockPos desdeAca = jugador.blockPosition();
+		// Al entrar a Gleba, siempre dentro de su borde.
+		if (!volver) desdeAca = BlockPos.containing(dentro(desdeAca.getX()), desdeAca.getY(), dentro(desdeAca.getZ()));
+		BlockPos llegada = Portales.lugarSeguro(destino, desdeAca);
 		jugador.teleportTo(destino, llegada.getX() + 0.5, llegada.getY(), llegada.getZ() + 0.5,
 				jugador.getYRot(), jugador.getXRot());
 		destino.playSound(null, llegada, SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1f, 0.8f);
