@@ -181,6 +181,13 @@ public final class ModBloques {
 	public static final Block MINERAL_DE_GRASA = registrar("mineral_de_grasa", new Block(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.CRIMSON_NYLIUM).strength(3f, 3f).sound(SoundType.WART_BLOCK).requiresCorrectToolForDrops()));
 	public static final Item MINERAL_DE_GRASA_ITEM = registrarItem("mineral_de_grasa", MINERAL_DE_GRASA);
+	/** Pulmones: arbolito rosa de 2 bloques en las minas de Gleba; solo suelta algo si lo rompes con espada. */
+	public static final Block PULMONES = registrar("pulmones", new PulmonesBlock(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.COLOR_PINK).strength(0.8f).sound(SoundType.WART_BLOCK).noOcclusion().noCollission()
+			.pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
+	public static final Item PULMONES_ITEM = Registry.register(BuiltInRegistries.ITEM,
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "pulmones"),
+			new com.dedsafio4.items.BloqueDescritoItem(PULMONES, new Item.Properties(), com.dedsafio4.items.DescritoItem::pulmones));
 	/** Bloque de Carne: un trozo chiquito (más bajo que una losa y más angosto). */
 	public static final Block BLOQUE_CARNE = registrar("bloque_carne", new BloqueCarneBlock(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.CRIMSON_NYLIUM).strength(0.6f).sound(SoundType.MUD).noOcclusion()));

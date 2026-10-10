@@ -23,6 +23,10 @@ public final class ModGeneracion {
 			Registry.register(BuiltInRegistries.FEATURE,
 					ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "circulo_portal"), new CirculoPortalFeature());
 
+	/** Los Pulmones en las minas de Gleba. */
+	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> PULMONES =
+			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "pulmones"), new PulmonesFeature());
+
 	/** Fuerza la carga de la clase. */
 	public static void registrar() {}
 }

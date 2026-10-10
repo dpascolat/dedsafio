@@ -56,7 +56,8 @@
 		"air": [
 			"minecraft:cave",
 			"minecraft:cave_extra_underground",
-			"minecraft:canyon"
+			"minecraft:canyon",
+			"dedsafio4:minas_gleba"
 		]
 	},
 	"features": [
@@ -69,7 +70,9 @@
 		[
 			"dedsafio4:mineral_de_grasa"
 		],
-		[],
+		[
+			"dedsafio4:pulmones"
+		],
 		[],
 		[
 			"dedsafio4:arbol_organo",

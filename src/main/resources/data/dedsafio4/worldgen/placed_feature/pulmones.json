@@ -1,0 +1,31 @@
+{
+	"feature": "dedsafio4:pulmones",
+	"placement": [
+		{
+			"type": "minecraft:count",
+			"count": {
+				"type": "minecraft:uniform",
+				"min_inclusive": 0,
+				"max_inclusive": 5
+			}
+		},
+		{
+			"type": "minecraft:in_square"
+		},
+		{
+			"type": "minecraft:height_range",
+			"height": {
+				"type": "minecraft:uniform",
+				"min_inclusive": {
+					"absolute": 80
+				},
+				"max_inclusive": {
+					"absolute": 190
+				}
+			}
+		},
+		{
+			"type": "minecraft:biome"
+		}
+	]
+}

@@ -79,6 +79,12 @@ public class DescritoItem extends Item {
 		t.add(parte("de Hierro.", 0xE8E8E8));
 	}
 
+	/** Pulmones (se sacan con espada). */
+	public static void pulmones(List<Component> t) {
+		t.add(parte("Utiliza una ", 0xE8E8E8).append(parte("Espada", VIOLETA)));
+		t.add(parte("para obtenerlo.", 0xE8E8E8));
+	}
+
 	/** Billete de Autobús (la Tarjeta Rosa). */
 	public static void billeteAutobus(List<Component> t) {
 		t.add(parte("Necesitas uno para", GRIS));
