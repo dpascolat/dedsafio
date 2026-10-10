@@ -220,6 +220,8 @@ public final class ModItems {
 	public static final Item TROZO_AMARILLO = registrar("trozo_amarillo", new Item(new Item.Properties()));
 	/** Tótem Glebanoide: variante del Nutritótem; por ahora te salva de morir si lo tienes en la mano. */
 	public static final Item TOTEM_GLEBANOIDE = registrar("totem_glebanoide", new TotemGlebanoideItem(new Item.Properties()));
+	/** Tótem Limbo: te salva de morir (en la mano) y deja la barra de salud en 20 (devuelve los corazones del Limbo, saca los extra). */
+	public static final Item TOTEM_LIMBO = registrar("totem_limbo", new TotemLimboItem(new Item.Properties()));
 	/** Corazón del Limbo (el violeta): al comerlo, la barra de salud vuelve a 20 (devuelve los corazones del Limbo, saca los extra). */
 	public static final Item CORAZON_VIOLETA = registrar("corazon_violeta", new CorazonLimboItem(new Item.Properties().rarity(Rarity.RARE)
 			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).alwaysEdible().build())));
@@ -609,6 +611,7 @@ public final class ModItems {
 						entradas.accept(NAUTILUS_OSEO_SPAWN_EGG);
 						entradas.accept(CEREBRO_AMARILLO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
+						entradas.accept(TOTEM_LIMBO);
 						entradas.accept(TENEDOR_SIMPLE);
 						entradas.accept(GEMA_ROJA);
 						entradas.accept(GEMA_BLANCA);

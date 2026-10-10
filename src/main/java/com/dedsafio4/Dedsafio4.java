@@ -88,6 +88,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.items.Linternas.registrar();
 		com.dedsafio4.items.TotemFrericoItem.registrar();
 		com.dedsafio4.items.TotemGlebanoideItem.registrar();
+		com.dedsafio4.items.TotemLimboItem.registrar();
 		com.dedsafio4.items.TotemIdoloItem.registrar();
 		com.dedsafio4.items.CorazonItem.registrar();
 		com.dedsafio4.items.FrutoQuiuItem.registrar();
