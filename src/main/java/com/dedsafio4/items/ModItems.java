@@ -290,6 +290,15 @@ public final class ModItems {
 	public static final Item FLASHBANG_SPAWN_EGG = registrar("flashbang_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.FLASHBANG, 0x2B2B2B, 0xF4F4F4, new Item.Properties(),
 					HuevoConDescripcion::flashbang));
+	public static final Item FANTASMA_AMARILLO_SPAWN_EGG = registrar("fantasma_amarillo_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.FANTASMA_AMARILLO, 0xF2C230, 0x2B2B2B, new Item.Properties(),
+					HuevoConDescripcion::fantasmaAmarillo));
+	public static final Item FANTASMA_BLANCO_SPAWN_EGG = registrar("fantasma_blanco_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.FANTASMA_BLANCO, 0xF2F2F6, 0x2B2B2B, new Item.Properties(),
+					HuevoConDescripcion::fantasmaBlanco));
+	public static final Item FANTASMA_ROJO_SPAWN_EGG = registrar("fantasma_rojo_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.FANTASMA_ROJO, 0xD8261C, 0x5A0E0E, new Item.Properties(),
+					HuevoConDescripcion::fantasmaRojo));
 	public static final Item GUSANO_CARNE_SPAWN_EGG = registrar("gusano_carne_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.GUSANO_CARNE, 0x9A3A22, 0xB7C23A, new Item.Properties(),
 					HuevoConDescripcion::gusanoCarne));
@@ -577,6 +586,9 @@ public final class ModItems {
 						entradas.accept(CEREBRO_AMARILLO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
 						entradas.accept(FLASHBANG_SPAWN_EGG);
+						entradas.accept(FANTASMA_AMARILLO_SPAWN_EGG);
+						entradas.accept(FANTASMA_BLANCO_SPAWN_EGG);
+						entradas.accept(FANTASMA_ROJO_SPAWN_EGG);
 						entradas.accept(GUSANO_CARNE_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.casino.ModCasino.CASINO_SPAWN_EGG);
 						entradas.accept(com.dedsafio4.nave.PartesNave.CABINA);

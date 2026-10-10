@@ -251,6 +251,10 @@ public class Dedsafio4Client implements ClientModInitializer {
 				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/cerebro_amarillo.png")));
 		EntityRendererRegistry.register(ModEntidades.GUSANO_CARNE, com.dedsafio4.client.bestias.GusanoCarneRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.FLASHBANG, com.dedsafio4.client.bestias.FlashbangCliente.Dibujante::new);
+		// Los fantasmas del Limbo (modelos del Dedsafío 3: geo/entity/fantasma_*.geo.json).
+		EntityRendererRegistry.register(ModEntidades.FANTASMA_AMARILLO, contexto -> com.dedsafio4.client.bestias.FantasmaRenderer.de(contexto, "fantasma_amarillo"));
+		EntityRendererRegistry.register(ModEntidades.FANTASMA_BLANCO, contexto -> com.dedsafio4.client.bestias.FantasmaRenderer.de(contexto, "fantasma_blanco"));
+		EntityRendererRegistry.register(ModEntidades.FANTASMA_ROJO, contexto -> com.dedsafio4.client.bestias.FantasmaRenderer.de(contexto, "fantasma_rojo"));
 		com.dedsafio4.client.bestias.FlashbangCliente.registrar();
 		com.dedsafio4.client.bestias.CerebroEncimaCliente.registrar();
 		com.dedsafio4.client.AvisoCliente.registrar();

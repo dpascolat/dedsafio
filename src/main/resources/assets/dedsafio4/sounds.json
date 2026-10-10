@@ -64,6 +64,16 @@
 			}
 		]
 	},
+	"fantasma_ambiente": {
+		"sounds": [
+			"dedsafio4:fantasma_ambiente"
+		]
+	},
+	"fantasma_golpe": {
+		"sounds": [
+			"dedsafio4:fantasma_golpe"
+		]
+	},
 	"flashbang": {
 		"sounds": [
 			"dedsafio4:flashbang"

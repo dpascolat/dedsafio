@@ -23,7 +23,26 @@
 		}
 	},
 	"spawners": {
-		"monster": [],
+		"monster": [
+			{
+				"type": "dedsafio4:fantasma_amarillo",
+				"weight": 20,
+				"minCount": 1,
+				"maxCount": 1
+			},
+			{
+				"type": "dedsafio4:fantasma_blanco",
+				"weight": 40,
+				"minCount": 1,
+				"maxCount": 2
+			},
+			{
+				"type": "dedsafio4:fantasma_rojo",
+				"weight": 40,
+				"minCount": 1,
+				"maxCount": 2
+			}
+		],
 		"creature": [],
 		"ambient": [],
 		"axolotls": [],

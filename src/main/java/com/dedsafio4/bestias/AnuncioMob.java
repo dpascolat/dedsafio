@@ -62,6 +62,9 @@ public final class AnuncioMob {
 		LUGARES.put("nautilus_oseo", "la Dimensión de los Órganos, en grupo");
 		LUGARES.put("cerebro_amarillo", "la Dimensión de los Órganos");
 		LUGARES.put("garrapata_cerebral", "la Dimensión de los Órganos");
+		LUGARES.put("fantasma_amarillo", "el Limbo");
+		LUGARES.put("fantasma_blanco", "el Limbo");
+		LUGARES.put("fantasma_rojo", "el Limbo");
 	}
 
 	public static final class Datos extends SavedData {
