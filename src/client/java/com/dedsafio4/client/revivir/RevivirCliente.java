@@ -35,6 +35,18 @@ public final class RevivirCliente {
 
 	private static final List<Escena> ESCENAS = new ArrayList<>();
 
+	/** En qué momento de la cinemática está ese jugador (en ticks, con decimales), o -1 si no está en una. */
+	public static float tiempo(UUID jugador, float parcial) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.level == null) return -1;
+		for (Escena e : ESCENAS) {
+			if (!e.jugador().equals(jugador)) continue;
+			float t = mc.level.getGameTime() - e.inicio() + parcial;
+			return t >= 0 && t < Revivir.DURACION ? t : -1;
+		}
+		return -1;
+	}
+
 	public static void registrar() {
 		ClientPlayNetworking.registerGlobalReceiver(Revivir.Payload.TYPE, (payload, context) -> context.client().execute(() -> {
 			Minecraft mc = context.client();

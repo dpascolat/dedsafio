@@ -79,7 +79,7 @@ public final class Revivir {
 	/** La pose en cada momento (null = la normal). La usan el servidor y el cliente del propio jugador. */
 	public static Pose pose(int t) {
 		if (t >= 100 && t < 124) return Pose.CROUCHING;   // sale agachado
-		if (t >= 258 && t < 276) return Pose.SWIMMING;    // acostado en el piso
+		if (t >= 258 && t < 276) return Pose.SLEEPING;    // acostado boca arriba en el piso
 		if (t >= 276 && t < 292) return Pose.CROUCHING;   // sentado → de pie
 		return null;
 	}
