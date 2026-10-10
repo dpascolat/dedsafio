@@ -26,17 +26,17 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /**
- * Corazón Glebanoide: con click derecho golpea a todas las criaturas Glebanoides (las de Gleba, tag
- * dedsafio4:glebanoides) que estén a RADIO bloques, enfrente o debajo tuyo (nunca a las que estén por encima de tu
- * cabeza). Cada uso gasta 1 de durabilidad (tiene 100) y EXPERIENCIA puntos de experiencia; hay que esperar 1 segundo
- * entre usos.
+ * Corazón Glebanoide: se come con click derecho (pero no se gasta entero) y, al terminar de comerlo, golpea a todas
+ * las criaturas Glebanoides (las de Gleba, tag dedsafio4:glebanoides) que estén a RADIO bloques, enfrente o debajo tuyo
+ * (nunca a las que estén por encima de tu cabeza). Cada uso gasta 1 de durabilidad (tiene 100) y EXPERIENCIA puntos de
+ * experiencia; después hay que esperar 30 segundos.
  */
 public class CorazonGlebanoideItem extends Item {
 	public static final TagKey<EntityType<?>> GLEBANOIDES = TagKey.create(Registries.ENTITY_TYPE,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "glebanoides"));
 	private static final double RADIO = 8;
 	private static final float DANIO = 8f;
-	private static final int EXPERIENCIA = 5, ESPERA = 20;
+	private static final int EXPERIENCIA = 5, ESPERA = 30 * 20, COMER = 32;
 
 	public CorazonGlebanoideItem(Properties propiedades) {
 		super(propiedades.durability(100).attributes(ItemAttributeModifiers.builder()
@@ -52,14 +52,33 @@ public class CorazonGlebanoideItem extends Item {
 		return Component.translatable(getDescriptionId()).withColor(0xE07AE6);
 	}
 
+	/** Se come (con la animación y el sonido de comer). */
+	@Override
+	public net.minecraft.world.item.UseAnim getUseAnimation(ItemStack pila) {
+		return net.minecraft.world.item.UseAnim.EAT;
+	}
+
+	@Override
+	public int getUseDuration(ItemStack pila, LivingEntity quien) {
+		return COMER;
+	}
+
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level mundo, Player jugador, InteractionHand mano) {
 		ItemStack pila = jugador.getItemInHand(mano);
-		if (mundo.isClientSide) return InteractionResultHolder.success(pila);
 		if (!jugador.isCreative() && jugador.totalExperience < EXPERIENCIA) {
-			jugador.displayClientMessage(Component.literal("No tienes suficiente experiencia.").withColor(0xFF7A7A), true);
+			if (!mundo.isClientSide) jugador.displayClientMessage(Component.literal("No tienes suficiente experiencia.").withColor(0xFF7A7A), true);
 			return InteractionResultHolder.fail(pila);
 		}
+		jugador.startUsingItem(mano);
+		return InteractionResultHolder.consume(pila);
+	}
+
+	/** Al terminar de comerlo: el golpe. No se gasta entero: pierde durabilidad. */
+	@Override
+	public ItemStack finishUsingItem(ItemStack pila, Level mundo, LivingEntity quien) {
+		if (mundo.isClientSide || !(quien instanceof Player jugador)) return pila;
+		InteractionHand mano = jugador.getUsedItemHand();
 		Vec3 mira = jugador.getLookAngle().multiply(1, 0, 1).normalize();
 		int golpeados = 0;
 		for (LivingEntity e : mundo.getEntitiesOfClass(LivingEntity.class, jugador.getBoundingBox().inflate(RADIO),
@@ -84,7 +103,7 @@ public class CorazonGlebanoideItem extends Item {
 		}
 		jugador.getCooldowns().addCooldown(this, ESPERA);
 		if (golpeados == 0) jugador.displayClientMessage(Component.literal("No hay criaturas Glebanoides cerca.").withColor(0xC6CFD6), true);
-		return InteractionResultHolder.consume(pila);
+		return pila;
 	}
 
 	@Override
@@ -102,6 +121,8 @@ public class CorazonGlebanoideItem extends Item {
 		texto.add(Component.empty());
 		texto.add(Component.literal("Se utiliza con ").withColor(blanco).append(Component.literal("Click Derecho").withColor(naranja))
 				.append(Component.literal(".").withColor(blanco)));
+		texto.add(Component.literal("Espera ").withColor(blanco).append(Component.literal("30 segundos").withColor(naranja))
+				.append(Component.literal(" entre usos.").withColor(blanco)));
 		texto.add(Component.literal("Gasta ").withColor(blanco).append(Component.literal("Durabilidad").withColor(naranja))
 				.append(Component.literal(" y ").withColor(blanco)).append(Component.literal("Experiencia").withColor(violeta)));
 		texto.add(Component.literal("al usarlo.").withColor(blanco));
