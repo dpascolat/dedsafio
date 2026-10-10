@@ -45,6 +45,30 @@ public class DescritoItem extends Item {
 		return Component.literal(texto).withStyle(color(rgb));
 	}
 
+	/** Gema Blanca (la sueltan los Fantasmas Blancos). */
+	public static void gemaBlanca(List<Component> t) {
+		t.add(parte("Una gema que brilla en la oscuridad", 0xE8E8E8));
+		t.add(parte("del Limbo.", 0xE8E8E8));
+		t.add(Component.empty());
+		t.add(parte("✦ La sueltan los ", GRIS).append(parte("Fantasmas Blancos", 0xF4F4F4)).append(parte(" (20%)", AMARILLO)));
+	}
+
+	/** Gema Gris (la sueltan los Fantasmas Negros). */
+	public static void gemaGris(List<Component> t) {
+		t.add(parte("Una gema que brilla en la oscuridad", 0xE8E8E8));
+		t.add(parte("del Limbo.", 0xE8E8E8));
+		t.add(Component.empty());
+		t.add(parte("✦ La sueltan los ", GRIS).append(parte("Fantasmas Negros", 0xA8A8A8)).append(parte(" (20%)", AMARILLO)));
+	}
+
+	/** Gema Dorada (la sueltan los Fantasmas Amarillos). */
+	public static void gemaDorada(List<Component> t) {
+		t.add(parte("Una gema que brilla en la oscuridad", 0xE8E8E8));
+		t.add(parte("del Limbo.", 0xE8E8E8));
+		t.add(Component.empty());
+		t.add(parte("✦ La sueltan los ", GRIS).append(parte("Fantasmas Amarillos", AMARILLO)).append(parte(" (20%)", AMARILLO)));
+	}
+
 	/** Gema Roja (la sueltan los Fantasmas Rojos). */
 	public static void gemaRoja(List<Component> t) {
 		t.add(parte("Una gema que brilla en la oscuridad", 0xE8E8E8));

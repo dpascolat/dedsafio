@@ -23,26 +23,6 @@ public final class ModGeneracion {
 			Registry.register(BuiltInRegistries.FEATURE,
 					ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "circulo_portal"), new CirculoPortalFeature());
 
-	/** Lo que hay en el Limbo: árboles muertos, columnas, tumbas, faroles, arcos y ruinas. */
-	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> LIMBO_ARBOL =
-			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "limbo_arbol"),
-					new LimboFeature(LimboFeature.Tipo.ARBOL));
-	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> LIMBO_COLUMNA =
-			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "limbo_columna"),
-					new LimboFeature(LimboFeature.Tipo.COLUMNA));
-	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> LIMBO_TUMBA =
-			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "limbo_tumba"),
-					new LimboFeature(LimboFeature.Tipo.TUMBA));
-	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> LIMBO_FAROL =
-			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "limbo_farol"),
-					new LimboFeature(LimboFeature.Tipo.FAROL));
-	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> LIMBO_ARCO =
-			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "limbo_arco"),
-					new LimboFeature(LimboFeature.Tipo.ARCO));
-	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> LIMBO_RUINA =
-			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "limbo_ruina"),
-					new LimboFeature(LimboFeature.Tipo.RUINA));
-
 	/** Fuerza la carga de la clase. */
 	public static void registrar() {}
 }

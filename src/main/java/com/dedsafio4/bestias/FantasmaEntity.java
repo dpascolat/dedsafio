@@ -40,9 +40,10 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * Los fantasmas del Limbo (del Dedsafío 3). Vuelan y persiguen a los jugadores:
- * - Fantasma Amarillo: si te golpea, te mata al instante (ni el tótem te salva) y desaparece.
+ * - Fantasma Amarillo (el dorado): si te golpea, te mata al instante (solo te salva un tótem) y desaparece.
  * - Fantasma Blanco: golpea a gran velocidad y te da Lentitud.
- * - Fantasma Rojo: golpea a gran velocidad. Suelta una Gema Roja el 20% de las veces.
+ * - Fantasma Rojo: golpea a gran velocidad.
+ * Cada uno suelta su gema el 20% de las veces: Roja (Rojo), Blanca (Blanco), Gris (Negro) y Dorada (Amarillo).
  * - Fantasma Negro: cada golpe te quita un corazón para siempre (como el agua del Limbo; vuelve con /limbo devolver).
  * Cuando ven a un jugador vuelan derecho hacia él, suave y rápido (el triple que al principio), y como son
  * fantasmas atraviesan las paredes. Sin nadie cerca, flotan despacio por ahí.
@@ -156,8 +157,9 @@ public class FantasmaEntity extends Monster implements GeoEntity {
 		triggerAnim("ataque", "golpe");
 		level().playSound(null, getX(), getY(), getZ(), SONIDO_GOLPE, SoundSource.HOSTILE, 1f, 1f);
 		if (amarillo() && objetivo instanceof LivingEntity vivo) {
-			// Te mata al instante (como /kill: no lo para la armadura ni el tótem) y el fantasma desaparece.
-			vivo.hurt(damageSources().genericKill(), Float.MAX_VALUE);
+			// Un golpe que mata (la armadura no alcanza), pero el tótem sí te salva. Después el fantasma desaparece.
+			vivo.invulnerableTime = 0;
+			vivo.hurt(damageSources().mobAttack(this), Float.MAX_VALUE);
 			if (level() instanceof ServerLevel mundo) {
 				mundo.sendParticles(ParticleTypes.SOUL, getX(), getY() + 0.9, getZ(), 25, 0.4, 0.6, 0.4, 0.05);
 				mundo.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 0.9, getZ(), 15, 0.3, 0.5, 0.3, 0.02);
@@ -178,7 +180,11 @@ public class FantasmaEntity extends Monster implements GeoEntity {
 	@Override
 	protected void dropCustomDeathLoot(ServerLevel mundo, DamageSource fuente, boolean jugadorLoMato) {
 		super.dropCustomDeathLoot(mundo, fuente, jugadorLoMato);
-		if (rojo() && random.nextFloat() < 0.2f) spawnAtLocation(com.dedsafio4.items.ModItems.GEMA_ROJA);
+		if (random.nextFloat() >= 0.2f) return;
+		if (rojo()) spawnAtLocation(com.dedsafio4.items.ModItems.GEMA_ROJA);
+		else if (blanco()) spawnAtLocation(com.dedsafio4.items.ModItems.GEMA_BLANCA);
+		else if (negro()) spawnAtLocation(com.dedsafio4.items.ModItems.GEMA_GRIS);
+		else if (amarillo()) spawnAtLocation(com.dedsafio4.items.ModItems.GEMA_DORADA);
 	}
 
 	// Vuela: no se cae ni le pasa nada al caer.

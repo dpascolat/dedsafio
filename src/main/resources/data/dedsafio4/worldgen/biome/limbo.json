@@ -23,32 +23,7 @@
 		}
 	},
 	"spawners": {
-		"monster": [
-			{
-				"type": "dedsafio4:fantasma_amarillo",
-				"weight": 20,
-				"minCount": 1,
-				"maxCount": 1
-			},
-			{
-				"type": "dedsafio4:fantasma_blanco",
-				"weight": 40,
-				"minCount": 1,
-				"maxCount": 2
-			},
-			{
-				"type": "dedsafio4:fantasma_rojo",
-				"weight": 40,
-				"minCount": 1,
-				"maxCount": 2
-			},
-			{
-				"type": "dedsafio4:fantasma_negro",
-				"weight": 25,
-				"minCount": 1,
-				"maxCount": 1
-			}
-		],
+		"monster": [],
 		"creature": [],
 		"ambient": [],
 		"axolotls": [],
@@ -75,14 +50,7 @@
 		[],
 		[],
 		[],
-		[
-			"dedsafio4:limbo_arbol",
-			"dedsafio4:limbo_columna",
-			"dedsafio4:limbo_tumba",
-			"dedsafio4:limbo_farol",
-			"dedsafio4:limbo_arco",
-			"dedsafio4:limbo_ruina"
-		],
+		[],
 		[]
 	]
 }

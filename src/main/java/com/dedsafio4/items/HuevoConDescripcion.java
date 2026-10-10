@@ -116,7 +116,7 @@ public class HuevoConDescripcion extends SpawnEggItem {
 	public static void fantasmaAmarillo(List<Component> t) {
 		t.add(parte("Fantasma volador del Limbo.", GRIS));
 		t.add(parte("Si te golpea, ", GRIS).append(parte("te mata al instante", VIOLETA)));
-		t.add(parte("y desaparece.", GRIS));
+		t.add(parte("y desaparece. Solo te salva un tótem.", GRIS));
 	}
 
 	public static void fantasmaBlanco(List<Component> t) {

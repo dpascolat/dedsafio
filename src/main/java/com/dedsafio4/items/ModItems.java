@@ -310,6 +310,13 @@ public final class ModItems {
 	/** Gema Roja: la sueltan los Fantasmas Rojos (20%). La textura brilla (animada). */
 	public static final Item GEMA_ROJA = registrar("gema_roja",
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaRoja));
+	/** Las otras gemas de los fantasmas (20%): Blanca (Blanco), Gris (Negro) y Dorada (Amarillo). Brillan (animadas). */
+	public static final Item GEMA_BLANCA = registrar("gema_blanca",
+			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaBlanca));
+	public static final Item GEMA_GRIS = registrar("gema_gris",
+			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaGris));
+	public static final Item GEMA_DORADA = registrar("gema_dorada",
+			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaDorada));
 	/** Tenedor Simple: de hierro; se usa para el Tridente del Limbo. */
 	public static final Item TENEDOR_SIMPLE = registrar("tenedor_simple",
 			new DescritoItem(new Item.Properties().stacksTo(16), DescritoItem::tenedorSimple));
@@ -601,6 +608,9 @@ public final class ModItems {
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
 						entradas.accept(TENEDOR_SIMPLE);
 						entradas.accept(GEMA_ROJA);
+						entradas.accept(GEMA_BLANCA);
+						entradas.accept(GEMA_GRIS);
+						entradas.accept(GEMA_DORADA);
 						entradas.accept(FLASHBANG_SPAWN_EGG);
 						entradas.accept(WRAITH_SPAWN_EGG);
 						entradas.accept(FANTASMA_AMARILLO_SPAWN_EGG);
