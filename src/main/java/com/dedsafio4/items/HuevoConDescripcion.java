@@ -113,6 +113,12 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("Si te golpea, ", GRIS).append(parte("te arrastra al Limbo", VIOLETA)).append(parte(".", GRIS)));
 	}
 
+	public static void almita(List<Component> t) {
+		t.add(parte("El alma de un jugador. No ataca:", GRIS));
+		t.add(parte("solo flota rápido por ahí.", GRIS));
+		t.add(parte("/almita <nombre>", CELESTE).append(parte(" le pone el nombre.", GRIS)));
+	}
+
 	public static void fantasmaAmarillo(List<Component> t) {
 		t.add(parte("Fantasma volador del Limbo.", GRIS));
 		t.add(parte("Si te golpea, ", GRIS).append(parte("te mata al instante", VIOLETA)));

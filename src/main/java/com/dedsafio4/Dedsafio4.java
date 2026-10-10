@@ -154,6 +154,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.disfraz.Disfraces.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.AnuncioMob.registrarComandos(dispatcher);
 			com.dedsafio4.aviso.Aviso.registrarComandos(dispatcher);
+			com.dedsafio4.bestias.AlmitaEntity.registrarComandos(dispatcher);
 			NombreOculto.registrarComandos(dispatcher);
 			com.dedsafio4.dimension.Limbo.registrarComandos(dispatcher);
 			com.dedsafio4.ruleta.RuletaPiso.registrarComandos(dispatcher);

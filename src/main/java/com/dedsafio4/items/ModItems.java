@@ -320,6 +320,9 @@ public final class ModItems {
 	/** Tenedor Simple: de hierro; se usa para el Tridente del Limbo. */
 	public static final Item TENEDOR_SIMPLE = registrar("tenedor_simple",
 			new DescritoItem(new Item.Properties().stacksTo(16), DescritoItem::tenedorSimple));
+	public static final Item ALMITA_SPAWN_EGG = registrar("almita_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.ALMITA, 0x5FE3E6, 0xF3F2F2, new Item.Properties(),
+					HuevoConDescripcion::almita));
 	public static final Item GUSANO_CARNE_SPAWN_EGG = registrar("gusano_carne_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.GUSANO_CARNE, 0x9A3A22, 0xB7C23A, new Item.Properties(),
 					HuevoConDescripcion::gusanoCarne));
@@ -612,6 +615,7 @@ public final class ModItems {
 						entradas.accept(GEMA_GRIS);
 						entradas.accept(GEMA_DORADA);
 						entradas.accept(FLASHBANG_SPAWN_EGG);
+						entradas.accept(ALMITA_SPAWN_EGG);
 						entradas.accept(WRAITH_SPAWN_EGG);
 						entradas.accept(FANTASMA_AMARILLO_SPAWN_EGG);
 						entradas.accept(FANTASMA_BLANCO_SPAWN_EGG);
