@@ -1,0 +1,24 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"IRI",
+		"DDD",
+		"IRI"
+	],
+	"key": {
+		"I": {
+			"item": "minecraft:iron_ingot"
+		},
+		"R": {
+			"item": "minecraft:redstone"
+		},
+		"D": {
+			"item": "dedsafio4:dilitio"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:tanque_dilitio",
+		"count": 1
+	}
+}

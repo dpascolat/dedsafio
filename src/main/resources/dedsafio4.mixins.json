@@ -19,6 +19,7 @@
 		"EspadaRompeMixin",
 		"LevelEntitiesMixin",
 		"LivingEntityMixin",
+		"LivingEntityTotemEspacioMixin",
 		"MobAccessor",
 		"PlayerAgarreMixin",
 		"PlayerDisfrazMixin",

@@ -31,6 +31,7 @@ public class TotemGlebanoideItem extends Item {
 
 	public static void registrar() {
 		net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.ALLOW_DEATH.register((entidad, fuente, danio) -> {
+			if (TotemEspacioItem.enEspacio(entidad)) return true;   // ahí sólo sirve el Tótem del Espacio
 			if (!(entidad instanceof ServerPlayer jugador)) return true;
 			if (fuente.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return true;
 			for (InteractionHand mano : InteractionHand.values()) {

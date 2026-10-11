@@ -1,0 +1,30 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		" C ",
+		"IBD",
+		" M "
+	],
+	"key": {
+		"C": {
+			"item": "dedsafio4:nave_cabina"
+		},
+		"I": {
+			"item": "dedsafio4:nave_aleron_izquierdo"
+		},
+		"B": {
+			"item": "dedsafio4:bateria_dilitio"
+		},
+		"D": {
+			"item": "dedsafio4:nave_aleron_derecho"
+		},
+		"M": {
+			"item": "dedsafio4:nave_motor"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:nave_biplaza",
+		"count": 1
+	}
+}

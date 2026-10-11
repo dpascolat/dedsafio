@@ -21,7 +21,8 @@ public abstract class ClientPacketListenerMixin {
 		}
 		for (InteractionHand mano : InteractionHand.values()) {
 			ItemStack pila = jugador.getItemInHand(mano);
-			if (pila.is(ModItems.TOTEM_FRERICO) || pila.is(ModItems.TOTEM_GLEBANOIDE) || pila.is(ModItems.TOTEM_LIMBO)) {
+			if (pila.is(ModItems.TOTEM_FRERICO) || pila.is(ModItems.TOTEM_GLEBANOIDE) || pila.is(ModItems.TOTEM_LIMBO)
+					|| pila.is(ModItems.TOTEM_YUNQUE)) {
 				cir.setReturnValue(pila.copy());
 				return;
 			}
@@ -29,7 +30,7 @@ public abstract class ClientPacketListenerMixin {
 		// El Tótem del Ídolo salta desde cualquier lugar del inventario.
 		var inventario = jugador.getInventory();
 		for (int i = 0; i < inventario.getContainerSize(); i++) {
-			if (inventario.getItem(i).is(ModItems.TOTEM_IDOLO)) {
+			if (inventario.getItem(i).is(ModItems.TOTEM_IDOLO) || inventario.getItem(i).is(ModItems.TOTEM_ESPACIO)) {
 				cir.setReturnValue(inventario.getItem(i).copy());
 				return;
 			}

@@ -30,13 +30,11 @@ public final class PartesNave {
 	private static void descripcionBiplaza(java.util.List<net.minecraft.network.chat.Component> t) {
 		int gris = com.dedsafio4.items.DescritoItem.GRIS, celeste = com.dedsafio4.items.DescritoItem.CELESTE;
 		int amarillo = com.dedsafio4.items.DescritoItem.AMARILLO, naranja = com.dedsafio4.items.DescritoItem.NARANJA;
-		t.add(com.dedsafio4.items.DescritoItem.parte("Requiere una ", gris)
-				.append(com.dedsafio4.items.DescritoItem.parte("Plataforma de", celeste)));
-		t.add(com.dedsafio4.items.DescritoItem.parte("Despegue", celeste)
-				.append(com.dedsafio4.items.DescritoItem.parte(". Colócala en ella", gris)));
-		t.add(com.dedsafio4.items.DescritoItem.parte("para subirte.", gris));
+		t.add(com.dedsafio4.items.DescritoItem.parte("Requiere un ", gris)
+				.append(com.dedsafio4.items.DescritoItem.parte("Soporte de Nave", celeste)));
+		t.add(com.dedsafio4.items.DescritoItem.parte("Colócala en él para subirte.", gris));
 		t.add(net.minecraft.network.chat.Component.empty());
-		t.add(com.dedsafio4.items.DescritoItem.parte("⚠ Atención: La Plataforma sólo", amarillo));
+		t.add(com.dedsafio4.items.DescritoItem.parte("⚠ Atención: El Soporte sólo", amarillo));
 		t.add(com.dedsafio4.items.DescritoItem.parte("funciona en el Overworld.", amarillo));
 		t.add(net.minecraft.network.chat.Component.empty());
 		t.add(com.dedsafio4.items.DescritoItem.parte("Las naves tienen dueño. Haz", gris));
