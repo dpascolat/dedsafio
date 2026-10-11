@@ -14,28 +14,43 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * Dibuja el Soporte de Nave con los cubos de Soporte_nave.bbmodel (copiados abajo, en píxeles de Blockbench),
  * achicado para que la base ocupe justo 2×2 bloques. Algunos cubos están girados en ángulos que los modelos
- * de bloque de Minecraft no permiten (37,5°, 142,5°...), por eso se dibuja a mano.
+ * de bloque de Minecraft no permiten (37,5°, 57,5°, 142,5°...), por eso se dibuja a mano.
  */
 public class SoporteNaveRenderer implements BlockEntityRenderer<SoporteNaveBlockEntity> {
 	private static final ResourceLocation TEXTURA = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/block/soporte_nave.png");
 	private static final float TAMANO_TEXTURA = 256f;
-	/** El centro de la base y su lado (en píxeles del modelo): el lado pasa a medir 2 bloques. */
-	private static final float CENTRO_X = -1.5f, CENTRO_Z = -9.5f, LADO = 43f;
+	/** El centro del soporte y lo que mide de lado (en píxeles del modelo, con las barandas): pasa a medir 2 bloques. */
+	private static final float CENTRO_X = -1.5f, CENTRO_Z = -10f, LADO = 44f;
 
-	/** Cada cubo: desde xyz, hasta xyz, pivote xyz, giro en Y y los uv de norte, este, sur, oeste, arriba y abajo. */
+	/** Cada cubo: desde xyz, hasta xyz, pivote xyz, giro xyz y los uv de norte, este, sur, oeste, arriba y abajo. */
 	private static final float[][] CUBOS = {
-			{-18f, 0f, -27f, 15f, 2f, 8f, 2f, 0f, 11f, 0f, 35f, 78f, 68f, 80f, 0f, 78f, 35f, 80f, 103f, 78f, 136f, 80f, 68f, 78f, 103f, 80f, 68f, 78f, 35f, 43f, 101f, 43f, 68f, 78f},
-			{12f, 0f, 7f, 18f, 2f, 9f, 14f, 0f, 8f, 37.5f, 2f, 123f, 8f, 125f, 0f, 123f, 2f, 125f, 10f, 123f, 16f, 125f, 8f, 123f, 10f, 125f, 8f, 123f, 2f, 121f, 14f, 121f, 8f, 123f},
-			{-16f, 0f, 8f, 13f, 2f, 10f, 0f, 0f, 9f, 0f, 2f, 119f, 31f, 121f, 0f, 119f, 2f, 121f, 33f, 119f, 62f, 121f, 31f, 119f, 33f, 121f, 31f, 119f, 2f, 117f, 60f, 117f, 31f, 119f},
-			{-19f, 0f, 7f, -13f, 2f, 9f, -17f, 0f, 8f, 142.5f, 18f, 123f, 24f, 125f, 16f, 123f, 18f, 125f, 26f, 123f, 32f, 125f, 24f, 123f, 26f, 125f, 24f, 123f, 18f, 121f, 30f, 121f, 24f, 123f},
-			{-36.8f, 0f, -11.641f, -5.8f, 2f, -9.641f, -19.8f, 0f, -10.641f, 90f, 70f, 115f, 101f, 117f, 68f, 115f, 70f, 117f, 103f, 115f, 134f, 117f, 101f, 115f, 103f, 117f, 101f, 115f, 70f, 113f, 132f, 113f, 101f, 115f},
-			{-19.3f, 0f, -28f, -13.3f, 2f, -26f, -17.3f, 0f, -27f, -135f, 34f, 123f, 40f, 125f, 32f, 123f, 34f, 125f, 42f, 123f, 48f, 125f, 40f, 123f, 42f, 125f, 40f, 123f, 34f, 121f, 46f, 121f, 40f, 123f},
-			{-16.5f, 0f, -29f, 12.5f, 2f, -27f, -0.5f, 0f, -28f, 0f, 64f, 119f, 93f, 121f, 62f, 119f, 64f, 121f, 95f, 119f, 124f, 121f, 93f, 119f, 95f, 121f, 93f, 119f, 64f, 117f, 122f, 117f, 93f, 119f},
-			{13.5f, 0f, -27f, 19.5f, 2f, -25f, 15.5f, 0f, -26f, 145f, 50f, 123f, 56f, 125f, 48f, 123f, 50f, 125f, 58f, 123f, 64f, 125f, 56f, 123f, 58f, 125f, 56f, 123f, 50f, 121f, 62f, 121f, 56f, 123f},
-			{-0.2f, 0f, -11.641f, 31.8f, 2f, -9.641f, 16.8f, 0f, -10.641f, 90f, 2f, 115f, 34f, 117f, 0f, 115f, 2f, 117f, 36f, 115f, 68f, 117f, 34f, 115f, 36f, 117f, 34f, 115f, 2f, 113f, 66f, 113f, 34f, 115f},
-			{14f, 0f, -25f, 16f, 2f, 6f, 15f, 0f, 0f, 0f, 31f, 111f, 33f, 113f, 0f, 111f, 31f, 113f, 64f, 111f, 66f, 113f, 33f, 111f, 64f, 113f, 33f, 111f, 31f, 80f, 35f, 80f, 33f, 111f},
-			{-19f, 0f, -25f, -17f, 2f, 6f, -18f, 0f, 0f, 0f, 97f, 111f, 99f, 113f, 66f, 111f, 97f, 113f, 130f, 111f, 132f, 113f, 99f, 111f, 130f, 113f, 99f, 111f, 97f, 80f, 101f, 80f, 99f, 111f},
-			{-23f, 0f, -31f, 20f, 0f, 12f, 0f, 0f, 11f, 0f, 43f, 43f, 86f, 43f, 0f, 43f, 43f, 43f, 129f, 43f, 172f, 43f, 86f, 43f, 129f, 43f, 86f, 43f, 43f, 0f, 129f, 0f, 86f, 43f}
+			{-18f, 4f, -27f, 15f, 6f, 8f, 2f, 0f, 11f, 0f, 0f, 0f, 35f, 76f, 68f, 78f, 0f, 76f, 35f, 78f, 103f, 76f, 136f, 78f, 68f, 76f, 103f, 78f, 68f, 76f, 35f, 41f, 101f, 41f, 68f, 76f},
+			{12f, 4f, 7f, 18f, 6f, 9f, 14f, 0f, 8f, 0f, 37.5f, 0f, 134f, 133f, 140f, 135f, 132f, 133f, 134f, 135f, 142f, 133f, 148f, 135f, 140f, 133f, 142f, 135f, 140f, 133f, 134f, 131f, 146f, 131f, 140f, 133f},
+			{-18f, 0f, 11f, 15f, 2f, 13f, 0f, -4f, 12f, 0f, 0f, 0f, 106f, 96f, 139f, 98f, 104f, 96f, 106f, 98f, 141f, 96f, 174f, 98f, 139f, 96f, 141f, 98f, 139f, 96f, 106f, 94f, 172f, 94f, 139f, 96f},
+			{-19f, 4f, 7f, -13f, 6f, 9f, -17f, 0f, 8f, 0f, 142.5f, 0f, 2f, 137f, 8f, 139f, 0f, 137f, 2f, 139f, 10f, 137f, 16f, 139f, 8f, 137f, 10f, 139f, 8f, 137f, 2f, 135f, 14f, 135f, 8f, 137f},
+			{-21.3f, 0f, -31f, -15.3f, 2f, -29f, -19.3f, -4f, -30f, 0f, -135f, 0f, 18f, 137f, 24f, 139f, 16f, 137f, 18f, 139f, 26f, 137f, 32f, 139f, 24f, 137f, 26f, 139f, 24f, 137f, 18f, 135f, 30f, 135f, 24f, 137f},
+			{-16.5f, 4f, -29f, 12.5f, 6f, -27f, -0.5f, 0f, -28f, 0f, 0f, 0f, 134f, 116f, 163f, 118f, 132f, 116f, 134f, 118f, 165f, 116f, 194f, 118f, 163f, 116f, 165f, 118f, 163f, 116f, 134f, 114f, 192f, 114f, 163f, 116f},
+			{13.5f, 4f, -27f, 19.5f, 6f, -25f, 15.5f, 0f, -26f, 0f, 145f, 0f, 34f, 137f, 40f, 139f, 32f, 137f, 34f, 139f, 42f, 137f, 48f, 139f, 40f, 137f, 42f, 139f, 40f, 137f, 34f, 135f, 46f, 135f, 40f, 137f},
+			{-0.2f, 4f, -11.641f, 31.8f, 6f, -9.641f, 16.8f, 0f, -10.641f, 0f, 90f, 0f, 134f, 104f, 166f, 106f, 132f, 104f, 134f, 106f, 168f, 104f, 200f, 106f, 166f, 104f, 168f, 106f, 166f, 104f, 134f, 102f, 198f, 102f, 166f, 104f},
+			{14f, 4f, -25f, 16f, 6f, 6f, 15f, 0f, 0f, 0f, 0f, 0f, 31f, 133f, 33f, 135f, 0f, 133f, 31f, 135f, 64f, 133f, 66f, 135f, 33f, 133f, 64f, 135f, 33f, 133f, 31f, 102f, 35f, 102f, 33f, 133f},
+			{-19f, 4f, -25f, -17f, 6f, 6f, -18f, 0f, 0f, 0f, 0f, 0f, 97f, 133f, 99f, 135f, 66f, 133f, 97f, 135f, 130f, 133f, 132f, 135f, 99f, 133f, 130f, 135f, 99f, 133f, 97f, 102f, 101f, 102f, 99f, 133f},
+			{-21f, 0f, -29f, 18f, 2f, 10f, 0f, 0f, 11f, 0f, 0f, 0f, 39f, 39f, 78f, 41f, 0f, 39f, 39f, 41f, 117f, 39f, 156f, 41f, 78f, 39f, 117f, 41f, 78f, 39f, 39f, 0f, 117f, 0f, 78f, 39f},
+			{-3f, 0.44699f, 5.45196f, 1f, 4.44699f, 10.452f, 0f, 0.86788f, 9.35328f, 57.5f, 0f, 0f, 137f, 127f, 141f, 131f, 132f, 127f, 137f, 131f, 146f, 127f, 150f, 131f, 141f, 127f, 146f, 131f, 141f, 127f, 137f, 122f, 145f, 122f, 141f, 127f},
+			{-16f, 4f, 8f, 13f, 6f, 10f, 0f, 0f, 9f, 0f, 0f, 0f, 134f, 120f, 163f, 122f, 132f, 120f, 134f, 122f, 165f, 120f, 194f, 122f, 163f, 120f, 165f, 122f, 163f, 120f, 134f, 118f, 192f, 118f, 163f, 120f},
+			{-21f, 0f, 10f, -15f, 2f, 12f, -19f, -4f, 11f, 0f, 142.5f, 0f, 50f, 137f, 56f, 139f, 48f, 137f, 50f, 139f, 58f, 137f, 64f, 139f, 56f, 137f, 58f, 139f, 56f, 137f, 50f, 135f, 62f, 135f, 56f, 137f},
+			{-36.8f, 4f, -11.641f, -5.8f, 6f, -9.641f, -19.8f, 0f, -10.641f, 0f, 90f, 0f, 134f, 112f, 165f, 114f, 132f, 112f, 134f, 114f, 167f, 112f, 198f, 114f, 165f, 112f, 167f, 114f, 165f, 112f, 134f, 110f, 196f, 110f, 165f, 112f},
+			{-41.8f, 0f, -11.641f, -4.8f, 2f, -9.641f, -21.8f, -4f, -10.641f, 0f, 90f, 0f, 106f, 84f, 143f, 86f, 104f, 84f, 106f, 86f, 145f, 84f, 182f, 86f, 143f, 84f, 145f, 86f, 143f, 84f, 106f, 82f, 180f, 82f, 143f, 84f},
+			{-19.3f, 4f, -28f, -13.3f, 6f, -26f, -17.3f, 0f, -27f, 0f, -135f, 0f, 66f, 137f, 72f, 139f, 64f, 137f, 66f, 139f, 74f, 137f, 80f, 139f, 72f, 137f, 74f, 139f, 72f, 137f, 66f, 135f, 78f, 135f, 72f, 137f},
+			{-18.5f, 0f, -32f, 14.5f, 2f, -30f, -0.5f, -4f, -31f, 0f, 0f, 0f, 106f, 100f, 139f, 102f, 104f, 100f, 106f, 102f, 141f, 100f, 174f, 102f, 139f, 100f, 141f, 102f, 139f, 100f, 106f, 98f, 172f, 98f, 139f, 100f},
+			{14f, 0f, 10f, 20f, 2f, 12f, 16f, -4f, 11f, 0f, 37.5f, 0f, 82f, 137f, 88f, 139f, 80f, 137f, 82f, 139f, 90f, 137f, 96f, 139f, 88f, 137f, 90f, 139f, 88f, 137f, 82f, 135f, 94f, 135f, 88f, 137f},
+			{-1.2f, 0f, -11.641f, 36.8f, 2f, -9.641f, 18.8f, -4f, -10.641f, 0f, 90f, 0f, 106f, 80f, 144f, 82f, 104f, 80f, 106f, 82f, 146f, 80f, 184f, 82f, 144f, 80f, 146f, 82f, 144f, 80f, 106f, 78f, 182f, 78f, 144f, 80f},
+			{15.5f, 0f, -30f, 21.5f, 2f, -28f, 17.5f, -4f, -29f, 0f, 145f, 0f, 98f, 137f, 104f, 139f, 96f, 137f, 98f, 139f, 106f, 137f, 112f, 139f, 104f, 137f, 106f, 139f, 104f, 137f, 98f, 135f, 110f, 135f, 104f, 137f},
+			{-19f, 0f, -31f, 16f, 2f, -29f, 0f, 0f, -30f, 0f, 0f, 0f, 106f, 88f, 141f, 90f, 104f, 88f, 106f, 90f, 143f, 88f, 178f, 90f, 141f, 88f, 143f, 90f, 141f, 88f, 106f, 86f, 176f, 86f, 141f, 88f},
+			{-19f, 0f, 9f, 16f, 2f, 11f, 0f, 0f, 10f, 0f, 0f, 0f, 106f, 92f, 141f, 94f, 104f, 92f, 106f, 94f, 143f, 92f, 178f, 94f, 141f, 92f, 143f, 94f, 141f, 92f, 106f, 90f, 176f, 90f, 141f, 92f},
+			{-16f, 2f, -21f, 14f, 4f, 1f, 0f, 2f, 0f, 0f, 0f, 0f, 22f, 100f, 52f, 102f, 0f, 100f, 22f, 102f, 74f, 100f, 104f, 102f, 52f, 100f, 74f, 102f, 52f, 100f, 22f, 78f, 82f, 78f, 52f, 100f},
+			{14f, 0.44699f, -14.548f, 18f, 4.44699f, -9.54804f, 17f, 0.86788f, -10.6467f, 57.5f, 90f, 0f, 137f, 127f, 141f, 131f, 132f, 127f, 137f, 131f, 146f, 127f, 150f, 131f, 141f, 127f, 146f, 131f, 141f, 127f, 137f, 122f, 145f, 122f, 141f, 127f},
+			{-28.6467f, 0.44699f, -6.5f, -24.6467f, 4.44699f, -1.5f, -20f, 0.86788f, -2.59867f, 57.5f, -90f, 0f, 137f, 127f, 141f, 131f, 132f, 127f, 137f, 131f, 146f, 127f, 150f, 131f, 141f, 127f, 146f, 131f, 141f, 127f, 137f, 122f, 145f, 122f, 141f, 127f},
+			{-6f, 0.44699f, -32.548f, -2f, 4.44699f, -27.548f, -3f, 0.86788f, -28.6467f, 57.5f, -180f, 0f, 137f, 127f, 141f, 131f, 132f, 127f, 137f, 131f, 146f, 127f, 150f, 131f, 141f, 127f, 146f, 131f, 141f, 127f, 137f, 122f, 145f, 122f, 141f, 127f}
 	};
 
 	public SoporteNaveRenderer(BlockEntityRendererProvider.Context contexto) {}
@@ -67,20 +82,23 @@ public class SoporteNaveRenderer implements BlockEntityRenderer<SoporteNaveBlock
 
 	private static void cubo(PoseStack pose, VertexConsumer v, float[] c, int luz, int overlay) {
 		pose.pushPose();
-		if (c[9] != 0) {
+		if (c[9] != 0 || c[10] != 0 || c[11] != 0) {
+			// Como Blockbench: primero se gira en X, después en Y y por último en Z, alrededor del pivote.
 			pose.translate(c[6], c[7], c[8]);
-			pose.mulPose(Axis.YP.rotationDegrees(c[9]));
+			pose.mulPose(Axis.ZP.rotationDegrees(c[11]));
+			pose.mulPose(Axis.YP.rotationDegrees(c[10]));
+			pose.mulPose(Axis.XP.rotationDegrees(c[9]));
 			pose.translate(-c[6], -c[7], -c[8]);
 		}
 		PoseStack.Pose p = pose.last();
 		float x1 = c[0], y1 = c[1], z1 = c[2], x2 = c[3], y2 = c[4], z2 = c[5];
 		// Las esquinas de cada cara mirándola de afuera: arriba-izquierda, abajo-izquierda, abajo-derecha, arriba-derecha.
-		cara(p, v, c, 10, luz, overlay, 0, 0, -1, x2, y2, z1, x2, y1, z1, x1, y1, z1, x1, y2, z1);
-		cara(p, v, c, 14, luz, overlay, 1, 0, 0, x2, y2, z2, x2, y1, z2, x2, y1, z1, x2, y2, z1);
-		cara(p, v, c, 18, luz, overlay, 0, 0, 1, x1, y2, z2, x1, y1, z2, x2, y1, z2, x2, y2, z2);
-		cara(p, v, c, 22, luz, overlay, -1, 0, 0, x1, y2, z1, x1, y1, z1, x1, y1, z2, x1, y2, z2);
-		cara(p, v, c, 26, luz, overlay, 0, 1, 0, x1, y2, z1, x1, y2, z2, x2, y2, z2, x2, y2, z1);
-		cara(p, v, c, 30, luz, overlay, 0, -1, 0, x1, y1, z2, x1, y1, z1, x2, y1, z1, x2, y1, z2);
+		cara(p, v, c, 12, luz, overlay, 0, 0, -1, x2, y2, z1, x2, y1, z1, x1, y1, z1, x1, y2, z1);
+		cara(p, v, c, 16, luz, overlay, 1, 0, 0, x2, y2, z2, x2, y1, z2, x2, y1, z1, x2, y2, z1);
+		cara(p, v, c, 20, luz, overlay, 0, 0, 1, x1, y2, z2, x1, y1, z2, x2, y1, z2, x2, y2, z2);
+		cara(p, v, c, 24, luz, overlay, -1, 0, 0, x1, y2, z1, x1, y1, z1, x1, y1, z2, x1, y2, z2);
+		cara(p, v, c, 28, luz, overlay, 0, 1, 0, x1, y2, z1, x1, y2, z2, x2, y2, z2, x2, y2, z1);
+		cara(p, v, c, 32, luz, overlay, 0, -1, 0, x1, y1, z2, x1, y1, z1, x2, y1, z1, x2, y1, z2);
 		pose.popPose();
 	}
 

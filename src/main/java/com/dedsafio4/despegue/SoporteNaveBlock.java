@@ -26,7 +26,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class SoporteNaveBlock extends BaseEntityBlock {
 	public static final MapCodec<SoporteNaveBlock> CODEC = simpleCodec(SoporteNaveBlock::new);
 	public static final IntegerProperty PARTE = IntegerProperty.create("parte", 0, 3);
-	private static final VoxelShape FORMA = Block.box(0, 0, 0, 16, 1.5, 16);
+	private static final VoxelShape FORMA = Block.box(0, 0, 0, 16, 4, 16);
 
 	public SoporteNaveBlock(Properties propiedades) {
 		super(propiedades);

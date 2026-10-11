@@ -199,7 +199,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		}
 		NaveViajeEntity nave = ModDespegue.NAVE_VIAJE.create(level);
 		if (nave == null) return InteractionResult.FAIL;
-		nave.moveTo(pos.getX() + 1, pos.getY() + 0.1, pos.getZ() + 1, jugador == null ? 0 : jugador.getYRot(), 0);
+		nave.moveTo(pos.getX() + 1, pos.getY() + 0.25, pos.getZ() + 1, jugador == null ? 0 : jugador.getYRot(), 0);
 		if (jugador != null) {
 			nave.dueno = jugador.getUUID();
 			nave.nombreDueno = jugador.getGameProfile().getName();
