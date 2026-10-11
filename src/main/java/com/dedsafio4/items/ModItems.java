@@ -524,6 +524,7 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.bloques.ModBloques.MINERAL_DE_GRASA_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.PULMONES_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.MINERAL_VERDE_ITEM);
+						entradas.accept(com.dedsafio4.bloques.ModBloques.BLOQUE_NARANJA_ITEM);
 						entradas.accept(CRISTAL_VERDE);
 						entradas.accept(BARRA_CRISTAL_VERDE);
 						entradas.accept(PIMPOLLO_QUMARA);
