@@ -157,8 +157,34 @@ public final class ModItems {
 			DescritoItem::frutaSolaria));
 
 	/** Manzana de Ámbar: la suelta el Plumosaurio. */
-	public static final Item MANZANA_DE_AMBAR = registrar("manzana_de_ambar", new Item(new Item.Properties()
-			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(4).saturationModifier(0.3f).build())));
+	/** Manzana de Ámbar: como una Manzana Dorada (Regeneración II 5 s y Absorción 2 min). Manzana Dorada + Ámbar con Insecto. */
+	public static final Item MANZANA_DE_AMBAR = registrar("manzana_de_ambar", new Item(new Item.Properties().rarity(Rarity.RARE)
+			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(4).saturationModifier(1.2f).alwaysEdible()
+					.effect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 100, 1), 1f)
+					.effect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.ABSORPTION, 2400, 0), 1f)
+					.build())) {
+		@Override
+		public net.minecraft.network.chat.Component getName(ItemStack pila) {
+			return net.minecraft.network.chat.Component.translatable(getDescriptionId()).withColor(0x55D9F0);
+		}
+
+		@Override
+		public void appendHoverText(ItemStack pila, TooltipContext contexto, java.util.List<net.minecraft.network.chat.Component> texto,
+									net.minecraft.world.item.TooltipFlag bandera) {
+			int azul = 0x8C8CFF, violeta = 0xD24BE0, blanco = 0xE8E8E8, celeste = 0x55D9F0, morado = 0xC77DFF;
+			texto.add(net.minecraft.network.chat.Component.literal("Regeneración II (00:05)").withColor(azul));
+			texto.add(net.minecraft.network.chat.Component.literal("Absorción (02:00)").withColor(azul));
+			texto.add(net.minecraft.network.chat.Component.empty());
+			texto.add(net.minecraft.network.chat.Component.literal("Al aplicarse:").withColor(violeta));
+			texto.add(net.minecraft.network.chat.Component.literal("Absorción máxima: +4").withColor(azul));
+			texto.add(net.minecraft.network.chat.Component.empty());
+			texto.add(net.minecraft.network.chat.Component.literal("Combina ").withColor(blanco)
+					.append(net.minecraft.network.chat.Component.literal("Manzana Dorada").withColor(celeste))
+					.append(net.minecraft.network.chat.Component.literal(" con").withColor(blanco)));
+			texto.add(net.minecraft.network.chat.Component.literal("Mineral de Ámbar con Insecto").withColor(morado));
+			texto.add(net.minecraft.network.chat.Component.literal("para conseguirla.").withColor(blanco));
+		}
+	});
 
 	/** Llave de Candado: le saca el candado a un cofre tuyo. */
 	public static final Item LLAVE_CANDADO = registrar("llave_candado", new LlaveCandadoItem(new Item.Properties().stacksTo(1)));
