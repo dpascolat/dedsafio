@@ -33,9 +33,11 @@ import java.util.Map;
 /**
  * Lo que suelta un mob al morir, agregado a mano (se guarda en el mundo):
  *   /dropsmob <mob> <objeto> <cantidad máxima> <porcentaje>   al morir, con esa probabilidad suelta de 1 a esa cantidad
- *   /dropsmob <mob> quitar <objeto>                             saca ese drop
+ *   /dropsmob <mob> quitar <objeto>                             ese objeto no lo suelta más (ni el agregado ni el de siempre)
+ *   /dropsmob <mob> normal <objeto>                             ese objeto vuelve a soltarse como siempre
  *   /dropsmob <mob>                                             muestra los drops que tiene
- * Se suma a lo que ya suelta normalmente. Si se vuelve a poner el mismo objeto, se cambia.
+ * Al agregar un objeto que el mob ya soltaba por su cuenta, el de siempre se saca: queda sólo el de /dropsmob (con su
+ * porcentaje). Si se vuelve a poner el mismo objeto, se cambia. Lo de siempre se frena en EntityDropsMixin.
  */
 public final class DropsMob {
 	private DropsMob() {}
@@ -47,10 +49,19 @@ public final class DropsMob {
 		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
 		/** id del mob → sus drops. */
 		final Map<String, List<Drop>> drops = new HashMap<>();
+		/** id del mob → los objetos de su drop de siempre que ya no suelta. */
+		final Map<String, java.util.Set<String>> sacados = new HashMap<>();
 
 		private static Datos leer(CompoundTag tag, HolderLookup.Provider registros) {
 			Datos d = new Datos();
+			CompoundTag sac = tag.getCompound("_sacados");
+			for (String mob : sac.getAllKeys()) {
+				java.util.Set<String> s = new java.util.HashSet<>();
+				for (Tag t : sac.getList(mob, Tag.TAG_STRING)) s.add(t.getAsString());
+				d.sacados.put(mob, s);
+			}
 			for (String mob : tag.getAllKeys()) {
+				if (mob.equals("_sacados")) continue;
 				List<Drop> l = new ArrayList<>();
 				for (Tag t : tag.getList(mob, Tag.TAG_COMPOUND)) {
 					CompoundTag c = (CompoundTag) t;
@@ -74,12 +85,33 @@ public final class DropsMob {
 				}
 				tag.put(mob, lista);
 			});
+			CompoundTag sac = new CompoundTag();
+			sacados.forEach((mob, s) -> {
+				ListTag lista = new ListTag();
+				for (String item : s) lista.add(net.minecraft.nbt.StringTag.valueOf(item));
+				sac.put(mob, lista);
+			});
+			tag.put("_sacados", sac);
 			return tag;
 		}
 	}
 
 	private static Datos datos(MinecraftServer server) {
 		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_drops_mob");
+	}
+
+	/** Mientras se sueltan los drops de /dropsmob (para que no los frene EntityDropsMixin). */
+	private static boolean soltandoLosNuestros;
+
+	/**
+	 * ¿Este mob (muriendo) no tiene que soltar este objeto de su drop de siempre? Lo llama EntityDropsMixin cada vez
+	 * que algo va a soltar un objeto.
+	 */
+	public static boolean frenar(net.minecraft.world.entity.Entity entidad, ItemStack pila) {
+		if (soltandoLosNuestros || pila.isEmpty() || !(entidad instanceof net.minecraft.world.entity.LivingEntity vivo) || vivo.isAlive()
+				|| !(entidad.level() instanceof ServerLevel mundo)) return false;
+		java.util.Set<String> s = datos(mundo.getServer()).sacados.get(EntityType.getKey(entidad.getType()).toString());
+		return s != null && s.contains(BuiltInRegistries.ITEM.getKey(pila.getItem()).toString());
 	}
 
 	public static void registrar() {
@@ -95,7 +127,12 @@ public final class DropsMob {
 				int cuantos = 1 + azar.nextInt(Math.max(1, dr.maximo()));
 				while (cuantos > 0) {
 					int esta = Math.min(cuantos, item.getDefaultMaxStackSize());
-					entidad.spawnAtLocation(new ItemStack(item, esta));
+					soltandoLosNuestros = true;
+					try {
+						entidad.spawnAtLocation(new ItemStack(item, esta));
+					} finally {
+						soltandoLosNuestros = false;
+					}
 					cuantos -= esta;
 				}
 			}
@@ -110,6 +147,9 @@ public final class DropsMob {
 						.then(Commands.literal("quitar").then(Commands.argument("objeto", ResourceLocationArgument.id())
 								.suggests((c, b) -> SharedSuggestionProvider.suggestResource(BuiltInRegistries.ITEM.keySet(), b))
 								.executes(DropsMob::quitar)))
+						.then(Commands.literal("normal").then(Commands.argument("objeto", ResourceLocationArgument.id())
+								.suggests((c, b) -> SharedSuggestionProvider.suggestResource(BuiltInRegistries.ITEM.keySet(), b))
+								.executes(DropsMob::normal)))
 						.then(Commands.argument("objeto", ResourceLocationArgument.id())
 								.suggests((c, b) -> SharedSuggestionProvider.suggestResource(BuiltInRegistries.ITEM.keySet(), b))
 								.then(Commands.argument("cantidad", IntegerArgumentType.integer(1, 6400))
@@ -149,6 +189,8 @@ public final class DropsMob {
 		List<Drop> l = d.drops.computeIfAbsent(EntityType.getKey(tipo).toString(), k -> new ArrayList<>());
 		l.removeIf(dr -> dr.item().equals(idItem));
 		l.add(new Drop(idItem, maximo, porcentaje));
+		// Si ya lo soltaba por su cuenta, ése se saca: queda sólo éste.
+		d.sacados.computeIfAbsent(EntityType.getKey(tipo).toString(), k -> new java.util.HashSet<>()).add(idItem);
 		d.setDirty();
 		c.getSource().sendSuccess(() -> Component.literal(tipo.getDescription().getString() + " ahora suelta ")
 				.append(new ItemStack(item).getHoverName())
@@ -156,18 +198,51 @@ public final class DropsMob {
 		return 1;
 	}
 
+	/** Ese objeto ya no lo suelta: ni el agregado con /dropsmob ni el de siempre. */
 	private static int quitar(CommandContext<CommandSourceStack> c) {
 		EntityType<?> tipo = mob(ResourceLocationArgument.getId(c, "mob"));
 		Item item = objeto(ResourceLocationArgument.getId(c, "objeto"));
-		Datos d = datos(c.getSource().getServer());
-		List<Drop> l = tipo == null ? null : d.drops.get(EntityType.getKey(tipo).toString());
-		if (l == null || item == null || !l.removeIf(dr -> dr.item().equals(BuiltInRegistries.ITEM.getKey(item).toString()))) {
-			c.getSource().sendFailure(Component.literal("Ese mob no tenía ese drop."));
+		if (tipo == null || item == null) {
+			c.getSource().sendFailure(Component.literal(tipo == null ? "No existe ese mob." : "No existe ese objeto."));
 			return 0;
 		}
-		if (l.isEmpty()) d.drops.remove(EntityType.getKey(tipo).toString());
+		Datos d = datos(c.getSource().getServer());
+		String idMob = EntityType.getKey(tipo).toString(), idItem = BuiltInRegistries.ITEM.getKey(item).toString();
+		List<Drop> l = d.drops.get(idMob);
+		if (l != null) {
+			l.removeIf(dr -> dr.item().equals(idItem));
+			if (l.isEmpty()) d.drops.remove(idMob);
+		}
+		d.sacados.computeIfAbsent(idMob, k -> new java.util.HashSet<>()).add(idItem);
 		d.setDirty();
-		c.getSource().sendSuccess(() -> Component.literal("Drop quitado.").withStyle(ChatFormatting.AQUA), true);
+		c.getSource().sendSuccess(() -> Component.literal(tipo.getDescription().getString() + " ya no suelta ")
+				.append(new ItemStack(item).getHoverName()).append(Component.literal(".")).withStyle(ChatFormatting.AQUA), true);
+		return 1;
+	}
+
+	/** Ese objeto vuelve a soltarse como siempre (y se saca el agregado con /dropsmob, si había). */
+	private static int normal(CommandContext<CommandSourceStack> c) {
+		EntityType<?> tipo = mob(ResourceLocationArgument.getId(c, "mob"));
+		Item item = objeto(ResourceLocationArgument.getId(c, "objeto"));
+		if (tipo == null || item == null) {
+			c.getSource().sendFailure(Component.literal(tipo == null ? "No existe ese mob." : "No existe ese objeto."));
+			return 0;
+		}
+		Datos d = datos(c.getSource().getServer());
+		String idMob = EntityType.getKey(tipo).toString(), idItem = BuiltInRegistries.ITEM.getKey(item).toString();
+		List<Drop> l = d.drops.get(idMob);
+		if (l != null) {
+			l.removeIf(dr -> dr.item().equals(idItem));
+			if (l.isEmpty()) d.drops.remove(idMob);
+		}
+		java.util.Set<String> s = d.sacados.get(idMob);
+		if (s != null) {
+			s.remove(idItem);
+			if (s.isEmpty()) d.sacados.remove(idMob);
+		}
+		d.setDirty();
+		c.getSource().sendSuccess(() -> Component.literal(tipo.getDescription().getString() + " vuelve a soltar ")
+				.append(new ItemStack(item).getHoverName()).append(Component.literal(" como siempre.")).withStyle(ChatFormatting.AQUA), true);
 		return 1;
 	}
 
@@ -178,7 +253,13 @@ public final class DropsMob {
 			return 0;
 		}
 		List<Drop> l = datos(c.getSource().getServer()).drops.getOrDefault(EntityType.getKey(tipo).toString(), List.of());
+		java.util.Set<String> sacados = datos(c.getSource().getServer()).sacados.getOrDefault(EntityType.getKey(tipo).toString(), java.util.Set.of());
+		for (String item : sacados) {
+			if (l.stream().anyMatch(dr -> dr.item().equals(item))) continue;
+			c.getSource().sendSuccess(() -> Component.literal("• " + item + ": no lo suelta").withStyle(ChatFormatting.GRAY), false);
+		}
 		if (l.isEmpty()) {
+			if (!sacados.isEmpty()) return 0;
 			c.getSource().sendSuccess(() -> Component.literal(tipo.getDescription().getString() + " no tiene drops agregados.").withStyle(ChatFormatting.GRAY), false);
 			return 0;
 		}
