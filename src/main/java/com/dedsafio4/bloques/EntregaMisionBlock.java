@@ -38,6 +38,8 @@ public class EntregaMisionBlock extends Block {
 	private record Pendiente(java.util.UUID jugador, String texto, List<ItemStack> premio, long cuando) {}
 
 	private static final List<Pendiente> PENDIENTES = new java.util.ArrayList<>();
+	/** Los bloques de misión con la ruleta andando (el de más abajo, por mundo) y en qué tick termina: hasta entonces no se puede poner otra Dedita. */
+	private static final java.util.Map<String, Long> OCUPADOS = new java.util.HashMap<>();
 
 	public static void registrar() {
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -76,16 +78,26 @@ public class EntregaMisionBlock extends Block {
 											  InteractionHand mano, BlockHitResult golpe) {
 		if (!pila.is(ModItems.DEDITA_MISION)) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (!(jugador instanceof ServerPlayer servidor)) return ItemInteractionResult.SUCCESS;
+		// Primero la ruleta en el piso, en el bloque de más abajo; el mensaje llega cuando termina.
+		BlockPos abajo = pos, arriba = pos;
+		while (level.getBlockState(abajo.below()).is(this)) abajo = abajo.below();
+		while (level.getBlockState(arriba.above()).is(this)) arriba = arriba.above();
+		// Mientras dura la animación no se puede poner otra; cuando termina, sí.
+		String clave = level.dimension().location() + " " + abajo.asLong();
+		long ahora = servidor.server.getTickCount();
+		Long termina = OCUPADOS.get(clave);
+		if (termina != null && ahora < termina) {
+			jugador.displayClientMessage(Component.literal("Espera a que termine la ruleta para poner otra Dedita.").withColor(0xFFD966), true);
+			return ItemInteractionResult.SUCCESS;
+		}
+		OCUPADOS.put(clave, ahora + com.dedsafio4.ruleta.RuletaPiso.DURACION);
+		OCUPADOS.values().removeIf(t -> t <= ahora);
 		Misiones.Mision mision = Misiones.deDedita(servidor.server, pila);
 		int dia = mision != null ? mision.dia() : Misiones.diaDeDedita(pila);
 		List<ItemStack> premio = mision != null ? mision.premio() : List.of();
 		String texto = (dia >= 0 ? "¡Completaste la Misión Principal del Día " + dia + "!" : "¡Completaste una Misión Principal!")
 				+ (premio.isEmpty() ? " Gracias por entregar tu Dedita de la Misión." : " Aquí tienes tu premio.");
 		pila.consume(1, jugador);
-		// Primero la ruleta en el piso, en el bloque de más abajo; el mensaje llega cuando termina.
-		BlockPos abajo = pos, arriba = pos;
-		while (level.getBlockState(abajo.below()).is(this)) abajo = abajo.below();
-		while (level.getBlockState(arriba.above()).is(this)) arriba = arriba.above();
 		com.dedsafio4.ruleta.RuletaPiso.mostrar(servidor.serverLevel(),
 				new net.minecraft.world.phys.Vec3(abajo.getX() + 0.5, abajo.getY(), abajo.getZ() + 0.5), -90f,
 				// La esfera chiquita (0,5 de diámetro), apoyada arriba del bloque de más arriba.
