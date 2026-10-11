@@ -1,0 +1,24 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"III",
+		"EEE",
+		"NNN"
+	],
+	"key": {
+		"I": {
+			"item": "minecraft:iron_block"
+		},
+		"E": {
+			"item": "dedsafio4:bateria_dilitio"
+		},
+		"N": {
+			"item": "minecraft:netherite_ingot"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:nave_motor",
+		"count": 1
+	}
+}

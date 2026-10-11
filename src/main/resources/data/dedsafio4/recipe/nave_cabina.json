@@ -1,0 +1,24 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"IIC",
+		"V I",
+		"IIC"
+	],
+	"key": {
+		"I": {
+			"item": "minecraft:iron_block"
+		},
+		"C": {
+			"item": "dedsafio4:chip_phora"
+		},
+		"V": {
+			"item": "minecraft:tinted_glass"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:nave_cabina",
+		"count": 1
+	}
+}

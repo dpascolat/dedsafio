@@ -8,7 +8,7 @@
 	],
 	"key": {
 		"I": {
-			"item": "minecraft:iron_ingot"
+			"item": "minecraft:iron_block"
 		},
 		"C": {
 			"item": "dedsafio4:chip_phora"
