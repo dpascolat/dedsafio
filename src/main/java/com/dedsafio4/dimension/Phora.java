@@ -20,6 +20,9 @@ public final class Phora {
 
 	public static final ResourceKey<Biome> BIOMA = ResourceKey.create(Registries.BIOME,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "phora"));
+	/** El Limbito: un bioma del Limbo donde aparecen los Flashbang (se pone con "/limbito <desde> <hasta>"). */
+	public static final ResourceKey<Biome> LIMBITO = ResourceKey.create(Registries.BIOME,
+			ResourceLocation.fromNamespaceAndPath("dedsafio4", "limbito"));
 
 	public static boolean enPhora(Level mundo, BlockPos pos) {
 		return mundo.getBiome(pos).is(BIOMA);
@@ -65,6 +68,17 @@ public final class Phora {
 	}
 
 	public static void registrarComandos(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+		dispatcher.register(net.minecraft.commands.Commands.literal("limbito").requires(s -> s.hasPermission(2))
+				.then(net.minecraft.commands.Commands.argument("desde", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+						.then(net.minecraft.commands.Commands.argument("hasta", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+								.executes(c -> {
+									BlockPos desde = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getBlockPos(c, "desde");
+									BlockPos hasta = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getBlockPos(c, "hasta");
+									int chunks = poner(c.getSource().getLevel(), desde, hasta, LIMBITO);
+									c.getSource().sendSuccess(() -> Component.literal("Bioma Limbito puesto de " + desde.getX() + " " + desde.getZ()
+											+ " a " + hasta.getX() + " " + hasta.getZ() + " (" + chunks + " chunks).").withColor(0xB48CFF), true);
+									return chunks;
+								}))));
 		dispatcher.register(net.minecraft.commands.Commands.literal("phora").requires(s -> s.hasPermission(2))
 				.then(net.minecraft.commands.Commands.argument("desde", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
 						.then(net.minecraft.commands.Commands.argument("hasta", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
@@ -80,9 +94,14 @@ public final class Phora {
 
 	/** Pone el bioma Phora en ese rectángulo (toda la altura del mundo) y se lo manda a los jugadores. */
 	public static int poner(net.minecraft.server.level.ServerLevel mundo, BlockPos a, BlockPos b) {
+		return poner(mundo, a, b, BIOMA);
+	}
+
+	/** Pone ese bioma en ese rectángulo (toda la altura del mundo) y se lo manda a los jugadores. */
+	public static int poner(net.minecraft.server.level.ServerLevel mundo, BlockPos a, BlockPos b, ResourceKey<Biome> bioma) {
 		int x1 = Math.min(a.getX(), b.getX()), x2 = Math.max(a.getX(), b.getX());
 		int z1 = Math.min(a.getZ(), b.getZ()), z2 = Math.max(a.getZ(), b.getZ());
-		net.minecraft.core.Holder<Biome> phora = mundo.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(BIOMA);
+		net.minecraft.core.Holder<Biome> phora = mundo.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(bioma);
 		// Los biomas se guardan de a 4×4×4 bloques ("quarts").
 		int qx1 = x1 >> 2, qx2 = x2 >> 2, qz1 = z1 >> 2, qz2 = z2 >> 2;
 		java.util.List<net.minecraft.world.level.chunk.ChunkAccess> cambiados = new java.util.ArrayList<>();

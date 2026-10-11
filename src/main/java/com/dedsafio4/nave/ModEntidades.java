@@ -236,9 +236,10 @@ public final class ModEntidades {
 		}
 		FabricDefaultAttributeRegistry.register(GUSANO_CARNE, com.dedsafio4.bestias.GusanoCarneEntity.crearAtributos());
 		com.dedsafio4.bestias.FlashbangEntity.registrar();
-		// Flashbang: en el Overworld, a oscuras (como los zombis y creepers).
+		// Flashbang: en el Limbito (bioma del Limbo), a oscuras, pero nunca sobre la piedra del piso del Limbo.
 		SpawnPlacements.register(FLASHBANG, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-				Monster::checkMonsterSpawnRules);
+				(tipo, mundo, razon, pos, azar) -> Monster.checkMonsterSpawnRules(tipo, mundo, razon, pos, azar)
+						&& !mundo.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.STONE));
 		// Garrapata Cerebral: en el piso de la Dimensión de los Órganos, con cualquier luz.
 		SpawnPlacements.register(GARRAPATA_CEREBRAL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				Monster::checkAnyLightMonsterSpawnRules);

@@ -217,9 +217,7 @@ public class Dedsafio4 implements ModInitializer {
 		// Zombis en todo el Nether: sólo aparecen con "zombi 3" (SpawnPlacementsMixin), sin importar la luz.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInTheNether(),
 				MobCategory.MONSTER, EntityType.ZOMBIE, 100, 2, 4);
-		// El Flashbang aparece en la oscuridad, en cualquier parte del Overworld.
-		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
-				MobCategory.MONSTER, ModEntidades.FLASHBANG, 12, 1, 1);
+		// El Flashbang aparece en el Limbito (worldgen/biome/limbito.json), no en el Overworld.
 		// El Wraith aparece en la oscuridad, en cualquier parte del Overworld (solo después de /mob wraith).
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.WRAITH, 8, 1, 1);

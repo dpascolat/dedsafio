@@ -56,7 +56,7 @@ public final class AnuncioMob {
 		LUGARES.put("narval", "el agua de las cuevas del Centro de Quiu");
 		LUGARES.put("creeper_nuclear", "los biomas de nieve");
 		LUGARES.put("creeper_pastel", "todo el Overworld, a oscuras");
-		LUGARES.put("flashbang", "todo el Overworld, a oscuras");
+		LUGARES.put("flashbang", "el Limbito, el bioma del Limbo");
 		LUGARES.put("bomba_warden", "la Oscuridad Profunda");
 		LUGARES.put("creeper_amarillo", "la Dimensión de los Órganos");
 		LUGARES.put("nautilus_oseo", "la Dimensión de los Órganos, en grupo");
