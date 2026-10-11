@@ -35,7 +35,9 @@ import java.util.Map;
  * los que aparezcan después):
  *   /dañomob <mob> <daño>          el golpe (en los creepers, el daño de la explosión, igual de cerca o de lejos)
  *   /vidamob <mob> <vida>          la vida máxima (y los que ya están quedan con la vida llena)
- *   /velocidad <mob> <velocidad>   la velocidad (0,25 es la de un zombi; 0,3 la de un esqueleto)
+ *   /velocidad <mob> <velocidad>   la velocidad (0,25 es la de un zombi; 0,3 la de un esqueleto). En los que vuelan
+ *                                  (fantasmas, naves, phantoms, abejas...) cambia lo rápido que van por el aire: se
+ *                                  multiplica su vuelo por velocidad nueva / velocidad de siempre.
  * Con "normal" en lugar del número vuelve a ser como era.
  */
 public final class AjustesMob {
@@ -86,10 +88,34 @@ public final class AjustesMob {
 		if (vida != null && poner(mob, Attributes.MAX_HEALTH, vida)) {
 			if (llenarVida || mob.getHealth() > mob.getMaxHealth()) mob.setHealth(mob.getMaxHealth());
 		}
-		if (velocidad != null) {
-			poner(mob, Attributes.MOVEMENT_SPEED, velocidad);
-			poner(mob, Attributes.FLYING_SPEED, velocidad);
-		}
+		// Los que vuelan no: a ésos se les agranda el movimiento en el aire (ver factorVuelo).
+		if (velocidad != null && !volador(mob)) poner(mob, Attributes.MOVEMENT_SPEED, velocidad);
+	}
+
+	/** ¿Vuela? (sin gravedad, o un mob volador de Minecraft, o que se mueve con navegación de vuelo). */
+	public static boolean volador(LivingEntity mob) {
+		return mob.isNoGravity() || mob instanceof net.minecraft.world.entity.FlyingMob
+				|| mob instanceof net.minecraft.world.entity.animal.FlyingAnimal
+				|| (mob instanceof net.minecraft.world.entity.Mob m
+						&& m.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.FlyingPathNavigation);
+	}
+
+	/** Cuánto agrandar el movimiento en el aire de este mob (1 si no tiene /velocidad o no vuela). Lo usa EntityVueloMixin. */
+	public static double factorVuelo(LivingEntity mob) {
+		if (mob instanceof net.minecraft.world.entity.player.Player || mob.onGround() || !(mob.level() instanceof ServerLevel mundo)) return 1;
+		Double velocidad = datos(mundo.getServer()).valor(VELOCIDAD, mob.getType());
+		if (velocidad == null || !volador(mob)) return 1;
+		double normal = velocidadNormal(mob);
+		return normal <= 0 ? 1 : velocidad / normal;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static double velocidadNormal(LivingEntity mob) {
+		var porDefecto = net.minecraft.world.entity.ai.attributes.DefaultAttributes.getSupplier(
+				(EntityType<? extends LivingEntity>) mob.getType());
+		if (porDefecto.hasAttribute(Attributes.FLYING_SPEED)) return porDefecto.getBaseValue(Attributes.FLYING_SPEED);
+		if (porDefecto.hasAttribute(Attributes.MOVEMENT_SPEED)) return porDefecto.getBaseValue(Attributes.MOVEMENT_SPEED);
+		return 0.25;
 	}
 
 	private static boolean poner(LivingEntity mob, Holder<Attribute> atributo, double valor) {

@@ -18,6 +18,7 @@
 		"HopperBlockEntityMixin",
 		"EspadaRompeMixin",
 		"LevelEntitiesMixin",
+		"EntityVueloMixin",
 		"LivingEntityAjustesMixin",
 		"LivingEntityMixin",
 		"LivingEntityTotemEspacioMixin",
