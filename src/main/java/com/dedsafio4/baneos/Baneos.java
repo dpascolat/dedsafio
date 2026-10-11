@@ -165,6 +165,7 @@ public final class Baneos {
 			return;
 		}
 		bans.remove(perfil);
+		com.dedsafio4.revivir.Revivir.alDesbanear(jugador.server, uuid);
 		jugador.getItemInHand(mano).consume(1, jugador);
 		jugador.level().playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 0.6f, 1.2f);
 		jugador.server.getPlayerList().broadcastSystemMessage(Component.literal(jugador.getGameProfile().getName() + " revivió a "

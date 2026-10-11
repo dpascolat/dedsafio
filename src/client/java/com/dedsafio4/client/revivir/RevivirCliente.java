@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Los efectos de /revivir cinematica, dibujados lisos (no con partículas):
+ * Los efectos de la animación de revivir, dibujados lisos (no con partículas):
  * - 2 círculos en el piso (t=0 y t=100): borde turquesa y relleno tipo aurora verde que pulsa; se agrandan de 3,6 a
  *   14,6 bloques en 8 s, aparecen rápido y se desvanecen.
  * - 4 aros parados que giran en el centro de la fogata (verde azulejo y amarillo, alternados).
@@ -54,7 +54,7 @@ public final class RevivirCliente {
 			Minecraft mc = context.client();
 			if (mc.level == null) return;
 			ESCENAS.removeIf(e -> e.jugador().equals(payload.jugador()));
-			ESCENAS.add(new Escena(payload.jugador(), new Vec3(payload.x(), payload.y(), payload.z()), Revivir.adelante(payload.yaw()),
+			ESCENAS.add(new Escena(payload.jugador(), new Vec3(payload.x(), payload.y(), payload.z()), payload.adelante(),
 					payload.pisoCaida(), mc.level.getGameTime()));
 		}));
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {

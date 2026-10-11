@@ -8,7 +8,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -39,7 +41,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * /revivir cinematica [jugadores] (de prueba): el salto desde la fogata. El jugador está parado en el centro de la
+ * La cinemática de revivir: el salto desde la fogata.
+ * "/revivir <x y z> <dirección>" (dirección: +x -x +y -y +z -z) elige dónde se hace: cuando alguien es desbaneado con
+ * el Bloque de Baneados, la próxima vez que entra aparece en ese lugar, mirando hacia esa dirección, y hace la
+ * animación (sale volando hacia allá; con +y o -y sube y cae en el mismo lugar, y al final mira arriba o abajo).
+ * "/revivir quitar" saca el lugar (los desbaneados entran normal). El jugador está parado en el centro de la
  * fogata y sale volando hacia donde mira. Dura 17 s (340 ticks):
  *   0      Círculo 1 en el piso (se agranda lento de 3,6 a 14,6 bloques en 8 s)
  *   0–100  espera
@@ -60,11 +66,24 @@ public final class Revivir {
 	public static final int DURACION = 340;
 
 	/** Servidor → jugadores: empezó la cinemática de ese jugador, con el centro, hacia dónde sale y el piso donde cae. */
-	public record Payload(UUID jugador, double x, double y, double z, float yaw, double pisoCaida) implements CustomPacketPayload {
+	public record Payload(UUID jugador, double x, double y, double z, float yaw, double pisoCaida, boolean vertical)
+			implements CustomPacketPayload {
 		public static final Type<Payload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "revivir"));
-		public static final StreamCodec<RegistryFriendlyByteBuf, Payload> CODEC = StreamCodec.composite(
-				UUIDUtil.STREAM_CODEC, Payload::jugador, ByteBufCodecs.DOUBLE, Payload::x, ByteBufCodecs.DOUBLE, Payload::y,
-				ByteBufCodecs.DOUBLE, Payload::z, ByteBufCodecs.FLOAT, Payload::yaw, ByteBufCodecs.DOUBLE, Payload::pisoCaida, Payload::new);
+		public static final StreamCodec<RegistryFriendlyByteBuf, Payload> CODEC = StreamCodec.of((buf, p) -> {
+			UUIDUtil.STREAM_CODEC.encode(buf, p.jugador());
+			buf.writeDouble(p.x());
+			buf.writeDouble(p.y());
+			buf.writeDouble(p.z());
+			buf.writeFloat(p.yaw());
+			buf.writeDouble(p.pisoCaida());
+			buf.writeBoolean(p.vertical());
+		}, buf -> new Payload(UUIDUtil.STREAM_CODEC.decode(buf), buf.readDouble(), buf.readDouble(), buf.readDouble(),
+				buf.readFloat(), buf.readDouble(), buf.readBoolean()));
+
+		/** Hacia dónde sale volando (con +y o -y no se mueve para los costados). */
+		public Vec3 adelante() {
+			return vertical ? Vec3.ZERO : Revivir.adelante(yaw);
+		}
 
 		@Override
 		public Type<? extends CustomPacketPayload> type() {
@@ -128,18 +147,23 @@ public final class Revivir {
 		final Vec3 centro, adelante;
 		final float yaw;
 		final double pisoCaida;
+		/** Con +y o -y: sube y cae en el mismo lugar; al final mira arriba (-90) o abajo (90). */
+		final boolean vertical;
+		final float mirada;
 		/** El modo de juego que tenía (mientras vuela la copia está en espectador). */
 		final net.minecraft.world.level.GameType modo;
 		boolean volvio;
 		int t;
 
-		Escena(ServerPlayer p) {
+		Escena(ServerPlayer p, boolean vertical, float mirada) {
 			jugador = p.getUUID();
 			level = p.serverLevel();
 			modo = p.gameMode.getGameModeForPlayer();
 			centro = p.position();
 			yaw = p.getYRot();
-			adelante = Revivir.adelante(yaw);
+			this.vertical = vertical;
+			this.mirada = mirada;
+			adelante = vertical ? Vec3.ZERO : Revivir.adelante(yaw);
 			// Dónde está el piso donde cae (por si el terreno no es plano).
 			Vec3 caida = centro.add(adelante.scale(9));
 			BlockPos.MutableBlockPos pos = BlockPos.containing(caida.x, centro.y + 9, caida.z).mutable();
@@ -150,9 +174,71 @@ public final class Revivir {
 
 	private static final List<Escena> ESCENAS = new ArrayList<>();
 
+	/** Las direcciones de /revivir: el yaw de Minecraft y hacia dónde mira al final (0 = derecho). */
+	private static final java.util.Map<String, float[]> DIRECCIONES = java.util.Map.of(
+			"+x", new float[]{-90, 0}, "-x", new float[]{90, 0}, "+z", new float[]{0, 0}, "-z", new float[]{180, 0},
+			"+y", new float[]{0, -90}, "-y", new float[]{0, 90});
+
+	/** El lugar de /revivir y los desbaneados que todavía no entraron (guardado en el mundo). */
+	private static final class Datos extends net.minecraft.world.level.saveddata.SavedData {
+		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
+		BlockPos lugar;
+		String dimension = "minecraft:overworld", direccion = "+z";
+		final java.util.Set<String> pendientes = new java.util.HashSet<>();
+
+		private static Datos leer(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			Datos d = new Datos();
+			if (tag.contains("lugar")) d.lugar = BlockPos.of(tag.getLong("lugar"));
+			if (tag.contains("dimension")) d.dimension = tag.getString("dimension");
+			if (tag.contains("direccion")) d.direccion = tag.getString("direccion");
+			for (net.minecraft.nbt.Tag t : tag.getList("pendientes", net.minecraft.nbt.Tag.TAG_STRING)) d.pendientes.add(t.getAsString());
+			return d;
+		}
+
+		@Override
+		public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			if (lugar != null) tag.putLong("lugar", lugar.asLong());
+			tag.putString("dimension", dimension);
+			tag.putString("direccion", direccion);
+			net.minecraft.nbt.ListTag lista = new net.minecraft.nbt.ListTag();
+			for (String s : pendientes) lista.add(net.minecraft.nbt.StringTag.valueOf(s));
+			tag.put("pendientes", lista);
+			return tag;
+		}
+	}
+
+	private static Datos datos(net.minecraft.server.MinecraftServer server) {
+		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_revivir");
+	}
+
+	/** Los que acaban de entrar y van a hacer la animación: el jugador y en qué tick del servidor empieza. */
+	private static final java.util.Map<UUID, Integer> POR_EMPEZAR = new java.util.HashMap<>();
+
+	/** Lo llama el Bloque de Baneados al desbanear: si hay lugar de /revivir, hará la animación al entrar. */
+	public static void alDesbanear(net.minecraft.server.MinecraftServer server, UUID jugador) {
+		Datos d = datos(server);
+		if (d.lugar == null) return;
+		d.pendientes.add(jugador.toString());
+		d.setDirty();
+	}
+
 	public static void registrar() {
 		PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
+		// El desbaneado entra: un momento después (que termine de cargar) aparece en el lugar y hace la animación.
+		net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			Datos d = datos(server);
+			if (d.lugar == null || !d.pendientes.remove(handler.player.getUUID().toString())) return;
+			d.setDirty();
+			POR_EMPEZAR.put(handler.player.getUUID(), server.getTickCount() + 40);
+		});
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			for (Iterator<java.util.Map.Entry<UUID, Integer>> it = POR_EMPEZAR.entrySet().iterator(); it.hasNext(); ) {
+				java.util.Map.Entry<UUID, Integer> entrada = it.next();
+				if (server.getTickCount() < entrada.getValue()) continue;
+				it.remove();
+				ServerPlayer p = server.getPlayerList().getPlayer(entrada.getKey());
+				if (p != null && p.isAlive()) enLugar(server, p);
+			}
 			for (Iterator<Escena> it = ESCENAS.iterator(); it.hasNext(); ) {
 				Escena e = it.next();
 				ServerPlayer p = server.getPlayerList().getPlayer(e.jugador);
@@ -169,13 +255,56 @@ public final class Revivir {
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(Commands.literal("revivir").requires(s -> s.hasPermission(2))
-				.then(Commands.literal("cinematica")
-						.executes(c -> empezar(c.getSource(), List.of(c.getSource().getPlayerOrException())))
-						.then(Commands.argument("jugadores", EntityArgument.players())
-								.executes(c -> empezar(c.getSource(), EntityArgument.getPlayers(c, "jugadores"))))));
+				.executes(c -> {
+					Datos d = datos(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal(d.lugar == null ? "No hay lugar de revivir: los desbaneados entran normal."
+							: "Lugar de revivir: " + d.lugar.getX() + " " + d.lugar.getY() + " " + d.lugar.getZ() + " mirando hacia "
+									+ d.direccion + ".").withStyle(ChatFormatting.AQUA), false);
+					return 1;
+				})
+				.then(Commands.literal("quitar").executes(c -> {
+					Datos d = datos(c.getSource().getServer());
+					d.lugar = null;
+					d.pendientes.clear();
+					d.setDirty();
+					c.getSource().sendSuccess(() -> Component.literal("Lugar de revivir quitado.").withStyle(ChatFormatting.AQUA), true);
+					return 1;
+				}))
+				.then(Commands.argument("lugar", BlockPosArgument.blockPos())
+						.then(Commands.argument("direccion", StringArgumentType.word())
+								.suggests((c, b) -> SharedSuggestionProvider.suggest(List.of("+x", "-x", "+y", "-y", "+z", "-z"), b))
+								.executes(c -> {
+									String direccion = StringArgumentType.getString(c, "direccion").toLowerCase(java.util.Locale.ROOT);
+									if (!DIRECCIONES.containsKey(direccion)) {
+										c.getSource().sendFailure(Component.literal("La dirección tiene que ser +x, -x, +y, -y, +z o -z."));
+										return 0;
+									}
+									BlockPos lugar = BlockPosArgument.getBlockPos(c, "lugar");
+									Datos d = datos(c.getSource().getServer());
+									d.lugar = lugar;
+									d.dimension = c.getSource().getLevel().dimension().location().toString();
+									d.direccion = direccion;
+									d.setDirty();
+									c.getSource().sendSuccess(() -> Component.literal("Lugar de revivir: " + lugar.getX() + " " + lugar.getY() + " "
+											+ lugar.getZ() + " mirando hacia " + direccion + ". Los desbaneados harán la animación ahí al entrar.")
+											.withStyle(ChatFormatting.AQUA), true);
+									return 1;
+								}))));
 	}
 
-	private static int empezar(CommandSourceStack fuente, Collection<ServerPlayer> jugadores) {
+	/** Lo lleva al lugar de /revivir, mirando hacia esa dirección, y empieza la animación. */
+	private static void enLugar(net.minecraft.server.MinecraftServer server, ServerPlayer p) {
+		Datos d = datos(server);
+		if (d.lugar == null) return;
+		ServerLevel mundo = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+				ResourceLocation.parse(d.dimension)));
+		if (mundo == null) mundo = server.overworld();
+		float[] dir = DIRECCIONES.getOrDefault(d.direccion, DIRECCIONES.get("+z"));
+		p.teleportTo(mundo, d.lugar.getX() + 0.5, d.lugar.getY(), d.lugar.getZ() + 0.5, dir[0], 0);
+		empezar(List.of(p), dir[1] != 0, dir[1]);
+	}
+
+	private static void empezar(Collection<ServerPlayer> jugadores, boolean vertical, float mirada) {
 		for (ServerPlayer p : jugadores) {
 			for (Iterator<Escena> it = ESCENAS.iterator(); it.hasNext(); ) {
 				Escena vieja = it.next();
@@ -183,19 +312,16 @@ public final class Revivir {
 				terminar(vieja, p);
 				it.remove();
 			}
-			Escena e = new Escena(p);
+			Escena e = new Escena(p, vertical, mirada);
 			ESCENAS.add(e);
 			// El jugador mira como espectador; el que sale de la fogata es la copia con su skin.
 			p.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
 			// Que no le pase nada mientras está en la fogata y cuando cae.
 			p.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, DURACION + 40, 0, false, false, false));
 			p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, DURACION + 40, 4, false, false, false));
-			Payload payload = new Payload(p.getUUID(), e.centro.x, e.centro.y, e.centro.z, e.yaw, e.pisoCaida);
+			Payload payload = new Payload(p.getUUID(), e.centro.x, e.centro.y, e.centro.z, e.yaw, e.pisoCaida, e.vertical);
 			for (ServerPlayer otro : e.level.players()) ServerPlayNetworking.send(otro, payload);
 		}
-		fuente.sendSuccess(() -> Component.literal("Cinemática de revivir (prueba): " + jugadores.size() + " jugador(es).")
-				.withStyle(ChatFormatting.AQUA), true);
-		return jugadores.size();
 	}
 
 	private static void terminar(Escena e, ServerPlayer p) {
@@ -203,6 +329,8 @@ public final class Revivir {
 		p.setForcedPose(null);
 		p.setNoGravity(false);
 		p.fallDistance = 0;
+		// Con +y o -y: al final mira arriba o abajo.
+		if (e.vertical) p.connection.teleport(p.getX(), p.getY(), p.getZ(), e.yaw, e.mirada);
 	}
 
 	/** El jugador vuelve a su modo de juego, donde cayó la copia. */

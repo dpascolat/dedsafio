@@ -4,7 +4,7 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.util.Mth;
 
 /**
- * Los brazos y piernas en /revivir cinematica (los usan la copia con la skin, hasta que cae, y el jugador de verdad,
+ * Los brazos y piernas en la animación de revivir (los usan la copia con la skin, hasta que cae, y el jugador de verdad,
  * después):
  *   100–124  sale agachado, los brazos van subiendo
  *   124–184  sube con los brazos arriba

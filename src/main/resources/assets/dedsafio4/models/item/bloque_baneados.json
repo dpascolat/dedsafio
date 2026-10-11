@@ -1,3 +1,6 @@
 {
-	"parent": "dedsafio4:block/bloque_baneados"
+	"parent": "minecraft:item/generated",
+	"textures": {
+		"layer0": "minecraft:item/barrier"
+	}
 }
