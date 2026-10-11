@@ -1,0 +1,21 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"CBC",
+		"BCB",
+		"CBC"
+	],
+	"key": {
+		"C": {
+			"item": "dedsafio4:chip_phora"
+		},
+		"B": {
+			"item": "minecraft:copper_block"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:candado",
+		"count": 1
+	}
+}

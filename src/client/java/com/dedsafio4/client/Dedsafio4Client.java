@@ -186,6 +186,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 				XaeroBloqueo.adminsLoUsan = payload.adminsLoUsan());
 		ClientPlayNetworking.registerGlobalReceiver(HermandadesJugadoresPayload.TYPE, (payload, context) ->
 				HermandadesCliente.actualizar(payload));
+		// La receta en la descripción sólo se ve en el Catálogo (la G).
+		com.dedsafio4.items.RecetaTooltip.enCatalogo = () -> Minecraft.getInstance().screen instanceof CatalogoScreen;
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.almas.Almas.Payload.TYPE, (payload, context) ->
 				AlmaCliente.tieneAlma = payload.tiene());
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.almas.Almas.TodosPayload.TYPE, (payload, context) -> {
