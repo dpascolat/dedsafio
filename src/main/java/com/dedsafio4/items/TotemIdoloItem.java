@@ -14,8 +14,9 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 /**
- * Tótem del Ídolo: como un Tótem de la Inmortalidad, pero salta aunque esté guardado en cualquier lugar del
- * inventario (no hace falta tenerlo en la mano). Si tienes otro tótem en la mano, se usa ése primero.
+ * Tótem de Eón (id totem_idolo): como un Tótem de la Inmortalidad, pero salta aunque esté guardado en cualquier lugar
+ * del inventario (no hace falta tenerlo en la mano). Si tienes otro tótem en la mano, se usa ése primero. Al saltar da
+ * Resistencia al máximo durante 1 segundo, para que un segundo golpe enseguida no te mate igual.
  */
 public class TotemIdoloItem extends Item {
 	public TotemIdoloItem(Properties propiedades) {
@@ -27,6 +28,12 @@ public class TotemIdoloItem extends Item {
 		texto.add(Component.empty());
 		texto.add(Component.literal("Popea aunque esté en").withColor(0xE8E8E8));
 		texto.add(Component.literal("tu inventario.").withColor(0xE8E8E8));
+		texto.add(Component.empty());
+		texto.add(Component.literal("Otorga ").withColor(0xE8E8E8)
+				.append(Component.literal("Resistencia (Nivel Máx. 1s)").withColor(0xD98CFF)));
+		texto.add(Component.literal("al popear, evitando el InstaKill").withColor(0xE8E8E8));
+		texto.add(Component.literal("si dos ataques se ejecutan").withColor(0xE8E8E8));
+		texto.add(Component.literal("demasiado rápido.").withColor(0xE8E8E8));
 	}
 
 	public static void registrar() {
@@ -52,6 +59,8 @@ public class TotemIdoloItem extends Item {
 				jugador.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 900, 1));
 				jugador.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 1));
 				jugador.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 800, 0));
+				// Resistencia V (nada de daño) 1 segundo: si llega otro golpe enseguida, no lo mata.
+				jugador.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20, 4));
 				return false;
 			}
 			return true;
