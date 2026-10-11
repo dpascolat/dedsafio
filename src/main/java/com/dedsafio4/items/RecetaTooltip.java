@@ -11,8 +11,14 @@ import java.util.Set;
  * arcoíris (la dibuja el cliente, RecetaTooltipCliente, con la receta real de Minecraft).
  */
 public record RecetaTooltip(Item item) implements TooltipComponent {
-	/** Los ítems que muestran su receta en la descripción. */
+	/** Ítems de Minecraft que también muestran su receta (los del mod la muestran todos, si tienen). */
 	public static Set<Item> conReceta() {
-		return Set.of(Items.TRIDENT, ModItems.TENEDOR_SIMPLE, ModItems.CORAZON_DORADO, ModItems.ESPADA_GLEBANOIDE);
+		return Set.of(Items.TRIDENT);
+	}
+
+	/** ¿Muestra la receta? Todos los ítems del mod (si no tienen receta de mesa de crafteo, no se dibuja nada). */
+	public static boolean muestra(Item item) {
+		return conReceta().contains(item)
+				|| net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getNamespace().equals("dedsafio4");
 	}
 }

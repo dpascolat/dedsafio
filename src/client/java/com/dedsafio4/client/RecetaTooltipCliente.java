@@ -25,20 +25,33 @@ public class RecetaTooltipCliente implements ClientTooltipComponent {
 	private final Ingredient[] grilla = new Ingredient[9];
 	private final boolean hay;
 
+	/** Las grillas ya buscadas (por mundo: si cambia el mundo, se vuelven a buscar); null = ese ítem no tiene receta. */
+	private static final java.util.Map<Item, Ingredient[]> BUSCADAS = new java.util.HashMap<>();
+	private static Object mundoBuscado;
+
 	public RecetaTooltipCliente(Item item) {
-		boolean encontrada = false;
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.level != null) {
-			for (RecipeHolder<CraftingRecipe> r : mc.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
-				if (!r.value().getResultItem(mc.level.registryAccess()).is(item)) continue;
-				List<Ingredient> ingredientes = r.value().getIngredients();
-				int ancho = r.value() instanceof ShapedRecipe forma ? forma.getWidth() : 3;
-				for (int i = 0; i < ingredientes.size() && i < 9; i++) grilla[(i / ancho) * 3 + i % ancho] = ingredientes.get(i);
-				encontrada = true;
-				break;
-			}
+		if (mc.level != mundoBuscado) {
+			BUSCADAS.clear();
+			mundoBuscado = mc.level;
 		}
-		hay = encontrada;
+		Ingredient[] encontrada = mc.level == null ? null : BUSCADAS.computeIfAbsent(item, i -> buscar(mc, i));
+		if (encontrada != null && encontrada.length == 9) System.arraycopy(encontrada, 0, grilla, 0, 9);
+		hay = encontrada != null && encontrada.length == 9;
+	}
+
+	/** La receta de mesa de crafteo que da ese ítem (o una vacía si no hay). */
+	private static Ingredient[] buscar(Minecraft mc, Item item) {
+		for (RecipeHolder<CraftingRecipe> r : mc.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
+			if (!r.value().getResultItem(mc.level.registryAccess()).is(item)) continue;
+			List<Ingredient> ingredientes = r.value().getIngredients();
+			if (ingredientes.isEmpty()) continue;
+			Ingredient[] g = new Ingredient[9];
+			int ancho = r.value() instanceof ShapedRecipe forma ? forma.getWidth() : 3;
+			for (int i = 0; i < ingredientes.size() && i < 9; i++) g[(i / ancho) * 3 + i % ancho] = ingredientes.get(i);
+			return g;
+		}
+		return new Ingredient[0];
 	}
 
 	@Override

@@ -11,12 +11,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-/** Los ítems de RecetaTooltip.conReceta() muestran su receta en la descripción. */
+/** Los ítems del mod (y los de RecetaTooltip.conReceta()) muestran su receta en la descripción, si tienen. */
 @Mixin(Item.class)
 public abstract class RecetaEnDescripcionMixin {
 	@Inject(method = "getTooltipImage", at = @At("RETURN"), cancellable = true)
 	private void dedsafio4$receta(ItemStack pila, CallbackInfoReturnable<Optional<TooltipComponent>> cir) {
-		if (cir.getReturnValue().isEmpty() && RecetaTooltip.conReceta().contains((Item) (Object) this)) {
+		if (cir.getReturnValue().isEmpty() && RecetaTooltip.muestra((Item) (Object) this)) {
 			cir.setReturnValue(Optional.of(new RecetaTooltip((Item) (Object) this)));
 		}
 	}
