@@ -184,7 +184,8 @@ public final class Hermandades {
 		List<HermandadesJugadoresPayload.Entrada> entradas = new ArrayList<>();
 		for (HermandadesData.Hermandad h : data.todas()) {
 			for (ManuscritoDatos.Inscrito m : h.miembros()) {
-				entradas.add(new HermandadesJugadoresPayload.Entrada(m.uuid(), h.nombre(), h.color()));
+				String rango = h.maestro().equals(m.uuid()) ? "Maestro" : h.esLider(m.uuid()) ? "Líder" : "Miembro";
+				entradas.add(new HermandadesJugadoresPayload.Entrada(m.uuid(), h.nombre(), h.color(), rango));
 			}
 		}
 		List<HermandadesJugadoresPayload.Activo> activos = new ArrayList<>();

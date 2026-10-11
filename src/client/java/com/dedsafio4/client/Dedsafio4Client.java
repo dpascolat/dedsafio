@@ -188,6 +188,10 @@ public class Dedsafio4Client implements ClientModInitializer {
 				HermandadesCliente.actualizar(payload));
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.almas.Almas.Payload.TYPE, (payload, context) ->
 				AlmaCliente.tieneAlma = payload.tiene());
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.almas.Almas.TodosPayload.TYPE, (payload, context) -> {
+			AlmaCliente.SIN_ALMA.clear();
+			AlmaCliente.SIN_ALMA.addAll(payload.sinAlma());
+		});
 		ClientPlayNetworking.registerGlobalReceiver(CieloPayload.TYPE, (payload, context) ->
 				CieloCliente.setActivo(payload.rojo(), payload.animar()));
 		ClientPlayNetworking.registerGlobalReceiver(TemporizadorPayload.TYPE, (payload, context) ->

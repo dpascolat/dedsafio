@@ -18,11 +18,13 @@ import java.util.UUID;
  * cabeza) y el estandarte activo de cada Hermandad (para las capas y la lista de Hermandades).
  */
 public record HermandadesJugadoresPayload(List<Entrada> entradas, List<Activo> activos) implements CustomPacketPayload {
-	public record Entrada(UUID jugador, String hermandad, int color) {
+	/** @param rango "Maestro", "Líder" o "Miembro" */
+	public record Entrada(UUID jugador, String hermandad, int color, String rango) {
 		public static final StreamCodec<ByteBuf, Entrada> CODEC = StreamCodec.composite(
 				UUIDUtil.STREAM_CODEC, Entrada::jugador,
 				ByteBufCodecs.STRING_UTF8, Entrada::hermandad,
 				ByteBufCodecs.INT, Entrada::color,
+				ByteBufCodecs.STRING_UTF8, Entrada::rango,
 				Entrada::new);
 	}
 

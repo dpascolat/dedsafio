@@ -46,6 +46,17 @@ public final class Almas {
 		if (tiene) p.removeTag(SIN_ALMA);
 		else p.addTag(SIN_ALMA);
 		sincronizar(p);
+		avisarATodos(p.server);
+	}
+
+	/** A todos los conectados: quiénes no tienen alma (para el ícono arriba de la cabeza de cada uno). */
+	public static void avisarATodos(net.minecraft.server.MinecraftServer server) {
+		java.util.List<java.util.UUID> sin = new java.util.ArrayList<>();
+		for (ServerPlayer otro : server.getPlayerList().getPlayers()) if (!tieneAlma(otro)) sin.add(otro.getUUID());
+		TodosPayload payload = new TodosPayload(sin);
+		for (ServerPlayer otro : server.getPlayerList().getPlayers()) {
+			if (ServerPlayNetworking.canSend(otro, TodosPayload.TYPE)) ServerPlayNetworking.send(otro, payload);
+		}
 	}
 
 	public static void sincronizar(ServerPlayer p) {
@@ -54,9 +65,25 @@ public final class Almas {
 
 	public static void registrar() {
 		PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
+		PayloadTypeRegistry.playS2C().register(TodosPayload.TYPE, TodosPayload.CODEC);
 		// Al morir o volver del End se pierden las marcas del jugador: el estado del alma se copia.
 		ServerPlayerEvents.COPY_FROM.register((viejo, nuevo, vivo) -> ponerAlma(nuevo, tieneAlma(viejo)));
-		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sincronizar(handler.player));
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			sincronizar(handler.player);
+			avisarATodos(server);
+		});
+	}
+
+	/** Servidor → todos: los jugadores conectados que no tienen alma. */
+	public record TodosPayload(java.util.List<java.util.UUID> sinAlma) implements CustomPacketPayload {
+		public static final Type<TodosPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "almas_todos"));
+		public static final StreamCodec<ByteBuf, TodosPayload> CODEC = net.minecraft.core.UUIDUtil.STREAM_CODEC
+				.apply(ByteBufCodecs.list()).map(TodosPayload::new, TodosPayload::sinAlma);
+
+		@Override
+		public Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
 	}
 
 	/** Servidor → cliente: si el jugador tiene alma. */

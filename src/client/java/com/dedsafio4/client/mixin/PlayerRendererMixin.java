@@ -25,8 +25,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Arriba de la cabeza de cada jugador:
  *   vida ❤
- *   Nombre           (del color de su Hermandad, si tiene)
- *   <Hermandad>      (solo si tiene)
+ *   Nombre [alma]          (del color de su Hermandad, si tiene; el ícono del Alma o del Sin Alma a la derecha)
+ *   <Hermandad> Rango      (solo si tiene; donde antes iba el nombre)
  * Con /nombre esconder no se ve nada de eso.
  */
 @Mixin(PlayerRenderer.class)
@@ -52,9 +52,11 @@ public abstract class PlayerRendererMixin {
 		return nombre.copy().withStyle(s -> s.withColor(TextColor.fromRgb(hermandad.color())));
 	}
 
-	@Inject(method = RENDER_NAME_TAG, at = @At("HEAD"))
+	@Inject(method = RENDER_NAME_TAG, at = @At("HEAD"), cancellable = true)
 	private void dedsafio4$lineasExtra(AbstractClientPlayer jugador, Component nombre, PoseStack pose,
 									   MultiBufferSource buffers, int luz, float partialTick, CallbackInfo ci) {
+		// Todo el cartel lo dibuja el mod (el nombre de Minecraft no).
+		ci.cancel();
 		EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
 		if (dispatcher.distanceToSqr(jugador) > 4096.0) return;
 		Vec3 anclaje = jugador.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, jugador.getViewYRot(partialTick));
@@ -69,21 +71,56 @@ public abstract class PlayerRendererMixin {
 		pose.mulPose(dispatcher.cameraOrientation());
 		pose.scale(0.025F, -0.025F, 0.025F);
 
-		dibujarLinea(pose, buffers, luz, jugador, vida, -10f);   // una línea por encima del nombre
 		HermandadesJugadoresPayload.Entrada hermandad = HermandadesCliente.de(jugador.getUUID());
+		// Con Hermandad: la Hermandad va donde iba el nombre y el nombre (y la vida) suben una línea.
+		float yNombre = hermandad != null ? -10f : 0f;
+		dibujarLinea(pose, buffers, luz, jugador, vida, yNombre - 10f);
+		float ancho = dibujarLinea(pose, buffers, luz, jugador, nombre, yNombre, 10f);
+		dibujarAlma(pose, buffers, luz, jugador, ancho / 2f - 5f, yNombre + 4f);
 		if (hermandad != null) {
-			Component linea = Component.literal("<" + hermandad.hermandad() + ">")
-					.withStyle(s -> s.withColor(TextColor.fromRgb(hermandad.color())));
-			dibujarLinea(pose, buffers, luz, jugador, linea, 10f);  // una línea por debajo del nombre
+			int colorRango = switch (hermandad.rango()) {
+				case "Maestro" -> 0xFFD24A;
+				case "Líder" -> 0x5FE0F0;
+				default -> 0xB8B8B8;
+			};
+			Component linea = Component.empty()
+					.append(Component.literal("<" + hermandad.hermandad() + ">")
+							.withStyle(s -> s.withColor(TextColor.fromRgb(hermandad.color()))))
+					.append(Component.literal(" " + hermandad.rango()).withStyle(s -> s.withColor(TextColor.fromRgb(colorRango))));
+			dibujarLinea(pose, buffers, luz, jugador, linea, 0f);
 		}
+		pose.popPose();
+	}
+
+	/** El ícono del Alma (o del Sin Alma, si se la sacaron), con el centro en (x, y). */
+	private static void dibujarAlma(PoseStack pose, MultiBufferSource buffers, int luz, AbstractClientPlayer jugador, float x, float y) {
+		boolean tiene = !com.dedsafio4.client.AlmaCliente.SIN_ALMA.contains(jugador.getUUID());
+		net.minecraft.world.item.ItemStack icono = new net.minecraft.world.item.ItemStack(
+				tiene ? com.dedsafio4.items.ModItems.ALMA : com.dedsafio4.items.ModItems.SIN_ALMA);
+		pose.pushPose();
+		pose.translate(x, y, 0);
+		pose.scale(9f, -9f, 0.01f);   // el cartel tiene la Y para abajo; el ítem la quiere para arriba
+		Minecraft.getInstance().getItemRenderer().renderStatic(icono, net.minecraft.world.item.ItemDisplayContext.GUI,
+				net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+				pose, buffers, jugador.level(), 0);
 		pose.popPose();
 	}
 
 	private static void dibujarLinea(PoseStack pose, MultiBufferSource buffers, int luz,
 									 AbstractClientPlayer jugador, Component texto, float y) {
+		dibujarLinea(pose, buffers, luz, jugador, texto, y, 0f);
+	}
+
+	/**
+	 * Una línea centrada; {@code lugarDerecha} deja ese espacio libre a la derecha (para un ícono) y la corre a la
+	 * izquierda para que el conjunto quede centrado. Devuelve el ancho total (texto + espacio).
+	 */
+	private static float dibujarLinea(PoseStack pose, MultiBufferSource buffers, int luz,
+									  AbstractClientPlayer jugador, Component texto, float y, float lugarDerecha) {
 		Matrix4f matriz = pose.last().pose();
 		Font font = Minecraft.getInstance().font;
-		float x = -font.width(texto) / 2f;
+		float total = font.width(texto) + lugarDerecha;
+		float x = -total / 2f;
 		int fondo = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25F) * 255.0F) << 24;
 		boolean visibleAtraves = !jugador.isDiscrete();
 
@@ -92,5 +129,6 @@ public abstract class PlayerRendererMixin {
 		if (visibleAtraves) {
 			font.drawInBatch(texto, x, y, 0xFFFFFFFF, false, matriz, buffers, Font.DisplayMode.NORMAL, 0, luz);
 		}
+		return total;
 	}
 }
