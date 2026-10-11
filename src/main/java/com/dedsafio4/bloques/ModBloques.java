@@ -120,11 +120,16 @@ public final class ModBloques {
 
 	public static final Item MINERAL_VERDE_ITEM = registrarItem("mineral_verde", MINERAL_VERDE);
 
-	/** Bloque Naranja: metal oscuro con luces naranjas que titilan (textura animada); da un poco de luz. */
+	/** Bloque Naranja: naranja con brillitos que se mueven (textura animada de 16 cuadros); da un poco de luz. */
 	public static final Block BLOQUE_NARANJA = registrar("bloque_naranja", new Block(BlockBehaviour.Properties.of()
 			.mapColor(MapColor.COLOR_ORANGE).strength(3f, 6f).sound(SoundType.METAL).requiresCorrectToolForDrops()
 			.lightLevel(estado -> 8)));
 	public static final Item BLOQUE_NARANJA_ITEM = registrarItem("bloque_naranja", BLOQUE_NARANJA);
+	/** Bloque de Luces: metal oscuro con luces naranjas; da un poco de luz. */
+	public static final Block BLOQUE_LUCES = registrar("bloque_luces", new Block(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.COLOR_GRAY).strength(3f, 6f).sound(SoundType.METAL).requiresCorrectToolForDrops()
+			.lightLevel(estado -> 8)));
+	public static final Item BLOQUE_LUCES_ITEM = registrarItem("bloque_luces", BLOQUE_LUCES);
 
 	public static final Item AGUA_PORTAL_ITEM = registrarItem("agua_portal", AGUA_PORTAL);
 
