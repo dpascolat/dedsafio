@@ -159,6 +159,11 @@ public final class ModEntidades {
 	public static void registrar() {
 		FabricDefaultAttributeRegistry.register(NAVE, NaveEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(NAVE_VELOZ, NaveVelozEntity.crearAtributos());
+		// En el bioma Phora, de día o de noche.
+		SpawnPlacements.register(NAVE, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkAnyLightMonsterSpawnRules);
+		SpawnPlacements.register(NAVE_VELOZ, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkAnyLightMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(BOMBA_WARDEN, BombaWardenEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(SOARER, SoarerEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(WALKER, WalkerEntity.crearAtributos());
