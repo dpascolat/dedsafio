@@ -143,6 +143,7 @@ public final class AnuncioMob {
 		mensaje = mensaje.copy().append(Component.literal("\nAparece en " + LUGARES.get(nombre) + ".")
 				.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(COLOR_LUGAR))));
 		c.getSource().getServer().getPlayerList().broadcastSystemMessage(mensaje, false);
+		com.dedsafio4.catalogo.LibroMobs.enviarATodos(c.getSource().getServer());
 		return 1;
 	}
 
@@ -170,6 +171,7 @@ public final class AnuncioMob {
 			return 0;
 		}
 		d.setDirty();
+		com.dedsafio4.catalogo.LibroMobs.enviarATodos(c.getSource().getServer());
 		c.getSource().sendSuccess(() -> Component.literal("El mob " + nombre + " ya no aparece solo.").withStyle(ChatFormatting.GOLD), true);
 		return 1;
 	}

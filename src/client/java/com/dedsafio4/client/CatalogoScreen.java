@@ -43,8 +43,9 @@ public class CatalogoScreen extends Screen {
 	/** El crafteo que se está mostrando (o null). */
 	private RecipeHolder<CraftingRecipe> receta;
 	private Item recetaDe;
-	/** 0: el catálogo de ítems (el libro); 1: las Misiones (el pergamino); 2: el buscador (la lupa). */
-	private int modo;
+	/** 0: el catálogo de ítems (la espada); 1: las Misiones (el pergamino); 2: el buscador (la lupa); 3: Cambios & Mobs (el libro). */
+	private int modo = 3;
+	private final LibroMobsVista libro = new LibroMobsVista();
 	/** El buscador: escribes el nombre de cualquier ítem o bloque (del mod o de Minecraft) y aparece. */
 	private net.minecraft.client.gui.components.EditBox buscador;
 	private String textoBuscado = "";
@@ -179,9 +180,10 @@ public class CatalogoScreen extends Screen {
 		return Math.max(1, (alto - 34 - 18) / CELDA);
 	}
 
-	/** Cambia de pestaña (0 libro, 2 misiones, 3 lupa; la espada todavía no hace nada). */
+	/** Cambia de pestaña (0 libro: Cambios & Mobs, 1 espada: los ítems, 2 misiones, 3 lupa). */
 	private void cambiarPestana(int i) {
-		if (i == 0) modo = 0;
+		if (i == 0) modo = 3;
+		else if (i == 1) modo = 0;
 		else if (i == 2) modo = 1;
 		else if (i == 3) modo = 2;
 		else return;
@@ -321,6 +323,7 @@ public class CatalogoScreen extends Screen {
 	@Override
 	public boolean charTyped(char c, int mods) {
 		if (eligiendo != null) return buscadorCasilla.charTyped(c, mods);
+		if (modo == 3 && libro.letra(c, mods)) return true;
 		if (modo == 2 && buscador.isFocused()) return buscador.charTyped(c, mods);
 		return super.charTyped(c, mods);
 	}
@@ -402,7 +405,7 @@ public class CatalogoScreen extends Screen {
 		}
 
 		// Pestañas: la elegida se ve normal y las otras un poco más oscuras.
-		int elegida = modo == 2 ? 3 : 0;
+		int elegida = modo == 2 ? 3 : modo == 3 ? 0 : 1;
 		for (int i = 0; i < PESTANAS.length; i++) {
 			int tx = x0 + 16, ty = y0 + 16 + i * (tab + 6);
 			if (DIBUJO_PESTANA[i] != null) {
@@ -422,6 +425,11 @@ public class CatalogoScreen extends Screen {
 			g.pose().popPose();
 		}
 
+		if (modo == 3) {
+			libro.dibujar(g, font, mx, my, parcial, xIzq, yGrilla, x0 + ancho - 24, y0 + alto - 26);
+			if (libro.tooltip != null) tooltipTexto = libro.tooltip;
+			return;
+		}
 		if (modo == 2) {
 			dibujarBusqueda(g, mx, my);
 			ayudaEditor(g);
@@ -586,13 +594,21 @@ public class CatalogoScreen extends Screen {
 			clickSelector(mx, my, boton);
 			return true;
 		}
-		// Las pestañas: libro, (espada, más adelante), pergamino (Misiones) y lupa (buscador).
+		if (modo == 3 && libro.eligiendo()) {
+			libro.click(mx, my, boton, xIzq, yGrilla, x0 + ancho - 24, y0 + alto - 26, x0, y0, ancho, alto);
+			return true;
+		}
+		// Las pestañas: libro (Cambios & Mobs), espada (ítems), pergamino (Misiones) y lupa (buscador).
 		for (int i = 0; i < PESTANAS.length; i++) {
 			int tx = x0 + 16, ty = y0 + 16 + i * (tab + 6);
 			if (mx >= tx && mx < tx + tab && my >= ty && my < ty + tab) {
 				cambiarPestana(i);
 				return true;
 			}
+		}
+		if (modo == 3) {
+			libro.click(mx, my, boton, xIzq, yGrilla, x0 + ancho - 24, y0 + alto - 26, x0, y0, ancho, alto);
+			return true;
 		}
 		if (modo == 2) {
 			if (buscador.isMouseOver(mx, my)) {
@@ -659,6 +675,10 @@ public class CatalogoScreen extends Screen {
 			misiones.scroll(dy);
 			return true;
 		}
+		if (modo == 3) {
+			libro.scroll(dy);
+			return true;
+		}
 		desplazamiento -= (int) Math.signum(dy);
 		return true;
 	}
@@ -669,6 +689,7 @@ public class CatalogoScreen extends Screen {
 			receta = null;
 			return true;
 		}
+		if (modo == 3 && libro.tecla(tecla, scan, mods)) return true;
 		// El panel para elegir: Esc lo cierra; lo demás va a su buscador.
 		if (eligiendo != null) {
 			if (tecla == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) eligiendo = null;

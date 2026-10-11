@@ -30,6 +30,8 @@ public final class CatalogoCliente {
 		});
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.catalogo.Misiones.ListaPayload.TYPE, (payload, context) ->
 				com.dedsafio4.catalogo.Misiones.LISTA_CLIENTE = List.copyOf(payload.misiones()));
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.catalogo.LibroMobs.Payload.TYPE, (payload, context) ->
+				context.client().execute(() -> com.dedsafio4.catalogo.LibroMobs.recibir(payload)));
 		ClientPlayNetworking.registerGlobalReceiver(Catalogo.Payload.TYPE, (payload, context) -> {
 			Catalogo.OCULTOS_CLIENTE.clear();
 			Catalogo.OCULTOS_CLIENTE.addAll(payload.ocultos());
