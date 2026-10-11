@@ -75,6 +75,17 @@ public class NaveVelozEntity extends Monster implements GeoEntity {
 
 	@Override
 	protected void registerGoals() {
+		registrarObjetivos();
+	}
+
+	/** Entre naves no se pegan (ver NaveEntity.deOtraNave). */
+	@Override
+	public boolean hurt(net.minecraft.world.damagesource.DamageSource fuente, float danio) {
+		if (NaveEntity.deOtraNave(fuente)) return false;
+		return super.hurt(fuente, danio);
+	}
+
+	private void registrarObjetivos() {
 		this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
 		this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
 	}

@@ -67,6 +67,18 @@ public class NaveEntity extends Monster {
 		return navegacion;
 	}
 
+	/** ¿La lastimó otra nave (Nave o Nave Veloz)? Entre naves no se pegan. */
+	public static boolean deOtraNave(DamageSource fuente) {
+		net.minecraft.world.entity.Entity quien = fuente.getEntity();
+		return quien instanceof NaveEntity || quien instanceof NaveVelozEntity;
+	}
+
+	@Override
+	public boolean hurt(DamageSource fuente, float danio) {
+		if (deOtraNave(fuente)) return false;
+		return super.hurt(fuente, danio);
+	}
+
 	@Override
 	protected void registerGoals() {
 		this.goalSelector.addGoal(1, new AtacarConRayo(this));
