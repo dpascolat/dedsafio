@@ -1,0 +1,21 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"PEP",
+		"EPE",
+		"PEP"
+	],
+	"key": {
+		"P": {
+			"item": "dedsafio4:pegamento_primitivo"
+		},
+		"E": {
+			"item": "dedsafio4:pelo_eburia"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:cuerda_resistente",
+		"count": 1
+	}
+}

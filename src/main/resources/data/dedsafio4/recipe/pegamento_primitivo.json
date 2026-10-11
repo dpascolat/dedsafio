@@ -1,0 +1,24 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"CAC",
+		"AEA",
+		"CAC"
+	],
+	"key": {
+		"C": {
+			"item": "minecraft:charcoal"
+		},
+		"A": {
+			"item": "dedsafio4:ambar"
+		},
+		"E": {
+			"item": "dedsafio4:excremento"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:pegamento_primitivo",
+		"count": 1
+	}
+}

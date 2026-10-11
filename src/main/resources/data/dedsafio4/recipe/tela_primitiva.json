@@ -1,0 +1,18 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"EEE",
+		"EEE",
+		"EEE"
+	],
+	"key": {
+		"E": {
+			"item": "dedsafio4:pelo_eburia"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:tela_primitiva",
+		"count": 1
+	}
+}
