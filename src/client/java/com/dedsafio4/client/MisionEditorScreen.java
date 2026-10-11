@@ -31,7 +31,9 @@ public class MisionEditorScreen extends Screen {
 	private Item item;
 	private EditBox dia, buscarItem, cantidad, deditas, texto;
 	private List<Item> resultados = List.of();
-	private Button tipo, manoPremio;
+	private Button tipo, manoPremio, botonObjetivo;
+	/** craftear, obtener o romper (ver Misiones.Mision.OBJETIVOS). */
+	private String objetivo;
 	private int xCampos, xVista, yResultados, yPremio;
 	/** El premio de la Misión Principal. */
 	private final List<ItemStack> premio = new java.util.ArrayList<>();
@@ -43,6 +45,7 @@ public class MisionEditorScreen extends Screen {
 		this.indice = indice;
 		this.original = mision;
 		principal = mision != null && mision.principal();
+		objetivo = mision != null ? mision.objetivo() : "craftear";
 		item = mision == null ? Items.DIAMOND : mision.item();
 		if (mision != null) for (ItemStack o : mision.premio()) premio.add(o.copy());
 	}
@@ -83,6 +86,12 @@ public class MisionEditorScreen extends Screen {
 			principal = !principal;
 			actualizarTipo();
 		}).bounds(xCampos, y, 150, 18).build());
+		// Qué hay que hacer con el ítem: craftearlo, tenerlo o romperlo.
+		botonObjetivo = addRenderableWidget(Button.builder(Component.empty(), b -> {
+			var lista = Misiones.Mision.OBJETIVOS;
+			objetivo = lista.get((lista.indexOf(objetivo) + 1) % lista.size());
+			actualizarTipo();
+		}).bounds(xCampos + 156, y, 120, 18).build());
 		y += 22;
 		dia = caja(xCampos, y, 50, 4, vDia, true);
 		y += 22;
@@ -133,6 +142,11 @@ public class MisionEditorScreen extends Screen {
 		dia.visible = principal;
 		deditas.visible = !principal;
 		manoPremio.visible = principal;
+		botonObjetivo.setMessage(Component.literal(switch (objetivo) {
+			case "obtener" -> "Objetivo: Obtener";
+			case "romper" -> "Objetivo: Romper";
+			default -> "Objetivo: Craftear";
+		}).withColor(0xFFB347));
 	}
 
 	/** Suma (o resta, si es negativo) a una casilla del premio; si llega a 0, la saca. */
@@ -159,7 +173,7 @@ public class MisionEditorScreen extends Screen {
 	private Misiones.Mision armar() {
 		return new Misiones.Mision(original == null ? "" : original.id(), principal, Math.max(0, numero(dia, 1)),
 				BuiltInRegistries.ITEM.getKey(item).toString(), Math.max(1, numero(cantidad, 1)), Math.max(0, numero(deditas, 0)),
-				texto.getValue(), List.copyOf(premio));
+				texto.getValue(), List.copyOf(premio), objetivo);
 	}
 
 	private void guardar() {

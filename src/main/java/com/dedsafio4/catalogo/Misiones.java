@@ -38,8 +38,10 @@ import java.util.UUID;
  * Las Misiones (la pestaña del pergamino del Catálogo). Hay dos clases:
  *   Misión Guía       "📖 Misión Guía | + N 🪙"
  *   Misión Principal  "★ Misión Principal - Día N"
- * Cada una pide crear un ítem una cantidad de veces (cuentan los crafteos desde que el jugador vio la misión por
- * primera vez). Al cumplirla, la tarjeta se pone verde con "¡Misión completada!" y se cobran las deditas (una sola
+ * Cada una pide, con un ítem y una cantidad, uno de estos objetivos:
+ *   craftear  crearlo (cuentan los crafteos desde que el jugador vio la misión por primera vez);
+ *   obtener   tenerlo en el inventario (cuenta lo que tiene en ese momento);
+ *   romper    romper ese bloque, o gastar hasta romper esa herramienta (también desde que la vio). Al cumplirla, la tarjeta se pone verde con "¡Misión completada!" y se cobran las deditas (una sola
  * vez por jugador); la Principal da además la "Dedita de la Misión (Día N)".
  * Los editores del Catálogo (admins y /opop) las crean, cambian, mueven y borran desde la misma pantalla. El texto
  * acepta colores: {morado:Casco Dimensional} pinta esas palabras, y {item} pone el nombre del ítem en azul.
@@ -70,7 +72,14 @@ public final class Misiones {
 	 * premio: lo que manda Eón cuando se entrega la Dedita de la Misión (solo la Principal).
 	 */
 	public record Mision(String id, boolean principal, int dia, String itemId, int cantidad, int deditas, String texto,
-						 List<net.minecraft.world.item.ItemStack> premio) {
+						 List<net.minecraft.world.item.ItemStack> premio, String objetivo) {
+		/** Los objetivos posibles (ver arriba). */
+		public static final List<String> OBJETIVOS = List.of("craftear", "obtener", "romper");
+
+		public Mision {
+			if (!OBJETIVOS.contains(objetivo)) objetivo = "craftear";
+		}
+
 		public static final StreamCodec<RegistryFriendlyByteBuf, Mision> CODEC = StreamCodec.of((buf, m) -> {
 			buf.writeUtf(m.id);
 			buf.writeBoolean(m.principal);
@@ -80,8 +89,9 @@ public final class Misiones {
 			buf.writeVarInt(m.deditas);
 			buf.writeUtf(m.texto, MAX_TEXTO * 4);
 			net.minecraft.world.item.ItemStack.OPTIONAL_LIST_STREAM_CODEC.encode(buf, m.premio);
+			buf.writeUtf(m.objetivo);
 		}, buf -> new Mision(buf.readUtf(), buf.readBoolean(), buf.readVarInt(), buf.readUtf(), buf.readVarInt(), buf.readVarInt(),
-				buf.readUtf(MAX_TEXTO * 4), net.minecraft.world.item.ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(buf)));
+				buf.readUtf(MAX_TEXTO * 4), net.minecraft.world.item.ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(buf), buf.readUtf()));
 
 		public Item item() {
 			ResourceLocation rl = ResourceLocation.tryParse(itemId);
@@ -110,6 +120,7 @@ public final class Misiones {
 			ListTag l = new ListTag();
 			for (net.minecraft.world.item.ItemStack o : premio) if (!o.isEmpty()) l.add(o.save(registros));
 			t.put("premio", l);
+			t.putString("objetivo", objetivo);
 			return t;
 		}
 
@@ -117,7 +128,8 @@ public final class Misiones {
 			List<net.minecraft.world.item.ItemStack> premio = new ArrayList<>();
 			for (Tag o : t.getList("premio", Tag.TAG_COMPOUND)) net.minecraft.world.item.ItemStack.parse(registros, o).ifPresent(premio::add);
 			return new Mision(t.getString("id"), t.getBoolean("principal"), t.getInt("dia"), t.getString("item"),
-					Math.max(1, t.getInt("cantidad")), t.getInt("deditas"), t.getString("texto"), premio);
+					Math.max(1, t.getInt("cantidad")), t.getInt("deditas"), t.getString("texto"), premio,
+					t.contains("objetivo") ? t.getString("objetivo") : "craftear");
 		}
 	}
 
@@ -325,7 +337,15 @@ public final class Misiones {
 				l.add(m.cantidad());
 				continue;
 			}
-			int hechos = p.getStats().getValue(Stats.ITEM_CRAFTED.get(m.item()));
+			if (m.objetivo().equals("obtener")) {
+				// Lo que tiene ahora en el inventario.
+				int tiene = p.getInventory().countItem(m.item());
+				int prog = Math.min(m.cantidad(), tiene);
+				if (prog >= m.cantidad()) cobrar(p, m);
+				l.add(prog);
+				continue;
+			}
+			int hechos = hechos(p, m);
 			Integer base = bases.get(m.id());
 			if (base == null) {
 				bases.put(m.id(), hechos);
@@ -337,6 +357,17 @@ public final class Misiones {
 			l.add(prog);
 		}
 		return l;
+	}
+
+	/** Cuántas veces lo crafteó, o lo rompió (el bloque minado, o la herramienta gastada hasta romperse), en total. */
+	private static int hechos(ServerPlayer p, Mision m) {
+		Item item = m.item();
+		if (m.objetivo().equals("romper")) {
+			int rotos = p.getStats().getValue(Stats.ITEM_BROKEN.get(item));
+			if (item instanceof net.minecraft.world.item.BlockItem bloque) rotos += p.getStats().getValue(Stats.BLOCK_MINED.get(bloque.getBlock()));
+			return rotos;
+		}
+		return p.getStats().getValue(Stats.ITEM_CRAFTED.get(item));
 	}
 
 	private static void cobrar(ServerPlayer p, Mision m) {
@@ -413,8 +444,9 @@ public final class Misiones {
 				ResourceLocation rl = ResourceLocation.tryParse(m.itemId());
 				if (rl == null || BuiltInRegistries.ITEM.getOptional(rl).filter(it -> it != Items.AIR).isEmpty()) return;
 				String texto = m.texto().length() > MAX_TEXTO ? m.texto().substring(0, MAX_TEXTO) : m.texto();
-				// Si cambia el ítem es como una misión nueva (empieza de cero para todos).
-				String id = i >= 0 && i < l.size() && l.get(i).itemId().equals(rl.toString()) ? l.get(i).id()
+				// Si cambia el ítem (o el objetivo) es como una misión nueva (empieza de cero para todos).
+				String id = i >= 0 && i < l.size() && l.get(i).itemId().equals(rl.toString())
+						&& l.get(i).objetivo().equals(m.objetivo()) ? l.get(i).id()
 						: UUID.randomUUID().toString().substring(0, 8);
 				List<net.minecraft.world.item.ItemStack> premio = new ArrayList<>();
 				for (net.minecraft.world.item.ItemStack o : m.premio()) {
@@ -425,7 +457,7 @@ public final class Misiones {
 				}
 				Mision limpia = new Mision(id, m.principal(), Math.max(0, Math.min(9999, m.dia())), rl.toString(),
 						Math.max(1, Math.min(9999, m.cantidad())), Math.max(0, Math.min(1_000_000, m.deditas())), texto,
-						m.principal() ? premio : List.of());
+						m.principal() ? premio : List.of(), m.objetivo());
 				if (i >= 0 && i < l.size()) l.set(i, limpia);
 				else l.add(limpia);
 			}
