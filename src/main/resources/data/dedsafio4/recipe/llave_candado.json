@@ -1,0 +1,19 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"CI"
+	],
+	"key": {
+		"C": {
+			"item": "dedsafio4:chip_phora"
+		},
+		"I": {
+			"item": "minecraft:copper_ingot"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:llave_candado",
+		"count": 1
+	}
+}
