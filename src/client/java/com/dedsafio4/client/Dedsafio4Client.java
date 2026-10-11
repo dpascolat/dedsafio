@@ -123,6 +123,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// El Cajero: el menú se abre al tocar el bloque; la grilla de ingresar la abre el servidor.
 		com.dedsafio4.banco.CajeroBlock.abrirPantalla = pos ->
 				Minecraft.getInstance().setScreen(new com.dedsafio4.client.cajero.CajeroScreen(pos));
+		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.subastas.Subastas.MENU,
+				com.dedsafio4.client.subastas.SubastasScreen::new);
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.correo.Correo.MENU,
 				com.dedsafio4.client.correo.CorreoScreen::new);
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.banco.ModCajero.MENU,

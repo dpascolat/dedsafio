@@ -20,6 +20,8 @@ public class SubastasData extends SavedData {
 
 	/** De la más nueva a la más vieja. */
 	private final List<Venta> ventas = new ArrayList<>();
+	/** Lo que cada jugador sacó de la venta y todavía no recuperó (pestaña Recuperar del /ah). */
+	private final java.util.Map<UUID, List<ItemStack>> recuperar = new java.util.HashMap<>();
 	/** El número que le toca a la próxima Vitrina que se pone. */
 	private int siguienteVitrina;
 
@@ -48,6 +50,25 @@ public class SubastasData extends SavedData {
 		return estaba;
 	}
 
+	public List<ItemStack> recuperar(UUID jugador) {
+		return recuperar.getOrDefault(jugador, List.of());
+	}
+
+	public void guardarParaRecuperar(UUID jugador, ItemStack item) {
+		recuperar.computeIfAbsent(jugador, k -> new ArrayList<>()).add(item);
+		setDirty();
+	}
+
+	/** Saca el objeto número i de Recuperar (o EMPTY si no está). */
+	public ItemStack sacarDeRecuperar(UUID jugador, int i) {
+		List<ItemStack> l = recuperar.get(jugador);
+		if (l == null || i < 0 || i >= l.size()) return ItemStack.EMPTY;
+		ItemStack item = l.remove(i);
+		if (l.isEmpty()) recuperar.remove(jugador);
+		setDirty();
+		return item;
+	}
+
 	public long cuantasDe(UUID vendedor) {
 		return ventas.stream().filter(v -> v.vendedor().equals(vendedor)).count();
 	}
@@ -60,6 +81,12 @@ public class SubastasData extends SavedData {
 			ItemStack item = ItemStack.parse(registros, v.getCompound("item")).orElse(ItemStack.EMPTY);
 			if (item.isEmpty()) continue;
 			data.ventas.add(new Venta(v.getUUID("id"), v.getUUID("vendedor"), v.getString("nombre"), item, v.getLong("precio"), v.getLong("cuando")));
+		}
+		CompoundTag rec = tag.getCompound("recuperar");
+		for (String jugador : rec.getAllKeys()) {
+			List<ItemStack> l = new ArrayList<>();
+			for (Tag t : rec.getList(jugador, Tag.TAG_COMPOUND)) ItemStack.parse(registros, t).ifPresent(l::add);
+			if (!l.isEmpty()) data.recuperar.put(UUID.fromString(jugador), l);
 		}
 		return data;
 	}
@@ -78,6 +105,13 @@ public class SubastasData extends SavedData {
 			lista.add(t);
 		}
 		tag.put("ventas", lista);
+		CompoundTag rec = new CompoundTag();
+		recuperar.forEach((jugador, l) -> {
+			ListTag objetos = new ListTag();
+			for (ItemStack o : l) if (!o.isEmpty()) objetos.add(o.save(registros));
+			rec.put(jugador.toString(), objetos);
+		});
+		tag.put("recuperar", rec);
 		tag.putInt("siguienteVitrina", siguienteVitrina);
 		return tag;
 	}

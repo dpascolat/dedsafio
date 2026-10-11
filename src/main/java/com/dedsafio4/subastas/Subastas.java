@@ -17,8 +17,9 @@ import net.minecraft.world.item.ItemStack;
 import java.util.UUID;
 
 /**
- * /ah: la casa de subastas. Cada jugador pone a la venta lo que tiene en la mano (/ah vender <precio>) y los demás lo
- * compran con deditas desde el menú (/ah). El vendedor cobra al instante, aunque no esté conectado.
+ * /ah: la casa de subastas (menú MenuSubastas, pantalla SubastasScreen): pestañas Comprar, Vender, Mis ventas y
+ * Recuperar. También se puede vender lo que tienes en la mano con /ah vender <precio>. El vendedor cobra al instante,
+ * aunque no esté conectado. Lo que sacas de la venta queda en Recuperar hasta que lo tomes.
  */
 public final class Subastas {
 	private Subastas() {}
@@ -26,6 +27,35 @@ public final class Subastas {
 	/** Cuántas cosas puede tener a la venta cada jugador al mismo tiempo. */
 	public static final int MAXIMO_POR_JUGADOR = 14;
 	public static final long PRECIO_MAXIMO = 1_000_000_000L;
+
+	public static final net.minecraft.world.inventory.MenuType<MenuSubastas> MENU = net.minecraft.core.Registry.register(
+			net.minecraft.core.registries.BuiltInRegistries.MENU,
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "subastas"),
+			new net.minecraft.world.inventory.MenuType<>(MenuSubastas::new, net.minecraft.world.flag.FeatureFlags.VANILLA_SET));
+
+	/** Pantalla → servidor: poner a la venta lo de la casilla, a ese precio. */
+	public record PrecioPayload(long precio) implements net.minecraft.network.protocol.common.custom.CustomPacketPayload {
+		public static final Type<PrecioPayload> TYPE = new Type<>(
+				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "subastas_precio"));
+		public static final net.minecraft.network.codec.StreamCodec<io.netty.buffer.ByteBuf, PrecioPayload> CODEC =
+				net.minecraft.network.codec.ByteBufCodecs.VAR_LONG.map(PrecioPayload::new, PrecioPayload::precio);
+
+		@Override
+		public Type<? extends net.minecraft.network.protocol.common.custom.CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
+	/** El menú y la red (al arrancar). */
+	public static void registrarRed() {
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playC2S().register(PrecioPayload.TYPE, PrecioPayload.CODEC);
+		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(PrecioPayload.TYPE, (payload, contexto) ->
+				contexto.server().execute(() -> {
+					if (contexto.player().containerMenu instanceof MenuSubastas menu) {
+						menu.venderDesdeCasilla(Math.max(1, Math.min(PRECIO_MAXIMO, payload.precio())));
+					}
+				}));
+	}
 
 	static SubastasData data(MinecraftServer server) {
 		return server.overworld().getDataStorage().computeIfAbsent(SubastasData.FACTORY, "dedsafio4_subastas");
@@ -43,30 +73,50 @@ public final class Subastas {
 	}
 
 	public static void abrir(ServerPlayer jugador, int pagina) {
-		jugador.openMenu(new SimpleMenuProvider((id, inventario, p) -> new MenuSubastas(id, inventario, (ServerPlayer) p, pagina),
+		jugador.openMenu(new SimpleMenuProvider((id, inventario, p) -> MenuSubastas.abrir(id, inventario),
 				Component.literal("Subastas")));
 	}
 
+	/** /ah vender <precio>: lo que tiene en la mano. */
 	private static int vender(ServerPlayer jugador, long precio) {
 		ItemStack enMano = jugador.getMainHandItem();
 		if (enMano.isEmpty()) {
-			jugador.sendSystemMessage(Component.literal("Tenés que tener en la mano lo que querés vender.").withStyle(ChatFormatting.RED));
+			jugador.sendSystemMessage(Component.literal("Tienes que tener en la mano lo que quieres vender.").withStyle(ChatFormatting.RED));
 			return 0;
 		}
+		if (!vender(jugador, enMano.copy(), precio)) return 0;
+		enMano.setCount(0);
+		return 1;
+	}
+
+	/** Pone a la venta ese objeto (que ya se le sacó al jugador si sale bien). Devuelve false si no se pudo. */
+	static boolean vender(ServerPlayer jugador, ItemStack item, long precio) {
 		SubastasData data = data(jugador.server);
 		if (data.cuantasDe(jugador.getUUID()) >= MAXIMO_POR_JUGADOR) {
-			jugador.sendSystemMessage(Component.literal("Ya tenés " + MAXIMO_POR_JUGADOR + " cosas a la venta. Sacá alguna desde /ah.").withStyle(ChatFormatting.RED));
-			return 0;
+			jugador.sendSystemMessage(Component.literal("Ya tienes " + MAXIMO_POR_JUGADOR + " cosas a la venta. Saca alguna desde Mis ventas.").withStyle(ChatFormatting.RED));
+			return false;
 		}
-		ItemStack item = enMano.copy();
-		enMano.setCount(0);
 		data.agregar(new SubastasData.Venta(UUID.randomUUID(), jugador.getUUID(), jugador.getGameProfile().getName(), item, precio,
 				jugador.serverLevel().getGameTime()));
 		jugador.sendSystemMessage(Component.literal("Pusiste a la venta ").withStyle(ChatFormatting.GREEN)
 				.append(item.getHoverName().copy().withStyle(ChatFormatting.WHITE))
 				.append(Component.literal(" x" + item.getCount() + " por " + precio + " deditas.").withStyle(ChatFormatting.GREEN)));
 		jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6f, 1.2f);
-		return 1;
+		return true;
+	}
+
+	/** Recuperar: el objeto número i vuelve al inventario (si no entra, queda guardado). */
+	static void recuperar(ServerPlayer jugador, int i) {
+		SubastasData data = data(jugador.server);
+		ItemStack item = data.sacarDeRecuperar(jugador.getUUID(), i);
+		if (item.isEmpty()) return;
+		ItemStack copia = item.copy();
+		if (!jugador.getInventory().add(copia)) {
+			if (!copia.isEmpty()) data.guardarParaRecuperar(jugador.getUUID(), copia);
+			jugador.displayClientMessage(Component.literal("No tienes lugar en el inventario.").withStyle(ChatFormatting.RED), true);
+			return;
+		}
+		jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.6f, 1f);
 	}
 
 	/** Comprar una venta (o sacarla, si es propia). Devuelve true si cambió algo. */
@@ -78,16 +128,16 @@ public final class Subastas {
 			return true;
 		}
 		if (venta.vendedor().equals(jugador.getUUID())) {
-			// Es suya: la saca de la venta y le devuelve el ítem.
+			// Es suya: la saca de la venta y queda en Recuperar.
 			data.quitar(venta);
-			darItem(jugador, venta.item().copy());
+			data.guardarParaRecuperar(jugador.getUUID(), venta.item().copy());
 			jugador.sendSystemMessage(Component.literal("Sacaste de la venta ").withStyle(ChatFormatting.YELLOW)
-					.append(venta.item().getHoverName()).append(Component.literal(".").withStyle(ChatFormatting.YELLOW)));
+					.append(venta.item().getHoverName()).append(Component.literal(". Está en Recuperar.").withStyle(ChatFormatting.YELLOW)));
 			return true;
 		}
 		if (!Banco.cobrar(jugador, venta.precio())) {
 			jugador.sendSystemMessage(Component.literal("No te alcanzan las deditas: cuesta " + venta.precio()
-					+ " y tenés " + Banco.saldo(jugador) + ".").withStyle(ChatFormatting.RED));
+					+ " y tienes " + Banco.saldo(jugador) + ".").withStyle(ChatFormatting.RED));
 			jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 0.8f, 1f);
 			return false;
 		}
