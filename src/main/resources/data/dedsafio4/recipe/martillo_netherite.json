@@ -1,0 +1,21 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"pattern": [
+		"NNN",
+		"NSN",
+		" S "
+	],
+	"key": {
+		"N": {
+			"item": "minecraft:netherite_ingot"
+		},
+		"S": {
+			"item": "minecraft:stick"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:martillo_netherite",
+		"count": 1
+	}
+}
