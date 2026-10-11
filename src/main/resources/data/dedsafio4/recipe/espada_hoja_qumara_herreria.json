@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:smithing_transform",
+	"template": {
+		"item": "dedsafio4:amuleto_verde"
+	},
+	"base": {
+		"item": "minecraft:diamond_sword"
+	},
+	"addition": {
+		"item": "minecraft:netherite_ingot"
+	},
+	"result": {
+		"id": "dedsafio4:espada_hoja_qumara",
+		"count": 1
+	}
+}
