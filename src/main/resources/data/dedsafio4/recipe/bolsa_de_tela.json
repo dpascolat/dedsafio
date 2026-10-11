@@ -1,0 +1,21 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"pattern": [
+		"T T",
+		"TCT",
+		"TTT"
+	],
+	"key": {
+		"T": {
+			"item": "dedsafio4:tela_primitiva"
+		},
+		"C": {
+			"item": "dedsafio4:cuerda_resistente"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:bolsa_de_tela",
+		"count": 1
+	}
+}
