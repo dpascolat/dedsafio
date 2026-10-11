@@ -54,6 +54,21 @@ public final class ModCofres {
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, id("cofre_huesos"),
 			FabricBlockEntityTypeBuilder.<CofreBlockEntity>create((pos, estado) -> new CofreBlockEntity(ModCofres.COFRE_HUESOS_ENTIDAD, pos, estado), COFRE_HUESOS).build());
 
+	/** El Cofre Amarillo (simple o doble, como el de Minecraft), con patas y pestillo amarillo. */
+	public static final Block COFRE_AMARILLO = Registry.register(BuiltInRegistries.BLOCK, id("cofre_amarillo"),
+			new CofreAmarilloBlock(BlockBehaviour.Properties.of()
+					.mapColor(MapColor.COLOR_GRAY)
+					.strength(2.5f)
+					.sound(SoundType.METAL)
+					.noOcclusion()));
+
+	public static final Item COFRE_AMARILLO_ITEM = Registry.register(BuiltInRegistries.ITEM, id("cofre_amarillo"),
+			new BlockItem(COFRE_AMARILLO, new Item.Properties()));
+
+	public static final BlockEntityType<CofreAmarilloBlock.Entidad> COFRE_AMARILLO_ENTIDAD = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, id("cofre_amarillo"),
+			FabricBlockEntityTypeBuilder.create(CofreAmarilloBlock.Entidad::new, COFRE_AMARILLO).build());
+
 	/** Los sonidos que pasó el usuario: abrir (6 a 6,5 s del audio) y cerrar (4,9 a 5,2 s). */
 	public static final SoundEvent SONIDO_ABRIR = sonido("cofre_abrir");
 	public static final SoundEvent SONIDO_CERRAR = sonido("cofre_cerrar");

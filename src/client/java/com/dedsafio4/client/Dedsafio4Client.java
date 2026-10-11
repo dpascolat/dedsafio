@@ -102,6 +102,12 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// Las puertas de 3x3 con llave: las dibuja su bloque principal.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.puertas.ModPuertas.PUERTA_ENTIDAD, com.dedsafio4.client.puertas.PuertaRenderer::new);
+		// El Cofre Amarillo: el cofre de Minecraft (lo dibuja ChestRendererMixin) y su ítem.
+		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+				com.dedsafio4.cofres.ModCofres.COFRE_AMARILLO_ENTIDAD, net.minecraft.client.renderer.blockentity.ChestRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.INSTANCE.register(
+				com.dedsafio4.cofres.ModCofres.COFRE_AMARILLO_ITEM, (pila, modo, pose, buffers, luz, overlay) ->
+						com.dedsafio4.client.cofres.CofreAmarilloItem.dibujar(pose, buffers, luz, overlay));
 		// El Soporte de Nave (2×2): lo dibuja su bloque principal; el ítem, con el mismo modelo achicado.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.despegue.ModDespegue.SOPORTE_NAVE_ENTIDAD, com.dedsafio4.client.despegue.SoporteNaveRenderer::new);
