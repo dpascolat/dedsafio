@@ -133,6 +133,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.TungSahurEntity> TUNG_TUNG_TUNG_SAHUR = registrar("tung_tung_tung_sahur",
 			EntityType.Builder.of(com.dedsafio4.bestias.TungSahurEntity::new, MobCategory.CREATURE).sized(0.6f, 2.1f).clientTrackingRange(8));
 
+	/** Hornet (de Silksong): sobre todo para /cambiarmob. Unos 2 bloques de alto. */
+	public static final EntityType<com.dedsafio4.bestias.HornetEntity> HORNET = registrar("hornet",
+			EntityType.Builder.of(com.dedsafio4.bestias.HornetEntity::new, MobCategory.CREATURE).sized(0.6f, 1.9f).clientTrackingRange(8));
+
 	/** Wraith: el espectro con la guadaña (2,5 bloques de alto, flota). */
 	public static final EntityType<com.dedsafio4.bestias.WraithEntity> WRAITH = registrar("wraith",
 			EntityType.Builder.of(com.dedsafio4.bestias.WraithEntity::new, MobCategory.MONSTER).sized(0.8f, 2.5f).clientTrackingRange(8));
@@ -223,6 +227,7 @@ public final class ModEntidades {
 		SpawnPlacements.register(WRAITH, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				Monster::checkMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(TUNG_TUNG_TUNG_SAHUR, com.dedsafio4.bestias.TungSahurEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(HORNET, com.dedsafio4.bestias.HornetEntity.crearAtributos());
 		for (EntityType<com.dedsafio4.bestias.FantasmaEntity> fantasma : java.util.List.of(FANTASMA_AMARILLO, FANTASMA_BLANCO, FANTASMA_ROJO, FANTASMA_NEGRO)) {
 			FabricDefaultAttributeRegistry.register(fantasma, com.dedsafio4.bestias.FantasmaEntity.crearAtributos());
 			// En el Limbo, volando sobre el piso de piedra (allá siempre está oscuro).
