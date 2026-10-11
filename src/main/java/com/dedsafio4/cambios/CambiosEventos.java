@@ -87,7 +87,7 @@ public final class CambiosEventos {
 			}
 		});
 
-		// creepers electricos 1: todo Creeper que aparece (o que se carga con el trozo de mundo) es eléctrico.
+		// creepers electricos 1: todo Creeper (el de Minecraft) que aparece (o que se carga con el trozo de mundo) es eléctrico.
 		// zombi 1 y 2: cada zombi que aparece decide si escala y (en nivel 2) recibe su espada.
 		ServerEntityEvents.ENTITY_LOAD.register((entidad, level) -> {
 			if (Zombis.esZombi(entidad)) Zombis.preparar((net.minecraft.world.entity.monster.Zombie) entidad, level);
@@ -137,7 +137,9 @@ public final class CambiosEventos {
 		}
 	}
 
+	/** Sólo el Creeper de Minecraft: los del mod (Amarillo, Nuclear, Pastel, de Pasto...) quedan como son. */
 	private static void electrificar(Creeper creeper) {
+		if (creeper.getType() != net.minecraft.world.entity.EntityType.CREEPER) return;
 		if (!creeper.isPowered()) creeper.getEntityData().set(CreeperAccessor.dedsafio4$powered(), true);
 	}
 
