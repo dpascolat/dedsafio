@@ -156,30 +156,56 @@ public final class Misiones {
 		return c;
 	}
 
-	private static final String RULETA = ". Son muy importantes para sobrevivir a los peligros de la Ruleta.";
+	/**
+	 * Copia de las misiones fuera del mundo (en la carpeta del juego o del servidor): cada vez que se editan en la G
+	 * se guardan ahí también, y un mundo que todavía no tiene misiones empieza con éstas. No hay misiones fijas: sólo
+	 * las que se armen en la G.
+	 */
+	private static final java.util.Set<String> FIJAS_VIEJAS = java.util.Set.of("casco_diamante", "pechera_diamante",
+			"pantalones_diamante", "botas_diamante", "candado");
 
-	/** Las de siempre (hasta que un editor las cambie). Los ids son los de antes, así nadie cobra dos veces. */
-	private static List<Mision> porDefecto() {
-		String candado = BuiltInRegistries.ITEM.getKey(ModItems.CANDADO).toString();
-		return new ArrayList<>(List.of(
-				new Mision("casco_diamante", false, 0, "minecraft:diamond_helmet", 1, 2, "Crea un {item}" + RULETA, List.of()),
-				new Mision("pechera_diamante", false, 0, "minecraft:diamond_chestplate", 1, 3, "Crea una {item}" + RULETA, List.of()),
-				new Mision("pantalones_diamante", false, 0, "minecraft:diamond_leggings", 1, 3, "Crea unos {item}" + RULETA, List.of()),
-				new Mision("botas_diamante", false, 0, "minecraft:diamond_boots", 1, 2, "Crea unas {item}" + RULETA, List.of()),
-				new Mision("candado", false, 0, candado, 1, 2, "Crea un {item}. Utilízalo para proteger tus cofres.", List.of())));
+	private static java.nio.file.Path archivo(MinecraftServer server) {
+		return server.getServerDirectory().resolve("config").resolve("dedsafio4_misiones.dat");
+	}
+
+	private static List<Mision> desdeArchivo(MinecraftServer server) {
+		List<Mision> l = new ArrayList<>();
+		java.nio.file.Path p = archivo(server);
+		if (!java.nio.file.Files.exists(p)) return l;
+		try {
+			CompoundTag tag = net.minecraft.nbt.NbtIo.readCompressed(p, net.minecraft.nbt.NbtAccounter.unlimitedHeap());
+			for (Tag t : tag.getList("misiones", Tag.TAG_COMPOUND)) l.add(Mision.leer((CompoundTag) t, server.registryAccess()));
+		} catch (Exception e) {
+			Dedsafio4.LOGGER.warn("No se pudieron leer las misiones guardadas: {}", e.toString());
+		}
+		return l;
+	}
+
+	private static void aArchivo(MinecraftServer server, List<Mision> misiones) {
+		try {
+			CompoundTag tag = new CompoundTag();
+			ListTag l = new ListTag();
+			for (Mision m : misiones) l.add(m.guardar(server.registryAccess()));
+			tag.put("misiones", l);
+			java.nio.file.Path p = archivo(server);
+			java.nio.file.Files.createDirectories(p.getParent());
+			net.minecraft.nbt.NbtIo.writeCompressed(tag, p);
+		} catch (Exception e) {
+			Dedsafio4.LOGGER.warn("No se pudieron guardar las misiones: {}", e.toString());
+		}
 	}
 
 	// --- Guardado ---
 
 	public static final class Datos extends SavedData {
 		public static final SavedData.Factory<Datos> FACTORY = new SavedData.Factory<>(Datos::new, Datos::cargar, null);
-		/** null = las de siempre. */
+		/** null = este mundo todavía no tiene (se toman las de la copia, ver desdeArchivo). */
 		List<Mision> misiones;
 		/** Por jugador y misión: cuántos llevaba crafteados cuando la vio por primera vez. */
 		final Map<UUID, Map<String, Integer>> bases = new HashMap<>();
 
 		List<Mision> lista() {
-			if (misiones == null) misiones = porDefecto();
+			if (misiones == null) misiones = new ArrayList<>();
 			return misiones;
 		}
 
@@ -218,7 +244,17 @@ public final class Misiones {
 	}
 
 	private static Datos datos(MinecraftServer server) {
-		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_misiones_catalogo");
+		Datos d = server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_misiones_catalogo");
+		if (d.misiones == null) {
+			d.misiones = desdeArchivo(server);
+			d.setDirty();
+		}
+		// Las misiones fijas de antes ya no van (si un mundo las tenía guardadas, se sacan).
+		if (d.misiones.removeIf(m -> FIJAS_VIEJAS.contains(m.id()))) {
+			d.setDirty();
+			aArchivo(server, d.misiones);
+		}
+		return d;
 	}
 
 	// --- En el cliente ---
@@ -398,6 +434,7 @@ public final class Misiones {
 			}
 		}
 		d.setDirty();
+		aArchivo(p.server, l);
 		enviarLista(p.server);
 	}
 
