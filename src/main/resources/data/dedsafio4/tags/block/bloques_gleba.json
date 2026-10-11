@@ -1,0 +1,18 @@
+{
+	"replace": false,
+	"values": [
+		"dedsafio4:carne_rosa",
+		"dedsafio4:carne_roja",
+		"dedsafio4:carne_con_venas",
+		"dedsafio4:musculo",
+		"dedsafio4:mineral_de_grasa",
+		"dedsafio4:pulmones",
+		"dedsafio4:bloque_carne",
+		"dedsafio4:bloque_carne_rosa",
+		"dedsafio4:bloque_dientes",
+		"dedsafio4:gelatina_roja",
+		"dedsafio4:gelatina_rosa",
+		"dedsafio4:grasa_coagulada",
+		"dedsafio4:pasto_rosa"
+	]
+}
