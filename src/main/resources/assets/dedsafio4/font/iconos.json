@@ -35,6 +35,15 @@
 			"chars": [
 				""
 			]
+		},
+		{
+			"type": "bitmap",
+			"file": "dedsafio4:font/mision_diaria.png",
+			"height": 8,
+			"ascent": 7,
+			"chars": [
+				""
+			]
 		}
 	]
 }

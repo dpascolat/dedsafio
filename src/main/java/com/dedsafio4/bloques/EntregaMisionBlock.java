@@ -105,6 +105,12 @@ public class EntregaMisionBlock extends Block {
 		PENDIENTES.add(new Pendiente(servidor.getUUID(), texto, List.copyOf(premio),
 				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
 		level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1f, 1.2f);
+		// En el chat de todos: "(icono) X ha completado la misión diaria."
+		servidor.server.getPlayerList().broadcastSystemMessage(Component.empty()
+				.append(Component.literal(String.valueOf((char) 0xE004)).withStyle(net.minecraft.network.chat.Style.EMPTY
+						.withFont(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "iconos"))))
+				.append(Component.literal(" " + servidor.getGameProfile().getName() + " ha completado la misión diaria.").withColor(0x7FE9F2)),
+				false);
 		return ItemInteractionResult.SUCCESS;
 	}
 
