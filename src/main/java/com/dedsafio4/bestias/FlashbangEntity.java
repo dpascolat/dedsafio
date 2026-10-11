@@ -39,8 +39,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * Flashbang (del Dedsafío 3): un bicho flaquito que aparece en la oscuridad y explota apenas toca a un jugador.
- * A los que están cerca (3 bloques) les saca 4 corazones justos, aunque tengan armadura de netherite con
- * Protección IV, y a todos los que están a menos de 12 bloques les deja la pantalla blanca 3 segundos, con un
+ * A los que están cerca (3 bloques) les pega una explosión que, con armadura de netherite entera con Protección IV,
+ * saca 4 corazones (sin armadura, mucho más: la armadura y los encantamientos cuentan como siempre), y a todos los que están a menos de 12 bloques les deja la pantalla blanca 3 segundos, con un
  * zumbido en los oídos al final. La explosión no rompe bloques.
  */
 public class FlashbangEntity extends Monster implements GeoEntity {
@@ -49,8 +49,11 @@ public class FlashbangEntity extends Monster implements GeoEntity {
 
 	/** A cuánto de un jugador explota, a cuánto lastima y a cuánto encandila (bloques). */
 	private static final double TOCA = 1.0, DANIO = 3.0, ENCANDILA = 12.0;
-	/** 4 corazones. */
-	private static final float CUANTO = 8f;
+	/**
+	 * El golpe de la explosión: con netherite entera (20 de armadura, 12 de dureza) y Protección IV en las 4 piezas
+	 * (64% menos) quedan 8 de vida = 4 corazones: x · (1 - (20 - x/5)/25) · 0,36 = 8  →  x ≈ 41,7.
+	 */
+	private static final float CUANTO = 41.7f;
 
 	private final AnimatableInstanceCache animaciones = GeckoLibUtil.createInstanceCache(this);
 
@@ -82,7 +85,7 @@ public class FlashbangEntity extends Monster implements GeoEntity {
 	public static AttributeSupplier.Builder crearAtributos() {
 		return Monster.createMonsterAttributes()
 				.add(Attributes.MAX_HEALTH, 6.0)
-				.add(Attributes.MOVEMENT_SPEED, 0.3)
+				.add(Attributes.MOVEMENT_SPEED, 1.2)   // el cuádruple de antes (0,3)
 				.add(Attributes.FOLLOW_RANGE, 20.0);
 	}
 
@@ -130,14 +133,9 @@ public class FlashbangEntity extends Monster implements GeoEntity {
 		for (Player jugador : mundo.getEntitiesOfClass(Player.class, getBoundingBox().inflate(ENCANDILA))) {
 			if (!sirve(jugador)) continue;
 			if (jugador.distanceTo(this) <= DANIO) {
-				// 4 corazones justos, sin importar armadura ni encantamientos.
-				float vida = jugador.getHealth();
-				if (vida > CUANTO) {
-					jugador.setHealth(vida - CUANTO);
-					mundo.broadcastDamageEvent(jugador, fuente);
-				} else {
-					jugador.hurt(fuente, Float.MAX_VALUE);
-				}
+				// Con la armadura y los encantamientos de cada uno (igual en cualquier dificultad).
+				jugador.invulnerableTime = 0;
+				jugador.hurt(fuente, com.dedsafio4.nave.NaveEntity.danioExacto(mundo, jugador, CUANTO));
 			}
 			if (jugador instanceof ServerPlayer sp) ServerPlayNetworking.send(sp, new DestelloPayload());
 		}
