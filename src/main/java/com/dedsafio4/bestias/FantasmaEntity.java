@@ -157,9 +157,14 @@ public class FantasmaEntity extends Monster implements GeoEntity {
 		triggerAnim("ataque", "golpe");
 		level().playSound(null, getX(), getY(), getZ(), SONIDO_GOLPE, SoundSource.HOSTILE, 1f, 1f);
 		if (amarillo() && objetivo instanceof LivingEntity vivo) {
-			// Un golpe que mata (la armadura no alcanza), pero el tótem sí te salva. Después el fantasma desaparece.
+			// Un golpe que mata, pero el tótem sí te salva. Pasa de largo la armadura y el escudo (no los rompe ni los
+			// gasta: damage_type/fantasma_amarillo). Después el fantasma desaparece.
 			vivo.invulnerableTime = 0;
-			vivo.hurt(damageSources().mobAttack(this), Float.MAX_VALUE);
+			vivo.hurt(new net.minecraft.world.damagesource.DamageSource(level().registryAccess()
+					.registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE)
+					.getHolderOrThrow(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE,
+							net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "fantasma_amarillo"))), this),
+					Float.MAX_VALUE);
 			if (level() instanceof ServerLevel mundo) {
 				mundo.sendParticles(ParticleTypes.SOUL, getX(), getY() + 0.9, getZ(), 25, 0.4, 0.6, 0.4, 0.05);
 				mundo.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 0.9, getZ(), 15, 0.3, 0.5, 0.3, 0.02);
