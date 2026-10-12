@@ -19,10 +19,11 @@ public record RecetaTooltip(Item item) implements TooltipComponent {
 	/** ¿Está abierto el Catálogo (la G)? Lo pone el cliente; la receta sólo se muestra ahí, no en el inventario. */
 	public static java.util.function.BooleanSupplier enCatalogo = () -> false;
 
-	/** ¿Muestra la receta? Todos los ítems del mod (si no tienen receta de mesa de crafteo, no se dibuja nada), sólo en la G. */
+	/**
+	 * ¿Muestra la receta? Todos los ítems (los del mod y los de Minecraft), sólo en la G. Si no tienen receta de mesa
+	 * de crafteo, de horno ni de mesa de herrería, no se dibuja nada.
+	 */
 	public static boolean muestra(Item item) {
-		if (!enCatalogo.getAsBoolean()) return false;
-		return conReceta().contains(item)
-				|| net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getNamespace().equals("dedsafio4");
+		return enCatalogo.getAsBoolean();
 	}
 }

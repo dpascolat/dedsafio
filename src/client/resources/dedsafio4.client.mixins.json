@@ -37,7 +37,8 @@
 		"TextureAtlasMixin",
 		"TridenteModeloMixin",
 		"TridenteTooltipMixin",
-		"RecetaTooltipMixin"
+		"RecetaTooltipMixin",
+		"SmithingTransformAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1
