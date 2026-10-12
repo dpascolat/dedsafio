@@ -83,5 +83,13 @@
 		"sounds": [
 			"dedsafio4:flashbang_zumbido"
 		]
+	},
+	"nutria": {
+		"sounds": [
+			{
+				"name": "dedsafio4:nutria",
+				"stream": true
+			}
+		]
 	}
 }

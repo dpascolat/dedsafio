@@ -106,6 +106,12 @@ public final class Ruleta {
 			}));
 		}
 		dispatcher.register(comando);
+		// /nutria: la animación del Momento Nutria en la pantalla de todos (con su sonido).
+		dispatcher.register(Commands.literal("nutria").requires(s -> s.hasPermission(2)).executes(ctx -> {
+			mostrarATodos(ctx.getSource().getServer(), "nutria");
+			ctx.getSource().sendSuccess(() -> Component.literal("Momento Nutria."), true);
+			return 1;
+		}));
 	}
 
 	public static void mostrarATodos(MinecraftServer server, String animacion) {

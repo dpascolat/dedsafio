@@ -24,7 +24,9 @@ import java.util.concurrent.CompletableFuture;
  * sonido. Cada una tiene un JSON en assets/dedsafio4/animaciones/ (tamaño de los cuadros, cuántos hay por hoja, cuánto
  * dura cada cuadro, qué tan grande se ve, si va abajo, el sonido y la animación que va después) y sus hojas de cuadros en
  * textures/gui/animaciones/NOMBRE_N.png. Las hojas se cargan en segundo plano cuando llega la animación (arranca
- * cuando están listas) y se sueltan al terminar, porque ocupan mucha memoria de video.
+ * cuando están listas) y se sueltan al terminar, porque ocupan mucha memoria de video. Las animaciones largas (más de
+ * PRIMERAS hojas, como la Nutria) cargan sólo las primeras al empezar y las demás mientras se muestran, soltando las
+ * que ya pasaron.
  */
 public final class AnimacionesCliente {
 	private AnimacionesCliente() {}
@@ -41,6 +43,10 @@ public final class AnimacionesCliente {
 	}
 
 	private static final Map<String, Info> INFOS = new HashMap<>();
+	/** Cuántas hojas se cargan antes de empezar (las demás, mientras se muestra). */
+	private static final int PRIMERAS = 2;
+	/** La hoja que se mostró en el último cuadro (para cargar la siguiente y soltar la anterior). */
+	private static int hojaMostrada = -1;
 	private static Info actual;
 	/** Momento (Util.getMillis) en que empezó la animación actual. */
 	private static long inicio;
@@ -68,7 +74,10 @@ public final class AnimacionesCliente {
 	private static CompletableFuture<Void> cargar(Info info) {
 		Minecraft mc = Minecraft.getInstance();
 		CompletableFuture<?>[] futuros = new CompletableFuture<?>[info.hojas];
-		for (int i = 0; i < info.hojas; i++) futuros[i] = mc.getTextureManager().preload(info.hoja(i), Util.backgroundExecutor());
+		for (int i = 0; i < info.hojas; i++) {
+			futuros[i] = i < PRIMERAS ? mc.getTextureManager().preload(info.hoja(i), Util.backgroundExecutor())
+					: CompletableFuture.completedFuture(null);
+		}
 		CompletableFuture<Void> todo = CompletableFuture.allOf(futuros);
 		Info despues = info.siguiente == null ? null : info(info.siguiente);
 		return despues == null ? todo : todo.thenCompose(v -> cargar(despues));
@@ -85,6 +94,7 @@ public final class AnimacionesCliente {
 		}
 		actual = info;
 		inicio = Util.getMillis();
+		hojaMostrada = -1;
 		sonando = SimpleSoundInstance.forUI(SoundEvent.createVariableRangeEvent(info.sonido), 1f);
 		mc.getSoundManager().play(sonando);
 	}
@@ -144,6 +154,13 @@ public final class AnimacionesCliente {
 			return;
 		}
 		int hoja = cuadro / info.porHoja, k = cuadro % info.porHoja;
+		if (hoja != hojaMostrada) {
+			// Llegó a otra hoja: se va cargando la que sigue y se suelta la que ya pasó.
+			var texturas = Minecraft.getInstance().getTextureManager();
+			if (hoja + 1 < info.hojas && hoja + 1 >= PRIMERAS) texturas.preload(info.hoja(hoja + 1), Util.backgroundExecutor());
+			if (hoja >= 1 && hojaMostrada >= 0) texturas.release(info.hoja(hojaMostrada));
+			hojaMostrada = hoja;
+		}
 		int enHoja = Math.min(info.porHoja, info.cuadros() - hoja * info.porHoja);
 		int altoHoja = (enHoja + info.columnas - 1) / info.columnas * info.alto;
 		float alto = Math.min(graphics.guiHeight() * info.altoEnPantalla, graphics.guiWidth() * 0.9f * info.alto / info.ancho);
