@@ -114,7 +114,12 @@ public final class CambiosComandos {
 			ctx.getSource().sendSuccess(() -> Component.literal("Cambio " + cambio.comando() + " desactivado"), true);
 			return 1;
 		}
-		activar(ctx.getSource().getServer(), cambio, nivel);
+		var server = ctx.getSource().getServer();
+		activar(server, cambio, nivel);
+		// Siempre se le confirma al que lo puso (el anuncio a todos puede estar escondido con /textocambio).
+		String aviso = TextosOcultos.oculto(server, "cambio") ? " (sin anuncio: /textocambio cambio activar para que se vea)" : "";
+		ctx.getSource().sendSuccess(() -> Component.literal("Cambio " + cambio.comando() + " " + nivel + " activado." + aviso)
+				.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x6BE86B))), true);
 		return 1;
 	}
 
