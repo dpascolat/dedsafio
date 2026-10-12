@@ -44,6 +44,8 @@ public final class AjustesMob {
 	private AjustesMob() {}
 
 	private static final String DANO = "dano", VIDA = "vida", VELOCIDAD = "velocidad";
+	/** Etiqueta que se le pone al mob con la vida de /vidamob que ya recibió ("d4vida:100.0"). */
+	private static final String MARCA_VIDA = "d4vida:";
 
 	private static final class Datos extends SavedData {
 		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
@@ -86,7 +88,15 @@ public final class AjustesMob {
 		Double dano = d.valor(DANO, mob.getType()), vida = d.valor(VIDA, mob.getType()), velocidad = d.valor(VELOCIDAD, mob.getType());
 		if (dano != null && !(mob instanceof Creeper)) poner(mob, Attributes.ATTACK_DAMAGE, dano);
 		if (vida != null && poner(mob, Attributes.MAX_HEALTH, vida)) {
-			if (llenarVida || mob.getHealth() > mob.getMaxHealth()) mob.setHealth(mob.getMaxHealth());
+			// La primera vez que a este mob le toca esta vida (recién aparecido, o recién cambiada con /vidamob), arranca
+			// con la vida llena. Queda anotado en el mob, así al volver a cargarlo no se le cura lo que le sacaron.
+			String marca = MARCA_VIDA + vida;
+			boolean nueva = !mob.getTags().contains(marca);
+			if (nueva) {
+				mob.getTags().removeIf(t -> t.startsWith(MARCA_VIDA));
+				mob.addTag(marca);
+			}
+			if (llenarVida || nueva || mob.getHealth() > mob.getMaxHealth()) mob.setHealth(mob.getMaxHealth());
 		}
 		// Los que vuelan no: a ésos se les agranda el movimiento en el aire (ver factorVuelo).
 		if (velocidad != null && !volador(mob)) poner(mob, Attributes.MOVEMENT_SPEED, velocidad);
@@ -214,6 +224,9 @@ public final class AjustesMob {
 			AttributeInstance instancia = mob.getAttribute(a);
 			if (instancia != null && porDefecto.hasAttribute(a)) instancia.setBaseValue(porDefecto.getBaseValue(a));
 		}
-		if (que.equals(VIDA) && mob.getHealth() > mob.getMaxHealth()) mob.setHealth(mob.getMaxHealth());
+		if (que.equals(VIDA)) {
+			mob.getTags().removeIf(t -> t.startsWith(MARCA_VIDA));
+			if (mob.getHealth() > mob.getMaxHealth()) mob.setHealth(mob.getMaxHealth());
+		}
 	}
 }
