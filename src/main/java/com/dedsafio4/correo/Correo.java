@@ -379,7 +379,7 @@ public final class Correo {
 			otro.sendSystemMessage(Component.literal("✉ Tienes un mensaje nuevo de ").withStyle(ChatFormatting.AQUA)
 					.append(Component.literal(c.autorNombre()).withStyle(ChatFormatting.WHITE))
 					.append(Component.literal(". Ábrelo en un Buzón.").withStyle(ChatFormatting.AQUA)));
-			otro.level().playSound(null, otro.getX(), otro.getY(), otro.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5f, 0.8f);
+			otro.playNotifySound(SONIDO_MENSAJE, SoundSource.PLAYERS, 1f, 1f);   // sólo lo escucha él
 		}
 		enviarBuzon(p);
 		p.sendSystemMessage(Component.literal("✉ Mensaje enviado a " + (aTodos ? "todos" : nombre) + ".").withStyle(ChatFormatting.AQUA));
@@ -405,8 +405,15 @@ public final class Correo {
 		para.sendSystemMessage(Component.literal("✉ Tienes un mensaje nuevo de ").withStyle(ChatFormatting.AQUA)
 				.append(Component.literal(autor).withStyle(ChatFormatting.WHITE))
 				.append(Component.literal(". Ábrelo en un Buzón.").withStyle(ChatFormatting.AQUA)));
-		para.level().playSound(null, para.getX(), para.getY(), para.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5f, 0.8f);
+		para.playNotifySound(SONIDO_MENSAJE, SoundSource.PLAYERS, 1f, 1f);
 	}
+
+	/** El sonido de "te llegó un mensaje" (sólo lo escucha el que lo recibe). */
+	public static final net.minecraft.sounds.SoundEvent SONIDO_MENSAJE = net.minecraft.core.Registry.register(
+			net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT,
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "mensaje_nuevo"),
+			net.minecraft.sounds.SoundEvent.createVariableRangeEvent(
+					net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "mensaje_nuevo")));
 
 	public static void registrar() {
 		PayloadTypeRegistry.playS2C().register(BuzonPayload.TYPE, BuzonPayload.CODEC);

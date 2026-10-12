@@ -177,5 +177,12 @@
 				"name": "dedsafio4:casino_win"
 			}
 		]
+	},
+	"mensaje_nuevo": {
+		"sounds": [
+			{
+				"name": "dedsafio4:mensaje_nuevo"
+			}
+		]
 	}
 }
