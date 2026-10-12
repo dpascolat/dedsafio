@@ -20,8 +20,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * /textocambio <cambio o mob>: el anuncio que sale en el chat (y arriba a la izquierda) al usar /cambio,
- * /dificultadcambio o /mob con eso ya no aparece. Usándolo otra vez, vuelve a aparecer. Se guarda en el mundo.
+ * /textocambio <cambio o mob> desactivar: el anuncio que sale en el chat (y arriba a la izquierda) al usar /cambio,
+ * /dificultadcambio o /mob con eso ya no aparece; "activar" lo vuelve a mostrar. Se guarda en el mundo.
  * El cambio se escribe con su nombre interno (creepers_electricos, arboles...) y el mob como en /mob (walker...).
  */
 public final class TextosOcultos {
@@ -56,27 +56,32 @@ public final class TextosOcultos {
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
+		var nombre = Commands.argument("nombre", StringArgumentType.word())
+				.suggests((c, b) -> SharedSuggestionProvider.suggest(Stream.concat(
+						Cambios.TODOS.stream().map(Cambios.Cambio::id),
+						com.dedsafio4.bestias.AnuncioMob.LUGARES.keySet().stream()), b));
 		dispatcher.register(Commands.literal("textocambio").requires(s -> s.hasPermission(2))
-				.then(Commands.argument("nombre", StringArgumentType.word())
-						.suggests((c, b) -> SharedSuggestionProvider.suggest(Stream.concat(
-								Cambios.TODOS.stream().map(Cambios.Cambio::id),
-								com.dedsafio4.bestias.AnuncioMob.LUGARES.keySet().stream()), b))
-						.executes(c -> {
-							String nombre = StringArgumentType.getString(c, "nombre").toLowerCase(java.util.Locale.ROOT);
-							boolean existe = Cambios.TODOS.stream().anyMatch(x -> x.id().equals(nombre))
-									|| com.dedsafio4.bestias.AnuncioMob.LUGARES.containsKey(nombre);
-							if (!existe) {
-								c.getSource().sendFailure(Component.literal("No existe el cambio o mob \"" + nombre + "\"."));
-								return 0;
-							}
-							Datos d = datos(c.getSource().getServer());
-							boolean ahoraOculto = !d.ocultos.remove(nombre);
-							if (ahoraOculto) d.ocultos.add(nombre);
-							d.setDirty();
-							c.getSource().sendSuccess(() -> Component.literal(ahoraOculto
-									? "El texto de " + nombre + " ya no va a aparecer."
-									: "El texto de " + nombre + " vuelve a aparecer.").withStyle(ChatFormatting.AQUA), true);
-							return 1;
-						})));
+				.then(nombre
+						.then(Commands.literal("desactivar").executes(c -> cambiar(c, true)))
+						.then(Commands.literal("activar").executes(c -> cambiar(c, false)))));
+	}
+
+	/** desactivar = el texto no aparece; activar = vuelve a aparecer. */
+	private static int cambiar(com.mojang.brigadier.context.CommandContext<CommandSourceStack> c, boolean esconder) {
+		String nombre = StringArgumentType.getString(c, "nombre").toLowerCase(java.util.Locale.ROOT);
+		boolean existe = Cambios.TODOS.stream().anyMatch(x -> x.id().equals(nombre))
+				|| com.dedsafio4.bestias.AnuncioMob.LUGARES.containsKey(nombre);
+		if (!existe) {
+			c.getSource().sendFailure(Component.literal("No existe el cambio o mob \"" + nombre + "\"."));
+			return 0;
+		}
+		Datos d = datos(c.getSource().getServer());
+		if (esconder) d.ocultos.add(nombre);
+		else d.ocultos.remove(nombre);
+		d.setDirty();
+		c.getSource().sendSuccess(() -> Component.literal(esconder
+				? "El texto de " + nombre + " está desactivado (no va a aparecer)."
+				: "El texto de " + nombre + " está activado (va a aparecer).").withStyle(ChatFormatting.AQUA), true);
+		return 1;
 	}
 }
