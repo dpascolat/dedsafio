@@ -56,8 +56,11 @@ public final class Portales {
 				: desde.getServer().getLevel(DIMENSION_NUEVA);
 		if (destino == null) return;
 
-		BlockPos llegada = lugarSeguro(destino, jugador.blockPosition());
-		if (destino.dimension().equals(DIMENSION_NUEVA)) asegurarCirculo(destino, llegada);
+		// Al Centro de Quiu: si se eligió un lugar con /quiu, se llega ahí.
+		BlockPos fijo = destino.dimension().equals(DIMENSION_NUEVA) ? datos(desde.getServer()).lugar : null;
+		BlockPos llegada = fijo != null ? fijo : lugarSeguro(destino, jugador.blockPosition());
+		// El círculo de vuelta sólo cuando se cae donde sea (en el lugar de /quiu, la vuelta la arma el que lo eligió).
+		if (destino.dimension().equals(DIMENSION_NUEVA) && fijo == null) asegurarCirculo(destino, llegada);
 		jugador.setPortalCooldown(ESPERA);
 		jugador.teleportTo(destino, llegada.getX() + 0.5, llegada.getY(), llegada.getZ() + 0.5,
 				jugador.getYRot(), jugador.getXRot());
@@ -83,6 +86,69 @@ public final class Portales {
 				}
 			}
 		}
+	}
+
+	// ---------------------------------------------------------------- /quiu
+
+	/** El lugar de llegada al Centro de Quiu elegido con /quiu (null = donde caiga, como siempre). */
+	private static final class Datos extends net.minecraft.world.level.saveddata.SavedData {
+		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
+		BlockPos lugar;
+
+		private static Datos leer(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			Datos d = new Datos();
+			if (tag.contains("x")) d.lugar = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
+			return d;
+		}
+
+		@Override
+		public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			if (lugar != null) {
+				tag.putInt("x", lugar.getX());
+				tag.putInt("y", lugar.getY());
+				tag.putInt("z", lugar.getZ());
+			}
+			return tag;
+		}
+	}
+
+	private static Datos datos(net.minecraft.server.MinecraftServer server) {
+		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_quiu_llegada");
+	}
+
+	/**
+	 * /quiu <x y z>   al entrar al Agua Rara desde el Overworld se llega a ese lugar del Centro de Quiu
+	 * /quiu quitar    se vuelve a llegar como siempre (en el mismo X/Z, sobre el piso)
+	 * /quiu           muestra el lugar elegido
+	 */
+	public static void registrarComandos(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+		dispatcher.register(net.minecraft.commands.Commands.literal("quiu").requires(s -> s.hasPermission(2))
+				.executes(c -> {
+					BlockPos l = datos(c.getSource().getServer()).lugar;
+					c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(l == null
+							? "No hay lugar elegido: al entrar al Agua Rara se llega sobre el piso, en el mismo lugar."
+							: "Al entrar al Agua Rara se llega a " + l.getX() + " " + l.getY() + " " + l.getZ() + " del Centro de Quiu.")
+							.withStyle(net.minecraft.ChatFormatting.AQUA), false);
+					return 1;
+				})
+				.then(net.minecraft.commands.Commands.literal("quitar").executes(c -> {
+					Datos d = datos(c.getSource().getServer());
+					d.lugar = null;
+					d.setDirty();
+					c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(
+							"Listo: al entrar al Agua Rara se llega como siempre.").withStyle(net.minecraft.ChatFormatting.AQUA), true);
+					return 1;
+				}))
+				.then(net.minecraft.commands.Commands.argument("lugar", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+						.executes(c -> {
+							BlockPos l = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getBlockPos(c, "lugar");
+							Datos d = datos(c.getSource().getServer());
+							d.lugar = l.immutable();
+							d.setDirty();
+							c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal("Listo: al entrar al Agua Rara se llega a "
+									+ l.getX() + " " + l.getY() + " " + l.getZ() + " del Centro de Quiu.").withStyle(net.minecraft.ChatFormatting.AQUA), true);
+							return 1;
+						})));
 	}
 
 	/** Busca el piso en el mismo X/Z, para no aparecer dentro de la tierra ni colgado en el aire. */
