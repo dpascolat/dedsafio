@@ -1,11 +1,9 @@
 package com.dedsafio4.cambios;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -17,12 +15,11 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
- * /textocambio <cambio o mob> desactivar: el anuncio que sale en el chat (y arriba a la izquierda) al usar /cambio,
- * /dificultadcambio o /mob con eso ya no aparece; "activar" lo vuelve a mostrar. Se guarda en el mundo.
- * El cambio se escribe con su nombre interno (creepers_electricos, arboles...) y el mob como en /mob (walker...).
+ * /textocambio mob desactivar: los anuncios de /mob (Nuevo Mob) ya no aparecen, de ningún mob.
+ * /textocambio cambio desactivar: los anuncios de /cambio y /dificultadcambio (Cambio de Dificultad) ya no aparecen.
+ * Con "activar" vuelven a aparecer. Se guarda en el mundo.
  */
 public final class TextosOcultos {
 	private TextosOcultos() {}
@@ -50,38 +47,29 @@ public final class TextosOcultos {
 		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_textos_ocultos");
 	}
 
-	/** ¿El anuncio de este cambio (su id) o de este mob (su nombre en /mob) está escondido? */
-	public static boolean oculto(MinecraftServer server, String nombre) {
-		return datos(server).ocultos.contains(nombre);
+	/** ¿Están escondidos los anuncios de este tipo ("mob" o "cambio")? */
+	public static boolean oculto(MinecraftServer server, String tipo) {
+		return datos(server).ocultos.contains(tipo);
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		var nombre = Commands.argument("nombre", StringArgumentType.word())
-				.suggests((c, b) -> SharedSuggestionProvider.suggest(Stream.concat(
-						Cambios.TODOS.stream().map(Cambios.Cambio::id),
-						com.dedsafio4.bestias.AnuncioMob.LUGARES.keySet().stream()), b));
-		dispatcher.register(Commands.literal("textocambio").requires(s -> s.hasPermission(2))
-				.then(nombre
-						.then(Commands.literal("desactivar").executes(c -> cambiar(c, true)))
-						.then(Commands.literal("activar").executes(c -> cambiar(c, false)))));
+		var raiz = Commands.literal("textocambio").requires(s -> s.hasPermission(2));
+		for (String tipo : new String[]{"mob", "cambio"}) {
+			raiz.then(Commands.literal(tipo)
+					.then(Commands.literal("desactivar").executes(c -> cambiar(c, tipo, true)))
+					.then(Commands.literal("activar").executes(c -> cambiar(c, tipo, false))));
+		}
+		dispatcher.register(raiz);
 	}
 
-	/** desactivar = el texto no aparece; activar = vuelve a aparecer. */
-	private static int cambiar(com.mojang.brigadier.context.CommandContext<CommandSourceStack> c, boolean esconder) {
-		String nombre = StringArgumentType.getString(c, "nombre").toLowerCase(java.util.Locale.ROOT);
-		boolean existe = Cambios.TODOS.stream().anyMatch(x -> x.id().equals(nombre))
-				|| com.dedsafio4.bestias.AnuncioMob.LUGARES.containsKey(nombre);
-		if (!existe) {
-			c.getSource().sendFailure(Component.literal("No existe el cambio o mob \"" + nombre + "\"."));
-			return 0;
-		}
+	private static int cambiar(com.mojang.brigadier.context.CommandContext<CommandSourceStack> c, String tipo, boolean esconder) {
 		Datos d = datos(c.getSource().getServer());
-		if (esconder) d.ocultos.add(nombre);
-		else d.ocultos.remove(nombre);
+		if (esconder) d.ocultos.add(tipo);
+		else d.ocultos.remove(tipo);
 		d.setDirty();
-		c.getSource().sendSuccess(() -> Component.literal(esconder
-				? "El texto de " + nombre + " está desactivado (no va a aparecer)."
-				: "El texto de " + nombre + " está activado (va a aparecer).").withStyle(ChatFormatting.AQUA), true);
+		String que = tipo.equals("mob") ? "Los textos de los mobs" : "Los textos de los cambios";
+		c.getSource().sendSuccess(() -> Component.literal(que + (esconder ? " están desactivados (no van a aparecer)."
+				: " están activados (van a aparecer).")).withStyle(ChatFormatting.AQUA), true);
 		return 1;
 	}
 }

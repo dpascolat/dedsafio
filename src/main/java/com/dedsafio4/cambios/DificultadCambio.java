@@ -48,7 +48,7 @@ public final class DificultadCambio {
 		Cambios.Cambio cambio = Cambios.TODOS.stream().filter(c -> c.id().equals(p.cambio())).findFirst().orElse(null);
 		if (cambio == null) return;
 		String anuncio = CambiosComandos.activar(server, cambio, p.nivel());
-		if (!TextosOcultos.oculto(server, cambio.id())) {
+		if (!TextosOcultos.oculto(server, "cambio")) {
 			Aviso.mostrar(server, CambiosComandos.COLOR_TITULO, CambiosComandos.COLOR_TEXTO, "Cambio de Dificultad:", anuncio, "cambio");
 		}
 	}

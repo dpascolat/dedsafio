@@ -81,7 +81,7 @@ public final class CambiosComandos {
 						.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(COLOR_TITULO)).withBold(true)))
 				.append(Component.literal("\n" + anuncio)
 						.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(COLOR_TEXTO))));
-		if (!TextosOcultos.oculto(server, cambio.id())) server.getPlayerList().broadcastSystemMessage(mensaje, false);
+		if (!TextosOcultos.oculto(server, "cambio")) server.getPlayerList().broadcastSystemMessage(mensaje, false);
 		return anuncio;
 	}
 }
