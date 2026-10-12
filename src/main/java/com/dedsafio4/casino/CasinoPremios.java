@@ -233,9 +233,10 @@ public final class CasinoPremios {
 		}
 		jugador.sendSystemMessage(Component.literal("¡Casino! " + cantidad + " × " + nombre(figura) + ": ganaste un premio.")
 				.withStyle(cantidad >= 3 ? ChatFormatting.GOLD : ChatFormatting.YELLOW));
-		jugador.level().playSound(null, casino != null ? casino.blockPosition() : jugador.blockPosition(),
-				cantidad >= 3 ? net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP : net.minecraft.sounds.SoundEvents.NOTE_BLOCK_PLING.value(),
-				net.minecraft.sounds.SoundSource.PLAYERS, 1f, 1f);
+		// Con el casino, el sonido de ganar lo pone el casino (CasinoEntity); sin casino, va acá.
+		if (casino == null) {
+			jugador.level().playSound(null, jugador.blockPosition(), ModCasino.SONIDO_GANA, net.minecraft.sounds.SoundSource.PLAYERS, 1f, 1f);
+		}
 	}
 
 	/** El casino escupe el ítem por la bandeja de adelante, con un saltito hacia el jugador. */

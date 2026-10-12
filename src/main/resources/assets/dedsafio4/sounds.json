@@ -163,5 +163,19 @@
 				"preload": true
 			}
 		]
+	},
+	"casino": {
+		"sounds": [
+			{
+				"name": "dedsafio4:casino"
+			}
+		]
+	},
+	"casino_win": {
+		"sounds": [
+			{
+				"name": "dedsafio4:casino_win"
+			}
+		]
 	}
 }

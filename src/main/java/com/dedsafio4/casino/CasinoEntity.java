@@ -61,6 +61,9 @@ public class CasinoEntity extends Mob implements GeoEntity {
 	 * De cada 100 tiradas: cuántas salen con 3 iguales y cuántas con 2 (el resto, ninguna repetida). De las de 3
 	 * iguales, los 3 corazones salen solo 1 de cada 100 tiradas (1 %); las otras 19 se reparten entre las demás figuras.
 	 */
+	/** Lo que dura el sonido del giro (casino.ogg, 8,4 s): todas las tiradas duran eso. */
+	static final int GIRO = 168;
+
 	private static final int PROBABILIDAD_TRES = 20, PROBABILIDAD_DOS = 30, PROBABILIDAD_TRES_CORAZONES = 1;
 	/** Las animaciones que se pueden disparar con animar(nombre). */
 	public static final java.util.List<String> ANIMACIONES = RESULTADOS.keySet().stream().sorted().toList();
@@ -110,6 +113,10 @@ public class CasinoEntity extends Mob implements GeoEntity {
 			if (level().getPlayerByUUID(jugadorPendiente) instanceof net.minecraft.server.level.ServerPlayer jugador) {
 				CasinoPremios.dar(jugador, pendiente.figura(), pendiente.cantidad(), this);
 			}
+			// Ganó (salieron 2 o 3 iguales): el sonido de ganar.
+			if (pendiente.cantidad() >= 2) {
+				level().playSound(null, blockPosition(), ModCasino.SONIDO_GANA, net.minecraft.sounds.SoundSource.BLOCKS, 1f, 1f);
+			}
 			pendiente = null;
 		}
 		// Una máquina: el cuerpo y la "cabeza" siempre para el mismo lado.
@@ -146,6 +153,12 @@ public class CasinoEntity extends Mob implements GeoEntity {
 		AnimationController<CasinoEntity> principal =
 				new AnimationController<>(this, "principal", 0, estado -> estado.setAndContinue(QUIETO));
 		for (String nombre : ANIMACIONES) principal.triggerableAnim(nombre, RawAnimation.begin().thenPlay(nombre));
+		// Cada tirada se acelera para terminar justo cuando termina el sonido del giro.
+		principal.setAnimationSpeedHandler(casino -> {
+			var actual = principal.getCurrentAnimation();
+			Resultado r = actual == null ? null : RESULTADOS.get(actual.animation().name());
+			return r == null ? 1.0 : (double) r.duracion() / GIRO;
+		});
 		controladores.add(principal);
 	}
 
@@ -174,12 +187,14 @@ public class CasinoEntity extends Mob implements GeoEntity {
 		if (forzada != null && RESULTADOS.containsKey(forzada)) tirada = forzada;
 		animar(tirada);
 		pendiente = RESULTADOS.get(tirada);
-		girandoHasta = tickCount + pendiente.duracion();
+		// La animación se acelera para durar lo mismo que el sonido (ver registerControllers); las ruedas paran antes.
+		girandoHasta = tickCount + GIRO;
 		jugadorPendiente = jugador.getUUID();
-		premioEn = tickCount + pendiente.parada();
+		premioEn = tickCount + Math.round(pendiente.parada() * (float) GIRO / pendiente.duracion());
 		item.consume(1, jugador);
 		level().playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.LEVER_CLICK,
 				net.minecraft.sounds.SoundSource.BLOCKS, 1f, 0.8f);
+		level().playSound(null, blockPosition(), ModCasino.SONIDO_GIRA, net.minecraft.sounds.SoundSource.BLOCKS, 1f, 1f);
 		return net.minecraft.world.InteractionResult.CONSUME;
 	}
 

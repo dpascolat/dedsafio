@@ -22,6 +22,13 @@ public final class ModCasino {
 	public static final Item CASINO_SPAWN_EGG = Registry.register(BuiltInRegistries.ITEM, id("casino_spawn_egg"),
 			new SpawnEggItem(CASINO, 0x7A1020, 0xF2C230, new Item.Properties()));
 
+	/** El sonido de las ruedas girando (la animación dura lo mismo) y el de cuando gana. */
+	public static final net.minecraft.sounds.SoundEvent SONIDO_GIRA = sonido("casino"), SONIDO_GANA = sonido("casino_win");
+
+	private static net.minecraft.sounds.SoundEvent sonido(String nombre) {
+		return Registry.register(BuiltInRegistries.SOUND_EVENT, id(nombre), net.minecraft.sounds.SoundEvent.createVariableRangeEvent(id(nombre)));
+	}
+
 	private static ResourceLocation id(String nombre) {
 		return ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, nombre);
 	}
