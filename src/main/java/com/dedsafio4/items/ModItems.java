@@ -529,6 +529,7 @@ public final class ModItems {
 						entradas.accept(DEDITA_MERCADO_NEGRO);
 						entradas.accept(DEDITA_MISION);
 						entradas.accept(com.dedsafio4.banco.ModCajero.CAJERO_ITEM);
+						entradas.accept(com.dedsafio4.intercambio.ModIntercambio.PUESTO_ITEM);
 						entradas.accept(com.dedsafio4.subastas.ModVitrina.VITRINA_ITEM);
 						entradas.accept(com.dedsafio4.boveda.ModBoveda.BOVEDA_ITEM);
 						entradas.accept(com.dedsafio4.despegue.ModDespegue.COMBUSTIBLE);
