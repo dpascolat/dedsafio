@@ -28,12 +28,15 @@ import net.minecraft.world.level.Level;
  * Cerebro Amarillo: una medusa con campana de cerebro y 18 tentáculos, de la Dimensión de los Órganos. Camina y
  * trepa paredes con los tentáculos; cuando ve a un jugador salta hacia él y se le sube a la cabeza. Pegado ahí lo
  * deja ciego y le saca medio corazón cada medio segundo, sin importar la armadura ni los encantamientos, y se cura
- * con lo que le saca. El que lo tiene encima no le puede hacer nada: otro jugador lo tiene que matar.
+ * con lo que le saca. Mientras está encima el jugador no se puede curar, así que si no se lo sacan, lo mata.
+ * El que lo tiene encima no le puede hacer nada: otro jugador lo tiene que matar.
  */
 public class CerebroAmarilloEntity extends Monster {
 	/** Cada cuántos ticks saca medio corazón (10 ticks = medio segundo). */
 	private static final int CADA = 10;
 	private int drenando;
+	/** La vida más alta que puede tener el jugador mientras lo tiene encima (va bajando: no se puede curar). */
+	private float vidaTope = Float.MAX_VALUE;
 
 	public CerebroAmarilloEntity(EntityType<? extends CerebroAmarilloEntity> tipo, Level mundo) {
 		super(tipo, mundo);
@@ -90,6 +93,7 @@ public class CerebroAmarilloEntity extends Monster {
 	private void subirse(Player jugador) {
 		if (startRiding(jugador, true)) {
 			drenando = 0;
+			vidaTope = jugador.getHealth();
 			playSound(SoundEvents.SLIME_ATTACK, 1f, 0.6f);
 		}
 	}
@@ -115,6 +119,8 @@ public class CerebroAmarilloEntity extends Monster {
 				return;
 			}
 			jugador.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40, 0, false, false, true));
+			// Mientras lo tiene encima no se cura (ni comiendo, ni regenerando, ni con pociones).
+			if (vidaTope > 0f && jugador.getHealth() > vidaTope) jugador.setHealth(vidaTope);
 			if (++drenando % CADA == 0) drenar(jugador);
 		} else if (getTarget() instanceof Player jugador && sirve(jugador)
 				&& getBoundingBox().inflate(0.3).intersects(jugador.getBoundingBox())) {
@@ -123,15 +129,18 @@ public class CerebroAmarilloEntity extends Monster {
 		}
 	}
 
-	/** Medio corazón, pase lo que pase (armadura, Protección...); se cura con lo que saca. */
+	/** Medio corazón, pase lo que pase (armadura, Protección...); se cura con lo que saca. Al final te mata. */
 	private void drenar(Player jugador) {
-		float vida = jugador.getHealth();
 		DamageSource fuente = damageSources().mobAttack(this);
-		if (vida > 1f) {
-			jugador.setHealth(vida - 1f);
+		vidaTope = Math.min(vidaTope, jugador.getHealth()) - 1f;
+		if (vidaTope > 0f) {
+			jugador.setHealth(vidaTope);
 			level().broadcastDamageEvent(jugador, fuente);
 		} else {
-			jugador.hurt(fuente, Float.MAX_VALUE);
+			jugador.invulnerableTime = 0;
+			if (!jugador.hurt(fuente, Float.MAX_VALUE) && jugador.isAlive() && !jugador.isCreative()) jugador.kill();
+			// Si lo salvó un tótem, se sigue desde la vida que le dejó.
+			if (jugador.isAlive()) vidaTope = jugador.getHealth();
 		}
 		heal(1f);
 		playSound(SoundEvents.HONEY_DRINK, 0.6f, 0.6f);
