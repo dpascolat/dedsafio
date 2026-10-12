@@ -65,10 +65,10 @@ public final class AnuncioMob {
 		LUGARES.put("wraith", "todo el Overworld, a oscuras");
 		LUGARES.put("nave", "el bioma Phora");
 		LUGARES.put("nave_veloz", "el bioma Phora");
-		LUGARES.put("fantasma_amarillo", "el Limbo");
-		LUGARES.put("fantasma_blanco", "el Limbo");
-		LUGARES.put("fantasma_rojo", "el Limbo");
-		LUGARES.put("fantasma_negro", "el Limbo");
+		LUGARES.put("fantasma_amarillo", "el Limbo y el Limbito");
+		LUGARES.put("fantasma_blanco", "el Limbo y el Limbito");
+		LUGARES.put("fantasma_rojo", "el Limbo y el Limbito");
+		LUGARES.put("fantasma_negro", "el Limbo y el Limbito");
 	}
 
 	public static final class Datos extends SavedData {
