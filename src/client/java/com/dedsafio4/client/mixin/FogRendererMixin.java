@@ -48,6 +48,14 @@ public abstract class FogRendererMixin {
 			RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0f);
 			return;
 		}
+		float[] rojo2 = com.dedsafio4.client.cielo2.CieloRojo2.niebla(fogRed, fogGreen, fogBlue);
+		if (rojo2 != null) {
+			fogRed = rojo2[0];
+			fogGreen = rojo2[1];
+			fogBlue = rojo2[2];
+			RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0f);
+			return;
+		}
 		if (!CieloCliente.activoAqui()) return;
 		float p = CieloCliente.progresoCielo(partialTick);   // mientras se esparce, cambia de a poco
 		fogRed = Mth.lerp(p, fogRed, CieloCliente.NIEBLA_R);

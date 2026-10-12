@@ -6,6 +6,11 @@ import com.dedsafio4.neocompat.fabric.api.client.message.v1.ClientReceiveMessage
 import com.dedsafio4.neocompat.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import com.dedsafio4.neocompat.fabric.api.client.networking.v1.ClientPlayNetworking;
 import com.dedsafio4.neocompat.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
+import com.dedsafio4.neocompat.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import com.dedsafio4.neocompat.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import com.dedsafio4.neocompat.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import com.dedsafio4.neocompat.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -86,6 +91,16 @@ public final class PuenteCliente {
 		mod.addListener(EventPriority.NORMAL, false, EntityRenderersEvent.AddLayers.class, PuenteCliente::capas);
 		mod.addListener(EventPriority.NORMAL, false, RegisterKeyMappingsEvent.class, e -> KeyBindingHelper.TECLAS.forEach(e::register));
 		mod.addListener(EventPriority.NORMAL, false, RegisterMenuScreensEvent.class, e -> NeoCompat.PANTALLAS.forEach(p -> p.accept(e)));
+		mod.addListener(EventPriority.NORMAL, false, RegisterShadersEvent.class, e -> {
+			for (var o : CoreShaderRegistrationCallback.EVENT.oyentes()) {
+				try {
+					o.registerShaders((id, formato, alCargar) ->
+							e.registerShader(new ShaderInstance(e.getResourceProvider(), id, formato), alCargar));
+				} catch (IOException ex) {
+					throw new UncheckedIOException(ex);
+				}
+			}
+		});
 		mod.addListener(EventPriority.NORMAL, false, RegisterClientExtensionsEvent.class, e ->
 				BuiltinItemRendererRegistry.INSTANCE.DIBUJANTES.forEach((item, dibujante) -> e.registerItem(new IClientItemExtensions() {
 					private BlockEntityWithoutLevelRenderer dibujanteItem;

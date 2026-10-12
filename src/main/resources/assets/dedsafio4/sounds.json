@@ -91,5 +91,77 @@
 				"stream": true
 			}
 		]
+	},
+	"reviil_escena": {
+		"sounds": [
+			{
+				"name": "dedsafio4:reviil_escena",
+				"preload": true
+			}
+		]
+	},
+	"cielo2.reviil_musica": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cielo2/reviil_musica",
+				"stream": true
+			}
+		]
+	},
+	"cielo2.retumbo": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cielo2/retumbo",
+				"preload": true
+			}
+		]
+	},
+	"cielo2.musica": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cielo2/musica",
+				"stream": true
+			}
+		]
+	},
+	"cielo2.despeja": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cielo2/despeja",
+				"preload": true
+			}
+		]
+	},
+	"cielo2.grieta_rayo": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cielo2/grieta_rayo",
+				"preload": true
+			}
+		]
+	},
+	"cielo2.grieta_abre": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cielo2/grieta_abre",
+				"preload": true
+			}
+		]
+	},
+	"cielo2.grieta_cierra": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cielo2/grieta_cierra",
+				"preload": true
+			}
+		]
+	},
+	"cielo2.cabezazo": {
+		"sounds": [
+			{
+				"name": "dedsafio4:cielo2/cabezazo",
+				"preload": true
+			}
+		]
 	}
 }

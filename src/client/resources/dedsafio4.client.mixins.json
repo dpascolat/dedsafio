@@ -16,6 +16,7 @@
 		"GuiMixin",
 		"InventoryScreenAlmaMixin",
 		"FogRendererMixin",
+		"GameRendererTemblorMixin",
 		"KeyboardInputAtraerMixin",
 		"KeyMappingMixin",
 		"ListaFondoMixin",

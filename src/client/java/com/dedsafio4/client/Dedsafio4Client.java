@@ -196,8 +196,16 @@ public class Dedsafio4Client implements ClientModInitializer {
 			AlmaCliente.SIN_ALMA.clear();
 			AlmaCliente.SIN_ALMA.addAll(payload.sinAlma());
 		});
-		ClientPlayNetworking.registerGlobalReceiver(CieloPayload.TYPE, (payload, context) ->
-				CieloCliente.setActivo(payload.rojo(), payload.animar()));
+		ClientPlayNetworking.registerGlobalReceiver(CieloPayload.TYPE, (payload, context) -> {
+			if (payload.modo() == CieloPayload.CABEZAZO) {
+				com.dedsafio4.client.cielo2.CieloRojo2.cabezazo();
+				return;
+			}
+			CieloCliente.setActivo(payload.modo() == CieloPayload.ROJO, payload.animar() && payload.modo() != CieloPayload.ROJO_2);
+			if (payload.modo() == CieloPayload.ROJO_2) com.dedsafio4.client.cielo2.CieloRojo2.poner(payload.animar());
+			else com.dedsafio4.client.cielo2.CieloRojo2.quitar(payload.animar());
+		});
+		com.dedsafio4.client.cielo2.CieloRojo2.registrar();
 		ClientPlayNetworking.registerGlobalReceiver(TemporizadorPayload.TYPE, (payload, context) ->
 				TemporizadorCliente.actualizar(payload.segundos()));
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.ruleta.Ruleta.Payload.TYPE, (payload, context) ->
