@@ -37,12 +37,12 @@ public final class ModBloques {
 	public static final Block AGUA_PORTAL = registrar("agua_portal", new com.dedsafio4.dimension.AguaPortalBlock(
 			BlockBehaviour.Properties.of()
 					.mapColor(MapColor.WATER)
-					.strength(0.4f)
+					.strength(0.4f, 3600000f)   // las explosiones no la rompen
 					.noCollission()
 					.noOcclusion()
-					.lightLevel(estado -> 10)
+					.noLootTable()
 					.sound(SoundType.EMPTY)
-					.pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
+					.pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
 
 	/**
 	 * La Roca del Techo del Centro de Quiu: tapa el cielo como una cueva, pero deja pasar la luz del día.

@@ -15,8 +15,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
 /**
- * El viaje entre mundos: tocar el Agua Rara te lleva a la otra dimensión. Desde el Overworld
- * vas a la dimensión nueva, y desde ahí (por ejemplo en el círculo del cielo) volvés al Overworld.
+ * El viaje entre mundos: entrar al Agua Rara te lleva a la otra dimensión. Desde el Overworld vas al Centro de
+ * Quiu, y desde ahí (por ejemplo en el círculo del cielo) vuelves al Overworld. Al entrar quedas quieto y protegido
+ * 3 segundos mientras la pantalla se pone negra (FundidoPortal en el cliente), y después viajas.
  */
 public final class Portales {
 	private Portales() {}
@@ -29,14 +30,57 @@ public final class Portales {
 	/** Cuántos bloques arriba del lugar de llegada queda el círculo de vuelta (debajo del techo de roca). */
 	private static final int ALTURA_CIRCULO = 20;
 
+	/** Lo que tarda en llevarte: 3 segundos (la pantalla se va poniendo negra). */
+	public static final int TARDA = 60;
+
+	/** Los que están entrando: dónde quedaron quietos y en qué tick entraron. */
+	private record Entrando(net.minecraft.world.phys.Vec3 lugar, long desde) {}
+	private static final java.util.Map<java.util.UUID, Entrando> ENTRANDO = new java.util.HashMap<>();
+
+	/** Servidor → jugador: empieza a irse (la pantalla se pone negra en {@link #TARDA} ticks y después se aclara). */
+	public record FundidoPayload(int ticks) implements net.minecraft.network.protocol.common.custom.CustomPacketPayload {
+		public static final Type<FundidoPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("dedsafio4", "agua_rara_fundido"));
+		public static final net.minecraft.network.codec.StreamCodec<io.netty.buffer.ByteBuf, FundidoPayload> CODEC =
+				net.minecraft.network.codec.ByteBufCodecs.VAR_INT.map(FundidoPayload::new, FundidoPayload::ticks);
+
+		@Override
+		public Type<? extends net.minecraft.network.protocol.common.custom.CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
 	public static void registrar() {
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playS2C().register(FundidoPayload.TYPE, FundidoPayload.CODEC);
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			long ahora = server.getTickCount();
 			for (ServerPlayer jugador : server.getPlayerList().getPlayers()) {
-				if (jugador.isOnPortalCooldown() || !jugador.isAlive()) continue;
-				if (!tocaAgua(jugador)) continue;
-				viajar(jugador);
+				Entrando e = ENTRANDO.get(jugador.getUUID());
+				if (!jugador.isAlive()) {
+					ENTRANDO.remove(jugador.getUUID());
+					continue;
+				}
+				if (e != null) {
+					// Mientras espera: quieto en el agua y protegido (no se ahoga, no se cae, no recibe daño).
+					jugador.teleportTo(jugador.serverLevel(), e.lugar().x, e.lugar().y, e.lugar().z, jugador.getYRot(), jugador.getXRot());
+					jugador.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+					jugador.setAirSupply(jugador.getMaxAirSupply());
+					jugador.resetFallDistance();
+					jugador.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+							net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 10, 4, false, false, false));
+					if (ahora - e.desde() >= TARDA) {
+						ENTRANDO.remove(jugador.getUUID());
+						viajar(jugador);
+					}
+					continue;
+				}
+				if (jugador.isOnPortalCooldown() || jugador.isSpectator() || !tocaAgua(jugador)) continue;
+				ENTRANDO.put(jugador.getUUID(), new Entrando(jugador.position(), ahora));
+				net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(jugador, new FundidoPayload(TARDA));
+				jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 0.5f, 1.4f);
 			}
 		});
+		net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
+				ENTRANDO.remove(handler.player.getUUID()));
 	}
 
 	private static boolean tocaAgua(ServerPlayer jugador) {

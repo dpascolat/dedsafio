@@ -211,6 +211,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 			else com.dedsafio4.client.cielo2.CieloRojo2.quitar(payload.animar());
 		});
 		com.dedsafio4.client.cielo2.CieloRojo2.registrar();
+		FundidoPortal.registrar();
 		ClientPlayNetworking.registerGlobalReceiver(TemporizadorPayload.TYPE, (payload, context) ->
 				TemporizadorCliente.actualizar(payload.segundos()));
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.ruleta.Ruleta.Payload.TYPE, (payload, context) ->
