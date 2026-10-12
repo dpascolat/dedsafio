@@ -51,6 +51,7 @@ public class TotemGlebanoideItem extends Item {
 				jugador.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 800, 0));
 				// El aviso 35 hace la animación y el sonido del tótem (el cliente muestra éste: ver ClientPacketListenerMixin).
 				jugador.level().broadcastEntityEvent(jugador, (byte) 35);
+				AvisoTotem.consumido(jugador, ModItems.TOTEM_GLEBANOIDE);   // "X ha consumido un ..." en el chat de todos
 				return false;
 			}
 			return true;

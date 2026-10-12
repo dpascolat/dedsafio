@@ -53,6 +53,7 @@ public class TotemIdoloItem extends Item {
 				jugador.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(ModItems.TOTEM_IDOLO));
 				// El aviso 35 (animación y sonido del tótem) va antes de gastarlo, para que el cliente lo encuentre.
 				jugador.level().broadcastEntityEvent(jugador, (byte) 35);
+				AvisoTotem.consumido(jugador, ModItems.TOTEM_IDOLO);   // "X ha consumido un ..." en el chat de todos
 				pila.shrink(1);
 				jugador.setHealth(1f);
 				jugador.removeAllEffects();

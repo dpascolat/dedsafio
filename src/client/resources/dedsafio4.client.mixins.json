@@ -9,6 +9,7 @@
 		"MomentitoNieblaMixin",
 		"MomentitoVistaMixin",
 		"CapeLayerMixin",
+		"ChatCaraMixin",
 		"ChestRendererMixin",
 		"ClientPacketListenerMixin",
 		"ClientLevelMixin",

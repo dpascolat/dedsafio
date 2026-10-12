@@ -87,6 +87,7 @@ public class TotemFrericoItem extends Item {
 				jugador.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 800, 0));
 				// El aviso 35 hace la animación y el sonido del tótem (el cliente muestra el Frerico: ver ClientPacketListenerMixin).
 				jugador.level().broadcastEntityEvent(jugador, (byte) 35);
+				AvisoTotem.consumido(jugador, ModItems.TOTEM_FRERICO);   // "X ha consumido un ..." en el chat de todos
 				return false;
 			}
 			return true;
