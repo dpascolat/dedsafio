@@ -1,7 +1,6 @@
 package com.dedsafio4.dimension;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -13,7 +12,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
@@ -21,13 +23,26 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * El Agua Rara: se ve como el agua. Si entras te lleva a la otra dimensión (lo maneja {@link Portales}: tarda 3
- * segundos, con la pantalla que se pone negra). Como el agua, el mouse la atraviesa: no se puede romper ni agarrar,
- * salvo los OP (ellos la ven como un bloque, la rompen y la juntan con un balde vacío).
+ * El Agua Rara: por dentro es agua de verdad (como un bloque inundado), así que tiene todo lo del agua: se ve igual,
+ * se nada, frena las caídas, hace burbujas y salpica. Pero no corre ni se derrama, y quedarse 3 segundos adentro te
+ * lleva a la otra dimensión (lo maneja {@link Portales}, con la pantalla que se pone negra).
+ * No se puede romper ni juntar con un balde, salvo los OP (ellos la ven como un bloque y la juntan con un balde vacío).
  */
 public class AguaPortalBlock extends Block {
 	public AguaPortalBlock(Properties propiedades) {
 		super(propiedades);
+	}
+
+	/** Por dentro es agua quieta (la dibuja Minecraft como el agua, con su superficie y todo). */
+	@Override
+	protected FluidState getFluidState(BlockState estado) {
+		return Fluids.WATER.getSource(false);
+	}
+
+	/** El bloque en sí no se dibuja: sólo se ve el agua. */
+	@Override
+	protected RenderShape getRenderShape(BlockState estado) {
+		return RenderShape.INVISIBLE;
 	}
 
 	private static boolean esAdmin(CollisionContext contexto) {
@@ -43,12 +58,6 @@ public class AguaPortalBlock extends Block {
 	@Override
 	protected VoxelShape getCollisionShape(BlockState estado, BlockGetter mundo, BlockPos pos, CollisionContext contexto) {
 		return Shapes.empty();
-	}
-
-	/** Entre dos bloques de Agua Rara no se dibuja la cara de en medio (como el agua). */
-	@Override
-	protected boolean skipRendering(BlockState estado, BlockState vecino, Direction lado) {
-		return vecino.is(this) || super.skipRendering(estado, vecino, lado);
 	}
 
 	/** Un OP con un balde vacío la junta (le queda el bloque para ponerla en otro lado). */

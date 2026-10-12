@@ -16,8 +16,9 @@ import net.minecraft.world.phys.AABB;
 
 /**
  * El viaje entre mundos: entrar al Agua Rara te lleva a la otra dimensión. Desde el Overworld vas al Centro de
- * Quiu, y desde ahí (por ejemplo en el círculo del cielo) vuelves al Overworld. Al entrar quedas quieto y protegido
- * 3 segundos mientras la pantalla se pone negra (FundidoPortal en el cliente), y después viajas.
+ * Quiu, y desde ahí (por ejemplo en el círculo del cielo) vuelves al Overworld. El Agua Rara es agua de verdad (se
+ * nada y frena las caídas): quedándote 3 segundos adentro la pantalla se pone negra (FundidoPortal en el cliente) y
+ * viajas; si sales antes, no.
  */
 public final class Portales {
 	private Portales() {}
@@ -60,13 +61,13 @@ public final class Portales {
 					continue;
 				}
 				if (e != null) {
-					// Mientras espera: quieto en el agua y protegido (no se ahoga, no se cae, no recibe daño).
-					jugador.teleportTo(jugador.serverLevel(), e.lugar().x, e.lugar().y, e.lugar().z, jugador.getYRot(), jugador.getXRot());
-					jugador.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-					jugador.setAirSupply(jugador.getMaxAirSupply());
-					jugador.resetFallDistance();
-					jugador.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-							net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 10, 4, false, false, false));
+					// Mientras espera nada como en el agua (es agua de verdad); si sale antes de tiempo, no viaja.
+					if (!tocaAgua(jugador)) {
+						ENTRANDO.remove(jugador.getUUID());
+						net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(jugador, new FundidoPayload(0));
+						continue;
+					}
+					jugador.setAirSupply(jugador.getMaxAirSupply());   // no se ahoga mientras espera
 					if (ahora - e.desde() >= TARDA) {
 						ENTRANDO.remove(jugador.getUUID());
 						viajar(jugador);
@@ -113,20 +114,24 @@ public final class Portales {
 	}
 
 	/**
-	 * El círculo del cielo: 20 bloques de ancho de Agua Rara, flotando alto. Se arma la primera vez
+	 * El círculo del cielo: 20 bloques de ancho y 3 de hondo de Agua Rara, flotando alto. Se arma la primera vez
 	 * que alguien llega a esa zona, así siempre hay por dónde volver. Sólo se mira el lugar del
 	 * círculo (no toda la zona) para no trabar el viaje cargando trozos de mundo de más.
 	 */
 	private static void asegurarCirculo(ServerLevel mundo, BlockPos llegada) {
 		BlockPos centro = llegada.above(ALTURA_CIRCULO);
-		if (mundo.getBlockState(centro).is(ModBloques.AGUA_PORTAL)) return;   // ya está
+		// Ya está (los círculos viejos, de un solo bloque de hondo, se completan hasta 3).
+		if (mundo.getBlockState(centro.below(2)).is(ModBloques.AGUA_PORTAL)) return;
 		int radio = 10;
-		for (int dx = -radio; dx <= radio; dx++) {
-			for (int dz = -radio; dz <= radio; dz++) {
-				if (dx * dx + dz * dz > radio * radio) continue;
-				BlockPos pos = centro.offset(dx, 0, dz);
-				if (mundo.getBlockState(pos).isAir()) {
-					mundo.setBlock(pos, ModBloques.AGUA_PORTAL.defaultBlockState(), 2);
+		// 3 bloques de hondo: hay que quedarse 3 segundos adentro, nadando.
+		for (int dy = 0; dy >= -2; dy--) {
+			for (int dx = -radio; dx <= radio; dx++) {
+				for (int dz = -radio; dz <= radio; dz++) {
+					if (dx * dx + dz * dz > radio * radio) continue;
+					BlockPos pos = centro.offset(dx, dy, dz);
+					if (mundo.getBlockState(pos).isAir()) {
+						mundo.setBlock(pos, ModBloques.AGUA_PORTAL.defaultBlockState(), 2);
+					}
 				}
 			}
 		}
