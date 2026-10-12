@@ -44,6 +44,33 @@
 			"chars": [
 				""
 			]
+		},
+		{
+			"type": "bitmap",
+			"file": "dedsafio4:font/rango_maestro.png",
+			"height": 8,
+			"ascent": 7,
+			"chars": [
+				""
+			]
+		},
+		{
+			"type": "bitmap",
+			"file": "dedsafio4:font/rango_lider.png",
+			"height": 8,
+			"ascent": 7,
+			"chars": [
+				""
+			]
+		},
+		{
+			"type": "bitmap",
+			"file": "dedsafio4:font/rango_miembro.png",
+			"height": 8,
+			"ascent": 7,
+			"chars": [
+				""
+			]
 		}
 	]
 }

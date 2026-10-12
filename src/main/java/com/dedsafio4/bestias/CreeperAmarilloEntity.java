@@ -44,8 +44,8 @@ public class CreeperAmarilloEntity extends Creeper {
 	public void tick() {
 		boolean vivo = !isRemoved();
 		super.tick();
-		// En su tick el creeper solo se borra cuando explota (queda "muerto" y lo descartan).
-		if (vivo && isRemoved() && dead && !level().isClientSide) {
+		// Cuando explota, el creeper queda "muerto" y lo descartan; si lo matan, se borra como muerto (KILLED): ahí no.
+		if (vivo && isRemoved() && dead && getRemovalReason() == RemovalReason.DISCARDED && !level().isClientSide) {
 			for (ServerPlayer jugador : level().getEntitiesOfClass(ServerPlayer.class, getBoundingBox().inflate(CERCA))) {
 				if (jugador.isSpectator()) continue;
 				ServerPlayNetworking.send(jugador, new FalsoKickPayload());

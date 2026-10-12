@@ -49,6 +49,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 
 	/** Saldo que mandó el servidor; -1 mientras no llegó ninguno. */
 	private static long saldo = -1;
+	/** Se apretó H y se espera la respuesta para abrir la Hermandad. */
+	private static boolean hermandadPedida;
 
 	public static final KeyMapping TECLA_HERMANDAD = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.dedsafio4.hermandad", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "category.dedsafio4"));
@@ -149,6 +151,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (TECLA_HERMANDAD.consumeClick()) {
 				if (client.screen == null) {
+					hermandadPedida = true;
 					ClientPlayNetworking.send(new HermandadAccionPayload(HermandadAccionPayload.PEDIR_INFO, ""));
 				}
 			}
@@ -178,7 +181,9 @@ public class Dedsafio4Client implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(HermandadInfoPayload.TYPE, (payload, context) -> {
 			Minecraft mc = context.client();
 			if (mc.screen instanceof HermandadScreen pantalla) pantalla.actualizar(payload);
-			else if (mc.screen == null) mc.setScreen(new HermandadScreen(payload));
+			// Sólo se abre si se apretó H (cuando alguien se une o le cambian el rango llegan datos nuevos, pero no se abre).
+			else if (mc.screen == null && hermandadPedida) mc.setScreen(new HermandadScreen(payload));
+			hermandadPedida = false;
 		});
 
 		ClientPlayNetworking.registerGlobalReceiver(DeditasPayload.TYPE, (payload, context) -> saldo = payload.saldo());

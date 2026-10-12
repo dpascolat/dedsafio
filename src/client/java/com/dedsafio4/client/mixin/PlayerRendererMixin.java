@@ -25,14 +25,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Arriba de la cabeza de cada jugador:
  *   vida ❤
- *   Nombre [alma]          (del color de su Hermandad, si tiene; el ícono del Alma o del Sin Alma a la derecha)
- *   <Hermandad> Rango      (solo si tiene; donde antes iba el nombre)
+ *   [alma] Nombre          (del color de su Hermandad, si tiene; el ícono del Alma o del Sin Alma a la izquierda)
+ *   [rango] <Hermandad>    (solo si tiene; donde antes iba el nombre; el rango es el dibujito de la lista de la
+ *                          Hermandad: corona el Maestro, estrella los Líderes, persona los Miembros)
  * Con /nombre esconder no se ve nada de eso.
  */
 @Mixin(PlayerRenderer.class)
 public abstract class PlayerRendererMixin {
 	/** Celeste lavanda del número de vida. */
 	private static final TextColor COLOR_VIDA = TextColor.fromRgb(0xAAB4FF);
+	/** La fuente de los íconos del mod (los dibujitos de los rangos). */
+	private static final net.minecraft.resources.ResourceLocation ICONOS =
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "iconos");
 
 	private static final String RENDER_NAME_TAG = "renderNameTag(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V";
 
@@ -76,17 +80,20 @@ public abstract class PlayerRendererMixin {
 		float yNombre = hermandad != null ? -10f : 0f;
 		dibujarLinea(pose, buffers, luz, jugador, vida, yNombre - 10f);
 		float ancho = dibujarLinea(pose, buffers, luz, jugador, nombre, yNombre, 10f);
-		dibujarAlma(pose, buffers, luz, jugador, ancho / 2f - 5f, yNombre + 4f);
+		dibujarAlma(pose, buffers, luz, jugador, -ancho / 2f + 4.5f, yNombre + 4f);
 		if (hermandad != null) {
-			int colorRango = switch (hermandad.rango()) {
-				case "Maestro" -> 0xFFD24A;
-				case "Líder" -> 0x5FE0F0;
-				default -> 0xB8B8B8;
-			};
+			// El dibujito del rango (como en la lista de la Hermandad): corona, estrella o persona.
+			String icono;
+			int colorRango;
+			switch (hermandad.rango()) {
+				case "Maestro" -> { icono = ""; colorRango = 0xFFC21F; }
+				case "Líder" -> { icono = ""; colorRango = 0xC77DF0; }
+				default -> { icono = ""; colorRango = 0x4DA6FF; }
+			}
 			Component linea = Component.empty()
-					.append(Component.literal("<" + hermandad.hermandad() + ">")
-							.withStyle(s -> s.withColor(TextColor.fromRgb(hermandad.color()))))
-					.append(Component.literal(" " + hermandad.rango()).withStyle(s -> s.withColor(TextColor.fromRgb(colorRango))));
+					.append(Component.literal(icono).withStyle(s -> s.withFont(ICONOS).withColor(TextColor.fromRgb(colorRango))))
+					.append(Component.literal(" <" + hermandad.hermandad() + ">")
+							.withStyle(s -> s.withColor(TextColor.fromRgb(hermandad.color()))));
 			dibujarLinea(pose, buffers, luz, jugador, linea, 0f);
 		}
 		pose.popPose();
@@ -112,15 +119,15 @@ public abstract class PlayerRendererMixin {
 	}
 
 	/**
-	 * Una línea centrada; {@code lugarDerecha} deja ese espacio libre a la derecha (para un ícono) y la corre a la
-	 * izquierda para que el conjunto quede centrado. Devuelve el ancho total (texto + espacio).
+	 * Una línea centrada; {@code lugarIzquierda} deja ese espacio libre a la izquierda (para un ícono) y la corre a la
+	 * derecha para que el conjunto quede centrado. Devuelve el ancho total (espacio + texto).
 	 */
 	private static float dibujarLinea(PoseStack pose, MultiBufferSource buffers, int luz,
-									  AbstractClientPlayer jugador, Component texto, float y, float lugarDerecha) {
+									  AbstractClientPlayer jugador, Component texto, float y, float lugarIzquierda) {
 		Matrix4f matriz = pose.last().pose();
 		Font font = Minecraft.getInstance().font;
-		float total = font.width(texto) + lugarDerecha;
-		float x = -total / 2f;
+		float total = font.width(texto) + lugarIzquierda;
+		float x = -total / 2f + lugarIzquierda;
 		int fondo = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25F) * 255.0F) << 24;
 		boolean visibleAtraves = !jugador.isDiscrete();
 
