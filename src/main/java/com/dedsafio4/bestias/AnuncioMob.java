@@ -142,7 +142,11 @@ public final class AnuncioMob {
 		}
 		mensaje = mensaje.copy().append(Component.literal("\nAparece en " + LUGARES.get(nombre) + ".")
 				.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(COLOR_LUGAR))));
-		c.getSource().getServer().getPlayerList().broadcastSystemMessage(mensaje, false);
+		if (!com.dedsafio4.cambios.TextosOcultos.oculto(c.getSource().getServer(), nombre)) {
+			c.getSource().getServer().getPlayerList().broadcastSystemMessage(mensaje, false);
+		} else {
+			c.getSource().sendSuccess(() -> Component.literal("Mob habilitado (sin anuncio).").withStyle(ChatFormatting.GRAY), true);
+		}
 		com.dedsafio4.catalogo.LibroMobs.enviarATodos(c.getSource().getServer());
 		return 1;
 	}
