@@ -94,7 +94,7 @@ public final class Portales {
 				BlockPos pos = columna.atY(y);
 				var abajo = destino.getBlockState(pos.below());
 				if (destino.getBlockState(pos).isAir() && destino.getBlockState(pos.above()).isAir()
-						&& abajo.blocksMotion() && !abajo.is(ModBloques.ROCA_TECHO)) return pos;
+						&& abajo.blocksMotion() && !abajo.is(ModBloques.ROCA_TECHO) && !abajo.is(ModBloques.TIERRA_TECHO)) return pos;
 			}
 			return columna.atY(100);
 		}

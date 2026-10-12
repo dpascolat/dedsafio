@@ -1,0 +1,25 @@
+{
+	"variants": {
+		"tipo=0": {
+			"model": "dedsafio4:block/tierra_techo_0"
+		},
+		"tipo=1": {
+			"model": "dedsafio4:block/tierra_techo_1"
+		},
+		"tipo=2": {
+			"model": "dedsafio4:block/tierra_techo_2"
+		},
+		"tipo=3": {
+			"model": "dedsafio4:block/tierra_techo_3"
+		},
+		"tipo=4": {
+			"model": "dedsafio4:block/tierra_techo_4"
+		},
+		"tipo=5": {
+			"model": "dedsafio4:block/tierra_techo_5"
+		},
+		"tipo=6": {
+			"model": "dedsafio4:block/tierra_techo_6"
+		}
+	}
+}

@@ -24,14 +24,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * El techo de roca del Centro de Quiu. Se pone al final de todo (después de los árboles, por eso los árboles salen
- * igual que siempre) y sigue la forma del terreno, como el techo de una cueva gigante: más o menos 40 bloques arriba
- * del piso, con bultos y "estalactitas", y macizo hasta arriba de todo. Donde hay árboles más altos (los gigantes de
- * la jungla), el techo sube y les deja lugar a la copa. Es Roca del Techo, que deja pasar la luz.
+ * El techo de tierra del Centro de Quiu. Se pone al final de todo (después de los árboles) y sigue la forma del
+ * terreno, como el techo de una cueva gigante: más o menos 150 bloques arriba del piso, con bultos y "estalactitas".
+ * Es una capa de unos 6 bloques de Tierra del Techo (todos los tipos de tierra mezclados en manchas), que deja pasar
+ * la luz.
  */
 public class TechoFeature extends Feature<NoneFeatureConfiguration> {
 	/** Cuántos bloques de aire quedan (más o menos) entre el piso y el techo. */
-	public static final int ALTO_CUEVA = 40;
+	public static final int ALTO_CUEVA = 150;
+	/** Cuántos bloques de grosor tiene el techo (más o menos). */
+	private static final int GROSOR = 6;
 	/** Cada cuántos bloques se mide el piso (y se toma lo más alto de alrededor, para que el techo no corte los cerros). */
 	private static final int GRILLA = 16;
 
@@ -74,40 +76,34 @@ public class TechoFeature extends Feature<NoneFeatureConfiguration> {
 		RandomState estado = servidor.getChunkSource().randomState();
 		SimplexNoise[] ruido = RUIDOS.computeIfAbsent(mundo.getSeed(), s -> {
 			RandomSource r = RandomSource.create(s ^ 0x7EC0L);
-			return new SimplexNoise[]{new SimplexNoise(r), new SimplexNoise(r)};
+			return new SimplexNoise[]{new SimplexNoise(r), new SimplexNoise(r), new SimplexNoise(r), new SimplexNoise(r)};
 		});
 		int x0 = ctx.origin().getX() & ~15, z0 = ctx.origin().getZ() & ~15;
 		ChunkAccess chunk = mundo.getChunk(x0 >> 4, z0 >> 4);
-		BlockState roca = ModBloques.ROCA_TECHO.defaultBlockState();
+		BlockState[] tierras = new BlockState[TierraTechoBlock.TIPOS.length];
+		for (int i = 0; i < tierras.length; i++) tierras[i] = ModBloques.TIERRA_TECHO.defaultBlockState().setValue(TierraTechoBlock.TIPO, i);
 		int arriba = mundo.getMaxBuildHeight() - 1;
 		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		// Lo más alto que hay en cada columna (piso o árbol), para no tapar las copas.
-		int[][] alto = new int[16][16];
-		for (int dx = 0; dx < 16; dx++) {
-			for (int dz = 0; dz < 16; dz++) {
-				int y = arriba;
-				while (y > mundo.getMinBuildHeight() && chunk.getBlockState(pos.set(x0 + dx, y, z0 + dz)).isAir()) y--;
-				alto[dx][dz] = y;
-			}
-		}
+		// El chunk cae justo en una celda de la grilla: sólo hacen falta sus 4 esquinas.
+		int gx = Math.floorDiv(x0, GRILLA), gz = Math.floorDiv(z0, GRILLA);
+		float a00 = alto(generador, mundo, estado, gx, gz), a10 = alto(generador, mundo, estado, gx + 1, gz);
+		float a01 = alto(generador, mundo, estado, gx, gz + 1), a11 = alto(generador, mundo, estado, gx + 1, gz + 1);
 		for (int dx = 0; dx < 16; dx++) {
 			for (int dz = 0; dz < 16; dz++) {
 				int x = x0 + dx, z = z0 + dz;
 				// El piso suavizado (interpolando la grilla) más la altura de la cueva, con bultos y estalactitas.
-				int gx = Math.floorDiv(x, GRILLA), gz = Math.floorDiv(z, GRILLA);
-				float fx = (x - gx * GRILLA) / (float) GRILLA, fz = (z - gz * GRILLA) / (float) GRILLA;
-				float base = Mth.lerp(fz,
-						Mth.lerp(fx, alto(generador, mundo, estado, gx, gz), alto(generador, mundo, estado, gx + 1, gz)),
-						Mth.lerp(fx, alto(generador, mundo, estado, gx, gz + 1), alto(generador, mundo, estado, gx + 1, gz + 1)));
+				float fx = dx / (float) GRILLA, fz = dz / (float) GRILLA;
+				float base = Mth.lerp(fz, Mth.lerp(fx, a00, a10), Mth.lerp(fx, a01, a11));
 				double bultos = ruido[0].getValue(x / 40.0, z / 40.0) * 6;
 				double picos = Math.max(0, ruido[1].getValue(x / 5.0, z / 5.0) - 0.55) * 14;
-				int copas = Integer.MIN_VALUE;
-				for (int ax = Math.max(0, dx - 3); ax <= Math.min(15, dx + 3); ax++) {
-					for (int az = Math.max(0, dz - 3); az <= Math.min(15, dz + 3); az++) copas = Math.max(copas, alto[ax][az]);
+				int grosor = GROSOR + (int) Math.round(ruido[3].getValue(x / 20.0, z / 20.0) * 2);
+				int techo = Mth.clamp((int) (base + ALTO_CUEVA + bultos - picos), mundo.getMinBuildHeight() + 20, arriba - grosor);
+				// Una capa de tierra (no maciza hasta arriba: así el chunk tiene muchos menos bloques).
+				for (int y = techo; y < techo + grosor; y++) {
+					double n = (ruido[2].getValue(x / 11.0, y / 7.0, z / 11.0) * 1.6 + 1) / 2;   // estirado: así salen todos los tipos
+					int tipo = Mth.clamp((int) (n * tierras.length), 0, tierras.length - 1);
+					chunk.setBlockState(pos.set(x, y, z), tierras[tipo], false);
 				}
-				int techo = Math.max((int) (base + ALTO_CUEVA + bultos - picos), copas + 3);
-				techo = Mth.clamp(techo, mundo.getMinBuildHeight() + 20, arriba - 10);
-				for (int y = techo; y <= arriba; y++) chunk.setBlockState(pos.set(x, y, z), roca, false);
 			}
 		}
 		return true;

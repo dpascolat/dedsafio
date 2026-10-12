@@ -56,6 +56,15 @@ public final class ModBloques {
 					.isValidSpawn((estado, mundo, pos, tipo) -> false)
 					.sound(SoundType.STONE)));
 
+	/** La Tierra del Techo del Centro de Quiu: el techo de ahora, de todos los tipos de tierra (deja pasar la luz). */
+	public static final Block TIERRA_TECHO = registrar("tierra_techo", new com.dedsafio4.dimension.TierraTechoBlock(
+			BlockBehaviour.Properties.of()
+					.mapColor(MapColor.DIRT)
+					.strength(-1f, 3600000f)
+					.noLootTable()
+					.isValidSpawn((estado, mundo, pos, tipo) -> false)
+					.sound(SoundType.ROOTED_DIRT)));
+
 	static {
 		// El techo del Centro de Quiu se pone con una feature (después de los árboles).
 		com.dedsafio4.dimension.TechoFeature.registrar();
