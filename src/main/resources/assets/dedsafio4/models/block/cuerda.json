@@ -1,0 +1,81 @@
+{
+	"parent": "minecraft:block/block",
+	"ambientocclusion": false,
+	"textures": {
+		"lado": "dedsafio4:block/cuerda",
+		"tapa": "dedsafio4:block/cuerda_tapa",
+		"particle": "dedsafio4:block/cuerda"
+	},
+	"elements": [
+		{
+			"from": [
+				6,
+				0,
+				6
+			],
+			"to": [
+				10,
+				16,
+				10
+			],
+			"faces": {
+				"south": {
+					"uv": [
+						0,
+						0,
+						4,
+						16
+					],
+					"texture": "#lado"
+				},
+				"east": {
+					"uv": [
+						4,
+						0,
+						8,
+						16
+					],
+					"texture": "#lado"
+				},
+				"north": {
+					"uv": [
+						8,
+						0,
+						12,
+						16
+					],
+					"texture": "#lado"
+				},
+				"west": {
+					"uv": [
+						12,
+						0,
+						16,
+						16
+					],
+					"texture": "#lado"
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						4,
+						4
+					],
+					"texture": "#tapa",
+					"cullface": "up"
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						4,
+						4
+					],
+					"texture": "#tapa",
+					"cullface": "down"
+				}
+			}
+		}
+	]
+}

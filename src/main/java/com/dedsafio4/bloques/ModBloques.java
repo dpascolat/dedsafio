@@ -142,6 +142,11 @@ public final class ModBloques {
 
 	public static final Item AGUA_PORTAL_ITEM = registrarItem("agua_portal", AGUA_PORTAL);
 
+	/** Cuerda: se trepa como una escalera de mano (ver CuerdaBlock). */
+	public static final Block CUERDA = registrar("cuerda", new CuerdaBlock(BlockBehaviour.Properties.of()
+			.mapColor(MapColor.WOOD).strength(0.4f).noCollission().noOcclusion().sound(SoundType.WOOL)));
+	public static final Item CUERDA_ITEM = registrarItem("cuerda", CUERDA);
+
 	public static final Item ROBLE_CLARO_LOG_ITEM = registrarItem("roble_claro_log", ROBLE_CLARO_LOG);
 	public static final Item ABETO_CLARO_LOG_ITEM = registrarItem("abeto_claro_log", ABETO_CLARO_LOG);
 

@@ -643,6 +643,7 @@ public final class ModItems {
 						entradas.accept(MASCARA_ANTI_ESPORAS);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.CACA_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.AGUA_PORTAL_ITEM);
+						entradas.accept(com.dedsafio4.bloques.ModBloques.CUERDA_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.ROBLE_CLARO_LOG_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.ABETO_CLARO_LOG_ITEM);
 						entradas.accept(MANUSCRITO_HERMANDAD);
