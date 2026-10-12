@@ -22,7 +22,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -82,22 +81,74 @@ public class FlashbangEntity extends Monster implements GeoEntity {
 		PayloadTypeRegistry.playS2C().register(DestelloPayload.TYPE, DestelloPayload.CODEC);
 	}
 
+	/**
+	 * La velocidad de siempre es moderada (así el camino por bloques no se pasa de largo ni se traba en las
+	 * esquinas); cuando ve al jugador corre directo hacia él a {@link Perseguir#CORRIENDO} veces eso.
+	 */
 	public static AttributeSupplier.Builder crearAtributos() {
 		return Monster.createMonsterAttributes()
 				.add(Attributes.MAX_HEALTH, 6.0)
-				.add(Attributes.MOVEMENT_SPEED, 1.2)   // el cuádruple de antes (0,3)
-				.add(Attributes.FOLLOW_RANGE, 20.0);
+				.add(Attributes.MOVEMENT_SPEED, 0.4)
+				.add(Attributes.FOLLOW_RANGE, 24.0);
 	}
 
 	@Override
 	protected void registerGoals() {
 		goalSelector.addGoal(1, new FloatGoal(this));
-		goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.2, false));
+		goalSelector.addGoal(3, new Perseguir(this));
 		goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
 		goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8f));
 		goalSelector.addGoal(6, new RandomLookAroundGoal(this));
 		targetSelector.addGoal(1, new HurtByTargetGoal(this));
 		targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+	}
+
+	/**
+	 * Perseguir al jugador: si lo ve y está más o menos a su altura, va directo hacia él (corrigiendo la dirección
+	 * cada tick, así no se pasa de largo) y salta los escalones; si no, busca el camino a velocidad normal.
+	 */
+	static final class Perseguir extends net.minecraft.world.entity.ai.goal.Goal {
+		static final double CORRIENDO = 2.6, CAMINANDO = 1.4;
+		private final FlashbangEntity bicho;
+		private int recalcular;
+
+		Perseguir(FlashbangEntity bicho) {
+			this.bicho = bicho;
+			setFlags(java.util.EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP));
+		}
+
+		@Override
+		public boolean canUse() {
+			return bicho.getTarget() instanceof Player jugador && sirve(jugador);
+		}
+
+		@Override
+		public boolean requiresUpdateEveryTick() {
+			return true;
+		}
+
+		@Override
+		public void stop() {
+			bicho.getNavigation().stop();
+		}
+
+		@Override
+		public void tick() {
+			if (!(bicho.getTarget() instanceof Player jugador)) return;
+			bicho.getLookControl().setLookAt(jugador, 30f, 30f);
+			double dy = jugador.getY() - bicho.getY();
+			boolean directo = bicho.getSensing().hasLineOfSight(jugador) && dy > -3 && dy < 1.5
+					&& bicho.distanceToSqr(jugador) < 24 * 24;
+			if (directo) {
+				bicho.getNavigation().stop();
+				bicho.getMoveControl().setWantedPosition(jugador.getX(), jugador.getY(), jugador.getZ(), CORRIENDO);
+				if (bicho.horizontalCollision && bicho.onGround()) bicho.getJumpControl().jump();
+				recalcular = 0;
+			} else if (--recalcular <= 0 || bicho.getNavigation().isDone()) {
+				bicho.getNavigation().moveTo(jugador, CAMINANDO);
+				recalcular = 10;
+			}
+		}
 	}
 
 	private static boolean sirve(Player jugador) {
