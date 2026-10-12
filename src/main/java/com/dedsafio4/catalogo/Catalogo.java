@@ -319,6 +319,11 @@ public final class Catalogo {
 		return p.hasPermissions(2) || datos(p.server).editores.contains(p.getUUID().toString());
 	}
 
+	/** Para los comandos: admins, o jugadores con permiso de /opop (la G, las misiones, /revivir y /mision). */
+	public static boolean puedeEditar(CommandSourceStack s) {
+		return s.hasPermission(2) || (s.getPlayer() != null && esEditor(s.getPlayer()));
+	}
+
 	private static void enviar(ServerPlayer jugador) {
 		Datos d = datos(jugador.server);
 		List<String> celdas = new ArrayList<>();
@@ -424,9 +429,12 @@ public final class Catalogo {
 						if (dar) d.editores.add(p.getUUID().toString()); else d.editores.remove(p.getUUID().toString());
 						d.setDirty();
 						enviar(p);
+						// Que le aparezcan (o desaparezcan) /revivir, /mision y /g sin tener que volver a entrar.
+						c.getSource().getServer().getCommands().sendCommands(p);
 						c.getSource().sendSuccess(() -> Component.literal(p.getGameProfile().getName()
-								+ (dar ? " ahora puede cambiar el Catálogo (G)." : " ya no puede cambiar el Catálogo (G).")).withColor(0x5AD8FF), true);
-						if (dar) p.sendSystemMessage(Component.literal("Ya puedes cambiar el Catálogo (G): haz clic para tomar y poner ítems, clic fuera para quitarlos, y la lupa para agregar nuevos.").withColor(0x5AD8FF));
+								+ (dar ? " ahora puede cambiar el Catálogo (G), las misiones y usar /revivir."
+										: " ya no puede cambiar el Catálogo (G), las misiones ni usar /revivir.")).withColor(0x5AD8FF), true);
+						if (dar) p.sendSystemMessage(Component.literal("Ya puedes cambiar el Catálogo (G) y las misiones (haz clic para tomar y poner ítems, clic fuera para quitarlos, y la lupa para agregar nuevos), y usar /revivir.").withColor(0x5AD8FF));
 						return 1;
 					})));
 		}

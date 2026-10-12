@@ -254,7 +254,8 @@ public final class Revivir {
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		dispatcher.register(Commands.literal("revivir").requires(s -> s.hasPermission(2))
+		// Los admins, y los que tienen permiso con /opop (sin ser OP).
+		dispatcher.register(Commands.literal("revivir").requires(com.dedsafio4.catalogo.Catalogo::puedeEditar)
 				.executes(c -> {
 					Datos d = datos(c.getSource().getServer());
 					c.getSource().sendSuccess(() -> Component.literal(d.lugar == null ? "No hay lugar de revivir: los desbaneados entran normal."

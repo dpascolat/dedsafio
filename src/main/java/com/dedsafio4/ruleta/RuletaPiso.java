@@ -69,7 +69,7 @@ public final class RuletaPiso {
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		dispatcher.register(Commands.literal("mision").requires(s -> s.hasPermission(2))
+		dispatcher.register(Commands.literal("mision").requires(com.dedsafio4.catalogo.Catalogo::puedeEditar)
 				.then(Commands.argument("numero", IntegerArgumentType.integer(1, 1)).executes(c -> {
 					mostrar(c.getSource().getPlayerOrException());
 					c.getSource().sendSuccess(() -> Component.literal("Ruleta de la misión 1.").withStyle(ChatFormatting.AQUA), true);
