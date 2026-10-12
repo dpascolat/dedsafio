@@ -28,6 +28,7 @@
 		"PlayerModelNaveMixin",
 		"PlayerModelRevivirMixin",
 		"PlayerRendererMixin",
+		"PlayerTabOverlayMixin",
 		"PlayerRendererMobMixin",
 		"WalkAnimationAccessor",
 		"PlayerRendererNaveMixin",
