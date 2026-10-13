@@ -37,6 +37,8 @@ public abstract class LevelRendererMixin {
 		FogType fluido = camara.getFluidInCamera();
 		if (fluido == FogType.LAVA || fluido == FogType.POWDER_SNOW || doesMobEffectBlockSky(camara)) return;
 		CieloRojo2.dibujar(matrizVista);
+		// Las animaciones de revivir y de la Dedita de la Misión: de noche con estrellas para los que están cerca.
+		com.dedsafio4.client.CieloNocheCliente.dibujar(matrizVista);
 	}
 
 	/** Cielo rojo 2: mientras el rojo tapa el cielo, las nubes se esconden. */
@@ -45,7 +47,7 @@ public abstract class LevelRendererMixin {
 
 	@Inject(method = "renderClouds", at = @At("HEAD"), cancellable = true)
 	private void dedsafio4$nubesCielo2(CallbackInfo ci) {
-		float alfa = CieloRojo2.nubes();
+		float alfa = CieloRojo2.nubes() * (1f - com.dedsafio4.client.CieloNocheCliente.noche());
 		dedsafio4$nubesCambiadas = false;
 		if (alfa <= 0.003f) {
 			ci.cancel();

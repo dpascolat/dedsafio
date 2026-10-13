@@ -57,6 +57,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.intercambio.ModIntercambio.registrar();
 		com.dedsafio4.baneos.ItemsBaneados.registrar();
 		com.dedsafio4.despegue.EspacioComando.registrar();
+		com.dedsafio4.cielo.CieloNoche.registrar();
 		com.dedsafio4.subastas.ModVitrina.registrar();
 		com.dedsafio4.puertas.ModPuertas.registrar();
 		com.dedsafio4.boveda.ModBoveda.registrar();

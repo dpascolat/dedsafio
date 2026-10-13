@@ -322,6 +322,8 @@ public final class Revivir {
 			p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, DURACION + 40, 4, false, false, false));
 			Payload payload = new Payload(p.getUUID(), e.centro.x, e.centro.y, e.centro.z, e.yaw, e.pisoCaida, e.vertical);
 			for (ServerPlayer otro : e.level.players()) ServerPlayNetworking.send(otro, payload);
+			// Mientras dura, el cielo se pone de noche con estrellas para los que están a menos de 30 bloques.
+			com.dedsafio4.cielo.CieloNoche.mostrar(e.level, e.centro, 30f, DURACION);
 		}
 	}
 

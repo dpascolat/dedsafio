@@ -212,6 +212,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		});
 		com.dedsafio4.client.cielo2.CieloRojo2.registrar();
 		FundidoPortal.registrar();
+		CieloNocheCliente.registrar();
 		com.dedsafio4.client.despegue.EspacioCliente.registrar();
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.baneos.ItemsBaneados.Payload.TYPE, (payload, context) ->
 				com.dedsafio4.baneos.ItemsBaneados.recibir(payload));

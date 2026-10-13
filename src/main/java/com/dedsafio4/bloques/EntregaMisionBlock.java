@@ -102,6 +102,8 @@ public class EntregaMisionBlock extends Block {
 				new net.minecraft.world.phys.Vec3(abajo.getX() + 0.5, abajo.getY(), abajo.getZ() + 0.5), -90f,
 				// La esfera chiquita (0,5 de diámetro), apoyada arriba del bloque de más arriba.
 				new net.minecraft.world.phys.Vec3(arriba.getX() + 0.5, arriba.getY() + 1 + 0.25 + 0.05, arriba.getZ() + 0.5), 0.25f);
+		// Mientras dura la ruleta, el cielo se pone de noche con estrellas para los que están a menos de 10 bloques.
+		com.dedsafio4.cielo.CieloNoche.mostrar(servidor.serverLevel(), pos.getCenter(), 10f, com.dedsafio4.ruleta.RuletaPiso.DURACION);
 		PENDIENTES.add(new Pendiente(servidor.getUUID(), texto, List.copyOf(premio),
 				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
 		level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1f, 1.2f);

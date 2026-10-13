@@ -48,6 +48,14 @@ public abstract class FogRendererMixin {
 			RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0f);
 			return;
 		}
+		// El cielo de noche de las animaciones: el horizonte también se oscurece.
+		float noche = com.dedsafio4.client.CieloNocheCliente.noche();
+		if (noche > 0f) {
+			fogRed = Mth.lerp(noche, fogRed, 0.02f);
+			fogGreen = Mth.lerp(noche, fogGreen, 0.02f);
+			fogBlue = Mth.lerp(noche, fogBlue, 0.05f);
+			RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0f);
+		}
 		float[] rojo2 = com.dedsafio4.client.cielo2.CieloRojo2.niebla(fogRed, fogGreen, fogBlue);
 		if (rojo2 != null) {
 			fogRed = rojo2[0];
