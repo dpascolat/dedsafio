@@ -46,7 +46,7 @@ public final class ModItems {
 	public static final Item DEDITA_MERCADO_NEGRO = registrar("dedita_mercado_negro",
 			new Item(new Item.Properties().stacksTo(99).rarity(Rarity.RARE)));
 	public static final Item DEDITA_CASINO = registrar("dedita_casino",
-			new Item(new Item.Properties().stacksTo(99).rarity(Rarity.RARE)));
+			new Item(new Item.Properties().stacksTo(64).rarity(Rarity.RARE)));
 	/** Dedita de Misión (la del dedsafio3: la celeste en azul oscuro). */
 	public static final Item DEDITA_MISION = registrar("dedita_mision",
 			new DeditaMisionItem(new Item.Properties().stacksTo(99).rarity(Rarity.RARE)));
