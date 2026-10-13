@@ -67,10 +67,10 @@ public final class RevivirCliente {
 				int t = (int) (mc.level.getGameTime() - e.inicio());
 				boolean yo = e.jugador().equals(mc.player.getUUID());
 				if (t >= Revivir.DURACION) {
-					if (yo) mc.player.setForcedPose(null);
+					if (yo) Revivir.forzarPose(mc.player, null);
 					it.remove();
 				} else if (yo) {
-					mc.player.setForcedPose(Revivir.pose(t));
+					Revivir.forzarPose(mc.player, Revivir.pose(t));
 				}
 			}
 		});

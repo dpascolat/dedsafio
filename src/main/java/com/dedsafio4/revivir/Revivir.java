@@ -329,11 +329,23 @@ public final class Revivir {
 
 	private static void terminar(Escena e, ServerPlayer p) {
 		volver(e, p);
-		p.setForcedPose(null);
+		forzarPose(p, null);
 		p.setNoGravity(false);
 		p.fallDistance = 0;
 		// Con +y o -y: al final mira arriba o abajo.
 		if (e.vertical) p.connection.teleport(p.getX(), p.getY(), p.getZ(), e.yaw, e.mirada);
+	}
+
+	/**
+	 * setForcedPose solo existe en NeoForge: ahí deja la pose fija. En Fabric no está, así que se usa setPose
+	 * (con null no hace nada y Minecraft le vuelve a poner la pose normal solo).
+	 */
+	public static void forzarPose(net.minecraft.world.entity.player.Player p, Pose pose) {
+		try {
+			net.minecraft.world.entity.player.Player.class.getMethod("setForcedPose", Pose.class).invoke(p, pose);
+		} catch (ReflectiveOperationException ex) {
+			if (pose != null) p.setPose(pose);
+		}
 	}
 
 	/** El jugador vuelve a su modo de juego, donde cayó la copia. */
@@ -354,7 +366,7 @@ public final class Revivir {
 		// --- El jugador: espectador hasta que cae la copia; después, él mismo acostado y levantándose ---
 		if (t >= CAIDA) {
 			volver(e, p);
-			p.setForcedPose(pose(t));
+			forzarPose(p, pose(t));
 			p.setNoGravity(true);
 			p.fallDistance = 0;
 			Vec3 pos = posicion(t, e.centro, e.adelante, e.pisoCaida);
