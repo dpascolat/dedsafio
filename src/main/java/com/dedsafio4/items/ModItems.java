@@ -351,6 +351,8 @@ public final class ModItems {
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaDorada));
 	/** Espada Glebanoide: 11 de daño, ya encantada con Perdición de Gleba (33% más contra las criaturas de Gleba). */
 	public static final Item ESPADA_GLEBANOIDE = registrar("espada_glebanoide", new EspadaGlebanoideItem(new Item.Properties().rarity(Rarity.RARE)));
+	/** Espada del Limbo: de netherite, encantada con Perdición del Limbo (33% más de daño a las criaturas del Limbo). */
+	public static final Item ESPADA_LIMBO = registrar("espada_limbo", new EspadaLimboItem(new Item.Properties()));
 	/** Corazón Glebanoide: con click derecho golpea a las criaturas de Gleba cercanas (enfrente o debajo). */
 	public static final Item CORAZON_GLEBANOIDE = registrar("corazon_glebanoide", new CorazonGlebanoideItem(new Item.Properties().rarity(Rarity.RARE)));
 	/** Pechera Glebanoide: 9 de armadura, 3 de resistencia y medio corazón extra. */
@@ -608,6 +610,7 @@ public final class ModItems {
 						entradas.accept(CORAZON);
 						entradas.accept(FRUTO_QUIU);
 						entradas.accept(ESPADA_HOJA_QUMARA);
+						entradas.accept(ESPADA_LIMBO);
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
 						entradas.accept(SEMILLA_ARANDANO);

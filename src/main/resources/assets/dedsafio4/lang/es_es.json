@@ -301,5 +301,7 @@
 	"item.dedsafio4.pildora_vacia": "Cápsula de Pastilla Vacía",
 	"item.dedsafio4.jeringa": "Cuerno de Narval",
 	"block.dedsafio4.puesto_intercambio": "Puesto de Intercambio",
-	"block.dedsafio4.cuerda": "Cuerda"
+	"block.dedsafio4.cuerda": "Cuerda",
+	"item.dedsafio4.espada_limbo": "Espada del Limbo",
+	"enchantment.dedsafio4.perdicion_del_limbo": "Perdición del Limbo"
 }

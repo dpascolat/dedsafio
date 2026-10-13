@@ -1,0 +1,37 @@
+{
+	"description": {
+		"translate": "enchantment.dedsafio4.perdicion_del_limbo"
+	},
+	"supported_items": "dedsafio4:espada_limbo",
+	"weight": 1,
+	"max_level": 1,
+	"min_cost": {
+		"base": 25,
+		"per_level_above_first": 0
+	},
+	"max_cost": {
+		"base": 50,
+		"per_level_above_first": 0
+	},
+	"anvil_cost": 8,
+	"slots": [
+		"mainhand"
+	],
+	"effects": {
+		"minecraft:damage": [
+			{
+				"effect": {
+					"type": "minecraft:multiply",
+					"factor": 1.33
+				},
+				"requirements": {
+					"condition": "minecraft:entity_properties",
+					"entity": "this",
+					"predicate": {
+						"type": "#dedsafio4:criaturas_limbo"
+					}
+				}
+			}
+		]
+	}
+}
