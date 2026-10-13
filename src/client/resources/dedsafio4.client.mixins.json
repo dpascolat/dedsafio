@@ -27,6 +27,7 @@
 		"LightTextureMixin",
 		"LoadingOverlayMixin",
 		"LevelRendererMixin",
+		"MarcaPuestoMixin",
 		"MinecraftMixin",
 		"PlayerModelNaveMixin",
 		"PlayerModelRevivirMixin",

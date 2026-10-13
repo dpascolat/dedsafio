@@ -1,8 +1,5 @@
 {
-	"parent": "minecraft:block/cube_bottom_top",
 	"textures": {
-		"top": "minecraft:block/emerald_block",
-		"side": "minecraft:block/barrel_side",
-		"bottom": "minecraft:block/barrel_bottom"
+		"particle": "dedsafio4:item/puesto_intercambio"
 	}
 }

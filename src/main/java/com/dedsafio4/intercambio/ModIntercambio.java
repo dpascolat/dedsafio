@@ -30,7 +30,8 @@ import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * Puesto de Intercambio: un bloque que no se puede romper (ni con explosiones ni con pistones). Con clic derecho abre
+ * Puesto de Intercambio: un bloque invisible como la Barrera (sólido, no se ve; en creativo, con el Puesto en la mano,
+ * se ve su marca) que no se puede romper (ni con explosiones ni con pistones). Con clic derecho abre
  * la pantalla de intercambios de los aldeanos, con estos tratos (sin límite de usos):
  *   1 Dedita            → 1 Dedita de Casino
  *   2 Dilitio           → 1 Dedita
@@ -40,9 +41,10 @@ public final class ModIntercambio {
 	private ModIntercambio() {}
 
 	public static final Block PUESTO = Registry.register(BuiltInRegistries.BLOCK, id("puesto_intercambio"),
-			new PuestoBlock(BlockBehaviour.Properties.of().mapColor(MapColor.EMERALD)
+			new PuestoBlock(BlockBehaviour.Properties.of().mapColor(MapColor.NONE)
 					.strength(-1f, 3600000f).noLootTable().pushReaction(PushReaction.BLOCK)
-					.sound(SoundType.WOOD).lightLevel(estado -> 7)));
+					.noOcclusion().isViewBlocking((estado, mundo, pos) -> false).isSuffocating((estado, mundo, pos) -> false)
+					.sound(SoundType.STONE)));
 	public static final Item PUESTO_ITEM = Registry.register(BuiltInRegistries.ITEM, id("puesto_intercambio"),
 			new BlockItem(PUESTO, new Item.Properties().rarity(Rarity.EPIC)));
 
@@ -75,6 +77,22 @@ public final class ModIntercambio {
 		@Override
 		protected MapCodec<? extends Block> codec() {
 			return CODEC;
+		}
+
+		/** Invisible como el bloque Barrera (pero sólido y con su borde al apuntarlo). */
+		@Override
+		protected net.minecraft.world.level.block.RenderShape getRenderShape(BlockState estado) {
+			return net.minecraft.world.level.block.RenderShape.INVISIBLE;
+		}
+
+		@Override
+		protected boolean propagatesSkylightDown(BlockState estado, net.minecraft.world.level.BlockGetter mundo, BlockPos pos) {
+			return true;
+		}
+
+		@Override
+		protected float getShadeBrightness(BlockState estado, net.minecraft.world.level.BlockGetter mundo, BlockPos pos) {
+			return 1f;
 		}
 
 		@Override
