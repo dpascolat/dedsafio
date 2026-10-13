@@ -16,6 +16,7 @@
 		"CreeperAccessor",
 		"ExplosionMixin",
 		"HopperBlockEntityMixin",
+		"ItemBaneadoMixin",
 		"EspadaRompeMixin",
 		"LevelEntitiesMixin",
 		"EntityDropsMixin",
