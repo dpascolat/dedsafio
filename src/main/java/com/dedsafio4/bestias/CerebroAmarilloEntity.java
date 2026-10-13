@@ -137,13 +137,38 @@ public class CerebroAmarilloEntity extends Monster {
 			jugador.setHealth(vidaTope);
 			level().broadcastDamageEvent(jugador, fuente);
 		} else {
+			// El golpe que lo mata (si tiene un tótem en la mano, el tótem lo salva como siempre).
+			int totemsAntes = totemsUsados(jugador);
 			jugador.invulnerableTime = 0;
-			if (!jugador.hurt(fuente, Float.MAX_VALUE) && jugador.isAlive() && !jugador.isCreative()) jugador.kill();
-			// Si lo salvó un tótem, se sigue desde la vida que le dejó.
-			if (jugador.isAlive()) vidaTope = jugador.getHealth();
+			jugador.hurt(fuente, Float.MAX_VALUE);
+			if (jugador.isAlive() && !jugador.isCreative()) {
+				if (totemsUsados(jugador) > totemsAntes) {
+					vidaTope = jugador.getHealth();   // lo salvó un tótem: se sigue desde la vida que le dejó
+				} else {
+					// El golpe no llegó (por la dificultad, algún efecto, otro mod...): se muere igual.
+					jugador.invulnerableTime = 0;
+					jugador.hurt(damageSources().genericKill(), Float.MAX_VALUE);
+					if (jugador.isAlive()) {
+						jugador.setHealth(0f);
+						jugador.die(fuente);
+					}
+				}
+			}
 		}
 		heal(1f);
 		playSound(SoundEvents.HONEY_DRINK, 0.6f, 0.6f);
+	}
+
+	/** Cuántos tótems usó en total (el de Minecraft y los del mod), para saber si uno lo acaba de salvar. */
+	private static int totemsUsados(Player jugador) {
+		if (!(jugador instanceof net.minecraft.server.level.ServerPlayer sp)) return 0;
+		int n = 0;
+		for (net.minecraft.world.item.Item totem : new net.minecraft.world.item.Item[]{net.minecraft.world.item.Items.TOTEM_OF_UNDYING,
+				com.dedsafio4.items.ModItems.TOTEM_IDOLO, com.dedsafio4.items.ModItems.TOTEM_FRERICO, com.dedsafio4.items.ModItems.TOTEM_GLEBANOIDE,
+				com.dedsafio4.items.ModItems.TOTEM_LIMBO, com.dedsafio4.items.ModItems.TOTEM_ESPACIO, com.dedsafio4.items.ModItems.TOTEM_YUNQUE}) {
+			n += sp.getStats().getValue(net.minecraft.stats.Stats.ITEM_USED.get(totem));
+		}
+		return n;
 	}
 
 	@Override
