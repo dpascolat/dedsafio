@@ -80,7 +80,8 @@ public class AlmitaEntity extends PathfinderMob {
 						.executes(c -> {
 							ServerPlayer p = c.getSource().getPlayerOrException();
 							String nombre = StringArgumentType.getString(c, "nombre");
-							AlmitaEntity almita = p.serverLevel().getEntitiesOfClass(AlmitaEntity.class, p.getBoundingBox().inflate(8)).stream()
+							// La Almita más cercana (hasta 128 bloques); sólo si no hay ninguna aparece una nueva.
+							AlmitaEntity almita = p.serverLevel().getEntitiesOfClass(AlmitaEntity.class, p.getBoundingBox().inflate(128)).stream()
 									.min(Comparator.comparingDouble(a -> a.distanceToSqr(p))).orElse(null);
 							boolean nueva = almita == null;
 							if (nueva) almita = ModEntidades.ALMITA.spawn(p.serverLevel(), p.blockPosition().above(), MobSpawnType.COMMAND);
