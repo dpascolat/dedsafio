@@ -59,6 +59,39 @@ public final class Baneos {
 		return ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, nombre);
 	}
 
+	/**
+	 * /baneoperma <jugador> [motivo] (admins): lo banea para siempre con la lista de baneados de Minecraft (la misma
+	 * de /ban), así aparece en el Bloque de Baneados y se lo puede revivir. Si está conectado, lo saca del servidor.
+	 */
+	public static void registrarComandos(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+		var jugadores = net.minecraft.commands.Commands.argument("jugador", net.minecraft.commands.arguments.GameProfileArgument.gameProfile());
+		dispatcher.register(net.minecraft.commands.Commands.literal("baneoperma").requires(s -> s.hasPermission(3))
+				.then(jugadores
+						.executes(c -> banear(c, null))
+						.then(net.minecraft.commands.Commands.argument("motivo", com.mojang.brigadier.arguments.StringArgumentType.greedyString())
+								.executes(c -> banear(c, com.mojang.brigadier.arguments.StringArgumentType.getString(c, "motivo"))))));
+	}
+
+	private static int banear(com.mojang.brigadier.context.CommandContext<net.minecraft.commands.CommandSourceStack> c, String motivo)
+			throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+		var fuente = c.getSource();
+		UserBanList bans = fuente.getServer().getPlayerList().getBans();
+		int cuantos = 0;
+		for (GameProfile perfil : net.minecraft.commands.arguments.GameProfileArgument.getGameProfiles(c, "jugador")) {
+			if (perfil.getId() == null || bans.isBanned(perfil)) continue;
+			String razon = motivo == null || motivo.isBlank() ? "Baneado para siempre." : motivo;
+			bans.add(new UserBanListEntry(perfil, null, fuente.getTextName(), null, razon));
+			cuantos++;
+			String nombre = perfil.getName();
+			fuente.sendSuccess(() -> Component.literal(nombre + " fue baneado para siempre. Aparece en el Bloque de Baneados.")
+					.withStyle(ChatFormatting.RED), true);
+			ServerPlayer conectado = fuente.getServer().getPlayerList().getPlayer(perfil.getId());
+			if (conectado != null) conectado.connection.disconnect(Component.literal("Fuiste baneado: " + razon));
+		}
+		if (cuantos == 0) fuente.sendFailure(Component.literal("Ese jugador ya estaba baneado."));
+		return cuantos;
+	}
+
 	/** Las cucharas y tenedores que sirven para desbanear. */
 	public static boolean esCubierto(ItemStack item) {
 		return item.is(ModItems.CUCHARA_MADERA) || item.is(ModItems.CUCHARA_HOJAS) || item.is(ModItems.TENEDOR_HOJAS)
