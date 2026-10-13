@@ -18,6 +18,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public class RayoEntity extends Projectile {
 	public static final float DANIO = 1f;
+	/** Qué parte del empuje normal de un golpe hace el rayo (0.25 = la cuarta parte). */
+	private static final double EMPUJE = 0.25;
 	/** Ticks hasta desaparecer si no choca con nada (3 segundos). */
 	private static final int VIDA_MAXIMA = 60;
 	private int vida;
@@ -68,7 +70,12 @@ public class RayoEntity extends Projectile {
 		// Dispara más rápido que el medio segundo de invulnerabilidad tras un golpe: sin esto,
 		// la mitad de los rayos no harían daño.
 		golpeado.invulnerableTime = 0;
+		Vec3 antes = golpeado.getDeltaMovement();
 		golpeado.hurt(this.damageSources().mobProjectile(this, duenio), NaveEntity.danioExacto(this.level(), golpeado, DANIO));
+		// Como pega tan seguido, el empuje normal de cada golpe te mandaba volando: queda solo una parte.
+		Vec3 empuje = golpeado.getDeltaMovement().subtract(antes);
+		golpeado.setDeltaMovement(antes.add(empuje.scale(EMPUJE)));
+		golpeado.hurtMarked = true;   // que al jugador le llegue el empuje ya achicado
 		this.discard();
 	}
 
