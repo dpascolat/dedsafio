@@ -163,7 +163,9 @@ public class ArbolAltoFeature extends Feature<ArbolAltoFeature.Config> {
 				int tx = base.getX() + (lado == net.minecraft.core.Direction.EAST ? 1 : 0);
 				int tz = base.getZ() + (lado == net.minecraft.core.Direction.SOUTH ? 1 : 0);
 				BlockPos pos = new BlockPos(tx, y, tz).relative(lado);
-				if (!level.getBlockState(pos).canBeReplaced()) continue;
+				// Arriba suele haber hojas de las ramas pegadas al tronco: la fruta va en lugar de la hoja.
+				var ahi = level.getBlockState(pos);
+				if (!ahi.canBeReplaced() && !ahi.is(net.minecraft.tags.BlockTags.LEAVES)) continue;
 				BlockState fruta = elegida
 						.setValue(com.dedsafio4.eburia.HuevoEburiaBlock.FACING, lado)
 						.setValue(com.dedsafio4.eburia.HuevoEburiaBlock.EDAD, azar.nextInt(3));
