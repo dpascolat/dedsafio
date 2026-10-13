@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "dedsafio4",
 	"version": "${version}",
-	"name": "Dedsafío 4 (Pascolatd)",
+	"name": "Dedsafío 4",
 	"description": "Recreación de las mecánicas de Dedsafío 4.",
 	"authors": [
 		"Patricio"
