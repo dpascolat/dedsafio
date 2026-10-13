@@ -388,6 +388,7 @@ public class CatalogoScreen extends Screen {
 		dibujarLienzo(g, (int) Math.floor(virtualX(mxReal)), (int) Math.floor(virtualY(myReal)), parcial);
 		g.pose().popPose();
 		if (tooltipItem != null) g.renderTooltip(font, tooltipItem, mxReal, myReal);
+		else if (modo == 3 && libro.tooltipLineas != null) g.renderTooltip(font, libro.tooltipLineas, mxReal, myReal);
 		else if (tooltipTexto != null) g.renderTooltip(font, tooltipTexto, mxReal, myReal);
 	}
 

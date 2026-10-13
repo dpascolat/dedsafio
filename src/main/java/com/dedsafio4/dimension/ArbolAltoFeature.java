@@ -149,16 +149,15 @@ public class ArbolAltoFeature extends Feature<ArbolAltoFeature.Config> {
 			}
 		}
 
-		// Frutas pegadas al tronco, como el cacao (Huevo Eburia si no se dice otra), al alcance de la mano.
+		// Frutas pegadas al tronco, como el cacao (Huevo Eburia si no se dice otra). Cada árbol elige UNA fruta (todas
+		// las suyas son de ésa) y van siempre arriba, en la parte alta del tronco, justo debajo de la copa.
 		if (config.frutas()) {
-			int cuantos = 2 + azar.nextInt(3) + (config.frutaExtra().isPresent() ? 2 : 0);
+			int cuantos = 3 + azar.nextInt(3);
+			BlockState elegida = config.frutaExtra().isPresent() && azar.nextBoolean() ? config.frutaExtra().get()
+					: config.fruta().orElse(com.dedsafio4.bloques.ModBloques.HUEVO_EBURIA.defaultBlockState());
+			int arriba = copa - 3, desde = Math.max(base.getY() + 3, arriba - 6);
 			for (int i = 0; i < cuantos; i++) {
-				BlockState elegida = config.frutaExtra().isPresent() && azar.nextBoolean() ? config.frutaExtra().get()
-						: config.fruta().orElse(com.dedsafio4.bloques.ModBloques.HUEVO_EBURIA.defaultBlockState());
-				// Las frutas de los diseños (Solaria, Uvina) van bajas, entre 1 y 4 bloques; el Huevo Eburia más repartido.
-				boolean baja = elegida.getBlock() instanceof com.dedsafio4.eburia.FrutaTroncoBlock;
-				int y = baja ? base.getY() + 1 + azar.nextInt(4)
-						: base.getY() + 3 + azar.nextInt(Math.max(1, Math.min(altura - 6, 12)));
+				int y = desde + azar.nextInt(Math.max(1, arriba - desde + 1));
 				net.minecraft.core.Direction lado = net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(azar);
 				// el tronco ocupa 2x2: se elige la columna que da a ese lado
 				int tx = base.getX() + (lado == net.minecraft.core.Direction.EAST ? 1 : 0);

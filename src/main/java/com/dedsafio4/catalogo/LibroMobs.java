@@ -52,6 +52,10 @@ public final class LibroMobs {
 		/** Día → los ids de los mobs ("dedsafio4:walker"), con "" en las casillas vacías. */
 		final TreeMap<Integer, List<String>> dias = new TreeMap<>();
 		final Set<String> revelados = new HashSet<>();
+		/** La información de cada mob (lo que sale al pasarle el mouse), con colores {color:palabras}; | = otra línea. */
+		final TreeMap<String, String> info = new TreeMap<>();
+		/** El texto de cada día debajo de la ruleta (si no tiene, "Día N"). */
+		final TreeMap<Integer, String> titulos = new TreeMap<>();
 
 		private static Datos leer(CompoundTag tag, HolderLookup.Provider registros) {
 			Datos d = new Datos();
@@ -62,6 +66,10 @@ public final class LibroMobs {
 				d.dias.put(Integer.parseInt(k), l);
 			}
 			for (Tag t : tag.getList("revelados", Tag.TAG_STRING)) d.revelados.add(t.getAsString());
+			CompoundTag info = tag.getCompound("info");
+			for (String k : info.getAllKeys()) d.info.put(k, info.getString(k));
+			CompoundTag titulos = tag.getCompound("titulos");
+			for (String k : titulos.getAllKeys()) d.titulos.put(Integer.parseInt(k), titulos.getString(k));
 			return d;
 		}
 
@@ -77,6 +85,12 @@ public final class LibroMobs {
 			ListTag rev = new ListTag();
 			for (String s : revelados) rev.add(StringTag.valueOf(s));
 			tag.put("revelados", rev);
+			CompoundTag info = new CompoundTag();
+			this.info.forEach(info::putString);
+			tag.put("info", info);
+			CompoundTag titulos = new CompoundTag();
+			this.titulos.forEach((dia, t) -> titulos.putString(String.valueOf(dia), t));
+			tag.put("titulos", titulos);
 			return tag;
 		}
 	}
@@ -87,12 +101,17 @@ public final class LibroMobs {
 
 	// --- Red ---
 
-	/** Servidor → jugadores: los días ("dia=id,id,,id") y los mobs que ya se ven. */
-	public record Payload(List<String> dias, List<String> vistos) implements CustomPacketPayload {
+	/**
+	 * Servidor → jugadores: los días ("dia=id,id,,id"), los mobs que ya se ven, la información de cada mob
+	 * ("id=texto") y el texto de cada día ("dia=texto").
+	 */
+	public record Payload(List<String> dias, List<String> vistos, List<String> info, List<String> titulos) implements CustomPacketPayload {
 		public static final Type<Payload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "libro_mobs"));
 		public static final StreamCodec<ByteBuf, Payload> CODEC = StreamCodec.composite(
 				ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), Payload::dias,
-				ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), Payload::vistos, Payload::new);
+				ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), Payload::vistos,
+				ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), Payload::info,
+				ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()), Payload::titulos, Payload::new);
 
 		@Override
 		public Type<? extends CustomPacketPayload> type() {
@@ -113,10 +132,34 @@ public final class LibroMobs {
 		}
 	}
 
+	/** Un editor → servidor: la información de un mob (tipo "mob", clave = id) o el texto de un día (tipo "dia", clave = número). */
+	public record TextoPayload(String tipo, String clave, String texto) implements CustomPacketPayload {
+		public static final Type<TextoPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "libro_mobs_texto"));
+		public static final StreamCodec<ByteBuf, TextoPayload> CODEC = StreamCodec.composite(
+				ByteBufCodecs.STRING_UTF8, TextoPayload::tipo, ByteBufCodecs.STRING_UTF8, TextoPayload::clave,
+				ByteBufCodecs.STRING_UTF8, TextoPayload::texto, TextoPayload::new);
+
+		@Override
+		public Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
+	/** Lo más largo que puede ser la información de un mob y el texto de un día. */
+	public static final int MAX_INFO = 600, MAX_TITULO = 24;
+
 	// --- En el cliente (lo llena el Payload) ---
 
 	public static volatile TreeMap<Integer, List<String>> DIAS_CLIENTE = new TreeMap<>();
 	public static volatile Set<String> VISTOS_CLIENTE = Set.of();
+	public static volatile java.util.Map<String, String> INFO_CLIENTE = java.util.Map.of();
+	public static volatile java.util.Map<Integer, String> TITULOS_CLIENTE = java.util.Map.of();
+
+	/** El texto de un día (el que se eligió, o "Día N"). */
+	public static String tituloDia(int dia) {
+		String t = TITULOS_CLIENTE.get(dia);
+		return t == null || t.isBlank() ? "Día " + dia : t;
+	}
 
 	public static void recibir(Payload p) {
 		TreeMap<Integer, List<String>> dias = new TreeMap<>();
@@ -128,6 +171,18 @@ public final class LibroMobs {
 		}
 		DIAS_CLIENTE = dias;
 		VISTOS_CLIENTE = Set.copyOf(p.vistos());
+		java.util.Map<String, String> info = new java.util.HashMap<>();
+		for (String linea : p.info()) {
+			int igual = linea.indexOf('=');
+			if (igual > 0) info.put(linea.substring(0, igual), linea.substring(igual + 1));
+		}
+		INFO_CLIENTE = info;
+		java.util.Map<Integer, String> titulos = new java.util.HashMap<>();
+		for (String linea : p.titulos()) {
+			int igual = linea.indexOf('=');
+			if (igual > 0) titulos.put(Integer.parseInt(linea.substring(0, igual)), linea.substring(igual + 1));
+		}
+		TITULOS_CLIENTE = titulos;
 	}
 
 	// --- Servidor ---
@@ -141,7 +196,10 @@ public final class LibroMobs {
 			EntityType<?> tipo = BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, nombre)).orElse(null);
 			if (tipo != null && AnuncioMob.activo(server, tipo)) vistos.add(Dedsafio4.MOD_ID + ":" + nombre);
 		}
-		return new Payload(dias, new ArrayList<>(vistos));
+		List<String> info = new ArrayList<>(), titulos = new ArrayList<>();
+		d.info.forEach((id, t) -> info.add(id + "=" + t));
+		d.titulos.forEach((dia, t) -> titulos.add(dia + "=" + t));
+		return new Payload(dias, new ArrayList<>(vistos), info, titulos);
 	}
 
 	/** A todos los conectados (cuando cambia algo: el libro, /mob o /libro). */
@@ -168,9 +226,39 @@ public final class LibroMobs {
 		enviarATodos(p.server);
 	}
 
+	/** Un editor cambió la información de un mob o el texto de un día. */
+	private static void editarTexto(ServerPlayer p, TextoPayload t) {
+		if (!Catalogo.esEditor(p)) return;
+		Datos d = datos(p.server);
+		String texto = t.texto().strip();
+		if (t.tipo().equals("mob")) {
+			ResourceLocation rl = ResourceLocation.tryParse(t.clave());
+			if (rl == null || BuiltInRegistries.ENTITY_TYPE.getOptional(rl).isEmpty()) return;
+			if (texto.length() > MAX_INFO) texto = texto.substring(0, MAX_INFO);
+			if (texto.isEmpty()) d.info.remove(rl.toString());
+			else d.info.put(rl.toString(), texto);
+		} else if (t.tipo().equals("dia")) {
+			int dia;
+			try {
+				dia = Integer.parseInt(t.clave());
+			} catch (NumberFormatException e) {
+				return;
+			}
+			if (dia < 1 || dia > MAX_DIAS) return;
+			if (texto.length() > MAX_TITULO) texto = texto.substring(0, MAX_TITULO);
+			if (texto.isEmpty()) d.titulos.remove(dia);
+			else d.titulos.put(dia, texto);
+		} else return;
+		d.setDirty();
+		enviarATodos(p.server);
+	}
+
 	public static void registrar() {
 		PayloadTypeRegistry.playS2C().register(Payload.TYPE, Payload.CODEC);
 		PayloadTypeRegistry.playC2S().register(EditarPayload.TYPE, EditarPayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(TextoPayload.TYPE, TextoPayload.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(TextoPayload.TYPE, (payload, contexto) ->
+				contexto.server().execute(() -> editarTexto(contexto.player(), payload)));
 		ServerPlayNetworking.registerGlobalReceiver(EditarPayload.TYPE, (payload, contexto) ->
 				contexto.server().execute(() -> editar(contexto.player(), payload)));
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
