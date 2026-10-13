@@ -69,7 +69,7 @@ public final class ModDespegue {
 			if (!mundo.dimension().equals(ESPACIO) || mundo.getGameTime() % 20 != 0) return;
 			ServerLevel overworld = mundo.getServer().overworld();
 			for (ServerPlayer jugador : java.util.List.copyOf(mundo.players())) {
-				if (jugador.getVehicle() instanceof NaveViajeEntity) continue;
+				if (jugador.getVehicle() instanceof NaveViajeEntity || jugador.getTags().contains(EspacioComando.VISITA)) continue;
 				net.minecraft.core.BlockPos lugar = com.dedsafio4.dimension.Portales.lugarSeguro(overworld, jugador.blockPosition());
 				jugador.teleportTo(overworld, lugar.getX() + 0.5, lugar.getY(), lugar.getZ() + 0.5, jugador.getYRot(), jugador.getXRot());
 			}

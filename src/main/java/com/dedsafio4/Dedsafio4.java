@@ -56,6 +56,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.banco.ModCajero.registrar();
 		com.dedsafio4.intercambio.ModIntercambio.registrar();
 		com.dedsafio4.baneos.ItemsBaneados.registrar();
+		com.dedsafio4.despegue.EspacioComando.registrar();
 		com.dedsafio4.subastas.ModVitrina.registrar();
 		com.dedsafio4.puertas.ModPuertas.registrar();
 		com.dedsafio4.boveda.ModBoveda.registrar();
@@ -173,6 +174,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.revivir.Revivir.registrarComandos(dispatcher);
 			com.dedsafio4.dimension.Portales.registrarComandos(dispatcher);
 			com.dedsafio4.baneos.ItemsBaneados.registrarComandos(dispatcher);
+			com.dedsafio4.despegue.EspacioComando.registrarComandos(dispatcher);
 			com.dedsafio4.cambios.DificultadCambio.registrarComandos(dispatcher);
 			com.dedsafio4.catalogo.Catalogo.registrarComandos(dispatcher);
 			com.dedsafio4.catalogo.LibroMobs.registrarComandos(dispatcher);
