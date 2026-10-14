@@ -71,6 +71,20 @@ public final class AnuncioMob {
 		LUGARES.put("fantasma_negro", "el Limbo y el Limbito");
 	}
 
+	/** Mobs cuyo id interno no es su nombre: en el comando se escriben con el nombre (id → nombre). */
+	private static final Map<String, String> APODOS = Map.of("walker", "plumosaurio");
+
+	private static String apodo(String id) {
+		return APODOS.getOrDefault(id, id);
+	}
+
+	/** Del nombre escrito en el comando al id del mob (acepta los dos). */
+	private static String idDe(String nombre) {
+		String n = nombre.toLowerCase(java.util.Locale.ROOT);
+		for (Map.Entry<String, String> e : APODOS.entrySet()) if (e.getValue().equals(n)) return e.getKey();
+		return n;
+	}
+
 	public static final class Datos extends SavedData {
 		public static final SavedData.Factory<Datos> FACTORY = new SavedData.Factory<>(Datos::new, Datos::leer, null);
 		final Set<String> activos = new HashSet<>();
@@ -110,10 +124,10 @@ public final class AnuncioMob {
 		dispatcher.register(Commands.literal("mob").requires(s -> s.hasPermission(2))
 				.then(Commands.literal("lista").executes(AnuncioMob::lista))
 				.then(Commands.literal("quitar").then(Commands.argument("nombre", StringArgumentType.word())
-						.suggests((c, b) -> SharedSuggestionProvider.suggest(datos(c.getSource().getServer()).activos, b))
+						.suggests((c, b) -> SharedSuggestionProvider.suggest(datos(c.getSource().getServer()).activos.stream().map(AnuncioMob::apodo), b))
 						.executes(c -> quitar(c, StringArgumentType.getString(c, "nombre")))))
 				.then(Commands.argument("nombre", StringArgumentType.word())
-						.suggests((c, b) -> SharedSuggestionProvider.suggest(LUGARES.keySet(), b))
+						.suggests((c, b) -> SharedSuggestionProvider.suggest(LUGARES.keySet().stream().map(AnuncioMob::apodo), b))
 						.executes(c -> activar(c, StringArgumentType.getString(c, "nombre")))));
 	}
 
@@ -122,7 +136,7 @@ public final class AnuncioMob {
 	}
 
 	private static int activar(CommandContext<CommandSourceStack> c, String nombre) {
-		nombre = nombre.toLowerCase(java.util.Locale.ROOT);
+		nombre = idDe(nombre);
 		EntityType<?> tipo = tipo(nombre);
 		if (tipo == null || !LUGARES.containsKey(nombre)) {
 			c.getSource().sendFailure(Component.literal("No existe el mob \"" + nombre + "\" (o todavía no tiene un lugar donde aparecer)."));
@@ -170,7 +184,7 @@ public final class AnuncioMob {
 
 	private static int quitar(CommandContext<CommandSourceStack> c, String nombre) {
 		Datos d = datos(c.getSource().getServer());
-		if (!d.activos.remove(nombre.toLowerCase(java.util.Locale.ROOT))) {
+		if (!d.activos.remove(idDe(nombre))) {
 			c.getSource().sendFailure(Component.literal("Ese mob no estaba habilitado."));
 			return 0;
 		}
@@ -181,9 +195,8 @@ public final class AnuncioMob {
 	}
 
 	private static int lista(CommandContext<CommandSourceStack> c) {
-		Set<String> activos = datos(c.getSource().getServer()).activos;
-		List<String> faltan = new ArrayList<>(LUGARES.keySet());
-		faltan.removeAll(activos);
+		List<String> activos = datos(c.getSource().getServer()).activos.stream().map(AnuncioMob::apodo).toList();
+		List<String> faltan = LUGARES.keySet().stream().map(AnuncioMob::apodo).filter(n -> !activos.contains(n)).toList();
 		c.getSource().sendSuccess(() -> Component.literal("Aparecen solos: " + (activos.isEmpty() ? "ninguno" : String.join(", ", activos))
 				+ "\nTodavía no: " + (faltan.isEmpty() ? "ninguno" : String.join(", ", faltan))).withStyle(ChatFormatting.GOLD), false);
 		return 1;
