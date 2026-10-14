@@ -31,7 +31,7 @@ import java.util.EnumSet;
 
 /**
  * El Narval: habita los acuíferos del Centro de Quiu. Si ve a un intruso cerca (a 12 bloques), se echa
- * un poco para atrás y lo embiste a gran velocidad: no lastima, pero lo empuja lejos ("juega con él").
+ * un poco para atrás y lo embiste a gran velocidad: lo lastima (2 corazones) y lo empuja lejos.
  * Después espera unos 3 segundos y a veces vuelve a embestir. Nada como un delfín y fuera del agua se ahoga.
  */
 public class NarvalEntity extends WaterAnimal {
@@ -40,6 +40,8 @@ public class NarvalEntity extends WaterAnimal {
 	/** Lo que dura la embestida (1,6 segundos), como en el diseño. */
 	public static final int TIEMPO_EMBESTIDA = 32;
 	private static final double DISTANCIA = 12;
+	/** Daño de la embestida (4 = 2 corazones). */
+	public static final float DANIO = 4f;
 
 	/** En el cliente: ticks desde que empezó a embestir (-1 = no está embistiendo). */
 	public int embestida = -1;
@@ -124,7 +126,7 @@ public class NarvalEntity extends WaterAnimal {
 
 	/**
 	 * La embestida: 0–6 ticks se echa atrás mirando al intruso; 6–14 sale disparado hacia él (si lo toca, lo
-	 * empuja fuerte sin lastimarlo); después vuelve a nadar. Entre embestidas espera 3 segundos y a veces
+	 * lastima y lo empuja fuerte); después vuelve a nadar. Entre embestidas espera 3 segundos y a veces
 	 * (la mitad de las veces) no repite.
 	 */
 	static class EmbestirGoal extends Goal {
@@ -197,6 +199,7 @@ public class NarvalEntity extends WaterAnimal {
 				if (tiempo == 7) narval.playSound(SoundEvents.DOLPHIN_PLAY, 1.5f, 0.8f);
 				if (!choco && narval.getBoundingBox().inflate(0.8).intersects(objetivo.getBoundingBox())) {
 					choco = true;
+					objetivo.hurt(narval.damageSources().mobAttack(narval), DANIO);
 					objetivo.push(hacia.x * 2.2, 0.5 + hacia.y * 0.5, hacia.z * 2.2);
 					if (objetivo instanceof ServerPlayer jugador) jugador.hurtMarked = true;
 					narval.playSound(SoundEvents.PLAYER_SPLASH_HIGH_SPEED, 1f, 1f);

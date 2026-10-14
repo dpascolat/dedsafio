@@ -182,8 +182,8 @@ public class HuevoConDescripcion extends SpawnEggItem {
 	public static void narval(List<Component> t) {
 		t.add(parte("Habita los acuíferos del Centro de Quiu.", GRIS));
 		t.add(parte("Si detecta intrusos embestirá a gran", GRIS));
-		t.add(parte("velocidad, con la probabilidad de", GRIS));
-		t.add(parte("empujarte y jugar contigo.", GRIS));
+		t.add(parte("velocidad: te lastima y te empuja", GRIS));
+		t.add(parte("lejos.", GRIS));
 		t.add(Component.empty());
 		t.add(parte("🌴 Aparece en: ", APARECE).append(parte("Acuíferos del Centro", BLANCO)));
 		t.add(parte("de Quiu.", BLANCO));
