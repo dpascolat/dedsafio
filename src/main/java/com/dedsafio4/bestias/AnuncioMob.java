@@ -53,7 +53,7 @@ public final class AnuncioMob {
 		LUGARES.put("dactylo_bebe", "el Centro de Quiu");
 		LUGARES.put("mira", "las cuevas del Centro de Quiu");
 		LUGARES.put("zarinosa_espigueya", "las cuevas del Centro de Quiu");
-		LUGARES.put("narval", "el agua de las cuevas del Centro de Quiu");
+		LUGARES.put("narval", "el agua del Centro de Quiu");
 		LUGARES.put("creeper_nuclear", "los biomas de nieve");
 		LUGARES.put("creeper_pastel", "todo el Overworld, a oscuras");
 		LUGARES.put("flashbang", "el Limbito, el bioma del Limbo");
@@ -118,7 +118,9 @@ public final class AnuncioMob {
 		return server != null && datos(server).activos.contains(EntityType.getKey(tipo).getPath());
 	}
 
-	public static void registrar() {}
+	public static void registrar() {
+		AparicionQuiu.registrar();
+	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(Commands.literal("mob").requires(s -> s.hasPermission(2))
