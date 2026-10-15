@@ -434,7 +434,7 @@ public class CatalogoScreen extends Screen {
 		if (modo == 2) {
 			dibujarBusqueda(g, mx, my);
 			ayudaEditor(g);
-			if (receta != null) dibujarReceta(g);
+			if (receta != null) dibujarReceta(g, mx, my);
 			return;
 		}
 		// Los dos paneles de ítems.
@@ -481,7 +481,7 @@ public class CatalogoScreen extends Screen {
 
 		ayudaEditor(g);
 		if (receta != null) {
-			dibujarReceta(g);
+			dibujarReceta(g, mx, my);
 		} else if (eligiendo != null) {
 			dibujarSelector(g, mx, my, parcial);
 		} else if (bajoMouse != null) {
@@ -541,32 +541,66 @@ public class CatalogoScreen extends Screen {
 		if (bajo != null) tooltipItem = new ItemStack(bajo);
 	}
 
-	/** El crafteo del ítem tocado: 3×3 con el borde de colores, la flecha y el resultado. */
-	private void dibujarReceta(GuiGraphics g) {
-		int w = Math.max(124, font.width(new ItemStack(recetaDe).getHoverName()) + 14), h = 84, x = VW / 2 - w / 2, y = VH / 2 - h / 2;
-		g.pose().pushPose();
-		g.pose().translate(0, 0, 400);
-		g.fill(x, y, x + w, y + h, 0xF0141820);
-		bordeArcoiris(g, x, y, x + w, y + h, 2);
-		g.drawString(font, new ItemStack(recetaDe).getHoverName(), x + 6, y + 6, 0xFFFFFFFF, true);
-		int gx = x + 8, gy = y + 20;
+	// El cuadro del crafteo se dibuja agrandado: estas medidas son las de antes de agrandarlo.
+	private static final int REC_ALTO = 96, REC_GX = 8, REC_GY = 20;
+	private float recEscala = 1;
+	private int recX, recY, recAncho;
+	/** Los crafteos abiertos antes, al ir tocando ingredientes (click afuera o Esc vuelve al anterior). */
+	private final java.util.ArrayDeque<Item> recetasAnteriores = new java.util.ArrayDeque<>();
+
+	/** Dónde va el cuadro del crafteo y qué tan grande (lo más grande que entre, hasta el doble). */
+	private void medirReceta() {
+		recAncho = Math.max(124, font.width(new ItemStack(recetaDe).getHoverName()) + 14);
+		recEscala = Math.min(2f, Math.min((VH - 12f) / REC_ALTO, (VW - 12f) / recAncho));
+		recX = Math.round(VW / 2f - recAncho * recEscala / 2);
+		recY = Math.round(VH / 2f - REC_ALTO * recEscala / 2);
+	}
+
+	/** La casilla del crafteo (0 a 8) que está debajo del mouse, o -1. */
+	private int casillaReceta(double mx, double my) {
+		medirReceta();
+		double lx = (mx - recX) / recEscala - REC_GX, ly = (my - recY) / recEscala - REC_GY;
+		if (lx < 0 || ly < 0) return -1;
+		int fx = (int) (lx / 19), fy = (int) (ly / 19);
+		if (fx > 2 || fy > 2 || lx - fx * 19 >= 18 || ly - fy * 19 >= 18) return -1;
+		return fy * 3 + fx;
+	}
+
+	/** Lo que se ve en esa casilla del crafteo ahora (si acepta varias cosas, va cambiando cada segundo). */
+	private ItemStack ingredienteEn(int casilla) {
 		List<Ingredient> ingredientes = receta.value().getIngredients();
-		int anchoR = 3, altoR = 3;
-		if (receta.value() instanceof ShapedRecipe s) {
-			anchoR = s.getWidth();
-			altoR = s.getHeight();
-		}
-		long t = System.currentTimeMillis() / 1000;
-		for (int fy = 0; fy < 3; fy++) {
-			for (int fx = 0; fx < 3; fx++) {
-				int sx = gx + fx * 19, sy = gy + fy * 19;
-				g.fill(sx, sy, sx + 18, sy + 18, 0xFF0E1118);
-				g.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF2A3140);
-				int i = receta.value() instanceof ShapedRecipe ? (fx < anchoR && fy < altoR ? fy * anchoR + fx : -1) : fy * 3 + fx;
-				if (i < 0 || i >= ingredientes.size()) continue;
-				ItemStack[] opciones = ingredientes.get(i).getItems();
-				if (opciones.length > 0) g.renderItem(opciones[(int) (t % opciones.length)], sx + 1, sy + 1);
+		int fx = casilla % 3, fy = casilla / 3, i;
+		if (receta.value() instanceof ShapedRecipe s) i = fx < s.getWidth() && fy < s.getHeight() ? fy * s.getWidth() + fx : -1;
+		else i = casilla;
+		if (i < 0 || i >= ingredientes.size()) return ItemStack.EMPTY;
+		ItemStack[] opciones = ingredientes.get(i).getItems();
+		if (opciones.length == 0) return ItemStack.EMPTY;
+		return opciones[(int) (System.currentTimeMillis() / 1000 % opciones.length)];
+	}
+
+	/** El crafteo del ítem tocado: 3×3 con el borde de colores, la flecha y el resultado (agrandado). */
+	private void dibujarReceta(GuiGraphics g, int mx, int my) {
+		medirReceta();
+		int w = recAncho, h = REC_ALTO;
+		int bajo = casillaReceta(mx, my);
+		g.pose().pushPose();
+		g.pose().translate(recX, recY, 400);
+		g.pose().scale(recEscala, recEscala, 1);
+		g.fill(0, 0, w, h, 0xF0141820);
+		bordeArcoiris(g, 0, 0, w, h, 2);
+		g.drawString(font, new ItemStack(recetaDe).getHoverName(), 6, 6, 0xFFFFFFFF, true);
+		int gx = REC_GX, gy = REC_GY;
+		for (int casilla = 0; casilla < 9; casilla++) {
+			int sx = gx + casilla % 3 * 19, sy = gy + casilla / 3 * 19;
+			g.fill(sx, sy, sx + 18, sy + 18, 0xFF0E1118);
+			g.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF2A3140);
+			ItemStack ingrediente = ingredienteEn(casilla);
+			if (ingrediente.isEmpty()) continue;
+			if (casilla == bajo) {
+				g.fill(sx + 1, sy + 1, sx + 17, sy + 17, tieneReceta(ingrediente.getItem()) ? 0xFF4A6A8A : 0xFF3A4252);
+				tooltipItem = ingrediente;
 			}
+			g.renderItem(ingrediente, sx + 1, sy + 1);
 		}
 		g.drawString(font, "→", gx + 3 * 19 + 6, gy + 23, 0xFFFFFFFF, true);
 		int rx = gx + 3 * 19 + 20, ry = gy + 18;
@@ -575,7 +609,34 @@ public class CatalogoScreen extends Screen {
 		ItemStack resultado = receta.value().getResultItem(minecraft.level.registryAccess());
 		g.renderItem(resultado, rx + 3, ry + 3);
 		g.renderItemDecorations(font, resultado, rx + 3, ry + 3);
+		// La ayuda, chiquita abajo.
+		g.pose().pushPose();
+		g.pose().translate(6, h - 10, 0);
+		g.pose().scale(0.5f, 0.5f, 1);
+		g.drawString(font, "Click en un ingrediente: ver su crafteo", 0, 0, 0xFF8FD8FF, false);
+		if (!recetasAnteriores.isEmpty()) g.drawString(font, "Click afuera o Esc: volver", 0, 10, 0xFF8C929C, false);
 		g.pose().popPose();
+		g.pose().popPose();
+	}
+
+	/** Click con el crafteo abierto: en un ingrediente con crafteo abre ese; en otro lado vuelve o cierra. */
+	private void clickReceta(double mx, double my) {
+		int casilla = casillaReceta(mx, my);
+		if (casilla >= 0) {
+			ItemStack ingrediente = ingredienteEn(casilla);
+			if (!ingrediente.isEmpty() && tieneReceta(ingrediente.getItem())) {
+				Item actual = recetaDe;
+				if (ponerReceta(ingrediente.getItem())) recetasAnteriores.push(actual);
+			}
+			return;
+		}
+		volverReceta();
+	}
+
+	/** Vuelve al crafteo anterior, o lo cierra si no hay. */
+	private void volverReceta() {
+		if (!recetasAnteriores.isEmpty()) ponerReceta(recetasAnteriores.pop());
+		else receta = null;
 	}
 
 	// --- Mouse ---
@@ -588,7 +649,7 @@ public class CatalogoScreen extends Screen {
 			return true;
 		}
 		if (receta != null) {
-			receta = null;   // cualquier click cierra el crafteo
+			clickReceta(mx, my);
 			return true;
 		}
 		if (eligiendo != null) {
@@ -647,14 +708,28 @@ public class CatalogoScreen extends Screen {
 
 	/** Si el ítem tiene crafteo, lo muestra (si no, no pasa nada). */
 	public void mostrarReceta(Item item) {
-		if (minecraft == null || minecraft.level == null) return;
+		recetasAnteriores.clear();
+		ponerReceta(item);
+	}
+
+	private RecipeHolder<CraftingRecipe> buscarReceta(Item item) {
+		if (minecraft == null || minecraft.level == null) return null;
 		for (RecipeHolder<CraftingRecipe> r : minecraft.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
-			if (r.value().getResultItem(minecraft.level.registryAccess()).is(item) && !r.value().getIngredients().isEmpty()) {
-				receta = r;
-				recetaDe = item;
-				return;
-			}
+			if (r.value().getResultItem(minecraft.level.registryAccess()).is(item) && !r.value().getIngredients().isEmpty()) return r;
 		}
+		return null;
+	}
+
+	private boolean tieneReceta(Item item) {
+		return buscarReceta(item) != null;
+	}
+
+	private boolean ponerReceta(Item item) {
+		RecipeHolder<CraftingRecipe> r = buscarReceta(item);
+		if (r == null) return false;
+		receta = r;
+		recetaDe = item;
+		return true;
 	}
 
 	/** Para las pruebas: pasar a las Misiones. */
@@ -687,7 +762,7 @@ public class CatalogoScreen extends Screen {
 	@Override
 	public boolean keyPressed(int tecla, int scan, int mods) {
 		if (receta != null && tecla == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
-			receta = null;
+			volverReceta();
 			return true;
 		}
 		if (modo == 3 && libro.tecla(tecla, scan, mods)) return true;
