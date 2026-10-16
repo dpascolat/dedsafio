@@ -14,7 +14,7 @@ import org.joml.Matrix4f;
 import java.util.List;
 
 /**
- * Dibuja en el mundo las marcas de los admins, como waypoints: se ven a través de las paredes,
+ * Dibuja en el mundo las marcas de los admins y las ubicaciones de tu Hermandad, como waypoints: se ven a través de las paredes,
  * siempre del mismo tamaño en pantalla, con un rombo, el nombre y la distancia.
  */
 public final class MarcasCliente {
@@ -37,13 +37,15 @@ public final class MarcasCliente {
 
 	public static void dibujar(WorldRenderContext contexto) {
 		Minecraft mc = Minecraft.getInstance();
-		if (marcas.isEmpty() || mc.level == null || mc.options.hideGui) return;
+		List<MarcasPayload.Marca> todas = new java.util.ArrayList<>(marcas);
+		todas.addAll(HermandadesCliente.ubicaciones());
+		if (todas.isEmpty() || mc.level == null || mc.options.hideGui) return;
 		String dimension = mc.level.dimension().location().toString();
 		Vec3 camara = contexto.camera().getPosition();
 		MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
 		Font font = mc.font;
 
-		for (MarcasPayload.Marca marca : marcas) {
+		for (MarcasPayload.Marca marca : todas) {
 			if (!marca.dimension().equals(dimension)) continue;
 			Vec3 relativa = new Vec3(marca.x() + 0.5, marca.y() + 1.2, marca.z() + 0.5).subtract(camara);
 			double distancia = relativa.length();

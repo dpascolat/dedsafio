@@ -41,6 +41,10 @@ public record HermandadAccionPayload(int accion, String texto) implements Custom
 	public static final int DISOLVER = 15;
 	/** Un miembro (que no sea el Maestro) se sale de la Hermandad. */
 	public static final int SALIR = 16;
+	/** texto = "color;x;y;z;nombre": marca una ubicación para toda la Hermandad (en la dimensión del jugador). */
+	public static final int UBICACION_AGREGAR = 17;
+	/** texto = número de la ubicación a borrar (el que la marcó, el Maestro o un Líder). */
+	public static final int UBICACION_BORRAR = 18;
 
 	/** Largo máximo de un mensaje del chat, como el chat normal. */
 	public static final int LARGO_CHAT = 256;

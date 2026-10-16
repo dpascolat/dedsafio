@@ -170,6 +170,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 				context.client().execute(() -> context.client().setScreen(new CandadoScreen(payload.pos(), payload.cerrar(), payload.aviso()))));
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.hermandad.HermandadChatPayload.TYPE, (payload, context) ->
 				HermandadesCliente.actualizarChat(payload));
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.hermandad.HermandadUbicacionesPayload.TYPE, (payload, context) ->
+				context.client().execute(() -> HermandadesCliente.actualizarUbicaciones(payload)));
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.hermandad.HermandadTablonPayload.TYPE, (payload, context) -> {
 			HermandadesCliente.actualizarTablon(payload);
 			if (context.client().screen instanceof HermandadScreen pantalla) pantalla.refrescarTablon();

@@ -31,6 +31,10 @@ public class HermandadesData extends SavedData {
 		/** La Colección de Estandartes (hasta 27) y cuál es el activo (-1 si ninguno). */
 		private final List<net.minecraft.world.item.ItemStack> estandartes = new ArrayList<>();
 		private int activo = -1;
+		/** Las ubicaciones marcadas para toda la Hermandad (en cualquier dimensión). */
+		private final List<com.dedsafio4.marcas.MarcasPayload.Marca> ubicaciones = new ArrayList<>();
+		/** Quién marcó cada ubicación (mismo orden). */
+		private final List<UUID> autoresUbicaciones = new ArrayList<>();
 		/** Las últimas líneas del chat de la Hermandad (la más vieja primero). */
 		private final List<HermandadChatPayload.Linea> chat = new ArrayList<>();
 
@@ -51,6 +55,8 @@ public class HermandadesData extends SavedData {
 		public List<HermandadChatPayload.Linea> chat() { return chat; }
 		public java.util.Set<UUID> lideres() { return lideres; }
 		public List<HermandadTablonPayload.Anuncio> anuncios() { return anuncios; }
+		public List<com.dedsafio4.marcas.MarcasPayload.Marca> ubicaciones() { return ubicaciones; }
+		public List<UUID> autoresUbicaciones() { return autoresUbicaciones; }
 
 		public boolean esLider(UUID jugador) {
 			return lideres.contains(jugador);
@@ -167,6 +173,23 @@ public class HermandadesData extends SavedData {
 		setDirty();
 	}
 
+	/** Cuántas ubicaciones puede tener una Hermandad. */
+	public static final int MAXIMO_UBICACIONES = 16;
+
+	public boolean agregarUbicacion(Hermandad hermandad, com.dedsafio4.marcas.MarcasPayload.Marca marca, UUID autor) {
+		if (hermandad.ubicaciones.size() >= MAXIMO_UBICACIONES) return false;
+		hermandad.ubicaciones.add(marca);
+		hermandad.autoresUbicaciones.add(autor);
+		setDirty();
+		return true;
+	}
+
+	public void borrarUbicacion(Hermandad hermandad, int lugar) {
+		hermandad.ubicaciones.remove(lugar);
+		hermandad.autoresUbicaciones.remove(lugar);
+		setDirty();
+	}
+
 	/** Cuántos anuncios se guardan. */
 	public static final int MAXIMO_ANUNCIOS = 30;
 
@@ -208,6 +231,12 @@ public class HermandadesData extends SavedData {
 				net.minecraft.world.item.ItemStack.parse(registries, e).ifPresent(hermandad.estandartes::add);
 			}
 			hermandad.activo = h.contains("activo") ? h.getInt("activo") : -1;
+			for (Tag u : h.getList("ubicaciones", Tag.TAG_COMPOUND)) {
+				CompoundTag c = (CompoundTag) u;
+				hermandad.ubicaciones.add(new com.dedsafio4.marcas.MarcasPayload.Marca(c.getString("nombre"), c.getString("dimension"),
+						c.getInt("x"), c.getInt("y"), c.getInt("z"), c.getInt("color")));
+				hermandad.autoresUbicaciones.add(c.hasUUID("autor") ? c.getUUID("autor") : hermandad.maestro);
+			}
 			if (hermandad.activo >= hermandad.estandartes.size()) hermandad.activo = -1;
 			for (Tag l : h.getList("chat", Tag.TAG_COMPOUND)) {
 				CompoundTag c = (CompoundTag) l;
@@ -262,6 +291,20 @@ public class HermandadesData extends SavedData {
 			for (net.minecraft.world.item.ItemStack e : hermandad.estandartes) estandartes.add(e.save(registries));
 			h.put("estandartes", estandartes);
 			h.putInt("activo", hermandad.activo);
+			ListTag ubicaciones = new ListTag();
+			for (int i = 0; i < hermandad.ubicaciones.size(); i++) {
+				var u = hermandad.ubicaciones.get(i);
+				CompoundTag c = new CompoundTag();
+				c.putString("nombre", u.nombre());
+				c.putString("dimension", u.dimension());
+				c.putInt("x", u.x());
+				c.putInt("y", u.y());
+				c.putInt("z", u.z());
+				c.putInt("color", u.color());
+				c.putUUID("autor", hermandad.autoresUbicaciones.get(i));
+				ubicaciones.add(c);
+			}
+			h.put("ubicaciones", ubicaciones);
 			lista.add(h);
 		}
 		tag.put("hermandades", lista);

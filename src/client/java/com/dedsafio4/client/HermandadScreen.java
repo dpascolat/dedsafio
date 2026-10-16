@@ -68,6 +68,12 @@ public class HermandadScreen extends Screen {
 	private EditBox anuncioEntrada;
 	/** El estandarte elegido en la colección (-1 si ninguno). */
 	private int estandarteElegido = -1;
+	/** Ubicaciones: bloques por píxel del mapa, el lugar elegido (con click o con ⌖), su color y su nombre. */
+	private static int escalaMapa = 1;
+	private boolean hayElegido;
+	private int elegidoX, elegidoY, elegidoZ;
+	private int colorUbicacion = 0xFFFF55;
+	private EditBox ubicacionNombre;
 
 	public HermandadScreen(HermandadInfoPayload info) {
 		super(Component.literal("Hermandad"));
@@ -150,11 +156,73 @@ public class HermandadScreen extends Screen {
 
 	private void initUbicaciones(int x, int y) {
 		int centro = x + ANCHO / 2;
-		inactivo(Button.builder(Component.literal("⌖"), b -> {}).bounds(centro - 88, y + 202, 16, 16).build());
-		EditBox nombre = addRenderableWidget(new EditBox(font, centro - 68, y + 202, 108, 16, Component.literal("Ubicación")));
-		nombre.setHint(Component.literal("Nombre ubicación...").withColor(0xFF707078));
-		nombre.setEditable(false);
-		inactivo(Button.builder(Component.literal("Guardar"), b -> {}).bounds(centro + 44, y + 201, 70, 18).build());
+		String escrito = ubicacionNombre != null ? ubicacionNombre.getValue() : "";
+		Button aqui = addRenderableWidget(Button.builder(Component.literal("⌖"), b -> {
+			hayElegido = true;
+			elegidoX = minecraft.player.getBlockX();
+			elegidoY = minecraft.player.getBlockY();
+			elegidoZ = minecraft.player.getBlockZ();
+			rebuildWidgets();
+		}).bounds(centro - 88, y + 202, 16, 16).build());
+		aqui.setTooltip(Tooltip.create(Component.literal("Elegir donde estás parado")));
+		ubicacionNombre = addRenderableWidget(new EditBox(font, centro - 68, y + 202, 108, 16, Component.literal("Ubicación")));
+		ubicacionNombre.setMaxLength(24);
+		ubicacionNombre.setHint(Component.literal("Nombre ubicación...").withColor(0xFF707078));
+		ubicacionNombre.setValue(escrito);
+		Button guardar = addRenderableWidget(Button.builder(Component.literal("Guardar"), b -> {
+			String nombre = ubicacionNombre.getValue().replace(";", " ").strip();
+			ClientPlayNetworking.send(new HermandadAccionPayload(HermandadAccionPayload.UBICACION_AGREGAR,
+					String.format("%06x;%d;%d;%d;%s", colorUbicacion, elegidoX, elegidoY, elegidoZ, nombre)));
+			hayElegido = false;
+			ubicacionNombre.setValue("");
+			rebuildWidgets();
+		}).bounds(centro + 44, y + 201, 70, 18).build());
+		guardar.active = hayElegido && HermandadesCliente.ubicaciones().size() < MAXIMO_UBICACIONES;
+		if (!hayElegido) guardar.setTooltip(Tooltip.create(Component.literal("Haz click en el mapa (o en ⌖) para elegir el lugar")));
+		MapaHermandad.olvidar();
+	}
+
+	// El mapa de Ubicaciones (en la pantalla).
+	private static final int MAPA_W = ANCHO - 30, MAPA_H = 148;
+
+	private int mapaX() { return x() + 15; }
+	private int mapaY() { return y() + 47; }
+
+	/** Dónde cae en el mapa un punto del mundo (x, z). */
+	private int[] aMapa(int bx, int bz) {
+		return new int[]{mapaX() + MAPA_W / 2 + Math.floorDiv(bx - minecraft.player.getBlockX(), escalaMapa),
+				mapaY() + MAPA_H / 2 + Math.floorDiv(bz - minecraft.player.getBlockZ(), escalaMapa)};
+	}
+
+	private boolean enMapa(double mx, double my) {
+		return dentro(mx, my, mapaX(), mapaY(), MAPA_W, MAPA_H);
+	}
+
+	/** La ubicación (de esta dimensión) que está debajo del mouse en el mapa, o -1. */
+	private int ubicacionEn(double mx, double my) {
+		if (!enMapa(mx, my)) return -1;
+		String dim = minecraft.level.dimension().location().toString();
+		var lista = HermandadesCliente.ubicaciones();
+		for (int i = lista.size() - 1; i >= 0; i--) {
+			var u = lista.get(i);
+			if (!u.dimension().equals(dim)) continue;
+			int[] p = aMapa(u.x(), u.z());
+			if (Math.abs(mx - p[0]) <= 4 && Math.abs(my - p[1]) <= 4) return i;
+		}
+		return -1;
+	}
+
+	private static String nombreDimension(String id) {
+		return switch (id) {
+			case "minecraft:overworld" -> "Mundo normal";
+			case "minecraft:the_nether" -> "Nether";
+			case "minecraft:the_end" -> "End";
+			case "dedsafio4:dimension_nueva" -> "Quiu";
+			case "dedsafio4:organos" -> "Los Órganos";
+			case "dedsafio4:limbo" -> "El Limbo";
+			case "dedsafio4:espacio" -> "El Espacio";
+			default -> id.substring(id.indexOf(':') + 1);
+		};
 	}
 
 	private void initGestion(int x, int y) {
@@ -286,6 +354,7 @@ public class HermandadScreen extends Screen {
 		super.render(g, mouseX, mouseY, partialTick);   // fondo (abajo) + botones
 		if (paletaAbierta) dibujarPaleta(g, mouseX, mouseY);
 		else tooltipTabs(g, x(), y(), mouseX, mouseY);
+		if (pestana == BRUJULA && !paletaAbierta) tooltipUbicaciones(g, mouseX, mouseY);
 		if (pestana == ESTANDARTES && !paletaAbierta) {
 			int lugar = lugarEstandarte(mouseX, mouseY);
 			if (lugar >= 0 && lugar < HermandadesCliente.coleccion().size()) {
@@ -394,7 +463,7 @@ public class HermandadScreen extends Screen {
 		caja(g, xCuadro, y + 14, xCuadro + 8, y + 22, 0xFF000000 | info.color(), encimaCuadro ? 0xFFFFFFFF : BORDE);
 
 		if (pestana == BRUJULA) {
-			String contador = "0/" + MAXIMO_UBICACIONES;
+			String contador = HermandadesCliente.ubicaciones().size() + "/" + MAXIMO_UBICACIONES;
 			g.drawString(font, contador, x + ANCHO - 12 - font.width(contador), y + 31, TEXTO_GRIS, false);
 		} else {
 			long enLinea = info.miembros().stream().filter(m -> conectado(m) != null).count();
@@ -405,7 +474,76 @@ public class HermandadScreen extends Screen {
 	private void dibujarUbicaciones(GuiGraphics g, int x, int y) {
 		caja(g, x + 14, y + 46, x + ANCHO - 14, y + 196, PANEL, PANEL_BORDE);
 		int centro = x + ANCHO / 2;
-		caja(g, centro - 108, y + 202, centro - 92, y + 218, 0xFFFFFFFF, PANEL_BORDE);   // color de la ubicación
+		caja(g, centro - 108, y + 202, centro - 92, y + 218, 0xFF000000 | colorUbicacion, PANEL_BORDE);   // color de la ubicación
+		// El mapa, centrado en el jugador.
+		int mx0 = mapaX(), my0 = mapaY();
+		MapaHermandad.actualizar(MAPA_W, MAPA_H, minecraft.player.getBlockX(), minecraft.player.getBlockZ(), escalaMapa);
+		g.blit(MapaHermandad.TEXTURA, mx0, my0, 0, 0, MAPA_W, MAPA_H, MAPA_W, MAPA_H);
+		g.enableScissor(mx0, my0, mx0 + MAPA_W, my0 + MAPA_H);
+		String dim = minecraft.level.dimension().location().toString();
+		int otras = 0;
+		for (var u : HermandadesCliente.ubicaciones()) {
+			if (!u.dimension().equals(dim)) {
+				otras++;
+				continue;
+			}
+			int[] p = aMapa(u.x(), u.z());
+			g.fill(p[0] - 3, p[1] - 3, p[0] + 4, p[1] + 4, 0xFF000000);
+			g.fill(p[0] - 2, p[1] - 2, p[0] + 3, p[1] + 3, 0xFF000000 | u.color());
+			g.pose().pushPose();
+			g.pose().translate(p[0], p[1] - 9, 0);
+			g.pose().scale(0.6f, 0.6f, 1);
+			g.drawCenteredString(font, u.nombre(), 0, 0, 0xFF000000 | u.color());
+			g.pose().popPose();
+		}
+		if (hayElegido) {
+			int[] p = aMapa(elegidoX, elegidoZ);
+			g.fill(p[0] - 5, p[1], p[0] + 6, p[1] + 1, 0xFFFFFFFF);
+			g.fill(p[0], p[1] - 5, p[0] + 1, p[1] + 6, 0xFFFFFFFF);
+		}
+		// El jugador: un punto blanco y hacia dónde mira.
+		int jx = mx0 + MAPA_W / 2, jz = my0 + MAPA_H / 2;
+		g.fill(jx - 2, jz - 2, jx + 3, jz + 3, 0xFF000000);
+		g.fill(jx - 1, jz - 1, jx + 2, jz + 2, 0xFFFFFFFF);
+		double giro = Math.toRadians(minecraft.player.getYRot());
+		int fx = jx + (int) Math.round(-Math.sin(giro) * 5), fz = jz + (int) Math.round(Math.cos(giro) * 5);
+		g.fill(fx - 1, fz - 1, fx + 1, fz + 1, 0xFFFFFFFF);
+		g.disableScissor();
+		// Arriba a la izquierda: dónde estás, el zoom y las de otras dimensiones.
+		String arriba = nombreDimension(dim) + " · 1 píxel = " + escalaMapa + (escalaMapa == 1 ? " bloque" : " bloques")
+				+ (otras > 0 ? " · +" + otras + " en otras dimensiones" : "");
+		g.fill(mx0, my0, mx0 + font.width(arriba) / 2 + 6, my0 + 8, 0xA0000000);
+		g.pose().pushPose();
+		g.pose().translate(mx0 + 3, my0 + 2, 0);
+		g.pose().scale(0.5f, 0.5f, 1);
+		g.drawString(font, arriba, 0, 0, 0xFFFFFFFF, false);
+		g.pose().popPose();
+	}
+
+	/** Lo que sale con el mouse sobre una ubicación del mapa o sobre el aviso de las otras dimensiones. */
+	private void tooltipUbicaciones(GuiGraphics g, int mouseX, int mouseY) {
+		int i = ubicacionEn(mouseX, mouseY);
+		if (i >= 0) {
+			var u = HermandadesCliente.ubicaciones().get(i);
+			g.renderComponentTooltip(font, List.of(Component.literal(u.nombre()).withColor(u.color()),
+					Component.literal(u.x() + " " + u.y() + " " + u.z()).withColor(0xA8A8B0),
+					Component.literal("Click derecho: borrar").withColor(0x707078)), mouseX, mouseY);
+			return;
+		}
+		if (dentro(mouseX, mouseY, mapaX(), mapaY(), MAPA_W / 2, 8)) {
+			String dim = minecraft.level.dimension().location().toString();
+			List<Component> lineas = new ArrayList<>();
+			for (var u : HermandadesCliente.ubicaciones()) {
+				if (u.dimension().equals(dim)) continue;
+				lineas.add(Component.literal(u.nombre()).withColor(u.color())
+						.append(Component.literal(" · " + nombreDimension(u.dimension()) + " (" + u.x() + " " + u.y() + " " + u.z() + ")").withColor(0xA8A8B0)));
+			}
+			if (!lineas.isEmpty()) g.renderComponentTooltip(font, lineas, mouseX, mouseY);
+			return;
+		}
+		if (enMapa(mouseX, mouseY)) {
+			g.renderTooltip(font, Component.literal("Click: elegir este lugar · Ruedita: zoom"), mouseX, mouseY);
+		}
 	}
 
 	private void tooltipTabs(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
@@ -486,6 +624,12 @@ public class HermandadScreen extends Screen {
 		}
 		if (pestana == LISTA) {
 			listaScroll += scrollY > 0 ? -1 : 1;
+			return true;
+		}
+		if (pestana == BRUJULA && enMapa(mouseX, mouseY)) {
+			// Acercar (ruedita arriba) o alejar: 1, 2, 4 u 8 bloques por píxel.
+			escalaMapa = Math.max(1, Math.min(8, scrollY > 0 ? escalaMapa / 2 : escalaMapa * 2));
+			MapaHermandad.olvidar();
 			return true;
 		}
 		if (pestana == TABLON) {
@@ -729,6 +873,29 @@ public class HermandadScreen extends Screen {
 			int lugar = lugarEstandarte(mouseX, mouseY);
 			if (lugar >= 0) {
 				estandarteElegido = lugar < HermandadesCliente.coleccion().size() && lugar != estandarteElegido ? lugar : -1;
+				rebuildWidgets();
+				return true;
+			}
+		}
+		if (pestana == BRUJULA) {
+			int centro = x + ANCHO / 2;
+			// El cuadradito de color: pasa al siguiente color.
+			if (dentro(mouseX, mouseY, centro - 108, y + 202, 16, 16)) {
+				int i = 0;
+				for (int k = 0; k < PALETA.length; k++) if (PALETA[k] == colorUbicacion) i = k;
+				colorUbicacion = PALETA[(i + (boton == 1 ? PALETA.length - 1 : 1)) % PALETA.length];
+				return true;
+			}
+			int marca = ubicacionEn(mouseX, mouseY);
+			if (marca >= 0 && boton == 1) {
+				ClientPlayNetworking.send(new HermandadAccionPayload(HermandadAccionPayload.UBICACION_BORRAR, Integer.toString(marca)));
+				return true;
+			}
+			if (enMapa(mouseX, mouseY) && boton == 0) {
+				hayElegido = true;
+				elegidoX = minecraft.player.getBlockX() + (int) Math.floor((mouseX - mapaX() - MAPA_W / 2) * escalaMapa);
+				elegidoZ = minecraft.player.getBlockZ() + (int) Math.floor((mouseY - mapaY() - MAPA_H / 2) * escalaMapa);
+				elegidoY = MapaHermandad.altura(minecraft.level, elegidoX, elegidoZ, minecraft.player.getBlockY()) + 1;
 				rebuildWidgets();
 				return true;
 			}

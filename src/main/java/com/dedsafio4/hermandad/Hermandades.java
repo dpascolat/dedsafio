@@ -137,7 +137,10 @@ public final class Hermandades {
 				ServerPlayNetworking.send(jugador, new HermandadChatPayload(hermandad.get().chat()));
 				enviarEstandartes(jugador, hermandad.get());
 				ServerPlayNetworking.send(jugador, new HermandadTablonPayload(hermandad.get().anuncios()));
+				ServerPlayNetworking.send(jugador, new HermandadUbicacionesPayload(hermandad.get().ubicaciones()));
 			}
+			case HermandadAccionPayload.UBICACION_AGREGAR -> agregarUbicacion(jugador, hermandad.get(), accion.texto());
+			case HermandadAccionPayload.UBICACION_BORRAR -> borrarUbicacion(jugador, hermandad.get(), accion.texto());
 			case HermandadAccionPayload.ANUNCIO_PUBLICAR -> publicarAnuncio(jugador, hermandad.get(), accion.texto());
 			case HermandadAccionPayload.ANUNCIO_BORRAR -> borrarAnuncio(jugador, hermandad.get(), accion.texto());
 			case HermandadAccionPayload.SUBIR_RANGO -> cambiarRango(jugador, hermandad.get(), accion.texto(), true);
@@ -365,6 +368,60 @@ public final class Hermandades {
 		}
 		try {
 			if (data(jugador).borrarAnuncio(h, Integer.parseInt(texto))) refrescarTablon(jugador.server, h);
+		} catch (NumberFormatException ignorado) {
+		}
+	}
+
+	// ---------------------------------------------------------------- Ubicaciones
+
+	/** Las ubicaciones de su Hermandad (vacío si no tiene); se ven en el mapa de la H y en el mundo. */
+	public static void enviarUbicaciones(ServerPlayer jugador) {
+		List<com.dedsafio4.marcas.MarcasPayload.Marca> lista = data(jugador).deJugador(jugador.getUUID())
+				.map(HermandadesData.Hermandad::ubicaciones).orElse(List.of());
+		ServerPlayNetworking.send(jugador, new HermandadUbicacionesPayload(lista));
+	}
+
+	private static void refrescarUbicaciones(MinecraftServer server, HermandadesData.Hermandad h) {
+		HermandadUbicacionesPayload payload = new HermandadUbicacionesPayload(h.ubicaciones());
+		for (ManuscritoDatos.Inscrito m : h.miembros()) {
+			ServerPlayer conectado = server.getPlayerList().getPlayer(m.uuid());
+			if (conectado != null) ServerPlayNetworking.send(conectado, payload);
+		}
+	}
+
+	/** Cualquier miembro marca una ubicación para todos (en la dimensión donde está). */
+	private static void agregarUbicacion(ServerPlayer jugador, HermandadesData.Hermandad h, String texto) {
+		String[] partes = texto.split(";", 5);
+		if (partes.length < 5) return;
+		try {
+			int color = Integer.parseInt(partes[0], 16) & 0xFFFFFF;
+			int x = Integer.parseInt(partes[1]), y = Integer.parseInt(partes[2]), z = Integer.parseInt(partes[3]);
+			String nombre = partes[4].replace("§", "").strip();
+			if (nombre.isEmpty()) nombre = "Ubicación";
+			if (nombre.length() > 24) nombre = nombre.substring(0, 24);
+			String dimension = jugador.level().dimension().location().toString();
+			if (!data(jugador).agregarUbicacion(h, new com.dedsafio4.marcas.MarcasPayload.Marca(nombre, dimension, x, y, z, color), jugador.getUUID())) {
+				error(jugador, "La Hermandad ya tiene " + HermandadesData.MAXIMO_UBICACIONES + " ubicaciones: borra alguna.");
+				return;
+			}
+			avisarMiembros(jugador.server, h, jugador.getGameProfile().getName() + " marcó la ubicación " + nombre
+					+ " (" + x + " " + y + " " + z + ").", ChatFormatting.AQUA);
+			refrescarUbicaciones(jugador.server, h);
+		} catch (NumberFormatException ignorado) {
+		}
+	}
+
+	/** La borra el que la marcó, el Maestro o un Líder. */
+	private static void borrarUbicacion(ServerPlayer jugador, HermandadesData.Hermandad h, String texto) {
+		try {
+			int lugar = Integer.parseInt(texto);
+			if (lugar < 0 || lugar >= h.ubicaciones().size()) return;
+			if (!h.puedePublicar(jugador.getUUID()) && !h.autoresUbicaciones().get(lugar).equals(jugador.getUUID())) {
+				error(jugador, "Solo el que la marcó, el Maestro o un Líder pueden borrarla.");
+				return;
+			}
+			data(jugador).borrarUbicacion(h, lugar);
+			refrescarUbicaciones(jugador.server, h);
 		} catch (NumberFormatException ignorado) {
 		}
 	}

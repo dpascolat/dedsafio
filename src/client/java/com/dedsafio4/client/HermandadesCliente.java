@@ -34,6 +34,17 @@ public final class HermandadesCliente {
 		return ACTIVOS.getOrDefault(hermandad, net.minecraft.world.item.ItemStack.EMPTY);
 	}
 
+	/** Las ubicaciones que marcó mi Hermandad (en todas las dimensiones). */
+	private static List<com.dedsafio4.marcas.MarcasPayload.Marca> ubicaciones = List.of();
+
+	public static void actualizarUbicaciones(com.dedsafio4.hermandad.HermandadUbicacionesPayload payload) {
+		ubicaciones = List.copyOf(payload.ubicaciones());
+	}
+
+	public static List<com.dedsafio4.marcas.MarcasPayload.Marca> ubicaciones() {
+		return ubicaciones;
+	}
+
 	/** Los anuncios del Tablón de mi Hermandad (el más nuevo primero). */
 	private static List<com.dedsafio4.hermandad.HermandadTablonPayload.Anuncio> anuncios = List.of();
 
@@ -87,6 +98,7 @@ public final class HermandadesCliente {
 		coleccion = List.of();
 		activo = -1;
 		anuncios = List.of();
+		ubicaciones = List.of();
 	}
 
 	/** null si el jugador no está en ninguna Hermandad. */

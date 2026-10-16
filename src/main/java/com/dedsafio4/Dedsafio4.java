@@ -114,6 +114,8 @@ public class Dedsafio4 implements ModInitializer {
 		// Servidor → cliente
 		PayloadTypeRegistry.playS2C().register(DeditasPayload.TYPE, DeditasPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(HermandadInfoPayload.TYPE, HermandadInfoPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(com.dedsafio4.hermandad.HermandadUbicacionesPayload.TYPE,
+				com.dedsafio4.hermandad.HermandadUbicacionesPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(com.dedsafio4.hermandad.HermandadTablonPayload.TYPE,
 				com.dedsafio4.hermandad.HermandadTablonPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(com.dedsafio4.hermandad.HermandadEstandartesPayload.TYPE,
@@ -199,6 +201,7 @@ public class Dedsafio4 implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			Banco.sincronizar(handler.player);
 			Hermandades.sincronizarJugador(handler.player);
+			Hermandades.enviarUbicaciones(handler.player);
 			Cielo.sincronizar(handler.player);
 			com.dedsafio4.eclipse.Eclipse.sincronizar(handler.player);
 			Temporizador.sincronizar(handler.player);
