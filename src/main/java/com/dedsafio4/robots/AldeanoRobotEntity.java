@@ -49,6 +49,12 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	private int juego = -1, nivel = 1, xp;
 	/** Cuándo repuso la mercadería por última vez (tick del mundo). */
 	private long repuso;
+	/** Cuántas veces le pagaron con Deditas para reponer (cada vez cuesta una más). */
+	private int reposiciones;
+	/** Comercio agotado → cuándo se agotó (tick del mundo): a los 10 minutos vuelve. */
+	private final java.util.Map<Integer, Long> agotados = new java.util.HashMap<>();
+	/** Lo que tarda en volver un comercio agotado: 10 minutos. */
+	public static final int TIEMPO_AGOTADO = 20 * 60 * 10;
 
 	public AldeanoRobotEntity(EntityType<? extends AldeanoRobotEntity> tipo, Level level) {
 		super(tipo, level);
@@ -92,6 +98,7 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		this.reponer();
 		this.setTradingPlayer(jugador);
 		this.openTradingScreen(jugador, this.getDisplayName(), this.nivel);
+		this.avisarEstado();
 		return InteractionResult.CONSUME;
 	}
 
@@ -117,7 +124,63 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		long ahora = this.level().getGameTime();
 		if (ahora - this.repuso < 12000) return;
 		this.repuso = ahora;
+		// Los agotados no: esos vuelven a los 10 minutos de agotarse.
+		for (int i = 0; i < this.getOffers().size(); i++) {
+			MerchantOffer o = this.getOffers().get(i);
+			if (!o.getCostB().is(Items.BARRIER) && !this.agotados.containsKey(i)) o.resetUses();
+		}
+	}
+
+	/** Lo que cuesta reponer con Deditas: 1 la primera vez, después una más cada vez. */
+	public int costoReponer() {
+		return this.reposiciones + 1;
+	}
+
+	/** Ya pagaron: repone todos los comercios desbloqueados y le avisa al que está comerciando. */
+	void reponerPagando() {
+		this.reposiciones++;
+		this.agotados.clear();
 		for (MerchantOffer o : this.getOffers()) if (!o.getCostB().is(Items.BARRIER)) o.resetUses();
+		if (this.comprando instanceof net.minecraft.server.level.ServerPlayer jugador
+				&& jugador.containerMenu instanceof net.minecraft.world.inventory.MerchantMenu menu) {
+			jugador.sendMerchantOffers(menu.containerId, this.getOffers(), this.nivel, this.xp, this.showProgressBar(), this.canRestock());
+		}
+	}
+
+	/** Le manda al que está comerciando lo que cuesta reponer y cuánto falta para cada comercio agotado. */
+	void avisarEstado() {
+		if (!(this.comprando instanceof net.minecraft.server.level.ServerPlayer jugador)) return;
+		long ahora = this.level().getGameTime();
+		java.util.List<Integer> segundos = new java.util.ArrayList<>();
+		for (int i = 0; i < this.getOffers().size(); i++) {
+			Long desde = this.agotados.get(i);
+			segundos.add(desde == null ? -1 : (int) Math.max(0, (desde + TIEMPO_AGOTADO - ahora) / 20));
+		}
+		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(jugador, new ReponerComercio.CostoPayload(costoReponer(), segundos));
+	}
+
+	/** Los comercios agotados vuelven a los 10 minutos (si se usaron mucho, piden un poco más, como en Minecraft). */
+	@Override
+	protected void customServerAiStep() {
+		super.customServerAiStep();
+		if (this.tickCount % 20 != 0 || this.agotados.isEmpty()) return;
+		long ahora = this.level().getGameTime();
+		boolean cambio = false;
+		for (var it = this.agotados.entrySet().iterator(); it.hasNext(); ) {
+			var e = it.next();
+			if (ahora - e.getValue() < TIEMPO_AGOTADO) continue;
+			it.remove();
+			if (e.getKey() >= this.getOffers().size()) continue;
+			MerchantOffer o = this.getOffers().get(e.getKey());
+			o.updateDemand();
+			o.resetUses();
+			cambio = true;
+		}
+		if (cambio && this.comprando instanceof net.minecraft.server.level.ServerPlayer jugador
+				&& jugador.containerMenu instanceof net.minecraft.world.inventory.MerchantMenu menu) {
+			jugador.sendMerchantOffers(menu.containerId, this.getOffers(), this.nivel, this.xp, this.showProgressBar(), this.canRestock());
+			this.avisarEstado();
+		}
 	}
 
 	/** Suma la experiencia del comercio y, si alcanza, sube de nivel (hasta el 7). */
@@ -164,6 +227,11 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	public void notifyTrade(MerchantOffer oferta) {
 		oferta.increaseUses();
 		if (!this.level().isClientSide) this.ganarXp(oferta.getXp());
+		if (!this.level().isClientSide && oferta.isOutOfStock()) {
+			int i = this.getOffers().indexOf(oferta);
+			if (i >= 0) this.agotados.putIfAbsent(i, this.level().getGameTime());
+			this.avisarEstado();
+		}
 		this.ambientSoundTime = -this.getAmbientSoundInterval();
 		this.playSound(this.getNotifyTradeSound(), 1f, 1f);
 	}
@@ -220,6 +288,10 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		tag.putInt("Nivel", this.nivel);
 		tag.putInt("Xp", this.xp);
 		tag.putLong("Repuso", this.repuso);
+		tag.putInt("Reposiciones", this.reposiciones);
+		CompoundTag agot = new CompoundTag();
+		this.agotados.forEach((i, t) -> agot.putLong(String.valueOf(i), t));
+		tag.put("Agotados", agot);
 		if (!ofertas.isEmpty()) {
 			tag.put("Offers", MerchantOffers.CODEC.encodeStart(
 					this.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), ofertas)
@@ -233,6 +305,14 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		this.nivel = Math.max(1, tag.contains("Nivel") ? tag.getInt("Nivel") : 1);
 		this.xp = tag.getInt("Xp");
 		this.repuso = tag.getLong("Repuso");
+		this.reposiciones = tag.getInt("Reposiciones");
+		CompoundTag agot = tag.getCompound("Agotados");
+		for (String k : agot.getAllKeys()) {
+			try {
+				this.agotados.put(Integer.parseInt(k), agot.getLong(k));
+			} catch (NumberFormatException ignorado) {
+			}
+		}
 		// Los aldeanos de antes (sin lista) se quedan con los comercios nuevos, no con los de prueba.
 		if (!tag.contains("Juego")) return;
 		this.juego = tag.getInt("Juego");

@@ -28,6 +28,18 @@ public abstract class MinecraftMixin {
 		}
 	}
 
+	/** El comercio de Minecraft (aldeanos, Puesto) se ve con el estilo del Dedsafío. */
+	@Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
+	private void dedsafio4$comercio(Screen pantalla, CallbackInfo ci) {
+		// El comercio de Minecraft se cambia por el del Dedsafío (mismas casillas, otro dibujo).
+		if (pantalla != null && pantalla.getClass() == net.minecraft.client.gui.screens.inventory.MerchantScreen.class) {
+			var mc = (Minecraft) (Object) this;
+			var menu = ((net.minecraft.client.gui.screens.inventory.MerchantScreen) pantalla).getMenu();
+			ci.cancel();
+			mc.setScreen(new com.dedsafio4.client.robots.ComercioScreen(menu, mc.player.getInventory(), pantalla.getTitle()));
+		}
+	}
+
 	/** El menú principal de Minecraft se cambia por el del Dedsafío (salvo después de M+Q). */
 	@Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
 	private void dedsafio4$menuPrincipal(Screen pantalla, CallbackInfo ci) {

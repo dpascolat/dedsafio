@@ -315,6 +315,11 @@ public final class Catalogo {
 		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_catalogo");
 	}
 
+	/** ¿La G tiene oculto este ítem (id completo, ej. dedsafio4:dilitio)? */
+	public static boolean oculto(MinecraftServer server, String id) {
+		return datos(server).ocultos.contains(id);
+	}
+
 	public static boolean esEditor(ServerPlayer p) {
 		return p.hasPermissions(2) || datos(p.server).editores.contains(p.getUUID().toString());
 	}

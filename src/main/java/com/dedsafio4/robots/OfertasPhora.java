@@ -116,5 +116,30 @@ public final class OfertasPhora {
 					dilitio(5, ModItems.EXCREMENTO, 3, 3),
 					dilitio(5, Items.OBSIDIAN, 1, 3),
 					c(6, ModItems.DEDITA, 20, Items.DIAMOND_AXE, 1),
-					c(7, ModItems.DEDITA, 2, Items.ENDER_PEARL, 1)));
+					c(7, ModItems.DEDITA, 2, Items.ENDER_PEARL, 1)),
+			// Uno por nivel, todo por Dilitio.
+			List.of(
+					dilitio(1, Items.STICK, 50, 1),
+					dilitio(2, Items.BAMBOO, 20, 1),
+					dilitio(3, Items.GREEN_DYE, 18, 1),
+					dilitio(4, ModItems.PELO_EBURIA, 2, 1),
+					dilitio(5, ModItems.HUEVO_EBURIA, 3, 1),
+					dilitio(6, ModItems.AMBAR_CON_INSECTO, 4, 1),
+					dilitio(7, ModItems.FRUTA_SOLARIA, 3, 1)),
+			List.of(
+					dilitio(1, Items.STICK, 50, 1),
+					dilitio(2, Items.BAMBOO, 22, 1),
+					dilitio(3, Items.COAL, 5, 1),
+					dilitio(4, ModItems.ARANDANO_NOCTURNO, 22, 1),
+					dilitio(5, Items.LEATHER, 6, 1),
+					dilitio(6, Items.OBSIDIAN, 4, 1),
+					dilitio(7, ModItems.AMBAR_CON_INSECTO, 6, 1)),
+			List.of(
+					dilitio(1, Items.STICK, 57, 1),
+					dilitio(2, Items.BAMBOO, 18, 1),
+					dilitio(3, Items.BREAD, 7, 1),
+					dilitio(4, ModItems.PELO_EBURIA, 5, 1),
+					dilitio(5, Items.BRICK, 19, 1),
+					dilitio(6, Items.BONE, 2, 1),
+					dilitio(7, ModItems.SANGRE_REPTISAURIO, 4, 1)));
 }

@@ -509,6 +509,15 @@ public final class ModItems {
 		public net.minecraft.network.chat.Component getName(ItemStack pila) {
 			return net.minecraft.network.chat.Component.translatable(this.getDescriptionId()).withColor(0xE8C547);
 		}
+
+		/** Si lleva un ítem oculto adentro (ver ItemsOcultos), lo avisa. */
+		@Override
+		public void appendHoverText(ItemStack pila, TooltipContext contexto, java.util.List<net.minecraft.network.chat.Component> texto,
+									net.minecraft.world.item.TooltipFlag bandera) {
+			if (!com.dedsafio4.catalogo.ItemsOcultos.tieneAdentro(pila)) return;
+			texto.add(net.minecraft.network.chat.Component.literal("Hay algo oculto adentro.").withColor(0x8C929C));
+			texto.add(net.minecraft.network.chat.Component.literal("Se revela cuando aparezca en la G.").withColor(0x8C929C));
+		}
 	});
 
 	/** Ámbar con Insecto: ámbar con un insecto atrapado en el medio (por ahora solo el ítem). */
