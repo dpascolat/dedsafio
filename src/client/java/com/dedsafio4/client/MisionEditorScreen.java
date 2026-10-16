@@ -19,8 +19,9 @@ import java.util.Map;
  * El editor de una misión (para los editores del Catálogo). A la izquierda se elige: si es Misión Guía o Misión
  * Principal (y de qué día), el ítem a crear, cuántos, cuántas deditas da y el texto de abajo. Para pintar palabras:
  * se seleccionan en el texto y se toca un color (queda {morado:palabras}); "{item}" pone el nombre del ítem.
- * La Misión Principal tiene además el Premio: lo que manda Eón al entregar la Dedita de la Misión (hasta 18 objetos;
- * las deditas se ponen como monedas). A la derecha se ve cómo va a quedar.
+ * La Misión Principal tiene además el Premio: lo que manda Eón al entregar la Dedita de la Misión, en una grilla de
+ * 3 filas de 9 (como un cofre). Acá se ve chiquito; "Editar premio" (o click en él) abre PremioEditorScreen, donde
+ * se arma con tu inventario en el orden que quieras. A la derecha se ve cómo va a quedar.
  */
 public class MisionEditorScreen extends Screen {
 	private final Screen anterior;
@@ -35,9 +36,9 @@ public class MisionEditorScreen extends Screen {
 	/** craftear, obtener o romper (ver Misiones.Mision.OBJETIVOS). */
 	private String objetivo;
 	private int xCampos, xVista, yResultados, yPremio;
-	/** El premio de la Misión Principal. */
-	private final List<ItemStack> premio = new java.util.ArrayList<>();
-	private static final int COLUMNAS_PREMIO = 9;
+	private static final int COLUMNAS_PREMIO = 9, MINI = 12;
+	/** El premio de la Misión Principal: cada casilla en su lugar (vacías incluidas). */
+	private final ItemStack[] premio = new ItemStack[Misiones.MAX_PREMIO];
 
 	public MisionEditorScreen(Screen anterior, int indice, Misiones.Mision mision) {
 		super(Component.literal(mision == null ? "Nueva misión" : "Editar misión"));
@@ -47,7 +48,10 @@ public class MisionEditorScreen extends Screen {
 		principal = mision != null && mision.principal();
 		objetivo = mision != null ? mision.objetivo() : "craftear";
 		item = mision == null ? Items.DIAMOND : mision.item();
-		if (mision != null) for (ItemStack o : mision.premio()) premio.add(o.copy());
+		java.util.Arrays.fill(premio, ItemStack.EMPTY);
+		if (mision != null) {
+			for (int i = 0; i < mision.premio().size() && i < premio.length; i++) premio[i] = mision.premio().get(i).copy();
+		}
 	}
 
 	private static int numero(EditBox b, int siNo) {
@@ -124,13 +128,11 @@ public class MisionEditorScreen extends Screen {
 			setFocused(texto);
 		}).bounds(x + 4, y, 44, 16).build());
 		y += 34;
-		// El premio (solo Misión Principal): dos filas de casillas y "+ Mano" para agregar lo que tienes en la mano.
+		// El premio (solo Misión Principal): chiquito acá; "Editar premio" abre la pantalla para armarlo.
 		yPremio = y;
-		manoPremio = addRenderableWidget(Button.builder(Component.literal("+ Mano"), b -> {
-			ItemStack mano = minecraft.player.getMainHandItem();
-			if (!mano.isEmpty() && premio.size() < Misiones.MAX_PREMIO) premio.add(mano.copy());
-		}).bounds(xCampos + COLUMNAS_PREMIO * 19 + 4, y, 50, 18).build());
-		y += 54;
+		manoPremio = addRenderableWidget(Button.builder(Component.literal("Editar premio"), b -> abrirPremio())
+				.bounds(xCampos + COLUMNAS_PREMIO * MINI + 6, y, 80, 18).build());
+		y += 3 * MINI + 8;
 		addRenderableWidget(Button.builder(Component.literal("Guardar"), b -> guardar()).bounds(xCampos, y, 80, 20).build());
 		addRenderableWidget(Button.builder(Component.literal("Cancelar"), b -> onClose()).bounds(xCampos + 86, y, 80, 20).build());
 		actualizarTipo();
@@ -149,12 +151,24 @@ public class MisionEditorScreen extends Screen {
 		}).withColor(0xFFB347));
 	}
 
-	/** Suma (o resta, si es negativo) a una casilla del premio; si llega a 0, la saca. */
-	private void cambiarPremio(int i, int cuanto) {
-		ItemStack o = premio.get(i);
-		int n = Math.min(o.getMaxStackSize(), o.getCount() + cuanto);
-		if (n <= 0) premio.remove(i);
-		else o.setCount(n);
+	/** Lo pone en la primera casilla vacía del premio (o lo suma si ya está el mismo ítem). */
+	private void agregarAlPremio(ItemStack pila) {
+		for (int i = 0; i < premio.length; i++) {
+			if (ItemStack.isSameItemSameComponents(premio[i], pila) && premio[i].getCount() < premio[i].getMaxStackSize()) {
+				premio[i].setCount(Math.min(premio[i].getMaxStackSize(), premio[i].getCount() + pila.getCount()));
+				return;
+			}
+		}
+		for (int i = 0; i < premio.length; i++) {
+			if (premio[i].isEmpty()) {
+				premio[i] = pila;
+				return;
+			}
+		}
+	}
+
+	private void abrirPremio() {
+		minecraft.setScreen(new PremioEditorScreen(this, premio));
 	}
 
 	private void buscar() {
@@ -171,9 +185,14 @@ public class MisionEditorScreen extends Screen {
 	}
 
 	private Misiones.Mision armar() {
+		// Las casillas vacías del final no hacen falta; las del medio sí (para que cada cosa quede en su lugar).
+		int hasta = premio.length;
+		while (hasta > 0 && premio[hasta - 1].isEmpty()) hasta--;
+		List<ItemStack> lista = new java.util.ArrayList<>();
+		for (int i = 0; i < hasta; i++) lista.add(premio[i].copy());
 		return new Misiones.Mision(original == null ? "" : original.id(), principal, Math.max(0, numero(dia, 1)),
 				BuiltInRegistries.ITEM.getKey(item).toString(), Math.max(1, numero(cantidad, 1)), Math.max(0, numero(deditas, 0)),
-				texto.getValue(), List.copyOf(premio), objetivo);
+				texto.getValue(), lista, objetivo);
 	}
 
 	private void guardar() {
@@ -192,23 +211,17 @@ public class MisionEditorScreen extends Screen {
 			int x = xCampos + i * 19;
 			if (mx >= x && mx < x + 18 && my >= yResultados && my < yResultados + 18) {
 				if (boton == 1 && principal) {
-					// Clic derecho: va al premio (si ya está al final, suma uno).
-					Item r = resultados.get(i);
-					if (!premio.isEmpty() && premio.get(premio.size() - 1).is(r)) cambiarPremio(premio.size() - 1, 1);
-					else if (premio.size() < Misiones.MAX_PREMIO) premio.add(new ItemStack(r));
+					// Clic derecho: va al premio.
+					agregarAlPremio(new ItemStack(resultados.get(i)));
 				} else {
 					item = resultados.get(i);
 				}
 				return true;
 			}
 		}
-		if (principal) {
-			for (int i = 0; i < premio.size(); i++) {
-				int x = xCampos + (i % COLUMNAS_PREMIO) * 19, y = yPremio + (i / COLUMNAS_PREMIO) * 19;
-				if (mx < x || mx >= x + 18 || my < y || my >= y + 18) continue;
-				cambiarPremio(i, boton == 1 ? -1 : hasShiftDown() ? 10 : 1);
-				return true;
-			}
+		if (principal && mx >= xCampos && mx < xCampos + COLUMNAS_PREMIO * MINI && my >= yPremio && my < yPremio + 3 * MINI) {
+			abrirPremio();
+			return true;
 		}
 		return super.mouseClicked(mx, my, boton);
 	}
@@ -226,24 +239,33 @@ public class MisionEditorScreen extends Screen {
 		g.drawString(font, "Texto", izq, texto.getY() + 4, 0xFFC0C0C0);
 		g.drawString(font, "Colores", izq, texto.getY() + 26, 0xFFC0C0C0);
 		g.drawString(font, "Selecciona palabras del texto y toca un color.", xCampos, texto.getY() + 42, 0xFF8C929C);
-		ItemStack encimaPremio = null;
+
+		// Cómo va a quedar (arriba a la derecha).
+		int wv = width - xVista - 12;
+		if (wv >= 90) {
+			int fin = height - 10;
+			g.fill(xVista - 6, 24, width - 6, fin, 0xC0101010);
+			g.enableScissor(xVista - 6, 24, width - 6, fin);
+			MisionesVista.detalle(g, font, armar(), 0, false, xVista, 32, wv);
+			g.disableScissor();
+		}
+
+		ItemStack encimaDe = null;
 		if (principal) {
 			g.drawString(font, "Premio", izq, yPremio + 5, 0xFFC0C0C0);
-			for (int i = 0; i < Misiones.MAX_PREMIO; i++) {
-				int x = xCampos + (i % COLUMNAS_PREMIO) * 19, y = yPremio + (i / COLUMNAS_PREMIO) * 19;
-				g.fill(x, y, x + 18, y + 18, 0xFF2E2E2E);
-				g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF151515);
-				if (i >= premio.size()) continue;
-				g.renderItem(premio.get(i), x + 1, y + 1);
-				g.renderItemDecorations(font, premio.get(i), x + 1, y + 1);
-				if (mx >= x && mx < x + 18 && my >= y && my < y + 18) encimaPremio = premio.get(i);
+			for (int i = 0; i < premio.length; i++) {
+				int x = xCampos + (i % COLUMNAS_PREMIO) * MINI, y = yPremio + (i / COLUMNAS_PREMIO) * MINI;
+				boolean encima = mx >= x && mx < x + MINI && my >= y && my < y + MINI;
+				g.fill(x, y, x + MINI, y + MINI, encima ? 0xFF6A6A6A : 0xFF2E2E2E);
+				g.fill(x + 1, y + 1, x + MINI - 1, y + MINI - 1, 0xFF151515);
+				if (premio[i].isEmpty()) continue;
+				g.pose().pushPose();
+				g.pose().translate(x + 1, y + 1, 0);
+				g.pose().scale((MINI - 2) / 16f, (MINI - 2) / 16f, 1);
+				g.renderItem(premio[i], 0, 0);
+				g.pose().popPose();
+				if (encima) encimaDe = premio[i];
 			}
-			g.pose().pushPose();
-			g.pose().translate(xCampos, yPremio + 40, 0);
-			g.pose().scale(0.75f, 0.75f, 1);
-			g.drawString(font, "Clic: +1 (Shift +10) · Clic derecho: -1", 0, 0, 0xFF8C929C);
-			g.drawString(font, "Clic derecho en un ítem buscado: agregarlo al premio", 0, 10, 0xFF8C929C);
-			g.pose().popPose();
 		}
 
 		// El ítem elegido (al lado del día/tipo) y los resultados de la búsqueda.
@@ -251,7 +273,6 @@ public class MisionEditorScreen extends Screen {
 		g.fill(xi, tipo.getY() - 1, xi + 20, tipo.getY() + 19, 0xFF1A1C1F);
 		g.renderItem(new ItemStack(item), xi + 2, tipo.getY() + 1);
 		g.drawString(font, new ItemStack(item).getHoverName(), xi + 24, tipo.getY() + 5, 0xFF6FA8FF);
-		ItemStack encimaDe = null;
 		for (int i = 0; i < resultados.size(); i++) {
 			int x = xCampos + i * 19;
 			boolean encima = mx >= x && mx < x + 18 && my >= yResultados && my < yResultados + 18;
@@ -260,13 +281,6 @@ public class MisionEditorScreen extends Screen {
 			if (encima) encimaDe = new ItemStack(resultados.get(i));
 		}
 
-		// Cómo va a quedar.
-		int wv = width - xVista - 12;
-		if (wv >= 90) {
-			g.fill(xVista - 6, 24, width - 6, height - 10, 0xC0101010);
-			MisionesVista.detalle(g, font, armar(), 0, false, xVista, 32, wv);
-		}
 		if (encimaDe != null) g.renderTooltip(font, encimaDe, mx, my);
-		else if (encimaPremio != null) g.renderTooltip(font, encimaPremio, mx, my);
 	}
 }

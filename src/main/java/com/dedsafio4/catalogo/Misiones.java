@@ -64,7 +64,7 @@ public final class Misiones {
 		COLORES.put("gris", 0xA0A0A0);
 	}
 
-	public static final int MAX_TEXTO = 400, MAX_PREMIO = 18;
+	public static final int MAX_TEXTO = 400, MAX_PREMIO = 27;
 
 	/**
 	 * Una misión: un id fijo (para saber quién la cobró), si es Principal y de qué día, el ítem a crear (su id,
@@ -118,7 +118,13 @@ public final class Misiones {
 			t.putInt("deditas", deditas);
 			t.putString("texto", texto);
 			ListTag l = new ListTag();
-			for (net.minecraft.world.item.ItemStack o : premio) if (!o.isEmpty()) l.add(o.save(registros));
+			// Cada cosa con su casilla (el premio es una grilla de 3×9 y puede tener huecos).
+			for (int i = 0; i < premio.size(); i++) {
+				if (premio.get(i).isEmpty()) continue;
+				CompoundTag casilla = new CompoundTag();
+				casilla.putByte("Slot", (byte) i);
+				l.add(premio.get(i).save(registros, casilla));
+			}
 			t.put("premio", l);
 			t.putString("objetivo", objetivo);
 			return t;
@@ -126,7 +132,15 @@ public final class Misiones {
 
 		static Mision leer(CompoundTag t, HolderLookup.Provider registros) {
 			List<net.minecraft.world.item.ItemStack> premio = new ArrayList<>();
-			for (Tag o : t.getList("premio", Tag.TAG_COMPOUND)) net.minecraft.world.item.ItemStack.parse(registros, o).ifPresent(premio::add);
+			for (Tag o : t.getList("premio", Tag.TAG_COMPOUND)) {
+				var pila = net.minecraft.world.item.ItemStack.parse(registros, o);
+				if (pila.isEmpty()) continue;
+				// Los guardados antes no tienen casilla: van uno atrás del otro.
+				int casilla = ((CompoundTag) o).contains("Slot") ? ((CompoundTag) o).getByte("Slot") & 0xFF : premio.size();
+				if (casilla >= MAX_PREMIO) continue;
+				while (premio.size() <= casilla) premio.add(net.minecraft.world.item.ItemStack.EMPTY);
+				premio.set(casilla, pila.get());
+			}
 			return new Mision(t.getString("id"), t.getBoolean("principal"), t.getInt("dia"), t.getString("item"),
 					Math.max(1, t.getInt("cantidad")), t.getInt("deditas"), t.getString("texto"), premio,
 					t.contains("objetivo") ? t.getString("objetivo") : "craftear");
@@ -449,12 +463,18 @@ public final class Misiones {
 						&& l.get(i).objetivo().equals(m.objetivo()) ? l.get(i).id()
 						: UUID.randomUUID().toString().substring(0, 8);
 				List<net.minecraft.world.item.ItemStack> premio = new ArrayList<>();
-				for (net.minecraft.world.item.ItemStack o : m.premio()) {
-					if (o.isEmpty() || premio.size() >= MAX_PREMIO) continue;
+				// Cada cosa queda en su casilla (con los huecos del medio); los del final no hacen falta.
+				for (int k = 0; k < m.premio().size() && k < MAX_PREMIO; k++) {
+					net.minecraft.world.item.ItemStack o = m.premio().get(k);
+					if (o.isEmpty()) {
+						premio.add(net.minecraft.world.item.ItemStack.EMPTY);
+						continue;
+					}
 					net.minecraft.world.item.ItemStack copia = o.copy();
 					copia.setCount(Math.max(1, Math.min(copia.getMaxStackSize(), copia.getCount())));
 					premio.add(copia);
 				}
+				while (!premio.isEmpty() && premio.get(premio.size() - 1).isEmpty()) premio.remove(premio.size() - 1);
 				Mision limpia = new Mision(id, m.principal(), Math.max(0, Math.min(9999, m.dia())), rl.toString(),
 						Math.max(1, Math.min(9999, m.cantidad())), Math.max(0, Math.min(1_000_000, m.deditas())), texto,
 						m.principal() ? premio : List.of(), m.objetivo());
