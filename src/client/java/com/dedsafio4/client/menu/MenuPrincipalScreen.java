@@ -20,7 +20,7 @@ import org.lwjgl.glfw.GLFW;
 /**
  * El menú principal del Dedsafío (reemplaza al de Minecraft): el arte de SAO estudios con el personaje que respira y
  * polvo que flota (un loop de 2 s), y tres botones: JUGAR (entra directo al servidor), OPCIONES y SALIR.
- * Apretando M+Q aparece el menú normal de Minecraft (y M+Q ahí vuelve a este).
+ * Apretando Y+X aparece el menú normal de Minecraft (y Y+X ahí vuelve a este).
  */
 public class MenuPrincipalScreen extends Screen {
 	/**
@@ -49,7 +49,7 @@ public class MenuPrincipalScreen extends Screen {
 		});
 	}
 
-	/** Si está en true (después de M+Q), se muestra el menú normal de Minecraft hasta cerrar el juego. */
+	/** Si está en true (después de Y+X), se muestra el menú normal de Minecraft hasta cerrar el juego. */
 	public static boolean modoNormal = false;
 	private static boolean yaAparecio = false;
 
@@ -81,18 +81,18 @@ public class MenuPrincipalScreen extends Screen {
 	private long aparecio;
 	private float escala, ox, oy;
 
-	/** Fuera de un mundo, los menús (opciones y demás) van con fondo negro, salvo en el modo normal (M+Q). */
+	/** Fuera de un mundo, los menús (opciones y demás) van con fondo negro, salvo en el modo normal (Y+X). */
 	public static boolean fondoNegro() {
 		return !modoNormal && net.minecraft.client.Minecraft.getInstance().level == null;
 	}
 
-	/** En el menú normal de Minecraft, M+Q vuelve al del Dedsafío. */
+	/** En el menú normal de Minecraft, Y+X vuelve al del Dedsafío. */
 	public static void registrar() {
 		buscarServidor();
 		net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((mc, pantalla, ancho, alto) -> {
 			if (pantalla.getClass() != TitleScreen.class) return;
 			net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents.afterKeyPress(pantalla).register((p, tecla, sc, mods) -> {
-				if (esMasQ(tecla)) {
+				if (esYMasX(tecla)) {
 					modoNormal = false;
 					mc.setScreen(new MenuPrincipalScreen());
 				}
@@ -255,7 +255,7 @@ public class MenuPrincipalScreen extends Screen {
 
 	@Override
 	public boolean keyPressed(int tecla, int scancode, int mods) {
-		if (esMasQ(tecla)) {
+		if (esYMasX(tecla)) {
 			modoNormal = true;
 			minecraft.setScreen(new TitleScreen());
 			return true;
@@ -279,11 +279,11 @@ public class MenuPrincipalScreen extends Screen {
 		}
 	}
 
-	/** ¿Se acaba de completar M+Q (una de las dos apretada y la otra recién)? */
-	public static boolean esMasQ(int tecla) {
+	/** ¿Se acaba de completar Y+X (una de las dos apretada y la otra recién)? */
+	public static boolean esYMasX(int tecla) {
 		long ventana = net.minecraft.client.Minecraft.getInstance().getWindow().getWindow();
-		return (tecla == GLFW.GLFW_KEY_Q && InputConstants.isKeyDown(ventana, GLFW.GLFW_KEY_M))
-				|| (tecla == GLFW.GLFW_KEY_M && InputConstants.isKeyDown(ventana, GLFW.GLFW_KEY_Q));
+		return (tecla == GLFW.GLFW_KEY_X && InputConstants.isKeyDown(ventana, GLFW.GLFW_KEY_Y))
+				|| (tecla == GLFW.GLFW_KEY_Y && InputConstants.isKeyDown(ventana, GLFW.GLFW_KEY_X));
 	}
 
 	private void apretar(int i) {
