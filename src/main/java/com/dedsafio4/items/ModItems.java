@@ -227,14 +227,14 @@ public final class ModItems {
 	/** Dilitio: sale del Bloque de Dilitio con Pico de Diamante o mejor. */
 	public static final Item DILITIO = registrar("dilitio", new DilitioItem(new Item.Properties()));
 
-	/** Cristal Verde: lo suelta el Mineral Verde. */
-	public static final Item CRISTAL_VERDE = registrar("cristal_verde", new Item(new Item.Properties()));
+	/** Bioxita (id cristal_verde): la suelta el Mineral de Bioxita. */
+	public static final Item CRISTAL_VERDE = registrar("cristal_verde", new BioxitaItem(new Item.Properties()));
 
 	/** Pimpollo de Qumara (por ahora solo el ítem, con su descripción). */
 	public static final Item PIMPOLLO_QUMARA = registrar("pimpollo_qumara",
 			new DescritoItem(new Item.Properties(), DescritoItem::pimpolloQumara));
 
-	/** Barra de Cristal Verde (por ahora solo el ítem). */
+	/** Barra de Bioxita (id barra_cristal_verde; por ahora solo el ítem). */
 	public static final Item BARRA_CRISTAL_VERDE = registrar("barra_cristal_verde", new Item(new Item.Properties()));
 
 	/** Racimo de Dilitio: 9 de Dilitio en la mesa de crafteo. */

@@ -120,7 +120,7 @@ public final class ModBloques {
 	public static final Item MINERAL_DE_AMBAR_ITEM = registrarItem("mineral_de_ambar", MINERAL_DE_AMBAR);
 
 	/**
-	 * Mineral de gemas verdes: hace falta pico de hierro, como la esmeralda. Suelta Cristal Verde (más con
+	 * Mineral de Bioxita (id mineral_verde): hace falta pico de diamante. Suelta Bioxita (más con
 	 * Fortuna) y experiencia; con Toque de Seda, el bloque.
 	 */
 	public static final Block MINERAL_VERDE = registrar("mineral_verde",
