@@ -413,6 +413,10 @@ public class CatalogoScreen extends Screen {
 		int elegida = modo == 2 ? 3 : modo == 3 ? 0 : 1;
 		for (int i = 0; i < PESTANAS.length; i++) {
 			int tx = x0 + 16, ty = y0 + 16 + i * (tab + 6);
+			// La espada: con el mouse encima dice "↗ Objetos ↗".
+			if (i == 1 && mx >= tx && mx < tx + tab && my >= ty && my < ty + tab) {
+				tooltipTexto = Component.literal("↗ Objetos ↗").withStyle(s -> s.withColor(0x55FF55).withBold(true));
+			}
 			if (DIBUJO_PESTANA[i] != null) {
 				com.mojang.blaze3d.systems.RenderSystem.enableBlend();
 				g.blit(DIBUJO_PESTANA[i], tx, ty, tab, tab, 0, 0, 40, 40, 40, 40);
