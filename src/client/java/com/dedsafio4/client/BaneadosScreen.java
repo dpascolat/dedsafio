@@ -106,7 +106,7 @@ public class BaneadosScreen extends Screen {
 		// La lista.
 		if (ids.isEmpty()) {
 			g.drawCenteredString(font, "No hay nadie", x0 + LISTA_X + ANCHO_FILA / 2, y0 + 90, 0xFFF2E3C8);
-			g.drawCenteredString(font, "baneado", x0 + LISTA_X + ANCHO_FILA / 2, y0 + 101, 0xFFF2E3C8);
+			g.drawCenteredString(font, "muerto", x0 + LISTA_X + ANCHO_FILA / 2, y0 + 101, 0xFFF2E3C8);
 		}
 		int sobre = filaEn(mx, my);
 		for (int f = 0; f < FILAS && desplazamiento + f < ids.size(); f++) {
