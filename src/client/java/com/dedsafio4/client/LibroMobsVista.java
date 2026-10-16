@@ -140,8 +140,7 @@ final class LibroMobsVista {
 			g.pose().scale(esc, esc, 1);
 			g.drawCenteredString(font, titulo, 0, 0, 0xFFE8E8E8);
 			g.pose().popPose();
-			if (sobreRuleta) tooltip = Component.literal(titulo).withColor(0xFFE14A)
-					.append(editor() ? Component.literal("  (click: cambiar el texto)").withColor(0x8C929C) : Component.empty());
+			if (sobreRuleta) tooltipLineas = descripcionDe(font, dia);
 			for (int c = 0; c < LibroMobs.POR_DIA; c++) {
 				int x = xCeldas + c * celda;
 				boolean encima = libre && mx >= x && mx < x + celda && my >= y && my < y + FILA - 2;
@@ -193,7 +192,7 @@ final class LibroMobsVista {
 			g.pose().pushPose();
 			g.pose().translate((xIzq + xDer) / 2f, yAbajo + 2, 0);
 			g.pose().scale(0.6f, 0.6f, 1);
-			g.drawCenteredString(font, "Editor: casilla vacía: elegir mob · mob: su ficha · click derecho: vaciar · ruleta: texto del día", 0, 0, CELESTE);
+			g.drawCenteredString(font, "Editor: casilla vacía: elegir mob · mob: su ficha · click derecho: vaciar · ruleta: descripción del día", 0, 0, CELESTE);
 			g.pose().popPose();
 		}
 		if (eligiendo != null) dibujarPanel(g, font, mx, my, parcial);
@@ -237,6 +236,25 @@ final class LibroMobsVista {
 		}
 		Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
 				net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN, 1f));
+	}
+
+	/** Lo que sale con el mouse encima de la ruleta: "Día N" y su descripción. */
+	private List<FormattedCharSequence> descripcionDe(Font font, int dia) {
+		List<FormattedCharSequence> l = new ArrayList<>();
+		l.add(Component.literal(LibroMobs.tituloDia(dia)).withColor(0xFFE14A).getVisualOrderText());
+		String texto = LibroMobs.descripcionDia(dia);
+		if (!texto.isBlank()) {
+			for (String parte : texto.split("\\|", -1)) {
+				l.add(FormattedCharSequence.EMPTY);
+				if (parte.isBlank()) continue;
+				l.addAll(font.split(com.dedsafio4.catalogo.Misiones.descripcion(parte.strip(), Items.AIR), 200));
+			}
+		} else if (editor()) {
+			l.add(FormattedCharSequence.EMPTY);
+			l.add(Component.literal("Sin descripción todavía.").withColor(0x8C929C).getVisualOrderText());
+		}
+		if (editor()) l.add(Component.literal("(click: cambiar la descripción)").withColor(0x8C929C).getVisualOrderText());
+		return l;
 	}
 
 	/** Lo que sale con el mouse encima del mob: el nombre, la información y dónde aparece. */
@@ -355,16 +373,16 @@ final class LibroMobsVista {
 
 	private void abrirTitulo(int dia) {
 		diaTitulo = dia;
-		tituloBox = new EditBox(Minecraft.getInstance().font, 0, 0, 140, 14, Component.literal("Texto del día"));
+		tituloBox = new EditBox(Minecraft.getInstance().font, 0, 0, 140, 14, Component.literal("Descripción del día"));
 		tituloBox.setMaxLength(LibroMobs.MAX_TITULO);
 		String actual = LibroMobs.TITULOS_CLIENTE.get(dia);
 		tituloBox.setValue(actual == null ? "" : actual);
-		tituloBox.setHint(Component.literal("Día " + dia).withColor(0xFF8C929C));
+		tituloBox.setHint(Component.literal("Escribe la descripción...").withColor(0xFF8C929C));
 		tituloBox.setFocused(true);
 	}
 
 	private int[] cajaTitulo() {
-		int w = 180, h = 58;
+		int w = 280, h = 58;
 		return new int[]{(lx0 + lx1) / 2 - w / 2, (ly0 + ly1) / 2 - h / 2, w, h};
 	}
 
@@ -374,7 +392,7 @@ final class LibroMobsVista {
 		g.pose().translate(0, 0, 300);
 		g.fill(c[0], c[1], c[0] + c[2], c[1] + c[3], 0xFF141820);
 		g.fill(c[0], c[1], c[0] + c[2], c[1] + 2, 0xFF5AD8FF);
-		g.drawString(font, "Texto del Día " + diaTitulo, c[0] + 8, c[1] + 7, 0xFFFFFFFF, true);
+		g.drawString(font, "Descripción del Día " + diaTitulo, c[0] + 8, c[1] + 7, 0xFFFFFFFF, true);
 		g.drawString(font, "x", c[0] + c[2] - 12, c[1] + 6, 0xFFFF7070, true);
 		tituloBox.setX(c[0] + 8);
 		tituloBox.setY(c[1] + 20);
@@ -384,7 +402,7 @@ final class LibroMobsVista {
 		g.pose().pushPose();
 		g.pose().translate(c[0] + 8, c[1] + 42, 0);
 		g.pose().scale(0.6f, 0.6f, 1);
-		g.drawString(font, "Vacío = \"Día " + diaTitulo + "\"", 0, 0, 0xFF8C929C, false);
+		g.drawString(font, "Usa | para separar renglones · vacío = sin descripción", 0, 0, 0xFF8C929C, false);
 		g.pose().popPose();
 		g.pose().popPose();
 	}

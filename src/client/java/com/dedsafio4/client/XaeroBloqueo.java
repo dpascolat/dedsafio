@@ -21,12 +21,16 @@ public final class XaeroBloqueo {
 		return mc.player != null && !(adminsLoUsan && mc.player.hasPermissions(2));
 	}
 
+	/** Las del mapa grande (Xaero's World Map, la M) sí andan: solo se bloquea lo del mini mapa. */
 	public static boolean esDeXaero(KeyMapping tecla) {
+		if (tecla.getCategory() != null && tecla.getCategory().toLowerCase().contains("world map")) return false;
 		return contieneXaero(tecla.getName()) || contieneXaero(tecla.getCategory());
 	}
 
 	public static boolean esDeXaero(Screen pantalla) {
-		return pantalla != null && pantalla.getClass().getName().startsWith("xaero.");
+		if (pantalla == null) return false;
+		String clase = pantalla.getClass().getName();
+		return clase.startsWith("xaero.") && !clase.startsWith("xaero.map.");
 	}
 
 	private static boolean contieneXaero(String texto) {

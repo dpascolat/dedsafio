@@ -44,7 +44,7 @@ public class CatalogoScreen extends Screen {
 	private RecipeHolder<CraftingRecipe> receta;
 	private Item recetaDe;
 	/** 0: el catálogo de ítems (la espada); 1: las Misiones (el pergamino); 2: el buscador (la lupa); 3: Cambios & Mobs (el libro). */
-	private int modo = 3;
+	private int modo = 0;   // con la G se abre en los ítems (con sus crafteos)
 	private final LibroMobsVista libro = new LibroMobsVista();
 	/** El buscador: escribes el nombre de cualquier ítem o bloque (del mod o de Minecraft) y aparece. */
 	private net.minecraft.client.gui.components.EditBox buscador;
@@ -387,9 +387,13 @@ public class CatalogoScreen extends Screen {
 		g.pose().scale(escala, escala, 1);
 		dibujarLienzo(g, (int) Math.floor(virtualX(mxReal)), (int) Math.floor(virtualY(myReal)), parcial);
 		g.pose().popPose();
+		// La descripción va adelante de todo (el crafteo y sus ítems se dibujan bastante adelante).
+		g.pose().pushPose();
+		g.pose().translate(0, 0, 1000);
 		if (tooltipItem != null) g.renderTooltip(font, tooltipItem, mxReal, myReal);
 		else if (modo == 3 && libro.tooltipLineas != null) g.renderTooltip(font, libro.tooltipLineas, mxReal, myReal);
 		else if (tooltipTexto != null) g.renderTooltip(font, tooltipTexto, mxReal, myReal);
+		g.pose().popPose();
 	}
 
 	/** Todo lo de adentro, en el lienzo de 420×236 (mx, my: el mouse en el lienzo). */

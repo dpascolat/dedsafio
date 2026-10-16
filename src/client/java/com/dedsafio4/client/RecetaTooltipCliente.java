@@ -43,6 +43,11 @@ public class RecetaTooltipCliente implements ClientTooltipComponent {
 	private static final java.util.Map<Item, List<Seccion>> BUSCADAS = new java.util.HashMap<>();
 	private static Object mundoBuscado;
 
+	/** Cambiaron los crafteos (/crafteo): se vuelven a buscar. */
+	public static void olvidar() {
+		BUSCADAS.clear();
+	}
+
 	public RecetaTooltipCliente(Item item) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.level != mundoBuscado) {

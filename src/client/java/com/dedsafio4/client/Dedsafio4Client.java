@@ -127,6 +127,11 @@ public class Dedsafio4Client implements ClientModInitializer {
 				Minecraft.getInstance().setScreen(new com.dedsafio4.client.cajero.CajeroScreen(pos));
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.subastas.Subastas.MENU,
 				com.dedsafio4.client.subastas.SubastasScreen::new);
+		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.crafteo.Crafteos.MENU,
+				com.dedsafio4.client.crafteo.CrafteoScreen::new);
+		// /crafteo cambió un crafteo: las descripciones lo vuelven a buscar.
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.crafteo.Crafteos.CambiaronPayload.TYPE, (payload, context) ->
+				context.client().execute(RecetaTooltipCliente::olvidar));
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.correo.Correo.MENU,
 				com.dedsafio4.client.correo.CorreoScreen::new);
 		net.minecraft.client.gui.screens.MenuScreens.register(com.dedsafio4.banco.ModCajero.MENU,

@@ -145,8 +145,8 @@ public final class LibroMobs {
 		}
 	}
 
-	/** Lo más largo que puede ser la información de un mob y el texto de un día. */
-	public static final int MAX_INFO = 600, MAX_TITULO = 24;
+	/** Lo más largo que puede ser la información de un mob y la descripción de un día. */
+	public static final int MAX_INFO = 600, MAX_TITULO = 600;
 
 	// --- En el cliente (lo llena el Payload) ---
 
@@ -155,10 +155,15 @@ public final class LibroMobs {
 	public static volatile java.util.Map<String, String> INFO_CLIENTE = java.util.Map.of();
 	public static volatile java.util.Map<Integer, String> TITULOS_CLIENTE = java.util.Map.of();
 
-	/** El texto de un día (el que se eligió, o "Día N"). */
+	/** El nombre de un día: siempre "Día N". */
 	public static String tituloDia(int dia) {
+		return "Día " + dia;
+	}
+
+	/** La descripción de un día (la que escribió un editor; vacía si no hay). */
+	public static String descripcionDia(int dia) {
 		String t = TITULOS_CLIENTE.get(dia);
-		return t == null || t.isBlank() ? "Día " + dia : t;
+		return t == null ? "" : t;
 	}
 
 	public static void recibir(Payload p) {

@@ -67,6 +67,8 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.cinematica.Cinematica.registrar();
 		com.dedsafio4.disfraz.Disfraces.registrar();
 		com.dedsafio4.bestias.AnuncioMob.registrar();
+		com.dedsafio4.dimension.ReinicioQuiu.registrar();
+		com.dedsafio4.crafteo.Crafteos.registrar();
 		com.dedsafio4.aviso.Aviso.registrar();
 		com.dedsafio4.bestias.CreeperAmarilloEntity.registrar();
 		NombreOculto.registrar();
@@ -166,6 +168,8 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.cinematica.Cinematica.registrarComandos(dispatcher);
 			com.dedsafio4.disfraz.Disfraces.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.AnuncioMob.registrarComandos(dispatcher);
+			com.dedsafio4.dimension.ReinicioQuiu.registrarComandos(dispatcher);
+			com.dedsafio4.crafteo.Crafteos.registrarComandos(dispatcher);
 			com.dedsafio4.aviso.Aviso.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.AlmitaEntity.registrarComandos(dispatcher);
 			NombreOculto.registrarComandos(dispatcher);
