@@ -64,6 +64,9 @@ public class CatalogoScreen extends Screen {
 	 * pantalla: así se ve igual con cualquier Gui Scale.
 	 */
 	private static final int VW = 420, VH = 236;
+	/** Lo que dice cada pestaña con el mouse encima (libro, espada, pergamino) y su color. */
+	private static final String[] NOMBRE_PESTANA = {"🕮 Cambios & Mobs 🕮", "↗ Objetos ↗", "✸ Misiones ✸"};
+	private static final int[] COLOR_PESTANA = {0xFFAA00, 0x55FF55, 0xFFFF55};
 	private float escala = 1, offX, offY;
 	/** Lo que hay que mostrar con el mouse encima (se dibuja al final, sin agrandar). */
 	private ItemStack tooltipItem;
@@ -413,9 +416,10 @@ public class CatalogoScreen extends Screen {
 		int elegida = modo == 2 ? 3 : modo == 3 ? 0 : 1;
 		for (int i = 0; i < PESTANAS.length; i++) {
 			int tx = x0 + 16, ty = y0 + 16 + i * (tab + 6);
-			// La espada: con el mouse encima dice "↗ Objetos ↗".
-			if (i == 1 && mx >= tx && mx < tx + tab && my >= ty && my < ty + tab) {
-				tooltipTexto = Component.literal("↗ Objetos ↗").withStyle(s -> s.withColor(0x55FF55).withBold(true));
+			// Con el mouse encima, el nombre de la pestaña: libro, espada y pergamino.
+			if (i < NOMBRE_PESTANA.length && mx >= tx && mx < tx + tab && my >= ty && my < ty + tab) {
+				int color = COLOR_PESTANA[i];
+				tooltipTexto = Component.literal(NOMBRE_PESTANA[i]).withStyle(s -> s.withColor(color).withBold(true));
 			}
 			if (DIBUJO_PESTANA[i] != null) {
 				com.mojang.blaze3d.systems.RenderSystem.enableBlend();
