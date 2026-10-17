@@ -33,7 +33,8 @@ import java.util.Map;
 /**
  * Cambiar a mano los números de un mob (se guarda en el mundo y vale para todos los de ese tipo, los que ya están y
  * los que aparezcan después):
- *   /dañomob <mob> <daño>          el golpe (en los creepers, el daño de la explosión, igual de cerca o de lejos)
+ *   /dañomob <mob> <daño>          el golpe (en los creepers, el daño de la explosión, igual de cerca o de lejos;
+ *                                  en los que tiran flechas, como el esqueleto, también cada flecha)
  *   /vidamob <mob> <vida>          la vida máxima (y los que ya están quedan con la vida llena)
  *   /velocidad <mob> <velocidad>   la velocidad (0,25 es la de un zombi; 0,3 la de un esqueleto). En los que vuelan
  *                                  (fantasmas, naves, phantoms, abejas...) cambia lo rápido que van por el aire: se
@@ -136,13 +137,17 @@ public final class AjustesMob {
 	}
 
 	/**
-	 * La explosión de un creeper con /dañomob: ese daño justo (lo llama LivingEntityAjustesMixin). Devuelve el daño a
-	 * usar, o el mismo si no corresponde.
+	 * Con /dañomob, la explosión de un creeper y las flechas de un mob (esqueletos, Stray, Bogged...) hacen ese daño
+	 * justo, sin importar la dificultad ni lo rápido que vaya la flecha (lo llama LivingEntityAjustesMixin; la armadura
+	 * lo baja después, como siempre). Devuelve el daño a usar, o el mismo si no corresponde.
 	 */
 	public static float danoExplosion(LivingEntity victima, DamageSource fuente, float danio) {
-		if (!(victima.level() instanceof ServerLevel mundo) || !fuente.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) return danio;
+		if (!(victima.level() instanceof ServerLevel mundo)) return danio;
 		Entity causa = fuente.getEntity() != null ? fuente.getEntity() : fuente.getDirectEntity();
-		if (!(causa instanceof Creeper)) return danio;
+		boolean explosion = fuente.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && causa instanceof Creeper;
+		boolean flecha = fuente.getDirectEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow
+				&& causa instanceof net.minecraft.world.entity.Mob;
+		if (!explosion && !flecha) return danio;
 		Double fijo = datos(mundo.getServer()).valor(DANO, causa.getType());
 		return fijo == null ? danio : fijo.floatValue();
 	}
@@ -204,7 +209,9 @@ public final class AjustesMob {
 		String texto = valor == null
 				? (que.equals(DANO) ? "El daño" : que.equals(VIDA) ? "La vida" : "La velocidad") + " de " + nombreMob + " vuelve a ser la normal."
 				: (que.equals(DANO) ? "Daño" : que.equals(VIDA) ? "Vida" : "Velocidad") + " de " + nombreMob + ": " + valor
-						+ (que.equals(DANO) && Creeper.class.isAssignableFrom(tipo.getBaseClass()) ? " (la explosión)" : "") + ".";
+						+ (que.equals(DANO) && Creeper.class.isAssignableFrom(tipo.getBaseClass()) ? " (la explosión)"
+						: que.equals(DANO) && tipo.is(net.minecraft.tags.EntityTypeTags.SKELETONS)
+								? " (el golpe y cada flecha)" : "") + ".";
 		int total = cuantos;
 		c.getSource().sendSuccess(() -> Component.literal(texto + " (" + total + " ya en el mundo)").withStyle(ChatFormatting.AQUA), true);
 		return 1;
