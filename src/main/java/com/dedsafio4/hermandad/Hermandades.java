@@ -110,14 +110,11 @@ public final class Hermandades {
 		manuscrito.shrink(1);
 		sincronizarJugadores(jugador.server);
 
-		String miembros = inscritos.stream().map(ManuscritoDatos.Inscrito::nombre).collect(Collectors.joining(", "));
+		// En el chat de todos: "¡La hermandad (nombre) ha sido fundada por (Maestro)!"
 		jugador.server.getPlayerList().broadcastSystemMessage(Component.empty()
-				.append(Component.literal("¡Se ha fundado la Hermandad ").withStyle(ChatFormatting.GOLD))
-				.append(Component.literal(nombre).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
-				.append(Component.literal("!").withStyle(ChatFormatting.GOLD))
-				.append(Component.literal("\nMaestro: ").withStyle(ChatFormatting.GRAY))
-				.append(Component.literal(maestro.nombre()).withStyle(ChatFormatting.AQUA))
-				.append(Component.literal("\nMiembros: " + miembros).withStyle(ChatFormatting.GRAY)), false);
+				.append(Component.literal("¡La hermandad ").withStyle(ChatFormatting.GREEN))
+				.append(Component.literal(nombre).withStyle(ChatFormatting.GOLD))
+				.append(Component.literal(" ha sido fundada por " + maestro.nombre() + "!").withStyle(ChatFormatting.GREEN)), false);
 	}
 
 	// ---------------------------------------------------------------- Interfaz (tecla H)
@@ -427,6 +424,9 @@ public final class Hermandades {
 	}
 
 	/** Solo el Maestro sube a alguien a Líder o lo vuelve a miembro. */
+	/** Cuántos Líderes puede tener una Hermandad (además del Maestro). */
+	public static final int MAXIMO_LIDERES = 2;
+
 	private static void cambiarRango(ServerPlayer maestro, HermandadesData.Hermandad h, String uuidTexto, boolean subir) {
 		if (!h.maestro().equals(maestro.getUUID())) {
 			error(maestro, "Solo el Maestro puede cambiar los rangos.");
@@ -439,6 +439,10 @@ public final class Hermandades {
 			return;
 		}
 		if (uuid.equals(h.maestro()) || !h.esMiembro(uuid) || h.esLider(uuid) == subir) return;
+		if (subir && h.lideres().size() >= MAXIMO_LIDERES) {
+			error(maestro, "La Hermandad ya tiene " + MAXIMO_LIDERES + " Líderes: baja a uno antes.");
+			return;
+		}
 		String nombre = h.miembros().stream().filter(m -> m.uuid().equals(uuid))
 				.map(ManuscritoDatos.Inscrito::nombre).findFirst().orElse("?");
 		data(maestro).setLider(h, uuid, subir);
