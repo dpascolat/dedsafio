@@ -223,21 +223,25 @@ public final class Baneos {
 		}
 		bans.remove(perfil);
 		if (usaAlma) com.dedsafio4.almas.Almas.ponerAlma(jugador, false);
-		com.dedsafio4.revivir.Revivir.alDesbanear(jugador.server, uuid);
 		jugador.getItemInHand(mano).consume(1, jugador);
 		jugador.level().playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 0.6f, 1.2f);
-		// En el chat: "(lápida) El jugador X ha revivido a Y." y arriba en la pantalla de todos "(cara) Y ha resucitado".
+		// El mensaje y el cartel salen cuando termina su animación de revivir (o ya, si no hay lugar de /revivir).
 		String revivido = perfil.getName() != null ? perfil.getName() : id;
-		jugador.server.getPlayerList().broadcastSystemMessage(Component.empty()
+		com.dedsafio4.revivir.Revivir.alDesbanear(jugador.server, uuid, jugador.getGameProfile().getName(), revivido);
+		enviarLista(jugador, pos);
+	}
+
+	/** En el chat: "(lápida) El jugador X ha revivido a Y." y arriba en la pantalla de todos "(cara) Y ha resucitado". */
+	public static void anunciarRevivido(net.minecraft.server.MinecraftServer server, String quien, String revivido, UUID uuid) {
+		server.getPlayerList().broadcastSystemMessage(Component.empty()
 				.append(Component.literal("").withStyle(net.minecraft.network.chat.Style.EMPTY.withFont(
 						ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "iconos"))))
 				.append(Component.literal(" El jugador ").withStyle(ChatFormatting.WHITE))
-				.append(Component.literal(jugador.getGameProfile().getName()).withColor(AZUL_NOMBRE))
+				.append(Component.literal(quien).withColor(AZUL_NOMBRE))
 				.append(Component.literal(" ha revivido a ").withStyle(ChatFormatting.WHITE))
 				.append(Component.literal(revivido).withColor(AZUL_NOMBRE))
 				.append(Component.literal(".").withStyle(ChatFormatting.WHITE)), false);
 		ResucitadoPayload cartel = new ResucitadoPayload(revivido, uuid.toString());
-		for (ServerPlayer p : jugador.server.getPlayerList().getPlayers()) ServerPlayNetworking.send(p, cartel);
-		enviarLista(jugador, pos);
+		for (ServerPlayer p : server.getPlayerList().getPlayers()) ServerPlayNetworking.send(p, cartel);
 	}
 }

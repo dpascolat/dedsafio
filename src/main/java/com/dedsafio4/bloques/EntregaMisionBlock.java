@@ -35,7 +35,7 @@ public class EntregaMisionBlock extends Block {
 	public static final String REMITENTE = "Eón";
 
 	/** Los mensajes que se mandan cuando termina la ruleta: a quién, qué dice, el premio y en qué tick. */
-	private record Pendiente(java.util.UUID jugador, String texto, List<ItemStack> premio, long cuando) {}
+	private record Pendiente(java.util.UUID jugador, String nombre, String texto, List<ItemStack> premio, long cuando) {}
 
 	private static final List<Pendiente> PENDIENTES = new java.util.ArrayList<>();
 	/** Los bloques de misión con la ruleta andando (el de más abajo, por mundo) y en qué tick termina: hasta entonces no se puede poner otra Dedita. */
@@ -48,6 +48,12 @@ public class EntregaMisionBlock extends Block {
 				if (server.getTickCount() < p.cuando()) continue;
 				it.remove();
 				Correo.mandar(server, p.jugador(), REMITENTE, "Misión diaria", p.texto(), p.premio());
+				// En el chat de todos, cuando termina la animación: "(icono) X ha completado la misión diaria."
+				server.getPlayerList().broadcastSystemMessage(Component.empty()
+						.append(Component.literal(String.valueOf((char) 0xE004)).withStyle(net.minecraft.network.chat.Style.EMPTY
+								.withFont(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "iconos"))))
+						.append(Component.literal(" " + p.nombre() + " ha completado la misión diaria.").withColor(0x7FE9F2)),
+						false);
 			}
 		});
 	}
@@ -104,15 +110,9 @@ public class EntregaMisionBlock extends Block {
 				new net.minecraft.world.phys.Vec3(arriba.getX() + 0.5, arriba.getY() + 1 + 0.25 + 0.05, arriba.getZ() + 0.5), 0.25f);
 		// Mientras dura la ruleta, el cielo se pone de noche con estrellas para los que están a menos de 10 bloques.
 		com.dedsafio4.cielo.CieloNoche.mostrar(servidor.serverLevel(), pos.getCenter(), 10f, com.dedsafio4.ruleta.RuletaPiso.DURACION);
-		PENDIENTES.add(new Pendiente(servidor.getUUID(), texto, List.copyOf(premio),
+		PENDIENTES.add(new Pendiente(servidor.getUUID(), servidor.getGameProfile().getName(), texto, List.copyOf(premio),
 				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
 		level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1f, 1.2f);
-		// En el chat de todos: "(icono) X ha completado la misión diaria."
-		servidor.server.getPlayerList().broadcastSystemMessage(Component.empty()
-				.append(Component.literal(String.valueOf((char) 0xE004)).withStyle(net.minecraft.network.chat.Style.EMPTY
-						.withFont(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "iconos"))))
-				.append(Component.literal(" " + servidor.getGameProfile().getName() + " ha completado la misión diaria.").withColor(0x7FE9F2)),
-				false);
 		return ItemInteractionResult.SUCCESS;
 	}
 

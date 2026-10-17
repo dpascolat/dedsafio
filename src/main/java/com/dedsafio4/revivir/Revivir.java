@@ -185,6 +185,8 @@ public final class Revivir {
 		BlockPos lugar;
 		String dimension = "minecraft:overworld", direccion = "+z";
 		final java.util.Set<String> pendientes = new java.util.HashSet<>();
+		/** Desbaneado → quién lo revivió (para el mensaje del chat, que sale al terminar su animación). */
+		final java.util.Map<String, String> quienes = new java.util.HashMap<>();
 
 		private static Datos leer(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
 			Datos d = new Datos();
@@ -192,6 +194,8 @@ public final class Revivir {
 			if (tag.contains("dimension")) d.dimension = tag.getString("dimension");
 			if (tag.contains("direccion")) d.direccion = tag.getString("direccion");
 			for (net.minecraft.nbt.Tag t : tag.getList("pendientes", net.minecraft.nbt.Tag.TAG_STRING)) d.pendientes.add(t.getAsString());
+			net.minecraft.nbt.CompoundTag q = tag.getCompound("quienes");
+			for (String k : q.getAllKeys()) d.quienes.put(k, q.getString(k));
 			return d;
 		}
 
@@ -203,6 +207,9 @@ public final class Revivir {
 			net.minecraft.nbt.ListTag lista = new net.minecraft.nbt.ListTag();
 			for (String s : pendientes) lista.add(net.minecraft.nbt.StringTag.valueOf(s));
 			tag.put("pendientes", lista);
+			net.minecraft.nbt.CompoundTag q = new net.minecraft.nbt.CompoundTag();
+			quienes.forEach(q::putString);
+			tag.put("quienes", q);
 			return tag;
 		}
 	}
@@ -214,11 +221,21 @@ public final class Revivir {
 	/** Los que acaban de entrar y van a hacer la animación: el jugador y en qué tick del servidor empieza. */
 	private static final java.util.Map<UUID, Integer> POR_EMPEZAR = new java.util.HashMap<>();
 
-	/** Lo llama el Bloque de Baneados al desbanear: si hay lugar de /revivir, hará la animación al entrar. */
-	public static void alDesbanear(net.minecraft.server.MinecraftServer server, UUID jugador) {
+	/** Los que están haciendo la animación de revivir → quién los revivió (el mensaje sale cuando termina). */
+	private static final java.util.Map<UUID, String> POR_ANUNCIAR = new java.util.HashMap<>();
+
+	/**
+	 * Lo llama el Bloque de Baneados al desbanear: si hay lugar de /revivir, hará la animación al entrar y el mensaje
+	 * del chat sale cuando termina; si no, el mensaje sale ya.
+	 */
+	public static void alDesbanear(net.minecraft.server.MinecraftServer server, UUID jugador, String quien, String revivido) {
 		Datos d = datos(server);
-		if (d.lugar == null) return;
+		if (d.lugar == null) {
+			com.dedsafio4.baneos.Baneos.anunciarRevivido(server, quien, revivido, jugador);
+			return;
+		}
 		d.pendientes.add(jugador.toString());
+		d.quienes.put(jugador.toString(), quien);
 		d.setDirty();
 	}
 
@@ -227,8 +244,16 @@ public final class Revivir {
 		// El desbaneado entra: un momento después (que termine de cargar) aparece en el lugar y hace la animación.
 		net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			Datos d = datos(server);
-			if (d.lugar == null || !d.pendientes.remove(handler.player.getUUID().toString())) return;
+			String id = handler.player.getUUID().toString();
+			String quien = d.quienes.remove(id);
+			if (quien != null) d.setDirty();
+			if (d.lugar == null || !d.pendientes.remove(id)) {
+				// Sin animación (se quitó el lugar de /revivir): el mensaje sale al entrar.
+				if (quien != null) com.dedsafio4.baneos.Baneos.anunciarRevivido(server, quien, handler.player.getGameProfile().getName(), handler.player.getUUID());
+				return;
+			}
 			d.setDirty();
+			if (quien != null) POR_ANUNCIAR.put(handler.player.getUUID(), quien);
 			POR_EMPEZAR.put(handler.player.getUUID(), server.getTickCount() + 40);
 		});
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -329,6 +354,9 @@ public final class Revivir {
 
 	private static void terminar(Escena e, ServerPlayer p) {
 		volver(e, p);
+		// Terminó su animación: ahora sí, el mensaje del chat y el cartel de arriba.
+		String quien = POR_ANUNCIAR.remove(p.getUUID());
+		if (quien != null) com.dedsafio4.baneos.Baneos.anunciarRevivido(p.server, quien, p.getGameProfile().getName(), p.getUUID());
 		forzarPose(p, null);
 		p.setNoGravity(false);
 		p.fallDistance = 0;
