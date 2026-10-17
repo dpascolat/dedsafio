@@ -11,6 +11,7 @@
 		"CapeLayerMixin",
 		"CasillaBaneadaMixin",
 		"ChatCaraMixin",
+		"ChatSistemaMixin",
 		"HotbarBaneadaMixin",
 		"ChestRendererMixin",
 		"ClientPacketListenerMixin",

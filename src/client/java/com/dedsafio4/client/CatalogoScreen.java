@@ -65,8 +65,9 @@ public class CatalogoScreen extends Screen {
 	 */
 	private static final int VW = 420, VH = 236;
 	/** Lo que dice cada pestaña con el mouse encima (libro, espada, pergamino) y su color. */
-	private static final String[] NOMBRE_PESTANA = {"🕮 Cambios & Mobs 🕮", "↗ Objetos ↗", "✸ Misiones ✸"};
-	private static final int[] COLOR_PESTANA = {0xFFAA00, 0x55FF55, 0xFFFF55};
+	private static final String[] NOMBRE_PESTANA = {"🕮 Cambios & Mobs 🕮", "↗ Objetos ↗", "✸ Misiones ✸",
+			"🔍 Búsqueda 🔍"};
+	private static final int[] COLOR_PESTANA = {0xFFAA00, 0x55FF55, 0xFFFF55, 0x5599FF};
 	private float escala = 1, offX, offY;
 	/** Lo que hay que mostrar con el mouse encima (se dibuja al final, sin agrandar). */
 	private ItemStack tooltipItem;
