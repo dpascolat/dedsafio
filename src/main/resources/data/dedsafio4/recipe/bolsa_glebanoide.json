@@ -14,7 +14,7 @@
 			"item": "dedsafio4:cuero_glebanoide"
 		},
 		"B": {
-			"item": "dedsafio4:bolsa_de_tela"
+			"tag": "dedsafio4:bolsas_primitivas"
 		}
 	},
 	"result": {

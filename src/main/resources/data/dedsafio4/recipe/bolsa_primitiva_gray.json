@@ -1,0 +1,16 @@
+{
+	"type": "dedsafio4:tenir_bolsa",
+	"category": "misc",
+	"ingredients": [
+		{
+			"tag": "dedsafio4:bolsas_primitivas"
+		},
+		{
+			"item": "minecraft:gray_dye"
+		}
+	],
+	"result": {
+		"id": "dedsafio4:bolsa_primitiva_gray",
+		"count": 1
+	}
+}

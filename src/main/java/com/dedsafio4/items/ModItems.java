@@ -659,6 +659,7 @@ public final class ModItems {
 						entradas.accept(AMULETO_VERDE);
 						entradas.accept(EXCREMENTO);
 						entradas.accept(BOLSA_DE_TELA);
+						for (Item bolsa : BolsasDeColores.BOLSAS.values()) entradas.accept(bolsa);
 						entradas.accept(SACO);
 						entradas.accept(ARCO_GLEBANOIDE);
 						entradas.accept(FRUTA_ESPACIO);
