@@ -23,6 +23,32 @@ public final class AjustesNeoForge {
 			if (Cambios.nivel(level.getServer(), Cambios.RESPIRAR_AGUA) < 1) return;
 			if (cabezaEnBolsaDeAire(level, BlockPos.containing(jugador.getX(), jugador.getEyeY(), jugador.getZ()))) e.setCanBreathe(false);
 		});
+		// Los bloques del mod que son para usar (Entrega de Misiones, Baneados, Puesto de Intercambio, Bóveda y Cajero
+		// de deditas, Mensajero, Vitrina) y el Aldeano se pueden usar aunque otro mod o script (KubeJS, protecciones
+		// de zona) cancele el click: esto va último y lo vuelve a habilitar. Romper o poner bloques no se toca.
+		juego.addListener(EventPriority.LOWEST, true, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock.class, e -> {
+			if (!bloqueLibre(e.getLevel().getBlockState(e.getPos()).getBlock())) return;
+			e.setCanceled(false);
+			e.setUseBlock(net.neoforged.neoforge.common.util.TriState.DEFAULT);
+			e.setUseItem(net.neoforged.neoforge.common.util.TriState.DEFAULT);
+		});
+		juego.addListener(EventPriority.LOWEST, true, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, e -> {
+			if (e.getTarget() instanceof com.dedsafio4.robots.AldeanoRobotEntity) e.setCanceled(false);
+		});
+		juego.addListener(EventPriority.LOWEST, true, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific.class, e -> {
+			if (e.getTarget() instanceof com.dedsafio4.robots.AldeanoRobotEntity) e.setCanceled(false);
+		});
+	}
+
+	/** Los bloques del mod que cualquiera tiene que poder usar, estén donde estén. */
+	public static boolean bloqueLibre(net.minecraft.world.level.block.Block bloque) {
+		return bloque instanceof com.dedsafio4.bloques.EntregaMisionBlock
+				|| bloque == com.dedsafio4.baneos.Baneos.BLOQUE
+				|| bloque == com.dedsafio4.intercambio.ModIntercambio.PUESTO
+				|| bloque instanceof com.dedsafio4.bloques.MensajeroBlock
+				|| bloque instanceof com.dedsafio4.subastas.VitrinaBlock
+				|| bloque instanceof com.dedsafio4.banco.CajeroBlock
+				|| bloque instanceof com.dedsafio4.boveda.BovedaBlock;
 	}
 
 	/** La cabeza en un bloque sin agua que no es aire, con agua en al menos 2 de los lados o arriba. */
