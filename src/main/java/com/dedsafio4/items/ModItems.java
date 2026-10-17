@@ -203,7 +203,22 @@ public final class ModItems {
 
 	// Ítems nuevos con nombre provisorio (todavía sin nombre ni función definidos).
 	public static final Item CUCHARA_MADERA = registrar("cuchara_madera", new Item(new Item.Properties().stacksTo(1)));
-	public static final Item CUCHARA_HOJAS = registrar("cuchara_hojas", new Item(new Item.Properties().stacksTo(1)));
+	/** Cuchara de la Resurrección (id cuchara_hojas): revive gastando el Alma (ver Baneos). */
+	public static final Item CUCHARA_HOJAS = registrar("cuchara_hojas", new Item(new Item.Properties().stacksTo(1)) {
+		@Override
+		public net.minecraft.network.chat.Component getName(ItemStack pila) {
+			return net.minecraft.network.chat.Component.translatable(this.getDescriptionId()).withColor(0xFFAA00);
+		}
+
+		@Override
+		public void appendHoverText(ItemStack pila, TooltipContext contexto, java.util.List<net.minecraft.network.chat.Component> texto,
+									net.minecraft.world.item.TooltipFlag bandera) {
+			texto.add(net.minecraft.network.chat.Component.empty());
+			texto.add(net.minecraft.network.chat.Component.literal("Permite revivir utilizando un ").withColor(0xFFFFFF)
+					.append(net.minecraft.network.chat.Component.literal("Alma").withColor(0x55FFFF)));
+			texto.add(net.minecraft.network.chat.Component.literal("en la Fogata de la Montaña.").withColor(0xFFFFFF));
+		}
+	});
 	public static final Item TENEDOR_HOJAS = registrar("tenedor_hojas", new Item(new Item.Properties().stacksTo(1)));
 	public static final Item CUCHARA_DORADA_HOJAS = registrar("cuchara_dorada_hojas", new Item(new Item.Properties().stacksTo(1)));
 	/** Billete de Autobús (el ítem se llama "tarjeta_rosa" desde antes): hace falta para viajar en Autobús. */

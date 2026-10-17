@@ -41,7 +41,7 @@ import java.util.UUID;
 /**
  * El Bloque de Baneados (con la textura del bloque barrera): con click derecho muestra a todos los baneados del
  * servidor; eligiendo uno y teniendo una cuchara o un tenedor en la mano, se lo desbanea (se gasta el cubierto).
- * La Cuchara de Madera con Hojas además gasta el Alma del que revive (sin Alma no se puede usar); el Tenedor de
+ * La Cuchara de la Resurrección además gasta el Alma del que revive (sin Alma no se puede usar); el Tenedor de
  * Hierro con Hojas no la gasta.
  */
 public final class Baneos {
@@ -218,7 +218,7 @@ public final class Baneos {
 		}
 		boolean usaAlma = jugador.getItemInHand(mano).is(ModItems.CUCHARA_HOJAS);
 		if (usaAlma && !com.dedsafio4.almas.Almas.tieneAlma(jugador)) {
-			jugador.displayClientMessage(Component.literal("La Cuchara de Madera con Hojas necesita tu Alma.").withStyle(ChatFormatting.RED), true);
+			jugador.displayClientMessage(Component.literal("La Cuchara de la Resurrección necesita tu Alma.").withStyle(ChatFormatting.RED), true);
 			return;
 		}
 		bans.remove(perfil);
