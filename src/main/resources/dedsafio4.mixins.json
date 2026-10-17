@@ -36,6 +36,7 @@
 		"RangedAttributeMixin",
 		"SinIllagersMixin",
 		"SpawnPlacementsMixin",
+		"UsoSinOpMixin",
 		"StoredUserEntryAccessor",
 		"ThrownEnderpearlMixin",
 		"TridenteLimboMixin",

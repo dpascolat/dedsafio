@@ -94,9 +94,9 @@ public final class Baneos {
 		return cuantos;
 	}
 
-	/** Las cucharas y tenedores que sirven para desbanear. */
+	/** Las cucharas y tenedores que sirven para desbanear (los simples, sin hojas, no). */
 	public static boolean esCubierto(ItemStack item) {
-		return item.is(ModItems.CUCHARA_MADERA) || item.is(ModItems.CUCHARA_HOJAS) || item.is(ModItems.TENEDOR_HOJAS)
+		return item.is(ModItems.CUCHARA_HOJAS) || item.is(ModItems.TENEDOR_HOJAS)
 				|| item.is(ModItems.CUCHARA_DORADA_HOJAS);
 	}
 
