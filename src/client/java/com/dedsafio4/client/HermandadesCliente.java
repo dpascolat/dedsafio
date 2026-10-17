@@ -17,12 +17,40 @@ public final class HermandadesCliente {
 	/** El estandarte activo de cada Hermandad (nombre → estandarte). */
 	private static final Map<String, net.minecraft.world.item.ItemStack> ACTIVOS = new HashMap<>();
 
+	/** El orden de las Hermandades (la primera que se fundó primero), como las manda el servidor. */
+	private static final Map<String, Integer> ORDEN = new HashMap<>();
+
 	public static void actualizar(HermandadesJugadoresPayload payload) {
 		POR_JUGADOR.clear();
-		for (HermandadesJugadoresPayload.Entrada e : payload.entradas()) POR_JUGADOR.put(e.jugador(), e);
+		ORDEN.clear();
+		for (HermandadesJugadoresPayload.Entrada e : payload.entradas()) {
+			POR_JUGADOR.put(e.jugador(), e);
+			ORDEN.putIfAbsent(e.hermandad(), ORDEN.size());
+		}
 		ACTIVOS.clear();
 		for (HermandadesJugadoresPayload.Activo a : payload.activos()) ACTIVOS.put(a.hermandad(), a.estandarte());
 	}
+
+	/**
+	 * Para ordenar la lista del Tab: primero por Hermandad (de la primera que se fundó a la última; los que no tienen,
+	 * al final) y adentro de cada una por rango (Maestro, Líderes, Miembros); después, por nombre.
+	 */
+	public static final java.util.Comparator<net.minecraft.client.multiplayer.PlayerInfo> ORDEN_TAB = java.util.Comparator
+			.<net.minecraft.client.multiplayer.PlayerInfo>comparingInt(i -> i.getGameMode() == net.minecraft.world.level.GameType.SPECTATOR ? 1 : 0)
+			.thenComparingInt(i -> {
+				HermandadesJugadoresPayload.Entrada e = POR_JUGADOR.get(i.getProfile().getId());
+				return e == null ? Integer.MAX_VALUE : ORDEN.getOrDefault(e.hermandad(), Integer.MAX_VALUE - 1);
+			})
+			.thenComparingInt(i -> {
+				HermandadesJugadoresPayload.Entrada e = POR_JUGADOR.get(i.getProfile().getId());
+				if (e == null) return 3;
+				return switch (e.rango()) {
+					case "Maestro" -> 0;
+					case "Líder" -> 1;
+					default -> 2;
+				};
+			})
+			.thenComparing(i -> i.getProfile().getName(), String::compareToIgnoreCase);
 
 	/** El estandarte que lleva de capa un jugador (vacío si su Hermandad no eligió ninguno). */
 	public static net.minecraft.world.item.ItemStack estandarteDe(UUID jugador) {

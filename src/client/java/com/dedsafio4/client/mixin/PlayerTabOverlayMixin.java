@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * La lista de jugadores (Tab): el nombre con el color de su Hermandad y, a la derecha (antes de la señal), el ícono
- * del Alma o del Sin Alma.
+ * del Alma o del Sin Alma. Los jugadores van ordenados por Hermandad y por rango (ver HermandadesCliente.ORDEN_TAB).
  */
 @Mixin(PlayerTabOverlay.class)
 public abstract class PlayerTabOverlayMixin {
@@ -33,6 +33,13 @@ public abstract class PlayerTabOverlayMixin {
 				? nombre.copy().withStyle(s -> s.withColor(TextColor.fromRgb(hermandad.color())))
 				: nombre.copy();
 		cir.setReturnValue(nuevo.append(LUGAR_ICONO));
+	}
+
+	@Inject(method = "getPlayerInfos", at = @At("RETURN"), cancellable = true)
+	private void dedsafio4$ordenHermandades(CallbackInfoReturnable<java.util.List<PlayerInfo>> cir) {
+		java.util.List<PlayerInfo> lista = new java.util.ArrayList<>(cir.getReturnValue());
+		lista.sort(HermandadesCliente.ORDEN_TAB);
+		cir.setReturnValue(lista);
 	}
 
 	/** Justo antes de la señal (que va en la punta derecha de la fila): el ícono del alma. */
