@@ -23,8 +23,11 @@ public abstract class ChatTypeMixin {
 			at = @At("RETURN"), cancellable = true)
 	private static void dedsafio4$nombreVerde(ResourceKey<ChatType> tipo, Entity entidad, CallbackInfoReturnable<ChatType.Bound> cir) {
 		if (tipo != ChatType.CHAT || !(entidad instanceof Player)) return;
+		// Rojo para los admins de /colorsito.
+		TextColor color = entidad instanceof net.minecraft.server.level.ServerPlayer sp
+				? TextColor.fromRgb(com.dedsafio4.chat.ColoresChat.colorServidor(sp)) : COLOR_NOMBRE;
 		ChatType.Bound bound = cir.getReturnValue();
 		cir.setReturnValue(new ChatType.Bound(bound.chatType(),
-				bound.name().copy().withStyle(s -> s.withColor(COLOR_NOMBRE)), bound.targetName()));
+				bound.name().copy().withStyle(s -> s.withColor(color)), bound.targetName()));
 	}
 }

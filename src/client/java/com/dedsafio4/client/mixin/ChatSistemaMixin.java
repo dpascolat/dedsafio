@@ -25,6 +25,6 @@ public abstract class ChatSistemaMixin {
 		var conexion = Minecraft.getInstance().getConnection();
 		if (conexion == null || conexion.getPlayerInfo(m.group(1)) == null) return mensaje;
 		return Component.translatable("chat.type.dedsafio4",
-				Component.literal(m.group(1)).withStyle(s -> s.withColor(0x55FFA0)), Component.literal(m.group(2)));
+				Component.literal(m.group(1)).withStyle(s -> s.withColor(com.dedsafio4.chat.ColoresChat.colorCliente(m.group(1)))), Component.literal(m.group(2)));
 	}
 }

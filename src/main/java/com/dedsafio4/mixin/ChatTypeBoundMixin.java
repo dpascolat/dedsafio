@@ -27,7 +27,8 @@ public abstract class ChatTypeBoundMixin {
 		boolean propio = tipo.is(ChatType.CHAT)
 				|| tipo.unwrapKey().map(k -> !k.location().getNamespace().equals("minecraft")).orElse(false);
 		if (!propio) return;
-		Component nombre = name().copy().withStyle(s -> s.withColor(0x55FFA0));
+		int color = com.dedsafio4.chat.ColoresChat.colorCliente(name().getString());
+		Component nombre = name().copy().withStyle(s -> s.withColor(color));
 		cir.setReturnValue(Component.translatable("chat.type.dedsafio4", nombre, mensaje));
 	}
 }

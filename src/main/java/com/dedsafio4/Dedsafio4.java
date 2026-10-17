@@ -69,6 +69,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.bestias.AnuncioMob.registrar();
 		com.dedsafio4.dimension.ReinicioQuiu.registrar();
 		com.dedsafio4.crafteo.Crafteos.registrar();
+		com.dedsafio4.chat.ColoresChat.registrar();
 		com.dedsafio4.items.BolsasDeColores.registrar();
 		com.dedsafio4.robots.ReponerComercio.registrar();
 		com.dedsafio4.catalogo.ItemsOcultos.registrar();
@@ -175,6 +176,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.bestias.AnuncioMob.registrarComandos(dispatcher);
 			com.dedsafio4.dimension.ReinicioQuiu.registrarComandos(dispatcher);
 			com.dedsafio4.crafteo.Crafteos.registrarComandos(dispatcher);
+			com.dedsafio4.chat.ColoresChat.registrarComandos(dispatcher);
 			com.dedsafio4.aviso.Aviso.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.AlmitaEntity.registrarComandos(dispatcher);
 			NombreOculto.registrarComandos(dispatcher);

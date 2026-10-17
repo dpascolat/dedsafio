@@ -132,6 +132,12 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// El comercio del Aldeano: cuánto cuesta reponer y cuánto falta para cada comercio agotado.
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.robots.ReponerComercio.CostoPayload.TYPE, (payload, context) ->
 				context.client().execute(() -> com.dedsafio4.client.robots.ComercioScreen.recibir(payload)));
+		// /colorsito: los nombres que van en rojo en el chat.
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.chat.ColoresChat.Payload.TYPE, (payload, context) ->
+				context.client().execute(() -> {
+					com.dedsafio4.chat.ColoresChat.ROJOS_CLIENTE.clear();
+					com.dedsafio4.chat.ColoresChat.ROJOS_CLIENTE.addAll(payload.rojos());
+				}));
 		// /crafteo cambió un crafteo: las descripciones lo vuelven a buscar.
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.crafteo.Crafteos.CambiaronPayload.TYPE, (payload, context) ->
 				context.client().execute(RecetaTooltipCliente::olvidar));
