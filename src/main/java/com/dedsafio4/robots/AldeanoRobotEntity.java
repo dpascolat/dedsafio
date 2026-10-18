@@ -202,6 +202,8 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		if (!subio) return;
 		this.desbloquear();
 		this.playSound(SoundEvents.PLAYER_LEVELUP, 1f, 1.4f);
+		// Al subir de nivel, un poco más de experiencia (como los aldeanos de Minecraft).
+		this.level().addFreshEntity(new net.minecraft.world.entity.ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5, this.getZ(), 5));
 		if (this.comprando instanceof net.minecraft.server.level.ServerPlayer jugador
 				&& jugador.containerMenu instanceof net.minecraft.world.inventory.MerchantMenu menu) {
 			jugador.sendMerchantOffers(menu.containerId, this.getOffers(), this.nivel, this.xp, this.showProgressBar(), this.canRestock());
@@ -234,7 +236,14 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	@Override
 	public void notifyTrade(MerchantOffer oferta) {
 		oferta.increaseUses();
-		if (!this.level().isClientSide) this.ganarXp(oferta.getXp());
+		if (!this.level().isClientSide) {
+			// Como los aldeanos de Minecraft: cada comercio suelta un poco de experiencia (3 a 6) para el jugador.
+			if (oferta.shouldRewardExp()) {
+				this.level().addFreshEntity(new net.minecraft.world.entity.ExperienceOrb(this.level(),
+						this.getX(), this.getY() + 0.5, this.getZ(), 3 + this.random.nextInt(4)));
+			}
+			this.ganarXp(oferta.getXp());
+		}
 		if (!this.level().isClientSide && oferta.isOutOfStock()) {
 			int i = this.getOffers().indexOf(oferta);
 			if (i >= 0) this.agotados.putIfAbsent(i, this.level().getGameTime());
