@@ -18,8 +18,9 @@ import java.util.UUID;
 
 /**
  * /ah: la casa de subastas (menú MenuSubastas, pantalla SubastasScreen): pestañas Comprar, Vender, Mis ventas y
- * Recuperar. También se puede vender lo que tienes en la mano con /ah vender <precio>. El vendedor cobra al instante,
- * aunque no esté conectado. Lo que sacas de la venta queda en Recuperar hasta que lo tomes.
+ * Recuperar. También se puede vender lo que tienes en la mano con /ah vender <precio>. Al comprar, al comprador le
+ * llega un mensaje de la Subasta al Buzón ("Compraste ..."); al vendedor también ("Vendiste ..."), con las Deditas
+ * de la venta en mano adentro (aunque no esté conectado). Lo que sacas de la venta queda en Recuperar hasta que lo tomes.
  */
 public final class Subastas {
 	private Subastas() {}
@@ -143,18 +144,47 @@ public final class Subastas {
 		}
 		data.quitar(venta);
 		darItem(jugador, venta.item().copy());
-		Banco.sumar(jugador.server, venta.vendedor(), venta.precio());
 		jugador.sendSystemMessage(Component.literal("Compraste ").withStyle(ChatFormatting.GREEN)
 				.append(venta.item().getHoverName().copy().withStyle(ChatFormatting.WHITE))
 				.append(Component.literal(" x" + venta.item().getCount() + " por " + venta.precio() + " deditas.").withStyle(ChatFormatting.GREEN)));
 		jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5f, 1.5f);
-		ServerPlayer vendedor = jugador.server.getPlayerList().getPlayer(venta.vendedor());
-		if (vendedor != null) {
-			vendedor.sendSystemMessage(Component.literal(jugador.getGameProfile().getName() + " te compró ").withStyle(ChatFormatting.GOLD)
-					.append(venta.item().getHoverName().copy().withStyle(ChatFormatting.WHITE))
-					.append(Component.literal(" por " + venta.precio() + " deditas.").withStyle(ChatFormatting.GOLD)));
-		}
+		// Los mensajes de la Subasta: al que compró, y al que vendió con sus deditas en mano.
+		String que = venta.item().getHoverName().getString() + " x" + venta.item().getCount();
+		com.dedsafio4.correo.Correo.mandar(jugador.server, jugador.getUUID(), REMITENTE, "Compraste " + que,
+				"Compraste " + que + " por " + venta.precio() + " deditas en el /ah (lo vendía " + venta.nombreVendedor() + ").",
+				java.util.List.of());
+		java.util.List<ItemStack> deditas = new java.util.ArrayList<>();
+		long sobra = enDeditas(venta.precio(), deditas);
+		if (sobra > 0) Banco.sumar(jugador.server, venta.vendedor(), sobra);
+		com.dedsafio4.correo.Correo.mandar(jugador.server, venta.vendedor(), REMITENTE, "Vendiste " + que,
+				jugador.getGameProfile().getName() + " te compró " + que + " por " + venta.precio() + " deditas en el /ah. Aquí tienes tus deditas."
+						+ (sobra > 0 ? " (" + sobra + " no entraban en el mensaje: van a tu saldo del banco.)" : ""),
+				deditas);
 		return true;
+	}
+
+	/** Quién firma los mensajes de compra y venta. */
+	public static final String REMITENTE = "Subasta";
+
+	/**
+	 * Pasa una cantidad a deditas en mano (Rojas de 10.000, Verdes de 100 y Deditas de 1, de a 99 por casilla). Lo que
+	 * no entra en las casillas de un mensaje se devuelve (va al saldo del banco).
+	 */
+	static long enDeditas(long cantidad, java.util.List<ItemStack> pilas) {
+		long[] valores = {10_000, 100, 1};
+		net.minecraft.world.item.Item[] items = {com.dedsafio4.items.ModItems.DEDITA_ROJA, com.dedsafio4.items.ModItems.DEDITA_VERDE,
+				com.dedsafio4.items.ModItems.DEDITA};
+		long resto = cantidad;
+		for (int i = 0; i < valores.length; i++) {
+			long cuantas = resto / valores[i];
+			while (cuantas > 0 && pilas.size() < com.dedsafio4.correo.Correo.CASILLAS) {
+				int esta = (int) Math.min(99, cuantas);
+				pilas.add(new ItemStack(items[i], esta));
+				cuantas -= esta;
+				resto -= esta * valores[i];
+			}
+		}
+		return resto;
 	}
 
 	/** Al inventario; si no entra, al piso a sus pies. */
