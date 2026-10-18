@@ -268,6 +268,18 @@ public class ComercioScreen extends AbstractContainerScreen<MerchantMenu> {
 		return super.mouseClicked(mx, my, boton);
 	}
 
+	/** Shift + Espacio: vuelve a poner el último comercio elegido (llena otra vez las casillas desde el inventario). */
+	@Override
+	public boolean keyPressed(int tecla, int scan, int mods) {
+		if (tecla == org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE && hasShiftDown() && elegido >= 0 && elegido < menu.getOffers().size()) {
+			menu.setSelectionHint(elegido);
+			menu.tryMoveItems(elegido);
+			minecraft.getConnection().send(new ServerboundSelectTradePacket(elegido));
+			return true;
+		}
+		return super.keyPressed(tecla, scan, mods);
+	}
+
 	@Override
 	public boolean mouseScrolled(double mx, double my, double dx, double dy) {
 		if (filasTotales() > FILAS) {
