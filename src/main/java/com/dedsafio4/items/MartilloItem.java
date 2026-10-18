@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class MartilloItem extends Item {
 	/** Puntos de experiencia por golpe de martillo y durabilidad que devuelve cada punto. */
-	private static final int PUNTOS = 4, DURABILIDAD_POR_PUNTO = 2;
+	private static final int PUNTOS = 4, DURABILIDAD_POR_PUNTO = 6;
 
 	private static final int VIOLETA = 0xB06CFF, GRIS = 0xC6C6C6, AMARILLO = 0xFFD24A, VERDE = 0x55E05A;
 
