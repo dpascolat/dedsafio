@@ -110,6 +110,10 @@ public final class DropsMob {
 	public static boolean frenar(net.minecraft.world.entity.Entity entidad, ItemStack pila) {
 		if (soltandoLosNuestros || pila.isEmpty() || !(entidad instanceof net.minecraft.world.entity.LivingEntity vivo) || vivo.isAlive()
 				|| !(entidad.level() instanceof ServerLevel mundo)) return false;
+		// menos_perlas 1: los Endermen sueltan Perlas del End un 20% menos.
+		if (entidad instanceof net.minecraft.world.entity.monster.EnderMan && pila.is(net.minecraft.world.item.Items.ENDER_PEARL)
+				&& com.dedsafio4.cambios.Cambios.nivel(mundo.getServer(), com.dedsafio4.cambios.Cambios.MENOS_PERLAS) >= 1
+				&& mundo.getRandom().nextFloat() < 0.2f) return true;
 		java.util.Set<String> s = datos(mundo.getServer()).sacados.get(EntityType.getKey(entidad.getType()).toString());
 		return s != null && s.contains(BuiltInRegistries.ITEM.getKey(pila.getItem()).toString());
 	}

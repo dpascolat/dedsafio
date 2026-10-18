@@ -39,6 +39,7 @@
 		"UsoSinOpMixin",
 		"StoredUserEntryAccessor",
 		"ThrownEnderpearlMixin",
+		"PerlaFallaMixin",
 		"TridenteLimboMixin",
 		"TridenteItemMixin",
 		"RecetaEnDescripcionMixin"

@@ -73,6 +73,13 @@ public final class CambiosEventos {
 			net.minecraft.world.entity.EntityType.CAVE_SPIDER.spawn(mundo, pos, net.minecraft.world.entity.MobSpawnType.EVENT);
 		});
 
+		// bambu 1: al romper bambú, 10% de que salga una araña de cueva.
+		net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.AFTER.register((level, jugador, pos, estado, entidad) -> {
+			if (!(level instanceof ServerLevel mundo) || !estado.is(Blocks.BAMBOO)) return;
+			if (Cambios.nivel(mundo.getServer(), Cambios.BAMBU) < 1 || mundo.getRandom().nextFloat() >= 0.10f) return;
+			net.minecraft.world.entity.EntityType.CAVE_SPIDER.spawn(mundo, pos, net.minecraft.world.entity.MobSpawnType.EVENT);
+		});
+
 		// miel 1: romper un panal (o colmena) hace la explosión de un Creeper.
 		net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.AFTER.register((level, jugador, pos, estado, entidad) -> {
 			if (!(level instanceof ServerLevel mundo) || !esPanal(estado)) return;
@@ -122,7 +129,7 @@ public final class CambiosEventos {
 	public static void alActivar(MinecraftServer server, String cambio, int nivel) {
 		if (Cambios.HEROBRINE.equals(cambio) && nivel >= 1) com.dedsafio4.herobrine.ModHerobrine.alActivar(server);
 		// Los zombis que ya estaban en el mundo también.
-		if (Cambios.ZOMBI.equals(cambio) && nivel >= 1) {
+		if ((Cambios.ZOMBI.equals(cambio) || Cambios.ZOMBI_CASCO.equals(cambio)) && nivel >= 1) {
 			for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
 				for (Entity entidad : level.getAllEntities()) {
 					if (Zombis.esZombi(entidad)) Zombis.preparar((net.minecraft.world.entity.monster.Zombie) entidad, level);

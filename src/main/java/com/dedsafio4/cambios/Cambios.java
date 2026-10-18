@@ -63,6 +63,14 @@ public final class Cambios {
 	public static final String CREEPERS_PASTO = "creepers_pasto";
 	/** blaze 1: los Blaze aparecen naturalmente en todo el Nether, no sólo en las fortalezas. */
 	public static final String BLAZE = "blaze";
+	/** bambu 1: al romper bambú puede aparecer una araña de cueva (10%). */
+	public static final String BAMBU = "bambu";
+	/** zombi_casco 1: los zombis aparecen más seguido con casco (y con casco el sol no los quema). */
+	public static final String ZOMBI_CASCO = "zombi_casco";
+	/** perlas_fallan 1: cada Perla del End que se tira tiene 1% de fallar (se rompe y no te lleva). */
+	public static final String PERLAS_FALLAN = "perlas_fallan";
+	/** menos_perlas 1: los Endermen sueltan Perlas del End un 20% menos. */
+	public static final String MENOS_PERLAS = "menos_perlas";
 
 	/** Tipo de daño propio del mod para la Perla del End: no lo frena la armadura ni sus encantamientos. */
 	public static final ResourceKey<DamageType> DANIO_ENDERPERLA = ResourceKey.create(Registries.DAMAGE_TYPE,
@@ -116,7 +124,15 @@ public final class Cambios {
 			new Cambio(ESQUELETO_BOGGED, "esqueleto_bogged", Map.of(
 					1, "Los esqueletos Bogged pueden salir durante la noche en el Overworld.")),
 			new Cambio(ESQUELETO_STRAY, "esqueleto_stray", Map.of(
-					1, "Los esqueletos Stray pueden salir durante la noche en el Overworld."))
+					1, "Los esqueletos Stray pueden salir durante la noche en el Overworld.")),
+			new Cambio(BAMBU, "bambu", Map.of(
+					1, "El bambú esconde algo. Ahora al romper bambú puede aparecer una Araña de Cueva.")),
+			new Cambio(ZOMBI_CASCO, "zombi_casco", Map.of(
+					1, "Los muertos se protegen del sol. Ahora los Zombis aparecen más seguido con casco.")),
+			new Cambio(PERLAS_FALLAN, "perlas_fallan", Map.of(
+					1, "Reviil desestabilizó las Perlas del End. Ahora cada perla tiene un 1% de fallar.")),
+			new Cambio(MENOS_PERLAS, "menos_perlas", Map.of(
+					1, "Los Endermen esconden sus perlas. Ahora sueltan Perlas del End un 20% menos."))
 	);
 
 	public static CambiosData data(MinecraftServer server) {

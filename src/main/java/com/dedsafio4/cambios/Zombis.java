@@ -25,6 +25,9 @@ public final class Zombis {
 
 	private static final String DECIDIDO = "dedsafio4_zombi_decidido";
 	private static final String ESCALA = "dedsafio4_zombi_escala";
+	private static final String CASCO_DECIDIDO = "dedsafio4_zombi_casco";
+	/** Con zombi_casco: la mitad aparece con casco (sin el cambio, en Minecraft son muy pocos). */
+	private static final float PROBABILIDAD_CASCO = 0.5f;
 	/** La mitad escala. */
 	private static final float PROBABILIDAD_ESCALAR = 0.5f;
 
@@ -34,6 +37,7 @@ public final class Zombis {
 
 	/** Al aparecer (o al activar el cambio): decide si escala y, en nivel 2, le da la espada. */
 	public static void preparar(Zombie zombi, ServerLevel level) {
+		casco(zombi, level);
 		int nivel = Cambios.nivel(level.getServer(), Cambios.ZOMBI);
 		if (nivel < 1) return;
 		if (!zombi.getTags().contains(DECIDIDO)) {
@@ -49,6 +53,15 @@ public final class Zombis {
 			zombi.setItemSlot(EquipmentSlot.MAINHAND, espada);
 			zombi.setDropChance(EquipmentSlot.MAINHAND, 0f);
 		}
+	}
+
+	/** zombi_casco 1: una sola vez por zombi, la mitad recibe un casco (cuero, cota de malla, hierro u oro). */
+	private static void casco(Zombie zombi, ServerLevel level) {
+		if (Cambios.nivel(level.getServer(), Cambios.ZOMBI_CASCO) < 1 || zombi.getTags().contains(CASCO_DECIDIDO)) return;
+		zombi.addTag(CASCO_DECIDIDO);
+		if (!zombi.getItemBySlot(EquipmentSlot.HEAD).isEmpty() || zombi.getRandom().nextFloat() >= PROBABILIDAD_CASCO) return;
+		net.minecraft.world.item.Item[] cascos = {Items.LEATHER_HELMET, Items.CHAINMAIL_HELMET, Items.IRON_HELMET, Items.GOLDEN_HELMET};
+		zombi.setItemSlot(EquipmentSlot.HEAD, new ItemStack(cascos[zombi.getRandom().nextInt(cascos.length)]));
 	}
 
 	private static boolean tieneLaEspada(Zombie zombi) {
