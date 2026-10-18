@@ -28,7 +28,7 @@ public class CandadoItem extends Item {
 	public void appendHoverText(ItemStack pila, TooltipContext contexto, List<Component> texto, TooltipFlag bandera) {
 		texto.add(Component.empty());
 		texto.add(parte("Haz ", TEXTO).append(parte("Click Derecho", NARANJA)).append(parte(" sobre un", TEXTO)));
-		texto.add(parte("Cofre e introduce un código", TEXTO));
-		texto.add(parte("para protegerlo.", TEXTO));
+		texto.add(parte("Cofre o una Puerta Blindada e", TEXTO));
+		texto.add(parte("introduce un código para protegerlo.", TEXTO));
 	}
 }

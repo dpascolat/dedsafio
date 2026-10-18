@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Candados: poniéndole un candado a un cofre queda cerrado con un código.
+ * Candados: poniéndole un candado a un cofre (o a la Puerta Blindada) queda cerrado con un código.
  * El que lo cerró lo abre siempre; a los demás les pide el código (una sola vez) y,
  * mientras no lo sepan, tampoco lo pueden romper.
  */
@@ -50,15 +50,31 @@ public final class Candados {
 		return level.getDataStorage().computeIfAbsent(CandadosData.FACTORY, "dedsafio4_candados");
 	}
 
-	/** Solo se pueden cerrar cofres, cofres trampa, barriles y shulkers. */
+	/** Solo se pueden cerrar cofres (también el Cofre Protegido), cofres trampa, barriles, shulkers y la Puerta Blindada. */
 	public static boolean sePuedeCerrar(BlockState estado) {
 		return estado.getBlock() instanceof ChestBlock || estado.getBlock() instanceof BarrelBlock
-				|| estado.getBlock() instanceof ShulkerBoxBlock;
+				|| estado.getBlock() instanceof ShulkerBoxBlock || esPuerta(estado)
+				|| estado.getBlock() instanceof com.dedsafio4.cofres.CofreBlock;
+	}
+
+	public static boolean esPuerta(BlockState estado) {
+		return estado.getBlock() instanceof com.dedsafio4.puertas.PuertaBlindadaBlock;
+	}
+
+	/** "Cofre" o "Puerta", para los avisos. */
+	private static String que(BlockState estado) {
+		return esPuerta(estado) ? "Puerta" : "Cofre";
 	}
 
 	/** En un cofre doble las dos mitades comparten el candado: se guarda en una sola. */
 	public static BlockPos principal(Level level, BlockPos pos) {
 		BlockState estado = level.getBlockState(pos);
+		// La puerta: el candado va en la mitad de abajo. El Cofre Protegido: en su mitad principal.
+		if (esPuerta(estado)) {
+			return estado.getValue(net.minecraft.world.level.block.DoorBlock.HALF) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER
+					? pos.below().immutable() : pos.immutable();
+		}
+		if (estado.getBlock() instanceof com.dedsafio4.cofres.CofreBlock) return com.dedsafio4.cofres.CofreBlock.principal(estado, pos).immutable();
 		if (estado.getBlock() instanceof ChestBlock && estado.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
 			BlockPos vecino = pos.relative(ChestBlock.getConnectedDirection(estado));
 			return pos.compareTo(vecino) <= 0 ? pos.immutable() : vecino.immutable();
@@ -110,7 +126,7 @@ public final class Candados {
 		// Las tolvas (y todo lo que usa la API de transporte de Fabric) ven un cofre con candado como vacío y lleno:
 		// no le sacan ni le meten nada. La parte de Minecraft la corta HopperBlockEntityMixin.
 		net.minecraft.world.level.block.Block[] cerrables = net.minecraft.core.registries.BuiltInRegistries.BLOCK.stream()
-				.filter(b -> b instanceof ChestBlock || b instanceof BarrelBlock || b instanceof ShulkerBoxBlock)
+				.filter(b -> b instanceof ChestBlock || b instanceof BarrelBlock || b instanceof ShulkerBoxBlock || b instanceof com.dedsafio4.cofres.CofreBlock)
 				.toArray(net.minecraft.world.level.block.Block[]::new);
 		net.fabricmc.fabric.api.transfer.v1.item.ItemStorage.SIDED.registerForBlocks((mundo, pos, estado, be, lado) ->
 				mundo instanceof ServerLevel && tieneCandado(mundo, pos)
@@ -163,7 +179,8 @@ public final class Candados {
 			if (!sePuedeCerrar(estado)) return true;
 			CandadosData.Cerradura cerradura = data(mundo).cerradura(principal(mundo, pos));
 			if (cerradura == null || puedeAbrir(servidor, cerradura)) return true;
-			servidor.displayClientMessage(Component.literal("Este cofre está cerrado con un candado.")
+			servidor.displayClientMessage(Component.literal((esPuerta(estado) ? "Esta puerta" : "Este cofre") + " está cerrad"
+					+ (esPuerta(estado) ? "a" : "o") + " con un candado.")
 					.withStyle(ChatFormatting.RED), true);
 			mundo.playSound(null, pos, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
 			// El cliente ya "rompió" el bloque de su lado. Se lo devolvemos en el tick siguiente,
@@ -177,7 +194,9 @@ public final class Candados {
 		PlayerBlockBreakEvents.AFTER.register((level, jugador, pos, estado, entidad) -> {
 			if (!(level instanceof ServerLevel mundo) || !sePuedeCerrar(estado)) return;
 			// Si era un cofre doble, la mitad que queda se queda con el candado.
-			BlockPos donde = pos.immutable();
+			BlockPos donde = esPuerta(estado) && estado.getValue(net.minecraft.world.level.block.DoorBlock.HALF)
+					== net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER ? pos.below().immutable() : pos.immutable();
+			if (estado.getBlock() instanceof com.dedsafio4.cofres.CofreBlock) donde = com.dedsafio4.cofres.CofreBlock.principal(estado, pos).immutable();
 			CandadosData datos = data(mundo);
 			CandadosData.Cerradura cerradura = datos.cerradura(donde);
 			BlockPos otra = null;
@@ -219,11 +238,11 @@ public final class Candados {
 	/** La Llave de Candado: solo el dueño puede sacar el candado; se le devuelve. */
 	private static void desproteger(ServerPlayer jugador, ServerLevel mundo, BlockPos clave, CandadosData.Cerradura cerradura) {
 		if (cerradura == null) {
-			jugador.displayClientMessage(Component.literal("Este cofre no tiene candado.").withStyle(ChatFormatting.GRAY), true);
+			jugador.displayClientMessage(Component.literal("No tiene candado.").withStyle(ChatFormatting.GRAY), true);
 			return;
 		}
 		if (!cerradura.duenio().equals(jugador.getUUID())) {
-			jugador.displayClientMessage(Component.literal("Este cofre no es de tu propiedad.").withStyle(ChatFormatting.RED), true);
+			jugador.displayClientMessage(Component.literal("No es de tu propiedad.").withStyle(ChatFormatting.RED), true);
 			mundo.playSound(null, clave, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
 			return;
 		}
@@ -232,7 +251,7 @@ public final class Candados {
 		ItemStack candado = new ItemStack(ModItems.CANDADO);
 		if (!jugador.getInventory().add(candado)) jugador.drop(candado, false);
 		mundo.playSound(null, clave, SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 1f, 1.2f);
-		jugador.displayClientMessage(Component.literal("Cofre desprotegido.").withStyle(ChatFormatting.GREEN), true);
+		jugador.displayClientMessage(Component.literal(que(mundo.getBlockState(clave)) + " desprotegid" + (esPuerta(mundo.getBlockState(clave)) ? "a." : "o.")).withStyle(ChatFormatting.GREEN), true);
 	}
 
 	/** Llega el código escrito por el jugador. */
@@ -255,7 +274,7 @@ public final class Candados {
 			datos.poner(pos, codigo, jugador.getUUID());
 			avisarCambio(mundo);
 			mundo.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 1f, 1.4f);
-			jugador.displayClientMessage(Component.literal("Cofre cerrado con el código ")
+			jugador.displayClientMessage(Component.literal(que(estado) + (esPuerta(estado) ? " cerrada" : " cerrado") + " con el código ")
 					.withStyle(ChatFormatting.GREEN)
 					.append(Component.literal(codigo).withStyle(ChatFormatting.YELLOW)), false);
 			return;
@@ -272,9 +291,13 @@ public final class Candados {
 		abrir(jugador, mundo, pos);
 	}
 
-	/** Abre el cofre como si le hubiera hecho click derecho. */
+	/** Abre el cofre (o la puerta) como si le hubiera hecho click derecho. */
 	private static void abrir(ServerPlayer jugador, ServerLevel mundo, BlockPos pos) {
 		BlockState estado = mundo.getBlockState(pos);
+		if (esPuerta(estado) && estado.getBlock() instanceof net.minecraft.world.level.block.DoorBlock puerta) {
+			puerta.setOpen(jugador, mundo, estado, pos, !estado.getValue(net.minecraft.world.level.block.DoorBlock.OPEN));
+			return;
+		}
 		MenuProvider proveedor = estado.getMenuProvider(mundo, pos);
 		if (proveedor != null) jugador.openMenu(proveedor);
 	}

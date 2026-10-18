@@ -30,6 +30,21 @@ public final class ModPuertas {
 	public static final Item PUERTA_ROSA_ITEM = item("puerta_rosa", PUERTA_ROSA, "Tarjeta de Acceso Phora rosa", 0x55D9F0);
 	public static final Item PUERTA_VERDE_ITEM = item("puerta_verde", PUERTA_VERDE, "Tarjeta de Acceso Phora verde", 0x55D9F0);
 
+	/** La Puerta Blindada: se abre con la mano y se protege con un Candado (con código), como los cofres. */
+	public static final Block PUERTA_BLINDADA = Registry.register(BuiltInRegistries.BLOCK, id("puerta_blindada"),
+			new PuertaBlindadaBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(25f, 1200f)
+					.requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)));
+	public static final Item PUERTA_BLINDADA_ITEM = Registry.register(BuiltInRegistries.ITEM, id("puerta_blindada"),
+			new net.minecraft.world.item.DoubleHighBlockItem(PUERTA_BLINDADA, new Item.Properties().rarity(net.minecraft.world.item.Rarity.UNCOMMON)) {
+				@Override
+				public void appendHoverText(ItemStack pila, TooltipContext contexto, List<Component> texto, TooltipFlag bandera) {
+					texto.add(Component.literal("Una puerta de acero muy resistente.").withColor(0xC6CFD6));
+					texto.add(Component.literal("Usa un ").withColor(0xC6CFD6).append(Component.literal("Candado").withColor(0x55C6E8))
+							.append(Component.literal(" para protegerla").withColor(0xC6CFD6)));
+					texto.add(Component.literal("con un código.").withColor(0xC6CFD6));
+				}
+			});
+
 	public static final BlockEntityType<PuertaBlockEntity> PUERTA_ENTIDAD = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, id("puerta"),
 			FabricBlockEntityTypeBuilder.create(PuertaBlockEntity::new, PUERTA_ROSA, PUERTA_VERDE).build());

@@ -1,0 +1,24 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "redstone",
+	"pattern": [
+		"IOI",
+		"IDI",
+		"IOI"
+	],
+	"key": {
+		"I": {
+			"item": "minecraft:iron_ingot"
+		},
+		"O": {
+			"item": "minecraft:obsidian"
+		},
+		"D": {
+			"item": "minecraft:iron_door"
+		}
+	},
+	"result": {
+		"id": "dedsafio4:puerta_blindada",
+		"count": 1
+	}
+}
