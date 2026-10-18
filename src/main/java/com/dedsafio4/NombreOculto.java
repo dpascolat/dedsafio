@@ -94,7 +94,7 @@ public final class NombreOculto {
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		dispatcher.register(Commands.literal("nombre")
+		dispatcher.register(Commands.literal("nombre").requires(s -> s.hasPermission(2))   // solo los OP
 				.then(Commands.literal("esconder")
 						.executes(c -> cambiar(c.getSource(), List.of(c.getSource().getPlayerOrException()), true))
 						.then(Commands.argument("jugadores", EntityArgument.players()).requires(s -> s.hasPermission(2))
