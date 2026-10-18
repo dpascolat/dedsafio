@@ -439,7 +439,8 @@ public final class Misiones {
 	// --- Editar ---
 
 	private static void editar(ServerPlayer p, EditarPayload e) {
-		if (!Catalogo.esEditor(p)) return;
+		// Crear, cambiar (y su recompensa), mover o borrar misiones: solo los OP (los de /opop no).
+		if (!p.hasPermissions(2)) return;
 		Datos d = datos(p.server);
 		List<Mision> l = d.lista();
 		int i = e.indice();

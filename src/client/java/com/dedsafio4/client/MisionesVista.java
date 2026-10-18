@@ -187,10 +187,11 @@ public final class MisionesVista {
 		dibujarBotones(g, font, mx, my, lista.isEmpty());
 	}
 
-	/** Para los editores: "+ Nueva" abajo de la lista y "Editar ▲ ▼ Borrar" abajo de la misión elegida. */
+	/** Para los OP: "+ Nueva" abajo de la lista y "Editar ▲ ▼ Borrar" abajo de la misión elegida. */
 	private void dibujarBotones(GuiGraphics g, Font font, int mx, int my, boolean vacia) {
 		botones.clear();
-		if (!Catalogo.PUEDE_EDITAR_CLIENTE) return;
+		var mc = net.minecraft.client.Minecraft.getInstance();
+		if (mc.player == null || !mc.player.hasPermissions(2)) return;
 		int y = yCasa + 3;
 		botones.add(new Boton(xLista, y, font.width("+ Nueva misión") + 8, "+ Nueva misión", "nueva"));
 		if (!vacia) {
