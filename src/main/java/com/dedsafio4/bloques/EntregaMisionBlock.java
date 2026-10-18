@@ -38,11 +38,34 @@ public class EntregaMisionBlock extends Block {
 	private record Pendiente(java.util.UUID jugador, String nombre, String texto, List<ItemStack> premio, long cuando) {}
 
 	private static final List<Pendiente> PENDIENTES = new java.util.ArrayList<>();
+
+	/** Las animaciones que están sonando: dónde, desde y hasta qué tick (el sonido mágico). */
+	private record Magia(net.minecraft.server.level.ServerLevel level, BlockPos pos, long inicio, long fin) {}
+
+	private static final List<Magia> MAGIAS = new java.util.ArrayList<>();
 	/** Los bloques de misión con la ruleta andando (el de más abajo, por mundo) y en qué tick termina: hasta entonces no se puede poner otra Dedita. */
 	private static final java.util.Map<String, Long> OCUPADOS = new java.util.HashMap<>();
 
 	public static void registrar() {
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+			// Mientras gira la ruleta: campanitas mágicas que van subiendo; al final, el sonido de premio.
+			long ahora = server.getTickCount();
+			for (var it = MAGIAS.iterator(); it.hasNext(); ) {
+				Magia m = it.next();
+				if (ahora >= m.fin()) {
+					m.level().playSound(null, m.pos(), SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 1f, 1.3f);
+					m.level().playSound(null, m.pos(), SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.2f, 1.2f);
+					it.remove();
+					continue;
+				}
+				long t = ahora - m.inicio();
+				float avance = Math.min(1f, t / (float) Math.max(1, m.fin() - m.inicio()));
+				if (t % 8 == 0) {
+					m.level().playSound(null, m.pos(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.2f,
+							0.8f + avance * 1.0f + m.level().random.nextFloat() * 0.2f);
+				}
+				if (t % 40 == 20) m.level().playSound(null, m.pos(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1f, 1f + avance * 0.5f);
+			}
 			for (var it = PENDIENTES.iterator(); it.hasNext(); ) {
 				Pendiente p = it.next();
 				if (server.getTickCount() < p.cuando()) continue;
@@ -112,7 +135,11 @@ public class EntregaMisionBlock extends Block {
 		com.dedsafio4.cielo.CieloNoche.mostrar(servidor.serverLevel(), pos.getCenter(), 10f, com.dedsafio4.ruleta.RuletaPiso.DURACION);
 		PENDIENTES.add(new Pendiente(servidor.getUUID(), servidor.getGameProfile().getName(), texto, List.copyOf(premio),
 				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
-		level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1f, 1.2f);
+		// El sonido mágico: arranca con un destello y sigue mientras dura la ruleta (ver MAGIAS).
+		level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1f, 1.6f);
+		level.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1f, 1.2f);
+		MAGIAS.add(new Magia(servidor.serverLevel(), abajo.immutable(), servidor.server.getTickCount(),
+				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
 		return ItemInteractionResult.SUCCESS;
 	}
 
