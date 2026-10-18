@@ -131,16 +131,24 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		}
 	}
 
-	/** Lo que cuesta reponer con Deditas: 1 la primera vez, después una más cada vez. */
+	/** Lo que cuesta cambiar los tradeos con Deditas: 1 la primera vez, después una más cada vez. */
 	public int costoReponer() {
 		return this.reposiciones + 1;
 	}
 
-	/** Ya pagaron: repone todos los comercios desbloqueados y le avisa al que está comerciando. */
+	/**
+	 * Ya pagaron: el aldeano cambia a otra lista de tradeos (distinta de la que tenía), con su mismo nivel (lo de más
+	 * arriba sigue bloqueado), todo disponible; y le avisa al que está comerciando.
+	 */
 	void reponerPagando() {
 		this.reposiciones++;
 		this.agotados.clear();
-		for (MerchantOffer o : this.getOffers()) if (!o.getCostB().is(Items.BARRIER)) o.resetUses();
+		int total = OfertasPhora.JUEGOS.size();
+		if (total > 1) {
+			int nuevo = this.random.nextInt(total - 1);
+			this.juego = nuevo >= this.juego ? nuevo + 1 : nuevo;
+		}
+		this.ofertas = armarOfertas();
 		if (this.comprando instanceof net.minecraft.server.level.ServerPlayer jugador
 				&& jugador.containerMenu instanceof net.minecraft.world.inventory.MerchantMenu menu) {
 			jugador.sendMerchantOffers(menu.containerId, this.getOffers(), this.nivel, this.xp, this.showProgressBar(), this.canRestock());

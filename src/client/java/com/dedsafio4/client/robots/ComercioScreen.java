@@ -156,7 +156,7 @@ public class ComercioScreen extends AbstractContainerScreen<MerchantMenu> {
 			g.drawString(font, n, -font.width(n), 0, 0xFFFFFFFF, true);
 			g.pose().popPose();
 			if (encima) {
-				tooltip = List.of(Component.literal("Reponer los comercios").withColor(0xFFD84A),
+				tooltip = List.of(Component.literal("Cambiar los tradeos").withColor(0xFFD84A),
 						Component.literal("Cuesta " + costo + (costo == 1 ? " Dedita" : " Deditas") + " (tienes " + deditas() + ")").withColor(0xC0C6D0),
 						Component.literal("Cada vez cuesta una más.").withColor(0x8C929C));
 			}

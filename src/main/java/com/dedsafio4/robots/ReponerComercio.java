@@ -17,8 +17,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.inventory.MerchantMenu;
 
 /**
- * El botón de la Dedita en el comercio del Aldeano: gastando Deditas (azules, las tienes que tener encima) repone
- * todos sus comercios. Cada vez que se repone ese aldeano cuesta una Dedita más (1, 2, 3...).
+ * El botón de la Dedita en el comercio del Aldeano: gastando Deditas (azules, las tienes que tener encima) cambia
+ * sus tradeos por otra lista. Cada vez que se repone ese aldeano cuesta una Dedita más (1, 2, 3...).
  */
 public final class ReponerComercio {
 	private ReponerComercio() {}
@@ -78,7 +78,7 @@ public final class ReponerComercio {
 		if (aldeano == null) return;
 		int costo = aldeano.costoReponer();
 		if (deditas(jugador) < costo) {
-			jugador.displayClientMessage(Component.literal("Necesitas " + costo + (costo == 1 ? " Dedita" : " Deditas") + " para reponer los comercios.")
+			jugador.displayClientMessage(Component.literal("Necesitas " + costo + (costo == 1 ? " Dedita" : " Deditas") + " para cambiar los tradeos.")
 					.withStyle(ChatFormatting.RED), true);
 			return;
 		}
@@ -93,7 +93,7 @@ public final class ReponerComercio {
 		}
 		aldeano.reponerPagando();
 		jugador.level().playSound(null, jugador.getX(), jugador.getY(), jugador.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1f, 1.4f);
-		jugador.displayClientMessage(Component.literal("¡Comercios repuestos!").withStyle(ChatFormatting.GREEN), true);
+		jugador.displayClientMessage(Component.literal("¡El aldeano cambió sus tradeos!").withStyle(ChatFormatting.GREEN), true);
 		aldeano.avisarEstado();
 	}
 }
