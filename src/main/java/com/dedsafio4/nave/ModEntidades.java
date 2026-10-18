@@ -207,9 +207,9 @@ public final class ModEntidades {
 			FabricDefaultAttributeRegistry.register(lagarto,
 					lagarto == REPTISAURIO_GUERRERO ? LagartoEntity.atributosGuerrero() : LagartoEntity.crearAtributos());
 		}
-		// Aparece sola en la Oscuridad Profunda, en la oscuridad, sin necesitar suelo (vuela).
+		// Aparece sola en la Oscuridad Profunda y en las cuevas, en la oscuridad, sin necesitar suelo (vuela).
 		SpawnPlacements.register(BOMBA_WARDEN, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-				Monster::checkMonsterSpawnRules);
+				BombaWardenEntity::puedeAparecer);
 		// Plumosaurio: en el pasto de la jungla del Centro de Quiu.
 		SpawnPlacements.register(WALKER, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				WalkerEntity::puedeAparecer);

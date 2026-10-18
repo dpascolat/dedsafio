@@ -31,8 +31,8 @@ import java.util.EnumSet;
 
 /**
  * Bomba Warden: vuela hacia el jugador y, a diferencia del Creeper, no tiene cuenta atrás:
- * en cuanto lo tiene cerca explota en el acto. Aparece sola en la Oscuridad Profunda.
- * La explosión hace daño pero no rompe bloques.
+ * en cuanto lo tiene cerca explota en el acto. Aparece sola en la Oscuridad Profunda y en las cuevas (bajo tierra,
+ * donde no se ve el cielo). La explosión hace daño pero no rompe bloques; con /dañomob se cambia cuánto.
  */
 public class BombaWardenEntity extends Monster {
 	public static final float DANIO_EXPLOSION = 6f;
@@ -45,6 +45,13 @@ public class BombaWardenEntity extends Monster {
 		this.moveControl = new FlyingMoveControl(this, 20, true);
 		this.setNoGravity(true);
 		this.xpReward = 5;
+	}
+
+	/** Como cualquier monstruo (a oscuras), pero solo bajo tierra: donde no se ve el cielo. */
+	public static boolean puedeAparecer(EntityType<? extends Monster> tipo, net.minecraft.world.level.ServerLevelAccessor mundo,
+										net.minecraft.world.entity.MobSpawnType razon, BlockPos pos, net.minecraft.util.RandomSource azar) {
+		if (razon == net.minecraft.world.entity.MobSpawnType.SPAWNER) return Monster.checkMonsterSpawnRules(tipo, mundo, razon, pos, azar);
+		return !mundo.canSeeSky(pos) && pos.getY() < mundo.getSeaLevel() && Monster.checkMonsterSpawnRules(tipo, mundo, razon, pos, azar);
 	}
 
 	public static AttributeSupplier.Builder crearAtributos() {
@@ -122,11 +129,14 @@ public class BombaWardenEntity extends Monster {
 		level.sendParticles(ParticleTypes.SCULK_SOUL, this.getX(), this.getY(0.5), this.getZ(), 30, 1.2, 1.2, 1.2, 0.05);
 		level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE,
 				4f, (1f + (this.random.nextFloat() - this.random.nextFloat()) * 0.2f) * 0.7f);
+		// El daño de siempre, o el que se puso con /dañomob.
+		Double cambiado = com.dedsafio4.bestias.AjustesMob.danoDe(level.getServer(), this.getType());
+		float danio = cambiado != null ? cambiado.floatValue() : DANIO_EXPLOSION;
 		AABB zona = this.getBoundingBox().inflate(RADIO_EXPLOSION);
 		for (LivingEntity cercano : level.getEntitiesOfClass(LivingEntity.class, zona, e -> e != this && e.isAlive())) {
 			if (cercano.distanceTo(this) > RADIO_EXPLOSION + 1) continue;
 			cercano.invulnerableTime = 0;
-			cercano.hurt(this.damageSources().explosion(this, this), NaveEntity.danioExacto(level, cercano, DANIO_EXPLOSION));
+			cercano.hurt(this.damageSources().explosion(this, this), NaveEntity.danioExacto(level, cercano, danio));
 		}
 		this.discard();
 	}

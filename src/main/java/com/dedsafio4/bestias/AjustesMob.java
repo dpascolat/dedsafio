@@ -80,6 +80,11 @@ public final class AjustesMob {
 		}
 	}
 
+	/** El daño que se le puso a ese mob con /dañomob (o null si no se cambió). */
+	public static Double danoDe(MinecraftServer server, EntityType<?> tipo) {
+		return datos(server).valor(DANO, tipo);
+	}
+
 	private static Datos datos(MinecraftServer server) {
 		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_ajustes_mob");
 	}
@@ -209,7 +214,7 @@ public final class AjustesMob {
 		String texto = valor == null
 				? (que.equals(DANO) ? "El daño" : que.equals(VIDA) ? "La vida" : "La velocidad") + " de " + nombreMob + " vuelve a ser la normal."
 				: (que.equals(DANO) ? "Daño" : que.equals(VIDA) ? "Vida" : "Velocidad") + " de " + nombreMob + ": " + valor
-						+ (que.equals(DANO) && Creeper.class.isAssignableFrom(tipo.getBaseClass()) ? " (la explosión)"
+						+ (que.equals(DANO) && (Creeper.class.isAssignableFrom(tipo.getBaseClass()) || tipo == com.dedsafio4.nave.ModEntidades.BOMBA_WARDEN) ? " (la explosión)"
 						: que.equals(DANO) && tipo.is(net.minecraft.tags.EntityTypeTags.SKELETONS)
 								? " (el golpe y cada flecha)" : "") + ".";
 		int total = cuantos;

@@ -249,8 +249,11 @@ public class Dedsafio4 implements ModInitializer {
 		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.SNOWY_PLAINS, Biomes.SNOWY_TAIGA, Biomes.ICE_SPIKES,
 						Biomes.SNOWY_SLOPES, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.GROVE, Biomes.SNOWY_BEACH, Biomes.FROZEN_RIVER),
 				MobCategory.MONSTER, ModEntidades.CREEPER_NUCLEAR, 40, 1, 1);
-		// Las Bombas Warden aparecen solas en la Oscuridad Profunda.
+		// Las Bombas Warden aparecen solas en la Oscuridad Profunda y en las cuevas de todo el Overworld (bajo tierra,
+		// a oscuras: ver BombaWardenEntity.puedeAparecer).
 		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.DEEP_DARK),
 				MobCategory.MONSTER, ModEntidades.BOMBA_WARDEN, 30, 1, 2);
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.BOMBA_WARDEN, 8, 1, 1);
 	}
 }
