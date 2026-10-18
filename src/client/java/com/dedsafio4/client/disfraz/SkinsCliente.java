@@ -167,6 +167,8 @@ public final class SkinsCliente {
 	 */
 	public static boolean dibujar(String nombre, HumanoidModel<?> jugadorModelo, AbstractClientPlayer jugador, PoseStack pose,
 								  MultiBufferSource buffers, int luz, int overlay) {
+		// Las hechas en Blockbench (con armadura a la medida) van por SkinsGeo.
+		if (SkinsGeo.existe(nombre)) return SkinsGeo.dibujar(nombre, jugadorModelo, jugador, pose, buffers, luz, overlay);
 		Modelo m = modelo(nombre);
 		if (m == null) return false;
 		int n = m.piezas().size();
