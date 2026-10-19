@@ -16,6 +16,7 @@
 		"ChunkMapMomentitoMixin",
 		"ChunkMapReinicioMixin",
 		"CreeperAccessor",
+		"CreeperNuclearMixin",
 		"ExplosionMixin",
 		"HopperBlockEntityMixin",
 		"ItemBaneadoMixin",

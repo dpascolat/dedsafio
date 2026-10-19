@@ -174,7 +174,8 @@ public class HuevoConDescripcion extends SpawnEggItem {
 	}
 
 	public static void creeperNuclear(List<Component> t) {
-		t.add(parte("Provoca grandes explosiones.", GRIS));
+		t.add(parte("Provoca grandes explosiones. Su onda", GRIS));
+		t.add(parte("llega lejos: mejor estar a cubierto.", GRIS));
 		t.add(Component.empty());
 		t.add(parte("❄ Aparece en: ", APARECE).append(parte("la Nieve.", BLANCO)));
 	}

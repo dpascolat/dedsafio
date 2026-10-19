@@ -660,6 +660,7 @@ public final class ModItems {
 						entradas.accept(EXCREMENTO);
 						entradas.accept(BOLSA_DE_TELA);
 						entradas.accept(com.dedsafio4.puertas.ModPuertas.PUERTA_BLINDADA_ITEM);
+						entradas.accept(com.dedsafio4.bloques.HierroOxidado.ITEM);
 						for (Item bolsa : BolsasDeColores.BOLSAS.values()) entradas.accept(bolsa);
 						entradas.accept(SACO);
 						entradas.accept(ARCO_GLEBANOIDE);
