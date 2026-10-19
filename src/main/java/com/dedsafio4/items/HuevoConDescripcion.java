@@ -177,7 +177,7 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("Provoca grandes explosiones. Su onda", GRIS));
 		t.add(parte("llega lejos: mejor estar a cubierto.", GRIS));
 		t.add(Component.empty());
-		t.add(parte("❄ Aparece en: ", APARECE).append(parte("la Nieve.", BLANCO)));
+		t.add(parte("❄ Aparece en: ", APARECE).append(parte("la Nieve y el Desierto.", BLANCO)));
 	}
 
 	public static void narval(List<Component> t) {

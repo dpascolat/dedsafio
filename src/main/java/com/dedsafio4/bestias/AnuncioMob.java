@@ -54,7 +54,7 @@ public final class AnuncioMob {
 		LUGARES.put("mira", "las cuevas del Centro de Quiu");
 		LUGARES.put("zarinosa_espigueya", "las cuevas del Centro de Quiu");
 		LUGARES.put("narval", "el agua del Centro de Quiu");
-		LUGARES.put("creeper_nuclear", "los biomas de nieve");
+		LUGARES.put("creeper_nuclear", "los biomas de nieve y el desierto");
 		LUGARES.put("creeper_pastel", "todo el Overworld, a oscuras");
 		LUGARES.put("flashbang", "el Limbito, el bioma del Limbo");
 		LUGARES.put("bomba_warden", "la Oscuridad Profunda y las cuevas");
