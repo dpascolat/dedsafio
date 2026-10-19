@@ -50,7 +50,7 @@ public final class SkinsGeo {
 
 	/** El modelo: sus huesos, cuáles van colgados de cada parte del jugador, y para cuál armadura es cada uno. */
 	private record Modelo(ResourceLocation textura, List<Hueso> huesos, List<Integer> raices, Map<Integer, Integer> parte,
-						  Map<Integer, EquipmentSlot> armadura) {}
+						  Map<Integer, EquipmentSlot> armadura, boolean agachadoSimple) {}
 
 	private static final Map<String, Modelo> MODELOS = new HashMap<>();
 
@@ -135,8 +135,11 @@ public final class SkinsGeo {
 					: n.contains("leggings") || n.contains("_leg") ? EquipmentSlot.LEGS
 					: n.contains("foot") || n.contains("boots") ? EquipmentSlot.FEET : EquipmentSlot.CHEST);
 		}
+		// "dedsafio4:agachado_simple": true en la descripción = un personaje que no tiene forma de persona (por ejemplo una
+		// nutria): al agacharse sólo baja un poco, sin inclinar el cuerpo ni correr la cabeza y las piernas como un humano.
+		boolean simple = desc.has("dedsafio4:agachado_simple") && desc.get("dedsafio4:agachado_simple").getAsBoolean();
 		return new Modelo(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/skins/" + nombre + ".png"),
-				huesos, raices, parte, armadura);
+				huesos, raices, parte, armadura, simple);
 	}
 
 	/** Arma las 6 caras de un cubo como lo hace Minecraft (el mismo orden de vértices y la misma textura por caja). */
@@ -210,11 +213,12 @@ public final class SkinsGeo {
 		if (m == null) return false;
 		ModelPart[] partes = {jugadorModelo.head, jugadorModelo.body, jugadorModelo.leftArm, jugadorModelo.rightArm,
 				jugadorModelo.leftLeg, jugadorModelo.rightLeg};
+		boolean simple = m.agachadoSimple() && jugadorModelo.crouching;
 		for (int i : m.raices()) {
 			EquipmentSlot lugar = m.armadura().get(i);
 			if (lugar == null) {
 				VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucent(m.textura()));
-				raiz(m, i, partes[m.parte().get(i)], m.parte().get(i), pose, vc, -1, luz, overlay);
+				raiz(m, i, partes[m.parte().get(i)], m.parte().get(i), simple, pose, vc, -1, luz, overlay);
 				continue;
 			}
 			ItemStack cosa = jugador.getItemBySlot(lugar);
@@ -224,21 +228,28 @@ public final class SkinsGeo {
 			for (ArmorMaterial.Layer capa : material.value().layers()) {
 				int c = capa.dyeable() ? color : -1;
 				VertexConsumer vc = buffers.getBuffer(RenderType.armorCutoutNoCull(capa.texture(lugar == EquipmentSlot.LEGS)));
-				raiz(m, i, partes[m.parte().get(i)], m.parte().get(i), pose, vc, c, luz, overlay);
+				raiz(m, i, partes[m.parte().get(i)], m.parte().get(i), simple, pose, vc, c, luz, overlay);
 			}
-			if (cosa.hasFoil()) raiz(m, i, partes[m.parte().get(i)], m.parte().get(i), pose,
+			if (cosa.hasFoil()) raiz(m, i, partes[m.parte().get(i)], m.parte().get(i), simple, pose,
 					buffers.getBuffer(RenderType.armorEntityGlint()), -1, luz, overlay);
 		}
 		return true;
 	}
 
-	/** Un hueso de arriba: se corre y gira igual que la parte del jugador de la que cuelga. */
-	private static void raiz(Modelo m, int i, ModelPart parte, int cual, PoseStack pose, VertexConsumer vc, int color, int luz, int overlay) {
+	/**
+	 * Un hueso de arriba: se corre y gira igual que la parte del jugador de la que cuelga. Con "simple" (agachado, en un
+	 * personaje sin forma de persona) no se corre ni se inclina el cuerpo: sólo gira la cabeza y se mueven brazos y
+	 * piernas como de pie.
+	 */
+	private static void raiz(Modelo m, int i, ModelPart parte, int cual, boolean simple, PoseStack pose, VertexConsumer vc,
+							 int color, int luz, int overlay) {
 		Hueso h = m.huesos().get(i);
 		float[] p = h.pivote(), reposo = REPOSO[cual];
+		float x = simple ? reposo[0] : parte.x, y = simple ? reposo[1] : parte.y, z = simple ? reposo[2] : parte.z;
+		float xRot = !simple ? parte.xRot : cual == 1 ? 0 : cual == 2 || cual == 3 ? parte.xRot - 0.4f : parte.xRot;
 		pose.pushPose();
-		pose.translate((p[0] + parte.x - reposo[0]) / 16f, (p[1] + parte.y - reposo[1]) / 16f, (p[2] + parte.z - reposo[2]) / 16f);
-		pose.mulPose(new Quaternionf().rotationZYX(parte.zRot, parte.yRot, parte.xRot));
+		pose.translate((p[0] + x - reposo[0]) / 16f, (p[1] + y - reposo[1]) / 16f, (p[2] + z - reposo[2]) / 16f);
+		pose.mulPose(new Quaternionf().rotationZYX(parte.zRot, parte.yRot, xRot));
 		pose.mulPose(new Quaternionf().rotationZYX(h.rot()[2], h.rot()[1], h.rot()[0]));
 		pose.translate(-p[0] / 16f, -p[1] / 16f, -p[2] / 16f);
 		dibujarHueso(m, h, pose, vc, color, luz, overlay);
