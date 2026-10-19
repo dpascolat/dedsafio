@@ -18,7 +18,8 @@ import net.minecraft.world.phys.AABB;
  * El viaje entre mundos: entrar al Agua Rara te lleva a la otra dimensión. Desde el Overworld vas al Centro de
  * Quiu, y desde ahí (por ejemplo en el círculo del cielo) vuelves al Overworld. El Agua Rara es agua de verdad (se
  * nada y frena las caídas): quedándote 3 segundos adentro la pantalla se pone negra (FundidoPortal en el cliente) y
- * viajas; si sales antes, no.
+ * viajas; si sales antes, no. Con /quiu se elige dónde se llega al Centro de Quiu y con /quiu_overworld dónde se
+ * llega al Overworld al volver.
  */
 public final class Portales {
 	private Portales() {}
@@ -101,8 +102,9 @@ public final class Portales {
 				: desde.getServer().getLevel(DIMENSION_NUEVA);
 		if (destino == null) return;
 
-		// Al Centro de Quiu: si se eligió un lugar con /quiu, se llega ahí.
-		BlockPos fijo = destino.dimension().equals(DIMENSION_NUEVA) ? datos(desde.getServer()).lugar : null;
+		// Si se eligió un lugar (con /quiu para el Centro de Quiu, con /quiu_overworld para la vuelta), se llega ahí.
+		Datos d = datos(desde.getServer());
+		BlockPos fijo = destino.dimension().equals(DIMENSION_NUEVA) ? d.lugar : d.lugarOverworld;
 		BlockPos llegada = fijo != null ? fijo : lugarSeguro(destino, jugador.blockPosition());
 		// El círculo de vuelta sólo cuando se cae donde sea (en el lugar de /quiu, la vuelta la arma el que lo eligió).
 		if (destino.dimension().equals(DIMENSION_NUEVA) && fijo == null) asegurarCirculo(destino, llegada);
@@ -139,14 +141,18 @@ public final class Portales {
 
 	// ---------------------------------------------------------------- /quiu
 
-	/** El lugar de llegada al Centro de Quiu elegido con /quiu (null = donde caiga, como siempre). */
+	/**
+	 * Los lugares de llegada elegidos: al Centro de Quiu con /quiu y al Overworld (al volver) con /quiu_overworld
+	 * (null = donde caiga, como siempre).
+	 */
 	private static final class Datos extends net.minecraft.world.level.saveddata.SavedData {
 		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
-		BlockPos lugar;
+		BlockPos lugar, lugarOverworld;
 
 		private static Datos leer(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
 			Datos d = new Datos();
 			if (tag.contains("x")) d.lugar = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
+			if (tag.contains("ox")) d.lugarOverworld = new BlockPos(tag.getInt("ox"), tag.getInt("oy"), tag.getInt("oz"));
 			return d;
 		}
 
@@ -156,6 +162,11 @@ public final class Portales {
 				tag.putInt("x", lugar.getX());
 				tag.putInt("y", lugar.getY());
 				tag.putInt("z", lugar.getZ());
+			}
+			if (lugarOverworld != null) {
+				tag.putInt("ox", lugarOverworld.getX());
+				tag.putInt("oy", lugarOverworld.getY());
+				tag.putInt("oz", lugarOverworld.getZ());
 			}
 			return tag;
 		}
@@ -196,6 +207,35 @@ public final class Portales {
 							d.setDirty();
 							c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal("Listo: al entrar al Agua Rara se llega a "
 									+ l.getX() + " " + l.getY() + " " + l.getZ() + " del Centro de Quiu.").withStyle(net.minecraft.ChatFormatting.AQUA), true);
+							return 1;
+						})));
+
+		// /quiu_overworld <x y z> | quitar | (nada): lo mismo, pero para dónde se llega al Overworld al volver.
+		dispatcher.register(net.minecraft.commands.Commands.literal("quiu_overworld").requires(s -> s.hasPermission(2))
+				.executes(c -> {
+					BlockPos l = datos(c.getSource().getServer()).lugarOverworld;
+					c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(l == null
+							? "No hay lugar elegido: al volver del Centro de Quiu se llega sobre el piso, en el mismo lugar."
+							: "Al volver del Centro de Quiu se llega a " + l.getX() + " " + l.getY() + " " + l.getZ() + " del Overworld.")
+							.withStyle(net.minecraft.ChatFormatting.AQUA), false);
+					return 1;
+				})
+				.then(net.minecraft.commands.Commands.literal("quitar").executes(c -> {
+					Datos d = datos(c.getSource().getServer());
+					d.lugarOverworld = null;
+					d.setDirty();
+					c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(
+							"Listo: al volver del Centro de Quiu se llega como siempre.").withStyle(net.minecraft.ChatFormatting.AQUA), true);
+					return 1;
+				}))
+				.then(net.minecraft.commands.Commands.argument("lugar", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+						.executes(c -> {
+							BlockPos l = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getBlockPos(c, "lugar");
+							Datos d = datos(c.getSource().getServer());
+							d.lugarOverworld = l.immutable();
+							d.setDirty();
+							c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal("Listo: al volver del Centro de Quiu se llega a "
+									+ l.getX() + " " + l.getY() + " " + l.getZ() + " del Overworld.").withStyle(net.minecraft.ChatFormatting.AQUA), true);
 							return 1;
 						})));
 	}
