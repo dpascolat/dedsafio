@@ -11,7 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * En el Espacio entre Dimensiones el tótem de Minecraft no sirve: sólo el Tótem del Espacio entre Dimensiones
- * (desde el inventario).
+ * (desde el inventario). Y cuando el tótem de Minecraft (el Nutritótem) salva a un jugador, sale en el chat de todos
+ * como los demás tótems.
  */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityTotemEspacioMixin {
@@ -24,5 +25,13 @@ public abstract class LivingEntityTotemEspacioMixin {
 			return;
 		}
 		cir.setReturnValue(yo instanceof ServerPlayer jugador && TotemEspacioItem.salvar(jugador));
+	}
+
+	/** Acá sólo llega el tótem de Minecraft (los del mod avisan solos): "X ha consumido un Nutritótem". */
+	@Inject(method = "checkTotemDeathProtection", at = @At("RETURN"))
+	private void dedsafio4$avisoNutritotem(DamageSource fuente, CallbackInfoReturnable<Boolean> cir) {
+		if (cir.getReturnValueZ() && (Object) this instanceof ServerPlayer jugador) {
+			com.dedsafio4.items.AvisoTotem.consumido(jugador, net.minecraft.world.item.Items.TOTEM_OF_UNDYING);
+		}
 	}
 }

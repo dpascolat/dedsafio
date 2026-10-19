@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 
 /**
- * Cuando a alguien le salta un tótem del mod (todos menos el Nutritótem, el de Minecraft) sale en el chat de todos:
+ * Cuando a alguien le salta un tótem (los del mod y el Nutritótem, el de Minecraft) sale en el chat de todos:
  * "(cara) Jugador ha consumido un Tótem de Eón". La cara la dibuja el cliente (ChatCaraMixin): el mensaje empieza
  * con {@link #MARCA} en la fuente "cara" (un hueco del ancho de la cara) y el nombre del jugador va guardado en ese
  * carácter.
