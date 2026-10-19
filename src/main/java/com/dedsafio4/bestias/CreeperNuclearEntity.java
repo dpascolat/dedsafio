@@ -45,12 +45,15 @@ public class CreeperNuclearEntity extends Creeper {
 			if (jugador.position().distanceTo(centro) > RADIO_ONDA) continue;
 			// Tapado: ningún rayo desde la explosión llega a su cuerpo.
 			if (Explosion.getSeenPercent(centro, jugador) <= 0) continue;
-			if (jugador.isBlocking()) {
+			// Con el escudo levantado (aunque lo haya levantado recién: no hace falta esperar como con los golpes).
+			if (jugador.isUsingItem() && jugador.getUseItem().getUseAnimation() == net.minecraft.world.item.UseAnim.BLOCK) {
 				// El escudo de la mano (no la copia que guarda el "usando"), y se rompe entero.
 				ItemStack escudo = jugador.getItemInHand(jugador.getUsedItemHand());
 				var mano = LivingEntity.getSlotForHand(jugador.getUsedItemHand());
 				jugador.stopUsingItem();
 				escudo.hurtAndBreak(escudo.getMaxDamage() + 1, jugador, mano);
+				// El escudo se sacrificó: la explosión de este creeper (que llega justo después) ya no lo lastima.
+				jugador.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 10, 4));
 				continue;
 			}
 			jugador.hurt(this.damageSources().explosion(this, this), 10000f);
