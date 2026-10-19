@@ -98,10 +98,13 @@ public final class NaveCinematica {
 		});
 		HudRenderCallback.EVENT.register((g, tiempo) -> {
 			float parcial = tiempo.getGameTimeDeltaPartialTick(true);
+			g.pose().pushPose();
+			g.pose().translate(0, 0, 3000);   // adelante de todo, también del chat
 			pintarNegro(g, Mth.lerp(parcial, negroAntes, negro));
 			// El destello blanco al entrar y salir de la velocidad de la luz.
 			float blanco = EspacioCielo.destello(progresoEspacio(parcial));
 			if (blanco > 0.001f) g.fill(0, 0, g.guiWidth(), g.guiHeight(), (Mth.clamp((int) (blanco * 255), 0, 255) << 24) | 0xFFFFFF);
+			g.pose().popPose();
 		});
 		// La pantalla de "Cargando terreno" del cambio de dimensión también queda negra.
 		ScreenEvents.AFTER_INIT.register((mc, pantalla, ancho, alto) -> {

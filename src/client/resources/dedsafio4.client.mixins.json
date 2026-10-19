@@ -12,6 +12,7 @@
 		"CasillaBaneadaMixin",
 		"ChatCaraMixin",
 		"ChatSistemaMixin",
+		"ChatTunelMixin",
 		"HotbarBaneadaMixin",
 		"ChestRendererMixin",
 		"ClientPacketListenerMixin",

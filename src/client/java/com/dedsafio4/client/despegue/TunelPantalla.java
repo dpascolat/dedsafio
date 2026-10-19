@@ -54,10 +54,32 @@ public final class TunelPantalla {
 			duracion = payload.ticks() * 50L;
 			context.client().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BEACON_ACTIVATE, 0.6f, 1f));
 		}));
-		HudRenderCallback.EVENT.register((g, contador) -> dibujar(g));
+		// Con el chat cerrado se dibuja sobre el HUD; con el chat abierto, sobre la pantalla del chat (una sola vez por cuadro).
+		HudRenderCallback.EVENT.register((g, contador) -> {
+			if (!(net.minecraft.client.Minecraft.getInstance().screen instanceof net.minecraft.client.gui.screens.ChatScreen)) dibujar(g);
+		});
+		net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((mc, pantalla, ancho, alto) -> {
+			if (pantalla instanceof net.minecraft.client.gui.screens.ChatScreen) {
+				net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(pantalla).register((p, g, x, y, delta) -> dibujar(g));
+			}
+		});
 	}
 
+	/** Si el túnel se está viendo (mientras tanto el chat no se dibuja: ChatTunelMixin). */
+	public static boolean activo() {
+		return desde >= 0;
+	}
+
+	/** Todo bien adelante (z alto), para que tape también el chat abierto. */
 	private static void dibujar(GuiGraphics g) {
+		if (desde < 0) return;
+		g.pose().pushPose();
+		g.pose().translate(0, 0, 3000);
+		dibujarTunel(g);
+		g.pose().popPose();
+	}
+
+	private static void dibujarTunel(GuiGraphics g) {
 		if (desde < 0) return;
 		long ahora = Util.getMillis(), pasaron = ahora - desde;
 		if (pasaron > duracion) {
