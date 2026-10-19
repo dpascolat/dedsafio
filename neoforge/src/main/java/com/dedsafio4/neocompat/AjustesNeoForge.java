@@ -47,6 +47,7 @@ public final class AjustesNeoForge {
 				|| bloque == com.dedsafio4.intercambio.ModIntercambio.PUESTO
 				|| bloque instanceof com.dedsafio4.bloques.MensajeroBlock
 				|| bloque instanceof com.dedsafio4.subastas.VitrinaBlock
+				|| bloque instanceof com.dedsafio4.subastas.PujaBlock
 				|| bloque instanceof com.dedsafio4.banco.CajeroBlock
 				|| bloque instanceof com.dedsafio4.boveda.BovedaBlock;
 	}

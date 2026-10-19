@@ -80,6 +80,24 @@
 			"chars": [
 				""
 			]
+		},
+		{
+			"type": "bitmap",
+			"file": "dedsafio4:gui/dedita_verde.png",
+			"height": 8,
+			"ascent": 7,
+			"chars": [
+				""
+			]
+		},
+		{
+			"type": "bitmap",
+			"file": "dedsafio4:gui/dedita_roja.png",
+			"height": 8,
+			"ascent": 7,
+			"chars": [
+				""
+			]
 		}
 	]
 }

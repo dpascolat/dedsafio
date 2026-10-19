@@ -223,6 +223,7 @@ public final class ModItems {
 	public static final Item CUCHARA_DORADA_HOJAS = registrar("cuchara_dorada_hojas", new Item(new Item.Properties().stacksTo(1)));
 	/** Billete de Autobús (el ítem se llama "tarjeta_rosa" desde antes): hace falta para viajar en Autobús. */
 	public static final Item TARJETA_ROSA = registrar("tarjeta_rosa", new DescritoItem(new Item.Properties(), DescritoItem::billeteAutobus));
+	public static final Item TARJETA_SUBASTA = registrar("tarjeta_subasta", new DescritoItem(new Item.Properties(), DescritoItem::tarjetaSubasta));
 	/** Tarjeta de Acceso Phora rosa: abre la Puerta Rosa (y se gasta). Es distinta de la Tarjeta Rosa de arriba. */
 	public static final Item TARJETA_PUERTA_ROSA = registrar("tarjeta_puerta_rosa",
 			new DescritoItem(new Item.Properties(), DescritoItem::tarjetaAccesoPhora));
@@ -654,6 +655,8 @@ public final class ModItems {
 						entradas.accept(TENEDOR_HOJAS);
 						entradas.accept(CUCHARA_DORADA_HOJAS);
 						entradas.accept(TARJETA_ROSA);
+						entradas.accept(TARJETA_SUBASTA);
+						entradas.accept(com.dedsafio4.subastas.ModPuja.ITEM);
 						entradas.accept(TARJETA_PUERTA_ROSA);
 						entradas.accept(TARJETA_PUERTA_VERDE);
 						entradas.accept(AMULETO_VERDE);

@@ -41,6 +41,17 @@ public final class Banco {
 		return true;
 	}
 
+	/** Lo mismo con cualquier jugador, aunque no esté conectado (para cobrarle al que ganó una puja). */
+	public static boolean cobrar(MinecraftServer server, java.util.UUID jugador, long cantidad) {
+		BancoData d = data(server);
+		long actual = d.saldo(jugador);
+		if (actual < cantidad) return false;
+		d.setSaldo(jugador, actual - cantidad);
+		ServerPlayer conectado = server.getPlayerList().getPlayer(jugador);
+		if (conectado != null) sincronizar(conectado);
+		return true;
+	}
+
 	public static void sincronizar(ServerPlayer jugador) {
 		ServerPlayNetworking.send(jugador, new DeditasPayload(saldo(jugador)));
 	}

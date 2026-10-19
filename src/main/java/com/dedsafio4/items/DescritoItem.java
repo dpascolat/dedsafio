@@ -91,6 +91,12 @@ public class DescritoItem extends Item {
 		t.add(parte("viajar en ", GRIS).append(parte("Autobús", 0xC3E84E)).append(parte(".", GRIS)));
 	}
 
+	/** Tarjeta de Subasta. */
+	public static void tarjetaSubasta(List<Component> t) {
+		t.add(parte("Necesitas una para", GRIS));
+		t.add(parte("pujar en la ", GRIS).append(parte("Subasta", 0x55FFAA)).append(parte(".", GRIS)));
+	}
+
 	/** Cápsula de Pastilla Vacía. */
 	public static void capsulaVacia(List<Component> t) {
 		t.add(parte("Utilízala para crear diferentes", GRIS));

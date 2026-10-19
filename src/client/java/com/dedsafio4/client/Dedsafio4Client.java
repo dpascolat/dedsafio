@@ -151,6 +151,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// La Vitrina del /ah: el ítem a la venta girando.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.subastas.ModVitrina.ENTIDAD, com.dedsafio4.client.subastas.VitrinaRenderer::new);
+		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+				com.dedsafio4.subastas.ModPuja.ENTIDAD, com.dedsafio4.client.subastas.PujaRenderer::new);
 		// La Bóveda de la Hermandad: la puerta animada y su pantalla.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.boveda.ModBoveda.ENTIDAD, com.dedsafio4.client.boveda.BovedaRenderer::new);
