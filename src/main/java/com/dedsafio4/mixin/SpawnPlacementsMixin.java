@@ -40,6 +40,16 @@ public abstract class SpawnPlacementsMixin {
 		if (!com.dedsafio4.bestias.AnuncioMob.activo(level.getLevel().getServer(), tipo)) cir.setReturnValue(false);
 	}
 
+	/** En el Centro de Quiu no aparecen cerdos solos, salvo con /cerdos_quiu activar (ver CerdosQuiu). */
+	@Inject(method = "checkSpawnRules", at = @At("HEAD"), cancellable = true)
+	private static void dedsafio4$sinCerdosQuiu(EntityType<?> tipo, ServerLevelAccessor level, MobSpawnType razon,
+												BlockPos pos, RandomSource random, CallbackInfoReturnable<Boolean> cir) {
+		if (tipo != EntityType.PIG || (razon != MobSpawnType.NATURAL && razon != MobSpawnType.CHUNK_GENERATION)) return;
+		var mundo = level.getLevel();
+		if (mundo.dimension().equals(com.dedsafio4.dimension.Portales.DIMENSION_NUEVA)
+				&& !com.dedsafio4.dimension.CerdosQuiu.activos(mundo.getServer())) cir.setReturnValue(false);
+	}
+
 	/**
 	 * Zombis en el Nether (ver Dedsafio4#onInitialize): solo con "zombi 3", sin importar la luz
 	 * (con suelo firme y fuera de pacífico). Sin el cambio, en el Nether no aparecen, como siempre.
