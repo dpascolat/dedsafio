@@ -295,6 +295,10 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.DROMORAPTOR_ROJO, c -> new com.dedsafio4.client.bestias.RaptorRenderer(c, false));
 		EntityRendererRegistry.register(ModEntidades.DROMORAPTOR_AZUL, c -> new com.dedsafio4.client.bestias.RaptorRenderer(c, true));
 		EntityRendererRegistry.register(ModEntidades.CREEPER_NUCLEAR, com.dedsafio4.client.bestias.CreeperNuclearRenderer::new);
+		// La araña de cueva de Minecraft, con la Araña Mutante para /mutacion.
+		EntityRendererRegistry.register(net.minecraft.world.entity.EntityType.CAVE_SPIDER, com.dedsafio4.client.bestias.AranaCuevaRenderer::new);
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.bestias.MutacionArana.Payload.TYPE, (payload, context) ->
+				com.dedsafio4.bestias.MutacionArana.ACTIVA_CLIENTE = payload.activa());
 		EntityRendererRegistry.register(ModEntidades.CREEPER_PASTEL, com.dedsafio4.client.bestias.CreeperPastelRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.ZARINOSA, com.dedsafio4.client.bestias.ZarinosaRenderer::new);
 		com.dedsafio4.client.bestias.PastelPantalla.registrar();

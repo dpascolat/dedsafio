@@ -60,6 +60,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.cielo.CieloNoche.registrar();
 		com.dedsafio4.subastas.ModVitrina.registrar();
 		com.dedsafio4.subastas.ModPuja.registrar();
+		com.dedsafio4.bestias.MutacionArana.registrar();
 		com.dedsafio4.puertas.ModPuertas.registrar();
 		com.dedsafio4.boveda.ModBoveda.registrar();
 		com.dedsafio4.meteoritos.ModMeteoritos.registrar();
@@ -161,6 +162,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.subastas.Subastas.registrar(dispatcher);
 			com.dedsafio4.subastas.Puja.registrarComandos(dispatcher);
 			com.dedsafio4.dimension.CerdosQuiu.registrarComandos(dispatcher);
+			com.dedsafio4.bestias.MutacionArana.registrarComandos(dispatcher);
 			BloqueoMinimapa.registrarComando(dispatcher);
 			CambiosComandos.registrar(dispatcher);
 			Hermandades.registrarComandos(dispatcher);
