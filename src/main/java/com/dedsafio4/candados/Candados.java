@@ -106,9 +106,10 @@ public final class Candados {
 		return data(level).cerradura(principal(level, pos));
 	}
 
+	/** El dueño, los que pusieron bien el código, y los admins (OP), que abren todo sin código. */
 	public static boolean puedeAbrir(ServerPlayer jugador, CandadosData.Cerradura cerradura) {
 		UUID uuid = jugador.getUUID();
-		return cerradura.duenio().equals(uuid) || cerradura.autorizados().contains(uuid);
+		return cerradura.duenio().equals(uuid) || cerradura.autorizados().contains(uuid) || jugador.hasPermissions(2);
 	}
 
 	/** Bloques que hay que volver a mandarle a un jugador en el próximo tick. */
