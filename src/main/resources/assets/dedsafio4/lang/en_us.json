@@ -256,6 +256,8 @@
 	"item.dedsafio4.creeper_amarillo_spawn_egg": "Huevo generador de Creeper Amarillo",
 	"item.dedsafio4.creeper_pasto_spawn_egg": "Huevo generador de Creeper de Pasto",
 	"entity.dedsafio4.meteorito": "Meteorito",
+	"death.attack.onda_nuclear": "%1$s was caught in a Nuclear Creeper blast wave",
+	"death.attack.onda_nuclear.player": "%1$s was caught in a Nuclear Creeper blast wave while fighting %2$s",
 	"death.attack.meteorito": "%1$s fue aplastado por un meteorito",
 	"death.attack.meteorito.player": "%1$s fue aplastado por un meteorito mientras escapaba de %2$s",
 	"entity.dedsafio4.dactylo_bebe": "Dáctylo Bebé",

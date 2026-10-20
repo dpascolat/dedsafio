@@ -25,6 +25,10 @@ public class CreeperNuclearEntity extends Creeper {
 	public static final int POTENCIA = 6, MECHA = 40;
 	/** Hasta dónde llega la onda que mata. */
 	public static final double RADIO_ONDA = 40;
+	/** El daño de la onda: no pasa por la armadura (ni la gasta), así no te la rompe. */
+	public static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> DANIO_ONDA =
+			net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE,
+					net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "onda_nuclear"));
 
 	public CreeperNuclearEntity(EntityType<? extends Creeper> tipo, Level level) {
 		super(tipo, level);
@@ -56,7 +60,10 @@ public class CreeperNuclearEntity extends Creeper {
 				jugador.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 10, 4));
 				continue;
 			}
-			jugador.hurt(this.damageSources().explosion(this, this), 10000f);
+			// Te mata sin tocar la armadura (con el daño de explosión normal, 10000 de golpe la rompía entera).
+			var fuente = new net.minecraft.world.damagesource.DamageSource(mundo.registryAccess()
+					.registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(DANIO_ONDA), this);
+			jugador.hurt(fuente, jugador.getMaxHealth() + jugador.getAbsorptionAmount() + 100f);
 		}
 	}
 }
