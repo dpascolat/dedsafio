@@ -21,6 +21,8 @@ import java.util.UUID;
  * Recuperar. También se puede vender lo que tienes en la mano con /ah vender <precio>. Al comprar, al comprador le
  * llega un mensaje de la Subasta al Buzón ("Compraste ..."); al vendedor también ("Vendiste ..."), con las Deditas
  * de la venta en mano adentro (aunque no esté conectado). Lo que sacas de la venta queda en Recuperar hasta que lo tomes.
+ * Un admin la cierra con /ahah desactivar: a cada jugador le llega en un mensaje todo lo que tenía a la venta y en
+ * Recuperar, y nadie la puede usar hasta /ahah activar.
  */
 public final class Subastas {
 	private Subastas() {}
@@ -71,9 +73,53 @@ public final class Subastas {
 				.then(Commands.literal("vender")
 						.then(Commands.argument("precio", LongArgumentType.longArg(1, PRECIO_MAXIMO))
 								.executes(ctx -> vender(ctx.getSource().getPlayerOrException(), LongArgumentType.getLong(ctx, "precio"))))));
+		dispatcher.register(Commands.literal("ahah").requires(s -> s.hasPermission(2))
+				.executes(ctx -> {
+					boolean cerrada = data(ctx.getSource().getServer()).cerrada();
+					ctx.getSource().sendSuccess(() -> Component.literal(cerrada ? "La Subasta está cerrada." : "La Subasta está abierta.")
+							.withStyle(ChatFormatting.GOLD), false);
+					return 1;
+				})
+				.then(Commands.literal("activar").executes(ctx -> {
+					data(ctx.getSource().getServer()).setCerrada(false);
+					ctx.getSource().sendSuccess(() -> Component.literal("Listo: la Subasta (/ah) está abierta otra vez.").withStyle(ChatFormatting.GREEN), true);
+					return 1;
+				}))
+				.then(Commands.literal("desactivar").executes(ctx -> cerrar(ctx.getSource()))));
+	}
+
+	/** /ahah desactivar: cierra la Subasta y le devuelve a cada uno lo suyo en mensajes (27 casillas por mensaje). */
+	private static int cerrar(CommandSourceStack fuente) {
+		MinecraftServer server = fuente.getServer();
+		SubastasData data = data(server);
+		data.setCerrada(true);
+		for (ServerPlayer p : server.getPlayerList().getPlayers()) if (p.containerMenu instanceof MenuSubastas) p.closeContainer();
+		java.util.Map<UUID, java.util.List<ItemStack>> todo = data.vaciar();
+		int objetos = 0;
+		for (var e : todo.entrySet()) {
+			java.util.List<ItemStack> l = e.getValue();
+			objetos += l.size();
+			for (int i = 0; i < l.size(); i += com.dedsafio4.correo.Correo.CASILLAS) {
+				java.util.List<ItemStack> parte = l.subList(i, Math.min(l.size(), i + com.dedsafio4.correo.Correo.CASILLAS));
+				com.dedsafio4.correo.Correo.mandar(server, e.getKey(), REMITENTE, "Subasta cerrada",
+						"La Subasta se cerró. Aquí tienes de vuelta lo que tenías a la venta y lo que te quedaba por recuperar.", parte);
+			}
+		}
+		int cuantos = todo.size(), total = objetos;
+		fuente.sendSuccess(() -> Component.literal("Listo: la Subasta está cerrada. Se devolvieron " + total + " objetos a "
+				+ cuantos + " jugadores en mensajes.").withStyle(ChatFormatting.GOLD), true);
+		return 1;
+	}
+
+	/** Si la Subasta está cerrada, se lo dice al jugador. */
+	private static boolean cerradaPara(ServerPlayer jugador) {
+		if (!data(jugador.server).cerrada()) return false;
+		jugador.sendSystemMessage(Component.literal("La Subasta está cerrada por ahora.").withStyle(ChatFormatting.RED));
+		return true;
 	}
 
 	public static void abrir(ServerPlayer jugador, int pagina) {
+		if (cerradaPara(jugador)) return;
 		jugador.openMenu(new SimpleMenuProvider((id, inventario, p) -> MenuSubastas.abrir(id, inventario),
 				Component.literal("Subastas")));
 	}
@@ -92,6 +138,7 @@ public final class Subastas {
 
 	/** Pone a la venta ese objeto (que ya se le sacó al jugador si sale bien). Devuelve false si no se pudo. */
 	static boolean vender(ServerPlayer jugador, ItemStack item, long precio) {
+		if (cerradaPara(jugador)) return false;
 		SubastasData data = data(jugador.server);
 		if (data.cuantasDe(jugador.getUUID()) >= MAXIMO_POR_JUGADOR) {
 			jugador.sendSystemMessage(Component.literal("Ya tienes " + MAXIMO_POR_JUGADOR + " cosas a la venta. Saca alguna desde Mis ventas.").withStyle(ChatFormatting.RED));

@@ -30,6 +30,31 @@ public class SubastasData extends SavedData {
 		return siguienteVitrina++;
 	}
 
+	/** Si un admin cerró la Subasta con /ahah desactivar (no se puede abrir ni vender). */
+	private boolean cerrada;
+
+	public boolean cerrada() {
+		return cerrada;
+	}
+
+	public void setCerrada(boolean cerrada) {
+		this.cerrada = cerrada;
+		setDirty();
+	}
+
+	/** Saca todo lo que está a la venta y todo lo de Recuperar, agrupado por jugador (para devolvérselo). */
+	public java.util.Map<UUID, List<ItemStack>> vaciar() {
+		java.util.Map<UUID, List<ItemStack>> todo = new java.util.LinkedHashMap<>();
+		for (Venta v : ventas) todo.computeIfAbsent(v.vendedor(), k -> new ArrayList<>()).add(v.item().copy());
+		recuperar.forEach((j, l) -> {
+			for (ItemStack o : l) if (!o.isEmpty()) todo.computeIfAbsent(j, k -> new ArrayList<>()).add(o.copy());
+		});
+		ventas.clear();
+		recuperar.clear();
+		setDirty();
+		return todo;
+	}
+
 	public List<Venta> ventas() {
 		return ventas;
 	}
@@ -76,6 +101,7 @@ public class SubastasData extends SavedData {
 	private static SubastasData cargar(CompoundTag tag, HolderLookup.Provider registros) {
 		SubastasData data = new SubastasData();
 		data.siguienteVitrina = tag.getInt("siguienteVitrina");
+		data.cerrada = tag.getBoolean("cerrada");
 		for (Tag t : tag.getList("ventas", Tag.TAG_COMPOUND)) {
 			CompoundTag v = (CompoundTag) t;
 			ItemStack item = ItemStack.parse(registros, v.getCompound("item")).orElse(ItemStack.EMPTY);
@@ -113,6 +139,7 @@ public class SubastasData extends SavedData {
 		});
 		tag.put("recuperar", rec);
 		tag.putInt("siguienteVitrina", siguienteVitrina);
+		tag.putBoolean("cerrada", cerrada);
 		return tag;
 	}
 }
