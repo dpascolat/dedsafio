@@ -13,8 +13,8 @@ public final class SkinsDedsafio {
 
 	public static final String ESPACIO = "skin";
 
-	public static final List<String> NOMBRES = List.of("banquito", "churri", "diabli", "eon", "juansnutria", "mapache",
+	public static final List<String> NOMBRES = List.of("ajolote", "banquito", "churri", "diabli", "eon", "juansnutria", "mapache",
 			"nec", "nutria", "nutria2", "nutriaabeja", "nutriabetis", "nutriacalabaza", "nutriaconstructora", "nutriadetective", "nutriadj",
 			"nutriaelegante", "nutriahoja", "nutriaia", "nutrianeitor", "nutriaplaya", "nutriawatona", "papuche",
-			"papunutria", "parcenutria", "pe23", "sombrita", "unicornio");
+			"papunutria", "parcenutria", "pe23", "ribbit", "sombrita", "unicornio");
 }
