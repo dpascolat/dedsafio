@@ -36,6 +36,8 @@
 	"item.dedsafio4.mira_spawn_egg": "Huevo generador de Reptisaurio Salvaje",
 	"entity.dedsafio4.dromoraptor_rojo": "Dromoraptor Rojo",
 	"entity.dedsafio4.dromoraptor_azul": "Dromoraptor Azul",
+	"entity.dedsafio4.rana_gigante": "Rana Gigante",
+	"item.dedsafio4.rana_gigante_spawn_egg": "Huevo generador de Rana Gigante",
 	"entity.dedsafio4.creeper_nuclear": "Creeper Nuclear",
 	"item.dedsafio4.creeper_nuclear_spawn_egg": "Huevo generador de Creeper Nuclear",
 	"entity.dedsafio4.creeper_pastel": "Creeper Pastel",

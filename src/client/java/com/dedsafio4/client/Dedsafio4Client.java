@@ -340,6 +340,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 				com.dedsafio4.client.bestias.TungSahurModelo::crearCapa);
 		EntityRendererRegistry.register(ModEntidades.TUNG_TUNG_TUNG_SAHUR, com.dedsafio4.client.bestias.TungSahurModelo.Dibujante::new);
 		EntityRendererRegistry.register(ModEntidades.HORNET, com.dedsafio4.client.bestias.HornetRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.RANA_GIGANTE, com.dedsafio4.client.bestias.RanaGiganteRenderer::new);
+		com.dedsafio4.client.bestias.RanaGiganteCliente.registrar();
 		EntityRendererRegistry.register(ModEntidades.RAYO, RayoRenderer::new);
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			saldo = -1;

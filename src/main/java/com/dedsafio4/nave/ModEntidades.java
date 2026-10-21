@@ -137,6 +137,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.HornetEntity> HORNET = registrar("hornet",
 			EntityType.Builder.of(com.dedsafio4.bestias.HornetEntity::new, MobCategory.CREATURE).sized(0.6f, 1.9f).clientTrackingRange(8));
 
+	/** Rana Gigante (de Dedsafío 3): agarra con la lengua. Unos 2,4 bloques de ancho y 3,4 de alto. */
+	public static final EntityType<com.dedsafio4.bestias.RanaGiganteEntity> RANA_GIGANTE = registrar("rana_gigante",
+			EntityType.Builder.of(com.dedsafio4.bestias.RanaGiganteEntity::new, MobCategory.MONSTER).sized(2.4f, 3.4f).clientTrackingRange(10));
+
 	/** Wraith: el espectro con la guadaña (2,5 bloques de alto, flota). */
 	public static final EntityType<com.dedsafio4.bestias.WraithEntity> WRAITH = registrar("wraith",
 			EntityType.Builder.of(com.dedsafio4.bestias.WraithEntity::new, MobCategory.MONSTER).sized(0.8f, 2.5f).clientTrackingRange(8));
@@ -228,6 +232,7 @@ public final class ModEntidades {
 				Monster::checkMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(TUNG_TUNG_TUNG_SAHUR, com.dedsafio4.bestias.TungSahurEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(HORNET, com.dedsafio4.bestias.HornetEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(RANA_GIGANTE, com.dedsafio4.bestias.RanaGiganteEntity.crearAtributos());
 		for (EntityType<com.dedsafio4.bestias.FantasmaEntity> fantasma : java.util.List.of(FANTASMA_AMARILLO, FANTASMA_BLANCO, FANTASMA_ROJO, FANTASMA_NEGRO)) {
 			FabricDefaultAttributeRegistry.register(fantasma, com.dedsafio4.bestias.FantasmaEntity.crearAtributos());
 			// En el Limbo, volando sobre el piso de piedra (allá siempre está oscuro).
