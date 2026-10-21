@@ -330,6 +330,9 @@ public class DescritoItem extends Item {
 
 	/** Baya Uvina: fruta de los árboles; con un hacha sale la semilla. */
 	public static void bayaUvina(List<Component> t) {
+		t.add(parte("Al comerla puedes respirar bajo", GRIS));
+		t.add(parte("el agua durante 2 minutos.", GRIS));
+		t.add(Component.empty());
 		t.add(parte("Encuéntralo y coséchalo en", GRIS));
 		t.add(parte("los árboles del Centro de Quiu.", GRIS));
 		t.add(Component.empty());

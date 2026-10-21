@@ -138,9 +138,11 @@ public final class ModItems {
 			new SemillaDescritaItem(com.dedsafio4.bloques.ModBloques.FRUTA_SOLARIA, new Item.Properties(),
 					DescritoItem::semillaSolaria));
 
-	/** Baya Uvina: fruta morada de los árboles del Centro de Quiu. */
+	/** Baya Uvina: fruta morada de los árboles del Centro de Quiu. Al comerla da Respiración acuática 2 minutos. */
 	public static final Item BAYA_UVINA = registrar("baya_uvina", new DescritoItem(new Item.Properties()
-			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(4).saturationModifier(0.6f).build()),
+			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(4).saturationModifier(0.6f)
+					.effect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.WATER_BREATHING, 2400), 1f)
+					.build()),
 			DescritoItem::bayaUvina));
 
 	/** Semilla de Baya Uvina: se planta en el costado de los troncos del Centro de Quiu. */

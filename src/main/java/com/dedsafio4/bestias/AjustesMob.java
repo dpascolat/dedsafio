@@ -160,7 +160,26 @@ public final class AjustesMob {
 	public static void registrar() {
 		ServerEntityEvents.ENTITY_LOAD.register((entidad, mundo) -> {
 			if (entidad instanceof LivingEntity vivo) aplicar(vivo, datos(mundo.getServer()), false);
+			if (entidad instanceof net.minecraft.world.entity.monster.Spider arana) aranaComoZombi(arana);
 		});
+	}
+
+	/**
+	 * Las arañas (y las de cueva) buscan pelea como un zombi: de día y de noche, a la misma distancia (35 bloques) y sin
+	 * soltarte cuando hay luz. Minecraft las deja tranquilas con luz y solo ven a 16 bloques.
+	 */
+	private static void aranaComoZombi(net.minecraft.world.entity.monster.Spider arana) {
+		// Primero la distancia: las tareas de buscar objetivo la toman al crearse.
+		var distancia = arana.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE);
+		if (distancia != null && distancia.getBaseValue() < 35) distancia.setBaseValue(35);
+		var mob = (com.dedsafio4.mixin.MobAccessor) arana;
+		mob.dedsafio4$objetivos().removeAllGoals(g -> g.getClass().getSimpleName().equals("SpiderTargetGoal"));
+		mob.dedsafio4$goals().removeAllGoals(g -> g.getClass().getSimpleName().equals("SpiderAttackGoal"));
+		mob.dedsafio4$goals().addGoal(4, new net.minecraft.world.entity.ai.goal.MeleeAttackGoal(arana, 1.0, true));
+		mob.dedsafio4$objetivos().addGoal(2, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(
+				arana, net.minecraft.world.entity.player.Player.class, true));
+		mob.dedsafio4$objetivos().addGoal(3, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(
+				arana, net.minecraft.world.entity.animal.IronGolem.class, true));
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {

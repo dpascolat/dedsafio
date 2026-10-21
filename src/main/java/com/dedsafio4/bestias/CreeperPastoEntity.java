@@ -13,7 +13,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Creeper de Pasto: un creeper chiquito (1,5 veces 1/4 de uno normal), hecho de pasto. Se porta como un
- * creeper: te persigue, se infla y explota. Con "/cambio creepers_pasto 1" sale del pasto que se rompe.
+ * creeper: te persigue y, en cuanto te tiene cerca, explota al instante (sin inflarse antes). Con
+ * "/cambio creepers_pasto 1" sale del pasto que se rompe.
  */
 public class CreeperPastoEntity extends Creeper {
 	/** Probabilidad de que salga uno al romper pasto (o en cada explosión que rompe pasto). */
@@ -21,6 +22,10 @@ public class CreeperPastoEntity extends Creeper {
 
 	public CreeperPastoEntity(EntityType<? extends Creeper> tipo, Level level) {
 		super(tipo, level);
+		// Mecha de 1 tick: explota apenas empieza a inflarse. El creeper guarda la mecha en sus datos: se carga la nuestra.
+		net.minecraft.nbt.CompoundTag datos = new net.minecraft.nbt.CompoundTag();
+		datos.putShort("Fuse", (short) 1);
+		super.readAdditionalSaveData(datos);
 	}
 
 	/** Pasto, pasto alto o bloque de pasto. */

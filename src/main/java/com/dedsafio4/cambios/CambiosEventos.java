@@ -114,13 +114,21 @@ public final class CambiosEventos {
 	/** Un trillón de daño: no hay forma de sobrevivirlo. */
 	private static final float DANIO_MAGMA = 1.0e12f;
 
-	/** ¿El jugador está tocando un Bloque de Magma? Cuenta de arriba, de abajo y de los costados. */
+	/**
+	 * ¿El jugador está tocando un Bloque de Magma? Cuenta de arriba, de abajo y de los costados, pero solo cara a cara:
+	 * se estira la caja del jugador hacia un lado a la vez. Así, parado al lado del magma (sobre otro bloque) o
+	 * rozando solo su esquina o su borde, no cuenta.
+	 */
 	private static boolean tocaMagma(ServerPlayer jugador) {
-		AABB caja = jugador.getBoundingBox().inflate(0.05);
-		for (BlockPos pos : BlockPos.betweenClosed(
-				BlockPos.containing(caja.minX, caja.minY, caja.minZ),
-				BlockPos.containing(caja.maxX, caja.maxY, caja.maxZ))) {
-			if (jugador.level().getBlockState(pos).is(Blocks.MAGMA_BLOCK)) return true;
+		AABB base = jugador.getBoundingBox();
+		double d = 0.05, e = 1.0e-3;
+		AABB[] cajas = {base.inflate(d, -e, -e), base.inflate(-e, d, -e), base.inflate(-e, -e, d)};
+		for (AABB caja : cajas) {
+			for (BlockPos pos : BlockPos.betweenClosed(
+					BlockPos.containing(caja.minX, caja.minY, caja.minZ),
+					BlockPos.containing(caja.maxX, caja.maxY, caja.maxZ))) {
+				if (jugador.level().getBlockState(pos).is(Blocks.MAGMA_BLOCK)) return true;
+			}
 		}
 		return false;
 	}
