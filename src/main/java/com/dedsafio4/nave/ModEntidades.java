@@ -67,6 +67,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.CreeperAmarilloEntity> CREEPER_AMARILLO = registrar("creeper_amarillo",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperAmarilloEntity::new, MobCategory.MONSTER).sized(0.6f, 1.7f).clientTrackingRange(8));
 
+	/** Creeper de Papel: una solicitud de empleo con patas, del alto de un creeper. */
+	public static final EntityType<com.dedsafio4.bestias.CreeperPapelEntity> CREEPER_PAPEL = registrar("creeper_papel",
+			EntityType.Builder.of(com.dedsafio4.bestias.CreeperPapelEntity::new, MobCategory.MONSTER).sized(0.8f, 1.7f).clientTrackingRange(8));
+
 	public static final EntityType<com.dedsafio4.bestias.CreeperPastoEntity> CREEPER_PASTO = registrar("creeper_pasto",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperPastoEntity::new, MobCategory.MONSTER).sized(0.45f, 0.65f).clientTrackingRange(8));
 
@@ -177,6 +181,10 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(WALKER, WalkerEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(ALDEANO_ROBOT, AldeanoRobotEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CREEPER_PASTO, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		FabricDefaultAttributeRegistry.register(CREEPER_PAPEL, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		// De día, a cielo abierto (ver CreeperPapelEntity.puedeAparecer).
+		SpawnPlacements.register(CREEPER_PAPEL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				com.dedsafio4.bestias.CreeperPapelEntity::puedeAparecer);
 		FabricDefaultAttributeRegistry.register(CREEPER_AMARILLO, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		FabricDefaultAttributeRegistry.register(DROMORAPTOR_ROJO, com.dedsafio4.bestias.RaptorEntity.atributosDromoraptor());
 		FabricDefaultAttributeRegistry.register(DROMORAPTOR_AZUL, com.dedsafio4.bestias.RaptorEntity.atributosDromoraptorAzul());

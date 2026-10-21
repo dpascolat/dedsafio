@@ -62,6 +62,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.subastas.ModPuja.registrar();
 		com.dedsafio4.bestias.MutacionArana.registrar();
 		com.dedsafio4.bestias.RanaGiganteEntity.registrar();
+		com.dedsafio4.bestias.CreeperPapelEntity.registrar();
 		com.dedsafio4.puertas.ModPuertas.registrar();
 		com.dedsafio4.boveda.ModBoveda.registrar();
 		com.dedsafio4.meteoritos.ModMeteoritos.registrar();
@@ -253,6 +254,9 @@ public class Dedsafio4 implements ModInitializer {
 		// El Creeper Pastel aparece en cualquier parte del Overworld.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.CREEPER_PASTEL, 15, 1, 1);
+		// El Creeper de Papel aparece de día en todo el Overworld.
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.CREEPER_PAPEL, 15, 1, 1);
 		// El Creeper Nuclear aparece en la nieve y en el desierto.
 		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.SNOWY_PLAINS, Biomes.SNOWY_TAIGA, Biomes.ICE_SPIKES,
 						Biomes.SNOWY_SLOPES, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.GROVE, Biomes.SNOWY_BEACH, Biomes.FROZEN_RIVER,
