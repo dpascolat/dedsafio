@@ -435,6 +435,12 @@ public final class ModItems {
 	/** Huevo generador del Creeper de Pasto. */
 	public static final Item RANA_GIGANTE_SPAWN_EGG = registrar("rana_gigante_spawn_egg",
 			new SpawnEggItem(ModEntidades.RANA_GIGANTE, 0x5A5A5A, 0x3A5A4A, new Item.Properties()));
+	public static final Item ZOMBIE_COMUN_SPAWN_EGG = registrar("zombie_comun_spawn_egg",
+			new SpawnEggItem(ModEntidades.ZOMBIE_COMUN, 0x3F7A3A, 0x4A6FA5, new Item.Properties()));
+	public static final Item ZOMBIE_DESIERTO_SPAWN_EGG = registrar("zombie_desierto_spawn_egg",
+			new SpawnEggItem(ModEntidades.ZOMBIE_DESIERTO, 0xA88C5A, 0x6B5A3A, new Item.Properties()));
+	public static final Item ZOMBIE_NIEVE_SPAWN_EGG = registrar("zombie_nieve_spawn_egg",
+			new SpawnEggItem(ModEntidades.ZOMBIE_NIEVE, 0x9FC6D8, 0x3A5A7A, new Item.Properties()));
 	public static final Item CREEPER_PAPEL_SPAWN_EGG = registrar("creeper_papel_spawn_egg",
 			new SpawnEggItem(ModEntidades.CREEPER_PAPEL, 0xF2F2F2, 0x1C1C1C, new Item.Properties()));
 	public static final Item CREEPER_PASTO_SPAWN_EGG = registrar("creeper_pasto_spawn_egg",
@@ -694,6 +700,9 @@ public final class ModItems {
 						entradas.accept(WALKER_SPAWN_EGG);
 						entradas.accept(RANA_GIGANTE_SPAWN_EGG);
 						entradas.accept(CREEPER_PAPEL_SPAWN_EGG);
+						entradas.accept(ZOMBIE_COMUN_SPAWN_EGG);
+						entradas.accept(ZOMBIE_DESIERTO_SPAWN_EGG);
+						entradas.accept(ZOMBIE_NIEVE_SPAWN_EGG);
 						entradas.accept(DROMORAPTOR_ROJO_SPAWN_EGG);
 						entradas.accept(DROMORAPTOR_AZUL_SPAWN_EGG);
 						entradas.accept(NARVAL_SPAWN_EGG);

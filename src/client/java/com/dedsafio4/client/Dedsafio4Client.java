@@ -252,6 +252,9 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.ALDEANO_ROBOT, AldeanoRobotRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.CREEPER_PASTO, com.dedsafio4.client.bestias.CreeperPastoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.CREEPER_PAPEL, com.dedsafio4.client.bestias.CreeperPapelRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.ZOMBIE_COMUN, com.dedsafio4.client.bestias.ZombieDedsafioRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.ZOMBIE_DESIERTO, com.dedsafio4.client.bestias.ZombieDedsafioRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.ZOMBIE_NIEVE, com.dedsafio4.client.bestias.ZombieDedsafioRenderer::new);
 		// El "papeleo" del Creeper de Papel: la solicitud de empleo para firmar.
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.bestias.CreeperPapelEntity.FormularioPayload.TYPE, (payload, context) ->
 				context.client().setScreen(new com.dedsafio4.client.bestias.FormularioPapelScreen()));

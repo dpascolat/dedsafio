@@ -21,13 +21,16 @@ import java.util.Map;
 /**
  * Un modelo en formato de OptiFine (.jem, como los exporta Blockbench con invertAxis "xy") dibujado sobre las partes de
  * un modelo de Minecraft: cada parte del archivo cuelga de la parte de Minecraft que se le indique, así se mueve con
- * su animación normal. Lo usan la Araña Mutante y el Creeper de Papel.
+ * su animación normal. Lo usan la Araña Mutante, el Creeper de Papel y los zombis nuevos. Las piezas con su propia
+ * textura (la ropa de los zombis: "texture" con shirt o pants) son otra capa, que se dibuja aparte con su textura.
  */
 public final class ModeloJem {
 	/** Una pieza: su nombre, dónde gira (píxeles), cuánto (radianes), sus caras (por cara: 4 × (x, y, z, u, v) y la normal) y sus hijas. */
-	private record Nodo(String id, float[] pivote, float[] rot, float[] caras, List<Nodo> hijos) {}
+	private record Nodo(String id, String capa, float[] pivote, float[] rot, float[] caras, List<Nodo> hijos) {}
 
 	private record Raiz(ModelPart parte, Nodo nodo) {}
+
+	private static final float[] NADA = new float[0];
 
 	/** Para mover piezas del archivo por su cuenta (por ejemplo, que la hoja del Creeper de Papel se balancee). */
 	public interface Giro {
@@ -57,7 +60,7 @@ public final class ModeloJem {
 			for (JsonElement e : jem.getAsJsonArray("models")) {
 				JsonObject m = e.getAsJsonObject();
 				String parte = partes.get(m.get("part").getAsString());
-				if (parte != null) raices.add(new Raiz(raiz.getChild(parte), nodo(m, tw, th)));
+				if (parte != null) raices.add(new Raiz(raiz.getChild(parte), nodo(m, tw, th, null)));
 			}
 		} catch (Exception ex) {
 			Dedsafio4.LOGGER.error("No se pudo cargar el modelo " + archivo, ex);
@@ -74,7 +77,12 @@ public final class ModeloJem {
 	}
 
 	/** Con invertAxis "xy": x e y van al revés que en el modelo de Minecraft. */
-	private static Nodo nodo(JsonObject m, float tw, float th) {
+	private static Nodo nodo(JsonObject m, float tw, float th, String capaPadre) {
+		String capa = capaPadre;
+		if (m.has("texture")) {
+			String t = m.get("texture").getAsString();
+			capa = t.contains("pants") ? "pantalon" : t.contains("shirt") ? "camisa" : t;
+		}
 		float[] t = numeros(m.get("translate"), 3), r = numeros(m.get("rotate"), 3);
 		float[] pivote = {-t[0], -t[1], t[2]};
 		float[] rot = {-r[0] * Mth.DEG_TO_RAD, -r[1] * Mth.DEG_TO_RAD, r[2] * Mth.DEG_TO_RAD};
@@ -83,9 +91,9 @@ public final class ModeloJem {
 		float[] q = new float[caras.size()];
 		for (int i = 0; i < q.length; i++) q[i] = caras.get(i);
 		List<Nodo> hijos = new ArrayList<>();
-		if (m.has("submodels")) for (JsonElement s : m.getAsJsonArray("submodels")) hijos.add(nodo(s.getAsJsonObject(), tw, th));
+		if (m.has("submodels")) for (JsonElement s : m.getAsJsonArray("submodels")) hijos.add(nodo(s.getAsJsonObject(), tw, th, capa));
 		String id = m.has("id") ? m.get("id").getAsString() : "";
-		return new Nodo(id, pivote, rot, q, hijos);
+		return new Nodo(id, capa, pivote, rot, q, hijos);
 	}
 
 	private static void caja(JsonObject b, float tw, float th, List<Float> q) {
@@ -143,26 +151,31 @@ public final class ModeloJem {
 		o.add(clave, arr);
 	}
 
-	/** Dibuja todo, cada parte sobre la de Minecraft (ya animada). */
+	/** Dibuja todo lo de la textura principal, cada parte sobre la de Minecraft (ya animada). */
 	public void dibujar(PoseStack pose, VertexConsumer vc, int luz, int overlay, int color, Giro giro) {
+		dibujar(pose, vc, luz, overlay, color, giro, null);
+	}
+
+	/** Dibuja solo las piezas de esa capa ("camisa", "pantalon"; null = la textura principal). */
+	public void dibujar(PoseStack pose, VertexConsumer vc, int luz, int overlay, int color, Giro giro, String capa) {
 		for (Raiz r : raices()) {
 			ModelPart p = r.parte();
 			pose.pushPose();
 			pose.translate(p.x / 16f, p.y / 16f, p.z / 16f);
 			pose.mulPose(new Quaternionf().rotationZYX(p.zRot, p.yRot, p.xRot));
-			dibujar(r.nodo(), pose, vc, luz, overlay, color, giro);
+			dibujar(r.nodo(), pose, vc, luz, overlay, color, giro, capa);
 			pose.popPose();
 		}
 	}
 
-	private static void dibujar(Nodo n, PoseStack pose, VertexConsumer vc, int luz, int overlay, int color, Giro giro) {
+	private static void dibujar(Nodo n, PoseStack pose, VertexConsumer vc, int luz, int overlay, int color, Giro giro, String capa) {
 		pose.pushPose();
 		pose.translate(n.pivote()[0] / 16f, n.pivote()[1] / 16f, n.pivote()[2] / 16f);
 		pose.mulPose(new Quaternionf().rotationZYX(n.rot()[2], n.rot()[1], n.rot()[0]));
 		float[] extra = giro == null ? null : giro.extra(n.id());
 		if (extra != null) pose.mulPose(new Quaternionf().rotationZYX(extra[2], extra[1], extra[0]));
 		PoseStack.Pose ultimo = pose.last();
-		float[] q = n.caras();
+		float[] q = java.util.Objects.equals(n.capa(), capa) ? n.caras() : NADA;
 		for (int k = 0; k + 23 <= q.length; k += 23) {
 			for (int v = 0; v < 4; v++) {
 				int o = k + v * 5;
@@ -170,7 +183,7 @@ public final class ModeloJem {
 						.setOverlay(overlay).setLight(luz).setNormal(ultimo, q[k + 20], q[k + 21], q[k + 22]);
 			}
 		}
-		for (Nodo h : n.hijos()) dibujar(h, pose, vc, luz, overlay, color, giro);
+		for (Nodo h : n.hijos()) dibujar(h, pose, vc, luz, overlay, color, giro, capa);
 		pose.popPose();
 	}
 }

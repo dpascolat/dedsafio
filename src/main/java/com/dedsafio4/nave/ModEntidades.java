@@ -67,6 +67,17 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.CreeperAmarilloEntity> CREEPER_AMARILLO = registrar("creeper_amarillo",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperAmarilloEntity::new, MobCategory.MONSTER).sized(0.6f, 1.7f).clientTrackingRange(8));
 
+	/** Los zombis nuevos (común, del desierto y de nieve): ver ZombieDedsafioEntity. */
+	public static final EntityType<com.dedsafio4.bestias.ZombieDedsafioEntity> ZOMBIE_COMUN = registrar("zombie_comun",
+			EntityType.Builder.<com.dedsafio4.bestias.ZombieDedsafioEntity>of((tipo, level) -> new com.dedsafio4.bestias.ZombieDedsafioEntity(tipo, level, com.dedsafio4.bestias.ZombieDedsafioEntity.Tipo.COMUN), MobCategory.MONSTER)
+					.sized(0.6f, 1.95f).clientTrackingRange(8));
+	public static final EntityType<com.dedsafio4.bestias.ZombieDedsafioEntity> ZOMBIE_DESIERTO = registrar("zombie_desierto",
+			EntityType.Builder.<com.dedsafio4.bestias.ZombieDedsafioEntity>of((tipo, level) -> new com.dedsafio4.bestias.ZombieDedsafioEntity(tipo, level, com.dedsafio4.bestias.ZombieDedsafioEntity.Tipo.DESIERTO), MobCategory.MONSTER)
+					.sized(0.6f, 1.95f).clientTrackingRange(8));
+	public static final EntityType<com.dedsafio4.bestias.ZombieDedsafioEntity> ZOMBIE_NIEVE = registrar("zombie_nieve",
+			EntityType.Builder.<com.dedsafio4.bestias.ZombieDedsafioEntity>of((tipo, level) -> new com.dedsafio4.bestias.ZombieDedsafioEntity(tipo, level, com.dedsafio4.bestias.ZombieDedsafioEntity.Tipo.NIEVE), MobCategory.MONSTER)
+					.sized(0.6f, 1.95f).clientTrackingRange(8));
+
 	/** Creeper de Papel: una solicitud de empleo con patas, del alto de un creeper. */
 	public static final EntityType<com.dedsafio4.bestias.CreeperPapelEntity> CREEPER_PAPEL = registrar("creeper_papel",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperPapelEntity::new, MobCategory.MONSTER).sized(0.8f, 1.7f).clientTrackingRange(8));
@@ -181,6 +192,15 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(WALKER, WalkerEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(ALDEANO_ROBOT, AldeanoRobotEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CREEPER_PASTO, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		FabricDefaultAttributeRegistry.register(ZOMBIE_COMUN, net.minecraft.world.entity.monster.Zombie.createAttributes());
+		SpawnPlacements.register(ZOMBIE_COMUN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				net.minecraft.world.entity.monster.Monster::checkMonsterSpawnRules);
+		FabricDefaultAttributeRegistry.register(ZOMBIE_DESIERTO, net.minecraft.world.entity.monster.Zombie.createAttributes());
+		SpawnPlacements.register(ZOMBIE_DESIERTO, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				net.minecraft.world.entity.monster.Monster::checkMonsterSpawnRules);
+		FabricDefaultAttributeRegistry.register(ZOMBIE_NIEVE, net.minecraft.world.entity.monster.Zombie.createAttributes());
+		SpawnPlacements.register(ZOMBIE_NIEVE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				net.minecraft.world.entity.monster.Monster::checkMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(CREEPER_PAPEL, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		// De día, a cielo abierto (ver CreeperPapelEntity.puedeAparecer).
 		SpawnPlacements.register(CREEPER_PAPEL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
