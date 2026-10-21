@@ -73,7 +73,8 @@ public final class Zombis {
 	public static boolean trepando(LivingEntity entidad) {
 		if (!esZombi(entidad) || !entidad.getTags().contains(ESCALA)) return false;
 		if (!(entidad.level() instanceof ServerLevel level) || Cambios.nivel(level.getServer(), Cambios.ZOMBI) < 1) return false;
-		// Chocó contra una pared, o está pegado a una (así no se suelta a mitad de camino).
-		return entidad.horizontalCollision || !level.noCollision(entidad, entidad.getBoundingBox().inflate(0.06, -0.1, 0.06));
+		// Chocó contra una pared, o está pegado a una (así no se suelta a mitad de camino). Solo se miran los bloques,
+		// no las otras entidades: es más liviano y no se cruza con los mods que procesan entidades en paralelo (Async).
+		return entidad.horizontalCollision || !level.noBlockCollision(entidad, entidad.getBoundingBox().inflate(0.06, -0.1, 0.06));
 	}
 }
