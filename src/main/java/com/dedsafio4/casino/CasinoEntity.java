@@ -58,13 +58,13 @@ public class CasinoEntity extends Mob implements GeoEntity {
 			java.util.Map.entry("botella de experiencia", new Resultado("botella de experiencia", 3, 176, 220)));
 
 	/**
-	 * De cada 100 tiradas: cuántas salen con 3 iguales y cuántas con 2 (el resto, ninguna repetida). De las de 3
-	 * iguales, los 3 corazones salen solo 1 de cada 100 tiradas (1 %); las otras 19 se reparten entre las demás figuras.
+	 * De cada 1000 tiradas: los 3 corazones salen 5 (0,5 %), 3 iguales de otra figura 100 (10 %) y 2 iguales 200 (20 %);
+	 * el resto (69,5 %), ninguna repetida.
 	 */
 	/** Lo que dura el sonido del giro (casino.ogg, 8,4 s): todas las tiradas duran eso. */
 	static final int GIRO = 168;
 
-	private static final int PROBABILIDAD_TRES = 20, PROBABILIDAD_DOS = 30, PROBABILIDAD_TRES_CORAZONES = 1;
+	private static final int PROBABILIDAD_TRES_CORAZONES = 5, PROBABILIDAD_TRES = 100, PROBABILIDAD_DOS = 200;
 	/** Las animaciones que se pueden disparar con animar(nombre). */
 	public static final java.util.List<String> ANIMACIONES = RESULTADOS.keySet().stream().sorted().toList();
 
@@ -174,8 +174,9 @@ public class CasinoEntity extends Mob implements GeoEntity {
 			return net.minecraft.world.InteractionResult.CONSUME;
 		}
 		var azar = getRandom();
-		int suerte = azar.nextInt(100);
-		int iguales = suerte < PROBABILIDAD_TRES ? 3 : suerte < PROBABILIDAD_TRES + PROBABILIDAD_DOS ? 2 : 1;
+		int suerte = azar.nextInt(1000);
+		int iguales = suerte < PROBABILIDAD_TRES_CORAZONES + PROBABILIDAD_TRES ? 3
+				: suerte < PROBABILIDAD_TRES_CORAZONES + PROBABILIDAD_TRES + PROBABILIDAD_DOS ? 2 : 1;
 		String tirada;
 		if (suerte < PROBABILIDAD_TRES_CORAZONES) {
 			tirada = "corazon";
