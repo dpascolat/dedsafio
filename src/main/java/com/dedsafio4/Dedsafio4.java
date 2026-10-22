@@ -168,6 +168,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.bestias.MutacionArana.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.RanaGiganteEntity.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.SlotsBloqueados.registrarComandos(dispatcher);
+			com.dedsafio4.bestias.ZombisNormales.registrarComandos(dispatcher);
 			BloqueoMinimapa.registrarComando(dispatcher);
 			CambiosComandos.registrar(dispatcher);
 			Hermandades.registrarComandos(dispatcher);
