@@ -40,14 +40,6 @@ public abstract class SpawnPlacementsMixin {
 		if (!com.dedsafio4.bestias.AnuncioMob.activo(level.getLevel().getServer(), tipo)) cir.setReturnValue(false);
 	}
 
-	/** Con /zombies_normales desactivar, los zombis de Minecraft no aparecen solos (ver ZombisNormales). */
-	@Inject(method = "checkSpawnRules", at = @At("HEAD"), cancellable = true)
-	private static void dedsafio4$sinZombisNormales(EntityType<?> tipo, ServerLevelAccessor level, MobSpawnType razon,
-													BlockPos pos, RandomSource random, CallbackInfoReturnable<Boolean> cir) {
-		if (tipo != EntityType.ZOMBIE || (razon != MobSpawnType.NATURAL && razon != MobSpawnType.CHUNK_GENERATION)) return;
-		if (!com.dedsafio4.bestias.ZombisNormales.activos(level.getLevel().getServer())) cir.setReturnValue(false);
-	}
-
 	/** En el Centro de Quiu no aparecen cerdos solos, salvo con /cerdos_quiu activar (ver CerdosQuiu). */
 	@Inject(method = "checkSpawnRules", at = @At("HEAD"), cancellable = true)
 	private static void dedsafio4$sinCerdosQuiu(EntityType<?> tipo, ServerLevelAccessor level, MobSpawnType razon,

@@ -64,6 +64,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.bestias.RanaGiganteEntity.registrar();
 		com.dedsafio4.bestias.CreeperPapelEntity.registrar();
 		com.dedsafio4.bestias.SlotsBloqueados.registrar();
+		com.dedsafio4.bestias.ZombisNuevos.registrar();
 		com.dedsafio4.puertas.ModPuertas.registrar();
 		com.dedsafio4.boveda.ModBoveda.registrar();
 		com.dedsafio4.meteoritos.ModMeteoritos.registrar();
@@ -168,7 +169,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.bestias.MutacionArana.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.RanaGiganteEntity.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.SlotsBloqueados.registrarComandos(dispatcher);
-			com.dedsafio4.bestias.ZombisNormales.registrarComandos(dispatcher);
+			com.dedsafio4.bestias.ZombisNuevos.registrarComandos(dispatcher);
 			BloqueoMinimapa.registrarComando(dispatcher);
 			CambiosComandos.registrar(dispatcher);
 			Hermandades.registrarComandos(dispatcher);
@@ -257,10 +258,6 @@ public class Dedsafio4 implements ModInitializer {
 		// El Creeper Pastel aparece en cualquier parte del Overworld.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.CREEPER_PASTEL, 15, 1, 1);
-		// Los zombis nuevos en todo el Overworld (el de nieve, menos).
-		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(), MobCategory.MONSTER, ModEntidades.ZOMBIE_COMUN, 50, 2, 4);
-		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(), MobCategory.MONSTER, ModEntidades.ZOMBIE_DESIERTO, 50, 2, 4);
-		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(), MobCategory.MONSTER, ModEntidades.ZOMBIE_NIEVE, 15, 1, 2);
 		// El Creeper de Papel aparece de día en todo el Overworld.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.CREEPER_PAPEL, 15, 1, 1);
