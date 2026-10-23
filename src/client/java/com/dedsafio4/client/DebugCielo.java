@@ -1114,6 +1114,88 @@ public final class DebugCielo {
 		});
 	}
 
+	private static final boolean HURON = "huron".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /cambiarmob skin:huron: el hurón con zoom, de frente, de costado (el cuerpo girado), caminando y agachado. */
+	private static void tickHuron(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = true;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "time set 6000");
+			comando(mc, "weather clear");
+			comando(mc, "clear @s");
+			comando(mc, "fill -8 199 -8 8 199 8 minecraft:grass_block");
+			comando(mc, "fill -8 200 -8 8 206 8 minecraft:air");
+			comando(mc, "tp @s 0.5 200 0.5 0 0");
+			comando(mc, "cambiarmob skin:huron");
+			mc.options.fov().set(30);
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+		}
+		if (t > 0 && t < 90) mirar(mc, 0, 15);
+		if (t == 20) captura(mc, "debug_huron1_frente.png");
+		// De costado: el cuerpo girado 90 grados (la cabeza mira a la cámara).
+		if (t > 22 && t < 45) { mc.player.yBodyRot = mc.player.yBodyRotO = 90; }
+		if (t == 40) captura(mc, "debug_huron2_costado.png");
+		if (t > 45 && t < 65) { mc.player.yBodyRot = mc.player.yBodyRotO = -90; }
+		if (t == 60) captura(mc, "debug_huron3_otro_costado.png");
+		if (t >= 66 && t < 88) mc.options.keyShift.setDown(true);
+		if (t == 85) captura(mc, "debug_huron4_agachado.png");
+		if (t == 88) mc.options.keyShift.setDown(false);
+		// Caminando hacia la cámara.
+		if (t >= 90 && t < 105) { mirar(mc, 0, 15); mc.options.keyDown.setDown(true); }
+		if (t == 100) captura(mc, "debug_huron5_caminando.png");
+		if (t == 105) { mc.options.keyDown.setDown(false); comando(mc, "cambiarmob normal"); mc.options.fov().set(70);
+			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; }
+		if (t == 112) mc.stop();
+	}
+
+	private static final boolean TRICERATOPS = "triceratops".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** El Triceratops: se ve bien, carga 2 segundos, embiste rompiendo una pared y empuja al jugador sin dañarlo. */
+	private static void tickTriceratops(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "difficulty normal");
+			comando(mc, "time set 6000");
+			comando(mc, "effect clear @s");
+			comando(mc, "kill @e[type=dedsafio4:triceratops]");
+			comando(mc, "fill -12 199 -24 12 199 12 minecraft:grass_block");
+			comando(mc, "fill -12 200 -24 12 210 12 minecraft:air");
+			// Una pared de piedra y madera entre los dos.
+			if (System.getenv("SIN_PARED") == null) {
+				comando(mc, "fill -3 200 -6 3 203 -6 minecraft:stone");
+				comando(mc, "fill -3 200 -7 3 203 -7 minecraft:oak_planks");
+			}
+			comando(mc, "tp @s 0.5 200 0.5 180 10");
+			comando(mc, "summon dedsafio4:triceratops 0.5 200 -16.5 {Rotation:[0f,0f]}");
+		}
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
+		if (t == 20) captura(mc, "debug_trice1_quieto.png");
+		if (t == 25) server.execute(() -> {
+			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30))) e.embestirYa();
+		});
+		if (t >= 25 && t <= 110 && t % 5 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30))) {
+				Dedsafio4ClientDebug.info("trice t" + (ticks - 20) + " estado=" + e.estadoActual() + " z=" + String.format("%.1f", e.getZ())
+						+ " pared=" + server.overworld().getBlockState(new net.minecraft.core.BlockPos(0, 201, -6)).getBlock()
+						+ " jugador vida=" + j.getHealth() + " vel=" + j.getDeltaMovement());
+			}
+		});
+		if (t == 45) captura(mc, "debug_trice2_cargando.png");
+		if (t == 75) captura(mc, "debug_trice3_embistiendo.png");
+		if (t == 120) { comando(mc, "kill @e[type=dedsafio4:triceratops]"); mc.options.hideGui = false; mc.stop(); }
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -7613,6 +7695,14 @@ public final class DebugCielo {
 		}
 		if (TARJETA_PUJA) {
 			tickTarjetaPuja(mc);
+			return;
+		}
+		if (HURON) {
+			tickHuron(mc);
+			return;
+		}
+		if (TRICERATOPS) {
+			tickTriceratops(mc);
 			return;
 		}
 		if (ROBOT) {

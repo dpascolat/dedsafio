@@ -435,6 +435,8 @@ public final class ModItems {
 	/** Huevo generador del Creeper de Pasto. */
 	public static final Item RANA_GIGANTE_SPAWN_EGG = registrar("rana_gigante_spawn_egg",
 			new SpawnEggItem(ModEntidades.RANA_GIGANTE, 0x5A5A5A, 0x3A5A4A, new Item.Properties()));
+	public static final Item TRICERATOPS_SPAWN_EGG = registrar("triceratops_spawn_egg",
+			new SpawnEggItem(ModEntidades.TRICERATOPS, 0x7A5A3A, 0xD9C08A, new Item.Properties()));
 	public static final Item ZOMBIE_COMUN_SPAWN_EGG = registrar("zombie_comun_spawn_egg",
 			new SpawnEggItem(ModEntidades.ZOMBIE_COMUN, 0x3F7A3A, 0x4A6FA5, new Item.Properties()));
 	public static final Item ZOMBIE_DESIERTO_SPAWN_EGG = registrar("zombie_desierto_spawn_egg",
@@ -699,6 +701,7 @@ public final class ModItems {
 						entradas.accept(SOARER_SPAWN_EGG);
 						entradas.accept(WALKER_SPAWN_EGG);
 						entradas.accept(RANA_GIGANTE_SPAWN_EGG);
+						entradas.accept(TRICERATOPS_SPAWN_EGG);
 						entradas.accept(CREEPER_PAPEL_SPAWN_EGG);
 						entradas.accept(ZOMBIE_COMUN_SPAWN_EGG);
 						entradas.accept(ZOMBIE_DESIERTO_SPAWN_EGG);
