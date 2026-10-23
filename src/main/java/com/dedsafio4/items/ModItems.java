@@ -225,7 +225,7 @@ public final class ModItems {
 	public static final Item CUCHARA_DORADA_HOJAS = registrar("cuchara_dorada_hojas", new Item(new Item.Properties().stacksTo(1)));
 	/** Billete de Autobús (el ítem se llama "tarjeta_rosa" desde antes): hace falta para viajar en Autobús. */
 	public static final Item TARJETA_ROSA = registrar("tarjeta_rosa", new DescritoItem(new Item.Properties(), DescritoItem::billeteAutobus));
-	public static final Item TARJETA_SUBASTA = registrar("tarjeta_subasta", new DescritoItem(new Item.Properties(), DescritoItem::tarjetaSubasta));
+	public static final Item TARJETA_SUBASTA = registrar("tarjeta_subasta", new TarjetaSubastaItem(new Item.Properties()));
 	/** Tarjeta de Acceso Phora rosa: abre la Puerta Rosa (y se gasta). Es distinta de la Tarjeta Rosa de arriba. */
 	public static final Item TARJETA_PUERTA_ROSA = registrar("tarjeta_puerta_rosa",
 			new DescritoItem(new Item.Properties(), DescritoItem::tarjetaAccesoPhora));

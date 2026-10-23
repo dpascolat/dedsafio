@@ -95,6 +95,7 @@ public class DescritoItem extends Item {
 	public static void tarjetaSubasta(List<Component> t) {
 		t.add(parte("Necesitas una para", GRIS));
 		t.add(parte("pujar en la ", GRIS).append(parte("Subasta", 0x55FFAA)).append(parte(".", GRIS)));
+		t.add(parte("Click derecho: puja el mínimo.", GRIS));
 	}
 
 	/** Cápsula de Pastilla Vacía. */

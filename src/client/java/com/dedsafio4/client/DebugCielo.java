@@ -1071,6 +1071,49 @@ public final class DebugCielo {
 		});
 	}
 
+	private static final boolean TARJETA_PUJA = "tarjetapuja".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de la Tarjeta de Subasta: click derecho puja el mínimo (y no puja dos veces seguidas). */
+	private static void tickTarjetaPuja(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "puja_cancelar");
+			comando(mc, "clear @s");
+			comando(mc, "tp @s 0.5 200 0.5 0 -90");
+			comando(mc, "item replace entity @s weapon.mainhand with minecraft:diamond 3");
+			var server = mc.getSingleplayerServer();
+			var uuid = mc.player.getUUID();
+			server.execute(() -> {
+				var j = server.getPlayerList().getPlayer(uuid);
+				com.dedsafio4.banco.Banco.sumar(j, 1000 - com.dedsafio4.banco.Banco.saldo(j));
+			});
+		}
+		if (t == 5) comando(mc, "puja_crear 5");
+		if (t == 10) comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:tarjeta_subasta");
+		// Click derecho mirando al cielo: puja el mínimo (5).
+		if (t == 20) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t == 25) pujaActual(mc, "primer click");
+		// Enseguida otro click: espera de 1 segundo, no puja.
+		if (t == 26) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t == 30) pujaActual(mc, "click enseguida (no deberia pujar)");
+		// Pasado el segundo: puja 5 + 5 = 10.
+		if (t == 50) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t == 55) pujaActual(mc, "click despues de 1 segundo");
+		if (t == 60) { comando(mc, "puja_cancelar"); comando(mc, "clear @s"); }
+		if (t == 70) mc.stop();
+	}
+
+	private static void pujaActual(Minecraft mc, String cuando) {
+		var server = mc.getSingleplayerServer();
+		server.execute(() -> {
+			var d = com.dedsafio4.subastas.Puja.datos(server);
+			Dedsafio4ClientDebug.info("puja " + cuando + ": activa=" + d.estaActiva() + " actual=" + d.actual() + " siguiente=" + d.siguiente());
+		});
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -7566,6 +7609,10 @@ public final class DebugCielo {
 		}
 		if (PRECIOS) {
 			tickPrecios(mc);
+			return;
+		}
+		if (TARJETA_PUJA) {
+			tickTarjetaPuja(mc);
 			return;
 		}
 		if (ROBOT) {

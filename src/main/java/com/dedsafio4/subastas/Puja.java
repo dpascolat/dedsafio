@@ -34,7 +34,7 @@ import java.util.UUID;
 /**
  * La Puja (subasta en vivo): un admin pone un objeto con /puja_crear <mínimo> (lo que tiene en la mano) y los
  * jugadores que tienen una Tarjeta de Subasta pujan deditas de su saldo del banco: con /pujar <cantidad>, o con click
- * derecho en el Bloque de Puja (puja lo justo: la puja actual más el mínimo). Cada puja tiene que superar a la anterior
+ * derecho en el Bloque de Puja o con la Tarjeta de Subasta (puja lo justo: la puja actual más el mínimo). Cada puja tiene que superar a la anterior
  * por lo menos en el mínimo (de 1 a 20 deditas) y sólo se puede pujar lo que se tiene. Cada puja sale en el chat de
  * todos: "Jugador (saldo de Hermandad) ha pujado 82 [verde] 20 [azul]". Nadie paga hasta que el admin hace
  * /puja_final: ahí se le cobra al que ganó (si ya no le alcanza, al anterior que pueda pagar) y le llega el objeto
@@ -178,7 +178,7 @@ public final class Puja {
 		admin.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 		admin.server.getPlayerList().broadcastSystemMessage(Component.literal("¡Empieza la puja por ").withStyle(ChatFormatting.GOLD)
 				.append(nombreItem(d.item)).append(Component.literal("! Se puja desde ").withStyle(ChatFormatting.GOLD))
-				.append(cantidad(minimo)).append(Component.literal(" con /pujar o en el Bloque de Puja.").withStyle(ChatFormatting.GOLD)), false);
+				.append(cantidad(minimo)).append(Component.literal(" con /pujar, en el Bloque de Puja o con click derecho con la Tarjeta de Subasta.").withStyle(ChatFormatting.GOLD)), false);
 		return 1;
 	}
 
