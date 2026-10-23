@@ -54,13 +54,17 @@ public final class SkinsGeo {
 
 	private static final Map<String, Modelo> MODELOS = new HashMap<>();
 
+	/** Skins que usan el modelo de otra, con su propia textura (skin → la del modelo). */
+	private static final Map<String, String> MISMO_MODELO = Map.of("nec2", "nec");
+
 	/** Dónde está cada parte del jugador cuando está quieto (para mover el hueso lo mismo que se movió la parte). */
 	private static final float[][] REPOSO = {{0, 0, 0}, {0, 0, 0}, {5, 2, 0}, {-5, 2, 0}, {1.9f, 12, 0}, {-1.9f, 12, 0}};
 
 	private static Modelo modelo(String nombre) {
 		if (MODELOS.containsKey(nombre)) return MODELOS.get(nombre);
 		Modelo m = null;
-		ResourceLocation ruta = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "skins/" + nombre + ".geo.json");
+		ResourceLocation ruta = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID,
+				"skins/" + MISMO_MODELO.getOrDefault(nombre, nombre) + ".geo.json");
 		var recurso = Minecraft.getInstance().getResourceManager().getResource(ruta);
 		if (recurso.isPresent()) {
 			try (Reader lector = recurso.get().openAsReader()) {
