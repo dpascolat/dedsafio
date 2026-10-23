@@ -60,6 +60,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.cielo.CieloNoche.registrar();
 		com.dedsafio4.subastas.ModVitrina.registrar();
 		com.dedsafio4.subastas.ModPuja.registrar();
+		com.dedsafio4.gancho.ModGancho.registrar();
 		com.dedsafio4.bestias.MutacionArana.registrar();
 		com.dedsafio4.bestias.RanaGiganteEntity.registrar();
 		com.dedsafio4.bestias.CreeperPapelEntity.registrar();
@@ -165,6 +166,7 @@ public class Dedsafio4 implements ModInitializer {
 			BancoComandos.registrar(dispatcher);
 			com.dedsafio4.subastas.Subastas.registrar(dispatcher);
 			com.dedsafio4.subastas.Puja.registrarComandos(dispatcher);
+			com.dedsafio4.gancho.Ganchos.registrarComandos(dispatcher);
 			com.dedsafio4.dimension.CerdosQuiu.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.MutacionArana.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.RanaGiganteEntity.registrarComandos(dispatcher);

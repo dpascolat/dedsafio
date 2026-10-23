@@ -671,6 +671,7 @@ public final class ModItems {
 						entradas.accept(TARJETA_ROSA);
 						entradas.accept(TARJETA_SUBASTA);
 						entradas.accept(com.dedsafio4.subastas.ModPuja.ITEM);
+						entradas.accept(com.dedsafio4.gancho.ModGancho.ITEM);
 						entradas.accept(TARJETA_PUERTA_ROSA);
 						entradas.accept(TARJETA_PUERTA_VERDE);
 						entradas.accept(AMULETO_VERDE);

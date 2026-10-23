@@ -1196,6 +1196,54 @@ public final class DebugCielo {
 		if (t == 120) { comando(mc, "kill @e[type=dedsafio4:triceratops]"); mc.options.hideGui = false; mc.stop(); }
 	}
 
+	private static final boolean GANCHO = "gancho".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Gancho de Huesos: se ve colgado del techo, la caña se engancha, se ve la línea y al recoger te lanza. */
+	private static void tickGancho(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "time set 6000");
+			comando(mc, "clear @s");
+			comando(mc, "fill -8 199 -16 8 199 8 minecraft:grass_block");
+			comando(mc, "fill -8 200 -16 8 212 8 minecraft:air");
+			// Un techo de piedra con el gancho colgando, 5 bloques adelante.
+			comando(mc, "fill -2 206 -7 2 206 -3 minecraft:stone");
+			comando(mc, "setblock 0 205 -5 dedsafio4:gancho_huesos[facing=south]");
+			comando(mc, "tp @s 0.5 200 0.5 180 -10");
+			comando(mc, "item replace entity @s weapon.mainhand with minecraft:fishing_rod");
+			comando(mc, "ganchito 15");
+		}
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
+		if (t == 15) comando(mc, "tp @s 0.5 203.5 -2.5 180 0");
+		if (t == 25) captura(mc, "debug_gancho1_cerca.png");
+		if (t == 30) comando(mc, "tp @s 0.5 200 0.5 180 -32");
+		// Tira la caña hacia el gancho.
+		if (t == 40) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t >= 42 && t <= 80 && t % 4 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			Dedsafio4ClientDebug.info("gancho t" + (ticks - 20) + " boya=" + (j.fishing == null ? "no" : j.fishing.position()) + " jugador=" + j.position());
+		});
+		if (t == 75) captura(mc, "debug_gancho2_linea.png");
+		// Recoge: el gancho lo lanza.
+		if (t == 80) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t >= 81 && t <= 120 && t % 3 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			Dedsafio4ClientDebug.info("vuelo t" + (ticks - 20) + " jugador=" + j.position() + " vel=" + j.getDeltaMovement());
+		});
+		if (t == 88) captura(mc, "debug_gancho3_vuelo.png");
+		if (t == 125) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var it = j.getInventory().items.stream().filter(i -> i.is(com.dedsafio4.gancho.ModGancho.ITEM)).findFirst();
+			Dedsafio4ClientDebug.info("item ganchito: " + it.map(i -> "impulso " + com.dedsafio4.gancho.GanchoItem.distancia(i)).orElse("no hay"));
+		});
+		if (t == 130) { mc.options.hideGui = false; mc.stop(); }
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -7703,6 +7751,10 @@ public final class DebugCielo {
 		}
 		if (TRICERATOPS) {
 			tickTriceratops(mc);
+			return;
+		}
+		if (GANCHO) {
+			tickGancho(mc);
 			return;
 		}
 		if (ROBOT) {

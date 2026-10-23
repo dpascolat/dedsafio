@@ -1,0 +1,8 @@
+{
+	"variants": {
+		"facing=south": { "model": "dedsafio4:block/gancho_huesos" },
+		"facing=west": { "model": "dedsafio4:block/gancho_huesos", "y": 90 },
+		"facing=north": { "model": "dedsafio4:block/gancho_huesos", "y": 180 },
+		"facing=east": { "model": "dedsafio4:block/gancho_huesos", "y": 270 }
+	}
+}
