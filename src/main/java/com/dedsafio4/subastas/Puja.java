@@ -35,7 +35,8 @@ import java.util.UUID;
  * La Puja (subasta en vivo): un admin pone un objeto con /puja_crear <mínimo> (lo que tiene en la mano) y los
  * jugadores que tienen una Tarjeta de Subasta pujan deditas de su saldo del banco: con /pujar <cantidad>, o con click
  * derecho en el Bloque de Puja o con la Tarjeta de Subasta (puja lo justo: la puja actual más el mínimo). Cada puja tiene que superar a la anterior
- * por lo menos en el mínimo (de 1 a 20 deditas) y sólo se puede pujar lo que se tiene. Cada puja sale en el chat de
+ * por lo menos en el mínimo (de 1 a 20 deditas), sólo se puede pujar lo que se tiene y no se puede pujar sobre la
+ * propia puja (el que va ganando espera a que alguien lo supere). Cada puja sale en el chat de
  * todos: "Jugador (saldo de Hermandad) ha pujado 82 [verde] 20 [azul]". Nadie paga hasta que el admin hace
  * /puja_final: ahí se le cobra al que ganó (si ya no le alcanza, al anterior que pueda pagar) y le llega el objeto
  * en un mensaje. /puja_cancelar la termina sin ganador y el objeto vuelve al admin.
@@ -196,6 +197,12 @@ public final class Puja {
 		}
 		if (!jugador.getInventory().contains(new ItemStack(ModItems.TARJETA_SUBASTA))) {
 			jugador.sendSystemMessage(Component.literal("Necesitas una Tarjeta de Subasta para pujar.").withStyle(ChatFormatting.RED));
+			return false;
+		}
+		// No se puede pujar sobre la propia puja: hay que esperar a que alguien te supere.
+		if (!d.ofertas.isEmpty() && d.ofertas.get(d.ofertas.size() - 1).jugador().equals(jugador.getUUID())) {
+			jugador.sendSystemMessage(Component.literal("Ya vas ganando la puja con ").withStyle(ChatFormatting.RED)
+					.append(cantidad(d.actual())).append(Component.literal(": espera a que alguien te supere.").withStyle(ChatFormatting.RED)));
 			return false;
 		}
 		if (cuanto < d.siguiente()) {

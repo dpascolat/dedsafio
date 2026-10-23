@@ -1073,7 +1073,7 @@ public final class DebugCielo {
 
 	private static final boolean TARJETA_PUJA = "tarjetapuja".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
-	/** Prueba de la Tarjeta de Subasta: click derecho puja el mínimo (y no puja dos veces seguidas). */
+	/** Prueba de la Tarjeta de Subasta: click derecho puja el mínimo (y no puja sobre su propia puja). */
 	private static void tickTarjetaPuja(Minecraft mc) {
 		int t = ticks - 20;
 		if (mc.screen != null) mc.setScreen(null);
@@ -1099,9 +1099,9 @@ public final class DebugCielo {
 		// Enseguida otro click: espera de 1 segundo, no puja.
 		if (t == 26) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 		if (t == 30) pujaActual(mc, "click enseguida (no deberia pujar)");
-		// Pasado el segundo: puja 5 + 5 = 10.
+		// Pasado el segundo: tampoco, porque ya va ganando él (no puede pujar sobre su propia puja).
 		if (t == 50) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
-		if (t == 55) pujaActual(mc, "click despues de 1 segundo");
+		if (t == 55) pujaActual(mc, "click despues de 1 segundo, ya ganando (no deberia pujar)");
 		if (t == 60) { comando(mc, "puja_cancelar"); comando(mc, "clear @s"); }
 		if (t == 70) mc.stop();
 	}
