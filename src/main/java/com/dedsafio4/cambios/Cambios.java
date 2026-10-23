@@ -42,7 +42,7 @@ public final class Cambios {
 	public static final String ENDERPERLAS = "enderperlas";
 	/** creepers electricos 1: todos los Creepers son eléctricos (cargados). */
 	public static final String CREEPERS_ELECTRICOS = "creepers_electricos";
-	/** magma 1: tocar un Bloque de Magma de cualquier lado te mata al instante. */
+	/** magma 1: tocar un Bloque de Magma de cualquier lado te mata (una vez por segundo); te salvan Resistencia V, o Resistencia al Fuego + Paso Helado. */
 	public static final String MAGMA = "magma";
 	/** herobrine 1: Herobrine aparece durante las noches; si no le apuntás con la Linterna en 5 segundos te saca 10 corazones. */
 	public static final String HEROBRINE = "herobrine";
@@ -106,7 +106,7 @@ public final class Cambios {
 			new Cambio(CREEPERS_ELECTRICOS, "creepers electricos", Map.of(
 					1, "Una tormenta sin fin cargó a todas las criaturas. Ahora todos los Creepers son eléctricos.")),
 			new Cambio(MAGMA, "magma", Map.of(
-					1, "Reviil hirvió las profundidades. Ahora tocar un Bloque de Magma, de CUALQUIER lado, te mata al instante.")),
+					1, "Reviil hirvió las profundidades. Ahora tocar un Bloque de Magma, de CUALQUIER lado, te mata. Solo Resistencia al Fuego junto con Paso Helado te protege.")),
 			new Cambio(BLAZE, "blaze", Map.of(
 					1, "El Inframundo no descansa. Ahora los Blaze aparecen naturalmente en el Nether.")),
 			new Cambio(CREEPERS_PASTO, "creepers_pasto", Map.of(

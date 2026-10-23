@@ -972,7 +972,7 @@ public final class DebugCielo {
 
 	private static final boolean MAGMA = "magma".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
-	/** Prueba de /cambio magma 1: tocar el magma de cualquier lado mata, aunque tengas de todo. */
+	/** Prueba de /cambio magma 1: el magma mata cada 20 ticks; el Tótem Glebanoide da 1 segundo; Resistencia al Fuego + Paso Helado salvan. */
 	private static void tickMagma(Minecraft mc) {
 		int t = ticks - 20;
 		if (mc.screen != null) mc.setScreen(null);
@@ -981,46 +981,47 @@ public final class DebugCielo {
 			comando(mc, "gamemode survival");
 			comando(mc, "difficulty normal");
 			comando(mc, "gamerule keepInventory true");
+			comando(mc, "gamerule doImmediateRespawn false");
 			comando(mc, "momento revil parar");
 			comando(mc, "cambio magma 0");
 			comando(mc, "time set day");
 			comando(mc, "forceload add -16 -16 16 16");
 			comando(mc, "fill -8 199 -8 8 199 8 minecraft:stone");
 			comando(mc, "fill -8 200 -8 8 206 8 minecraft:air");
-			comando(mc, "tp @s 0 200 0");
-			comando(mc, "effect give @s minecraft:fire_resistance 600 0 true");
-			comando(mc, "effect give @s minecraft:resistance 600 4 true");
-			for (String pieza : new String[]{"head minecraft:netherite_helmet", "chest minecraft:netherite_chestplate",
-					"legs minecraft:netherite_leggings", "feet minecraft:netherite_boots"}) {
-				String[] p = pieza.split(" ");
-				comando(mc, "item replace entity @s armor." + p[0] + " with " + p[1]
-						+ "[enchantments={levels:{\"minecraft:protection\":4}}]");
-			}
+			comando(mc, "clear @s");
+			comando(mc, "effect clear @s");
+			comando(mc, "tp @s 0.5 200 0.5");
+			comando(mc, "cambio magma 1");
 		}
-		// Sin el cambio: pararse encima del magma casi no hace nada (con resistencia y protección).
-		if (t == 10) { comando(mc, "setblock 0 199 0 minecraft:magma_block"); }
-		if (t == 40) Dedsafio4ClientDebug.info("sin el cambio, parado encima: vida=" + mc.player.getHealth());
-		// Con el cambio: de arriba.
-		if (t == 45) comando(mc, "cambio magma 1");
-		if (t == 60) Dedsafio4ClientDebug.info("con el cambio, encima: vida=" + mc.player.getHealth()
-				+ " muerto=" + mc.player.isDeadOrDying());
-		if (t == 70) { revivir(mc); comando(mc, "setblock 0 199 0 minecraft:stone"); }
-		if (t == 74) comando(mc, "tp @s 0 200 0");
-		// De costado (esperando a que se pase la protección de revivir).
-		if (t == 118) Dedsafio4ClientDebug.info("antes del costado: vivo=" + mc.player.isAlive() + " vida=" + mc.player.getHealth());
-		if (t == 120) { comando(mc, "setblock 1 200 0 minecraft:magma_block"); comando(mc, "tp @s 0.71 200 0.5"); }
-		if (t == 140) Dedsafio4ClientDebug.info("de costado: muerto=" + mc.player.isDeadOrDying() + " vida=" + mc.player.getHealth());
-		if (t == 150) { revivir(mc); comando(mc, "setblock 1 200 0 minecraft:air"); }
-		if (t == 154) comando(mc, "tp @s 0.5 200 0.5");
-		// Desde abajo: techo de magma y el jugador salta para tocarlo.
-		if (t == 198) Dedsafio4ClientDebug.info("antes de saltar: vivo=" + mc.player.isAlive() + " vida=" + mc.player.getHealth());
-		if (t == 200) { comando(mc, "setblock 0 202 0 minecraft:magma_block"); comando(mc, "tp @s 0.5 200 0.5"); }
-		if (t >= 205 && t < 225 && mc.player.onGround()) mc.player.jumpFromGround();
-		if (t == 230) Dedsafio4ClientDebug.info("saltando contra el techo: muerto=" + mc.player.isDeadOrDying() + " vida=" + mc.player.getHealth());
-		if (t == 235) { revivir(mc); comando(mc, "setblock 0 202 0 minecraft:air"); comando(mc, "cambio magma 0"); }
-		if (t == 245) mc.stop();
+		// Cada prueba empieza 80 ticks después de revivir (para que pase la protección de aparecer).
+		// 1) Sin nada: muere enseguida.
+		if (t == 80) comando(mc, "setblock 0 199 0 minecraft:magma_block");
+		if (t == 90) Dedsafio4ClientDebug.info("magma sin nada: muerto=" + mc.player.isDeadOrDying());
+		if (t == 95) { comando(mc, "setblock 0 199 0 minecraft:stone"); revivir(mc); }
+		// 2) Con el Tótem Glebanoide: lo salva, sigue vivo ese segundo y muere en el siguiente golpe.
+		if (t == 100) { comando(mc, "effect clear @s"); comando(mc, "item replace entity @s weapon.offhand with dedsafio4:totem_glebanoide");
+			comando(mc, "tp @s 0.5 200 0.5"); }
+		if (t == 180) comando(mc, "setblock 0 199 0 minecraft:magma_block");
+		if (t >= 180 && t <= 210 && t % 3 == 0) Dedsafio4ClientDebug.info("totem t+" + (t - 180) + ": vivo=" + mc.player.isAlive()
+				+ " vida=" + mc.player.getHealth());
+		// Al saltar el tótem el jugador sale empujado: lo vuelve a poner encima del magma.
+		if (t == 186) comando(mc, "tp @s 0.5 200 0.5");
+		if (t == 215) { comando(mc, "setblock 0 199 0 minecraft:stone"); revivir(mc); }
+		// 3) Resistencia al Fuego sola: muere.
+		if (t == 220) { comando(mc, "effect clear @s"); comando(mc, "tp @s 0.5 200 0.5"); }
+		if (t == 300) { comando(mc, "effect give @s minecraft:fire_resistance 600 0 true"); comando(mc, "setblock 0 199 0 minecraft:magma_block"); }
+		if (t == 310) Dedsafio4ClientDebug.info("solo resistencia al fuego: muerto=" + mc.player.isDeadOrDying());
+		if (t == 315) { comando(mc, "setblock 0 199 0 minecraft:stone"); revivir(mc); }
+		// 4) Resistencia al Fuego + botas con Paso Helado: sobrevive 3 segundos encima y de costado.
+		if (t == 320) { comando(mc, "effect clear @s");
+			comando(mc, "item replace entity @s armor.feet with minecraft:diamond_boots[enchantments={levels:{\"minecraft:frost_walker\":2}}]");
+			comando(mc, "tp @s 0.5 200 0.5"); }
+		if (t == 400) { comando(mc, "effect give @s minecraft:fire_resistance 600 0 true");
+			comando(mc, "setblock 0 199 0 minecraft:magma_block"); comando(mc, "setblock 1 200 0 minecraft:magma_block"); }
+		if (t == 460) Dedsafio4ClientDebug.info("fuego + paso helado, 3 segundos: vivo=" + mc.player.isAlive() + " vida=" + mc.player.getHealth());
+		if (t == 465) { comando(mc, "setblock 0 199 0 minecraft:stone"); comando(mc, "setblock 1 200 0 minecraft:air"); comando(mc, "cambio magma 0"); }
+		if (t == 475) mc.stop();
 	}
-
 
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {

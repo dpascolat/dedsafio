@@ -45,14 +45,18 @@ public final class CambiosEventos {
 			dejarChillador(level, entidad.blockPosition());
 		});
 
-		// magma 1: tocar un Bloque de Magma de cualquier lado mata al instante.
+		// magma 1: tocar un Bloque de Magma de cualquier lado mata, una vez cada 20 ticks (1 segundo).
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (Cambios.nivel(server, Cambios.MAGMA) < 1) return;
+			long ahora = server.getTickCount();
 			for (ServerPlayer jugador : server.getPlayerList().getPlayers()) {
 				if (jugador.isCreative() || jugador.isSpectator() || !jugador.isAlive()) continue;
-				if (!tocaMagma(jugador)) continue;
+				if (!tocaMagma(jugador) || protegidoDelMagma(jugador)) continue;
+				Long ultimo = ULTIMO_GOLPE_MAGMA.get(jugador.getUUID());
+				if (ultimo != null && ahora - ultimo < CADA_MAGMA) continue;
 				jugador.invulnerableTime = 0;
-				jugador.hurt(Cambios.danioMagma(jugador.level()), DANIO_MAGMA);
+				// Sólo cuenta si de verdad pegó (al aparecer Minecraft te da unos segundos sin daño).
+				if (jugador.hurt(Cambios.danioMagma(jugador.level()), DANIO_MAGMA)) ULTIMO_GOLPE_MAGMA.put(jugador.getUUID(), ahora);
 			}
 		});
 
@@ -113,6 +117,25 @@ public final class CambiosEventos {
 
 	/** Un trillón de daño: no hay forma de sobrevivirlo. */
 	private static final float DANIO_MAGMA = 1.0e12f;
+
+	/** Cada cuántos ticks mata el magma (20 = 1 segundo). */
+	private static final int CADA_MAGMA = 20;
+
+	/** Último tick en que el magma golpeó a cada jugador. */
+	private static final java.util.Map<java.util.UUID, Long> ULTIMO_GOLPE_MAGMA = new java.util.HashMap<>();
+
+	/**
+	 * El magma no te hace nada si tienes Resistencia V (el segundo de inmortalidad del Tótem Glebanoide), o si tienes
+	 * Resistencia al Fuego y además botas con Paso Helado.
+	 */
+	private static boolean protegidoDelMagma(ServerPlayer jugador) {
+		var resistencia = jugador.getEffect(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE);
+		if (resistencia != null && resistencia.getAmplifier() >= 4) return true;
+		if (!jugador.hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE)) return false;
+		var pasoHelado = jugador.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+				.getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.FROST_WALKER);
+		return net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantmentLevel(pasoHelado, jugador) > 0;
+	}
 
 	/**
 	 * ¿El jugador está tocando un Bloque de Magma? Cuenta de arriba, de abajo y de los costados, pero solo cara a cara:
