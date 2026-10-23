@@ -51,6 +51,8 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 	private long repuso;
 	/** Cuántas veces le pagaron con Deditas para reponer (cada vez cuesta una más). */
 	private int reposiciones;
+	/** Hasta cuándo (tick del mundo) ya se bajó la demanda de los comercios. */
+	private long ultimaBaja;
 	/** Comercio agotado → cuándo se agotó (tick del mundo): a los 10 minutos vuelve. */
 	private final java.util.Map<Integer, Long> agotados = new java.util.HashMap<>();
 	/** Lo que tarda en volver un comercio agotado: 10 minutos. */
@@ -96,6 +98,7 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		if (this.level().isClientSide) return InteractionResult.SUCCESS;
 		if (this.getOffers().isEmpty()) return InteractionResult.CONSUME;
 		this.reponer();
+		this.bajarDemanda();
 		this.setTradingPlayer(jugador);
 		this.openTradingScreen(jugador, this.getDisplayName(), this.nivel);
 		this.avisarEstado();
@@ -167,13 +170,17 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(jugador, new ReponerComercio.CostoPayload(costoReponer(), segundos));
 	}
 
-	/** Los comercios agotados vuelven a los 10 minutos (si se usaron mucho, piden un poco más, como en Minecraft). */
+	/**
+	 * Los comercios agotados vuelven a los 10 minutos (si se usaron mucho, piden un poco más, como en Minecraft).
+	 * Ese "más" no se queda para siempre: la demanda baja 1 punto por minuto hasta volver al precio normal.
+	 */
 	@Override
 	protected void customServerAiStep() {
 		super.customServerAiStep();
-		if (this.tickCount % 20 != 0 || this.agotados.isEmpty()) return;
+		if (this.tickCount % 20 != 0) return;
 		long ahora = this.level().getGameTime();
-		boolean cambio = false;
+		boolean cambio = this.bajarDemanda();
+		if (this.agotados.isEmpty() && !cambio) return;
 		for (var it = this.agotados.entrySet().iterator(); it.hasNext(); ) {
 			var e = it.next();
 			if (ahora - e.getValue() < TIEMPO_AGOTADO) continue;
@@ -181,6 +188,7 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 			if (e.getKey() >= this.getOffers().size()) continue;
 			MerchantOffer o = this.getOffers().get(e.getKey());
 			o.updateDemand();
+			topeDemanda(o);
 			o.resetUses();
 			cambio = true;
 		}
@@ -189,6 +197,37 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 			jugador.sendMerchantOffers(menu.containerId, this.getOffers(), this.nivel, this.xp, this.showProgressBar(), this.canRestock());
 			this.avisarEstado();
 		}
+	}
+
+	/** Cada cuántos ticks baja 1 punto la demanda de cada comercio: 1 minuto. */
+	private static final int BAJA_DEMANDA = 20 * 60;
+	/** Demanda máxima: con 12 un comercio cuesta, como mucho, un 60% más que lo normal. */
+	private static final int DEMANDA_MAXIMA = 12;
+
+	/** Que la demanda no pase del máximo (y nunca sea negativa). */
+	private static void topeDemanda(MerchantOffer o) {
+		int d = Math.max(0, Math.min(DEMANDA_MAXIMA, o.getDemand()));
+		if (d != o.getDemand()) ((com.dedsafio4.mixin.MerchantOfferAccessor) o).dedsafio4$setDemanda(d);
+	}
+
+	/**
+	 * Baja la demanda de cada comercio 1 punto por cada minuto que pasó en el mundo (así el precio vuelve a lo
+	 * normal, aunque el aldeano haya estado lejos, sin cargar). ¿Cambió algo?
+	 */
+	private boolean bajarDemanda() {
+		long ahora = this.level().getGameTime();
+		if (this.ultimaBaja <= 0 || this.ultimaBaja > ahora) this.ultimaBaja = ahora;
+		long minutos = (ahora - this.ultimaBaja) / BAJA_DEMANDA;
+		if (minutos <= 0) return false;
+		this.ultimaBaja += minutos * BAJA_DEMANDA;
+		boolean cambio = false;
+		for (MerchantOffer o : this.getOffers()) {
+			int antes = o.getDemand();
+			((com.dedsafio4.mixin.MerchantOfferAccessor) o).dedsafio4$setDemanda((int) Math.max(0, antes - minutos));
+			topeDemanda(o);
+			cambio |= o.getDemand() != antes;
+		}
+		return cambio;
 	}
 
 	/** Suma la experiencia del comercio y, si alcanza, sube de nivel (hasta el 7). */
@@ -306,6 +345,7 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		tag.putInt("Xp", this.xp);
 		tag.putLong("Repuso", this.repuso);
 		tag.putInt("Reposiciones", this.reposiciones);
+		tag.putLong("UltimaBaja", this.ultimaBaja);
 		CompoundTag agot = new CompoundTag();
 		this.agotados.forEach((i, t) -> agot.putLong(String.valueOf(i), t));
 		tag.put("Agotados", agot);
@@ -323,6 +363,7 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 		this.xp = tag.getInt("Xp");
 		this.repuso = tag.getLong("Repuso");
 		this.reposiciones = tag.getInt("Reposiciones");
+		this.ultimaBaja = tag.getLong("UltimaBaja");
 		CompoundTag agot = tag.getCompound("Agotados");
 		for (String k : agot.getAllKeys()) {
 			try {
@@ -337,6 +378,8 @@ public class AldeanoRobotEntity extends PathfinderMob implements Merchant {
 			MerchantOffers.CODEC.parse(
 					this.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), tag.get("Offers"))
 					.resultOrPartial(error -> {}).ifPresent(leidas -> this.ofertas = leidas);
+			// Los que quedaron carísimos de antes vuelven enseguida a un precio razonable.
+			if (this.ofertas != null) this.ofertas.forEach(AldeanoRobotEntity::topeDemanda);
 		}
 	}
 

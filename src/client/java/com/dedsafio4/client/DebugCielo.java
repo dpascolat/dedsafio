@@ -1023,6 +1023,54 @@ public final class DebugCielo {
 		if (t == 475) mc.stop();
 	}
 
+	private static final boolean PRECIOS = "precios".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de los precios del Aldeano Phora: la demanda tiene un tope de 12 y baja 1 por minuto. */
+	private static void tickPrecios(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "forceload add -16 -16 16 16");
+			comando(mc, "fill -8 199 -8 8 199 8 minecraft:stone");
+			comando(mc, "fill -8 200 -8 8 206 8 minecraft:air");
+			comando(mc, "tp @s 0.5 200 0.5");
+			comando(mc, "kill @e[type=dedsafio4:aldeano_robot]");
+			// Un corral de vidrio para que el aldeano no se vaya.
+			comando(mc, "fill 1 200 1 5 201 5 minecraft:glass hollow");
+		}
+		if (t == 10) comando(mc, "summon dedsafio4:aldeano_robot 3.5 200 3.5 {Juego:4,Nivel:7,Tags:[\"prueba_precios\"]}");
+		if (t == 20) precios(mc, "nuevo");
+		// Como un aldeano del servidor que quedó carísimo: demanda 100 en el bambú.
+		if (t == 25) comando(mc, "data modify entity @e[tag=prueba_precios,limit=1] Offers.Recipes[1].demand set value 100");
+		if (t == 35) precios(mc, "con demanda 100 (ya con el tope)");
+		// Juego rápido: la demanda baja 1 por minuto de juego.
+		if (t == 40) comando(mc, "tick sprint 3700");
+		if (t == 200) precios(mc, "despues de 3 minutos");
+		if (t == 210) comando(mc, "tick sprint 9000");
+		if (t == 400) precios(mc, "despues de 10 minutos mas");
+		if (t == 410) { comando(mc, "kill @e[tag=prueba_precios]"); mc.stop(); }
+	}
+
+	/** Escribe en el log cuánto pide cada comercio desbloqueado del aldeano de prueba, y su demanda. */
+	private static void precios(Minecraft mc, String cuando) {
+		var server = mc.getSingleplayerServer();
+		if (server == null) return;
+		server.execute(() -> {
+			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.robots.AldeanoRobotEntity.class,
+					new net.minecraft.world.phys.AABB(-16, 190, -16, 16, 210, 16))) {
+				StringBuilder sb = new StringBuilder();
+				for (var o : e.getOffers()) {
+					if (o.getCostB().is(net.minecraft.world.item.Items.BARRIER)) continue;
+					sb.append(o.getCostA().getCount()).append("x ").append(o.getCostA().getItem()).append(" (demanda ")
+							.append(o.getDemand()).append(") ");
+				}
+				Dedsafio4ClientDebug.info("precios " + cuando + " (minuto " + server.overworld().getGameTime() / 1200 + "): " + sb);
+			}
+		});
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -7514,6 +7562,10 @@ public final class DebugCielo {
 		}
 		if (MAGMA) {
 			tickMagma(mc);
+			return;
+		}
+		if (PRECIOS) {
+			tickPrecios(mc);
 			return;
 		}
 		if (ROBOT) {

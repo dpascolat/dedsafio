@@ -29,6 +29,7 @@
 		"LivingEntityMixin",
 		"LivingEntityTotemEspacioMixin",
 		"MerchantMenuMixin",
+		"MerchantOfferAccessor",
 		"MobAccessor",
 		"PlayerAgarreMixin",
 		"PlayerDisfrazMixin",
