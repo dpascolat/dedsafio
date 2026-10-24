@@ -160,6 +160,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.TriceratopsEntity> TRICERATOPS = registrar("triceratops",
 			EntityType.Builder.of(com.dedsafio4.bestias.TriceratopsEntity::new, MobCategory.MONSTER).sized(2.2f, 2.4f).clientTrackingRange(10));
 
+	/** Tremorsaurio (el Tremorsaurus de Alex's Caves): 2,5 de ancho y casi 4 de alto; cada mordida es una explosión. */
+	public static final EntityType<com.dedsafio4.bestias.TremorsaurioEntity> TREMORSAURIO = registrar("tremorsaurio",
+			EntityType.Builder.of(com.dedsafio4.bestias.TremorsaurioEntity::new, MobCategory.MONSTER).sized(2.5f, 3.85f).clientTrackingRange(10));
+
 	/** Wraith: el espectro con la guadaña (2,5 bloques de alto, flota). */
 	public static final EntityType<com.dedsafio4.bestias.WraithEntity> WRAITH = registrar("wraith",
 			EntityType.Builder.of(com.dedsafio4.bestias.WraithEntity::new, MobCategory.MONSTER).sized(0.8f, 2.5f).clientTrackingRange(8));
@@ -266,6 +270,7 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(HORNET, com.dedsafio4.bestias.HornetEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(RANA_GIGANTE, com.dedsafio4.bestias.RanaGiganteEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(TRICERATOPS, com.dedsafio4.bestias.TriceratopsEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(TREMORSAURIO, com.dedsafio4.bestias.TremorsaurioEntity.crearAtributos());
 		for (EntityType<com.dedsafio4.bestias.FantasmaEntity> fantasma : java.util.List.of(FANTASMA_AMARILLO, FANTASMA_BLANCO, FANTASMA_ROJO, FANTASMA_NEGRO)) {
 			FabricDefaultAttributeRegistry.register(fantasma, com.dedsafio4.bestias.FantasmaEntity.crearAtributos());
 			// En el Limbo, volando sobre el piso de piedra (allá siempre está oscuro).

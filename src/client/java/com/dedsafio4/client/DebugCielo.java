@@ -1312,6 +1312,54 @@ public final class DebugCielo {
 		for (var e : mc.level.entitiesForRendering()) if (e instanceof com.dedsafio4.puertas.PuertaHuesoEntity p) { accion.accept(p); return; }
 	}
 
+	private static final boolean TREMOR = "tremor".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+	private static float vidaTremor = -1;
+	private static int mordidaTremor = -1;
+
+	/** Tremorsaurio: el modelo de frente y de costado (y la princesa con lentes), el rugido y la mordida explosiva. */
+	private static void tickTremor(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "time set 6000");
+			comando(mc, "difficulty normal");
+			comando(mc, "clear @s");
+			comando(mc, "effect clear @s");
+			comando(mc, "kill @e[type=!player]");
+			comando(mc, "fill -12 199 -16 12 199 16 minecraft:grass_block");
+			comando(mc, "fill -12 200 -16 12 212 16 minecraft:air");
+			comando(mc, "summon dedsafio4:tremorsaurio 0.5 200 6.5 {Rotation:[180f,0f]}");
+			comando(mc, "summon dedsafio4:tremorsaurio 7.5 200 6.5 {Rotation:[180f,0f],NoAI:1b,CustomName:'\"princess\"'}");
+			comando(mc, "tp @s 3.5 201 -6.5 0 5");
+		}
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
+		if (t == 30) captura(mc, "debug_tremor1_frente.png");
+		if (t == 35) comando(mc, "tp @s -9.5 202 6.5 -90 8");
+		if (t == 45) captura(mc, "debug_tremor2_costado.png");
+		if (t == 50) { comando(mc, "tp @s 0.5 200 -6.5 0 -5"); comando(mc, "gamemode survival"); }
+		if (t == 62) captura(mc, "debug_tremor3_ruge.png");
+		if (t >= 50 && t <= 300 && mc.player != null) {
+			float vida = mc.player.getHealth();
+			if (vidaTremor >= 0 && vida < vidaTremor) {
+				Dedsafio4ClientDebug.info("tremor t" + t + " vida " + vidaTremor + " -> " + vida);
+				if (mordidaTremor < 0) mordidaTremor = t;
+			}
+			vidaTremor = vida;
+		}
+		if (mordidaTremor >= 0 && t - mordidaTremor == 1) captura(mc, "debug_tremor4_mordida.png");
+		if (t >= 50 && t <= 300 && t % 10 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var ts = server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TremorsaurioEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30));
+			Dedsafio4ClientDebug.info("tremor t" + (ticks - 20) + " jugador " + j.position() + " vida " + j.getHealth() + " vivo " + j.isAlive()
+					+ " tremors " + ts.stream().map(x -> x.position() + " obj " + (x.getTarget() != null) + " vida " + x.getHealth()).toList());
+		});
+		if (t == 310) { mc.options.hideGui = false; mc.stop(); }
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -7938,6 +7986,10 @@ public final class DebugCielo {
 		}
 		if (PUERTA_HUESO) {
 			tickPuertaHueso(mc);
+			return;
+		}
+		if (TREMOR) {
+			tickTremor(mc);
 			return;
 		}
 		if (TRICE_ESCALA) {

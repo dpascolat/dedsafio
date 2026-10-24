@@ -358,6 +358,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		}, com.dedsafio4.nave.PartesNave.NAVE_BIPLAZA);
 		EntityRendererRegistry.register(ModEntidades.RANA_GIGANTE, com.dedsafio4.client.bestias.RanaGiganteRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.TRICERATOPS, com.dedsafio4.client.bestias.TriceratopsRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.TREMORSAURIO, com.dedsafio4.client.bestias.TremorsaurioRenderer::new);
 		EntityRendererRegistry.register(com.dedsafio4.puertas.PuertasHueso.PUERTA, com.dedsafio4.client.puertas.PuertaHuesoRenderer::new);
 		com.dedsafio4.client.bestias.RanaGiganteCliente.registrar();
 		EntityRendererRegistry.register(ModEntidades.RAYO, RayoRenderer::new);

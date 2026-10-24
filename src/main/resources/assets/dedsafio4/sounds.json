@@ -184,5 +184,49 @@
 				"name": "dedsafio4:mensaje_nuevo"
 			}
 		]
+	},
+	"tremorsaurio.idle": {
+		"sounds": [
+			"dedsafio4:tremorsaurio/idle_0",
+			"dedsafio4:tremorsaurio/idle_1",
+			"dedsafio4:tremorsaurio/idle_2"
+		],
+		"subtitle": "subtitles.dedsafio4.tremorsaurio.idle"
+	},
+	"tremorsaurio.hurt": {
+		"sounds": [
+			"dedsafio4:tremorsaurio/hurt_0",
+			"dedsafio4:tremorsaurio/hurt_1"
+		],
+		"subtitle": "subtitles.dedsafio4.tremorsaurio.hurt"
+	},
+	"tremorsaurio.death": {
+		"sounds": [
+			"dedsafio4:tremorsaurio/death"
+		],
+		"subtitle": "subtitles.dedsafio4.tremorsaurio.death"
+	},
+	"tremorsaurio.roar": {
+		"sounds": [
+			"dedsafio4:tremorsaurio/roar_0",
+			"dedsafio4:tremorsaurio/roar_1",
+			"dedsafio4:tremorsaurio/roar_2"
+		],
+		"subtitle": "subtitles.dedsafio4.tremorsaurio.roar"
+	},
+	"tremorsaurio.stomp": {
+		"sounds": [
+			"dedsafio4:tremorsaurio/stomp_0",
+			"dedsafio4:tremorsaurio/stomp_1",
+			"dedsafio4:tremorsaurio/stomp_2",
+			"dedsafio4:tremorsaurio/stomp_3"
+		],
+		"subtitle": "subtitles.dedsafio4.tremorsaurio.stomp"
+	},
+	"tremorsaurio.bite": {
+		"sounds": [
+			"dedsafio4:tremorsaurio/bite"
+		],
+		"subtitle": "subtitles.dedsafio4.tremorsaurio.bite"
 	}
 }
