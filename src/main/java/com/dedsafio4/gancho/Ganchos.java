@@ -27,10 +27,11 @@ import java.util.UUID;
 
 /**
  * Cómo funciona el Gancho de Huesos (como el látigo de Indiana Jones): se tira la caña de pescar y, si la boya pasa
- * cerca de un gancho, se queda enganchada en él. Mientras está enganchada se ve una línea de partículas que muestra
- * hacia dónde vas a ir (en línea recta, no dónde vas a caer). Con click derecho (recoger la caña) el gancho te empuja
- * hacia adelante: pasas por debajo del gancho y sigues de largo, un poco para arriba, más o menos la cantidad de
- * bloques del gancho. /ganchito <distancia> da un gancho con ese impulso.
+ * cerca de un gancho, se queda enganchada en él y quedas colgado de la cuerda (no puedes alejarte más que el largo que
+ * tenía al engancharse: te balanceas como en una soga). Mientras está enganchada se ve una línea de partículas (sólo
+ * la ves tú) que muestra hacia dónde vas a ir: hacia donde apuntas, en línea recta. Con click derecho (recoger la caña)
+ * el gancho te lanza en esa línea, siempre con la misma fuerza (saltes o no), la cantidad de bloques del gancho.
+ * /ganchito <distancia> da un gancho con ese impulso.
  */
 public final class Ganchos {
 	private Ganchos() {}
@@ -40,12 +41,15 @@ public final class Ganchos {
 	private static final DustParticleOptions PUNTA = new DustParticleOptions(new Vector3f(0.69f, 0.25f, 0.18f), 1.4f);
 
 	/** Jugador → el gancho donde quedó su boya. */
-	private record Enganche(BlockPos pos, Vec3 punto, int distancia) {}
+	private record Enganche(BlockPos pos, Vec3 punto, int distancia, double largo) {}
 
 	private static final Map<UUID, Enganche> ENGANCHES = new HashMap<>();
 
-	/** Velocidad del empujón (bloques por tick) y cuánto sube por cada bloque que avanza. */
-	private static final double VELOCIDAD = 1.0, SUBIDA = 0.15;
+	/** Dónde estaba cada jugador colgado el tick anterior (para saber cómo se está moviendo). */
+	private static final Map<UUID, Vec3> ANTES = new HashMap<>();
+
+	/** Velocidad del lanzamiento (bloques por tick). */
+	private static final double VELOCIDAD = 1.0;
 
 	/** Jugador que el gancho está empujando: hacia dónde, desde dónde salió, cuánto tiene que avanzar y hasta cuándo. */
 	private record Vuelo(Vec3 dir, Vec3 desde, double tramo, int ticks) {}
@@ -83,12 +87,13 @@ public final class Ganchos {
 			ServerPlayer j = server.getPlayerList().getPlayer(id);
 			return j == null || j.fishing == null;
 		});
+		ANTES.keySet().removeIf(id -> !ENGANCHES.containsKey(id));
 		for (ServerPlayer j : server.getPlayerList().getPlayers()) {
 			FishingHook boya = j.fishing;
 			if (boya == null) continue;
 			Enganche e = ENGANCHES.get(j.getUUID());
 			if (e == null) {
-				e = buscarGancho(j.serverLevel(), boya);
+				e = buscarGancho(j.serverLevel(), boya, agarre(j));
 				if (e == null) continue;
 				ENGANCHES.put(j.getUUID(), e);
 				j.serverLevel().playSound(null, e.punto().x, e.punto().y, e.punto().z, SoundEvents.CHAIN_PLACE, SoundSource.PLAYERS, 1f, 0.8f);
@@ -103,12 +108,13 @@ public final class Ganchos {
 			boya.setNoGravity(true);
 			boya.setDeltaMovement(Vec3.ZERO);
 			boya.setPos(e.punto());
-			if (server.getTickCount() % 3 == 0) mostrarLinea(j, e);
+			if (!VUELOS.containsKey(j.getUUID())) colgar(j, e);
+			if (server.getTickCount() % 2 == 0) mostrarLinea(j, e);
 		}
 	}
 
 	/** El gancho que está cerca de la boya (a menos de un bloque y medio de la curva del gancho), si hay. */
-	private static Enganche buscarGancho(ServerLevel mundo, FishingHook boya) {
+	private static Enganche buscarGancho(ServerLevel mundo, FishingHook boya, Vec3 agarre) {
 		BlockPos centro = boya.blockPosition();
 		Enganche mejor = null;
 		double mejorDist = 1.5 * 1.5;
@@ -119,23 +125,44 @@ public final class Ganchos {
 			double d = punto.distanceToSqr(boya.position());
 			if (d < mejorDist) {
 				mejorDist = d;
-				mejor = new Enganche(pos.immutable(), punto, gancho.distancia());
+				mejor = new Enganche(pos.immutable(), punto, gancho.distancia(), Math.max(2, punto.distanceTo(agarre)));
 			}
 		}
 		return mejor;
 	}
 
-	/** Hacia dónde te empuja: hacia adelante (de ti hacia el gancho, sin contar la altura) y un poco para arriba. */
-	private static Vec3 direccion(ServerPlayer j, Enganche e) {
-		Vec3 d = e.punto().subtract(j.position()).multiply(1, 0, 1);
-		if (d.lengthSqr() < 0.25) d = j.getLookAngle().multiply(1, 0, 1);   // justo debajo: hacia donde mira
-		if (d.lengthSqr() < 1.0E-4) d = new Vec3(0, 0, 1);
-		return d.normalize().add(0, SUBIDA, 0);
+	/** De dónde agarra la cuerda el jugador (las manos, a la altura del pecho). */
+	private static Vec3 agarre(ServerPlayer j) {
+		return j.position().add(0, 1.5, 0);
+	}
+
+	/** Hacia dónde te lanza: hacia donde apuntas, en línea recta. */
+	private static Vec3 direccion(ServerPlayer j) {
+		return j.getLookAngle().normalize();
+	}
+
+	/**
+	 * Colgado de la cuerda: si te alejas del gancho más que el largo de la cuerda, te frena y te trae de vuelta (así te
+	 * balanceas por debajo del gancho en vez de caerte o irte caminando).
+	 */
+	private static void colgar(ServerPlayer j, Enganche e) {
+		Vec3 ahora = j.position(), antes = ANTES.put(j.getUUID(), ahora);
+		Vec3 r = agarre(j).subtract(e.punto());
+		double dist = r.length();
+		if (antes == null || dist <= e.largo() + 0.05 || j.getAbilities().flying) return;
+		Vec3 n = r.scale(1 / dist), v = ahora.subtract(antes);
+		double hacia = v.dot(n);
+		if (hacia > 0) v = v.subtract(n.scale(hacia));   // lo que se alejaba se corta; lo de costado (el balanceo) sigue
+		v = v.subtract(n.scale(Math.min(0.3, (dist - e.largo()) * 0.5)));
+		if (v.length() > 0.8) v = v.normalize().scale(0.8);   // sin tirones (por ejemplo, después de un /tp)
+		j.setDeltaMovement(v);
+		j.hurtMarked = true;
+		j.fallDistance = 0;
 	}
 
 	/** Una línea recta de partículas (sólo para ese jugador) desde él hacia donde lo va a llevar el gancho. */
 	private static void mostrarLinea(ServerPlayer j, Enganche e) {
-		Vec3 dir = direccion(j, e), desde = j.position().add(0, 0.5, 0);
+		Vec3 dir = direccion(j), desde = j.position().add(0, 1.0, 0);
 		ServerLevel mundo = j.serverLevel();
 		for (double k = 1; k <= e.distancia(); k += 0.5) {
 			Vec3 p = desde.add(dir.scale(k));
@@ -144,16 +171,20 @@ public final class Ganchos {
 	}
 
 	/**
-	 * Empieza el empujón: lo lleva parejo hacia adelante hasta que avanzó la distancia del gancho (menos 1 bloque, que
-	 * recorre solo al soltarlo). Si se traba contra algo, lo suelta igual al rato.
+	 * Empieza el lanzamiento: lo lleva parejo en línea recta hacia donde apunta hasta que avanzó la distancia del gancho
+	 * (menos 1 bloque, que recorre solo al soltarlo). Si se traba contra algo, lo suelta igual al rato.
 	 */
 	private static void lanzar(ServerPlayer j, Enganche e) {
 		double tramo = Math.max(0.5, e.distancia() - 1);
-		VUELOS.put(j.getUUID(), new Vuelo(direccion(j, e), j.position(), tramo, (int) (tramo / VELOCIDAD) * 2 + 10));
+		ANTES.remove(j.getUUID());
+		VUELOS.put(j.getUUID(), new Vuelo(direccion(j), j.position(), tramo, (int) (tramo / VELOCIDAD) * 2 + 10));
 		j.serverLevel().playSound(null, j.getX(), j.getY(), j.getZ(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1f, 0.7f);
 	}
 
-	/** Cada tick, a los que van colgados: los sigue empujando; al terminar, los suelta con un poco de impulso. */
+	/**
+	 * Cada tick, a los que van volando: los sigue empujando (cuánto avanzaron se mide sobre la línea, así saltar no
+	 * cambia nada); al terminar, los suelta siguiendo la misma dirección, sin saltito.
+	 */
 	private static void empujar(MinecraftServer server) {
 		for (var it = VUELOS.entrySet().iterator(); it.hasNext(); ) {
 			var v = it.next();
@@ -164,8 +195,8 @@ public final class Ganchos {
 			}
 			Vuelo vuelo = v.getValue();
 			int quedan = vuelo.ticks() - 1;
-			boolean sigue = quedan > 0 && j.position().subtract(vuelo.desde()).horizontalDistance() < vuelo.tramo();
-			j.setDeltaMovement(sigue ? vuelo.dir().scale(VELOCIDAD) : vuelo.dir().multiply(0.4, 0, 0.4).add(0, 0.2, 0));
+			boolean sigue = quedan > 0 && j.position().subtract(vuelo.desde()).dot(vuelo.dir()) < vuelo.tramo();
+			j.setDeltaMovement(vuelo.dir().scale(sigue ? VELOCIDAD : 0.5));
 			j.hurtMarked = true;
 			j.fallDistance = 0;
 			if (sigue) v.setValue(new Vuelo(vuelo.dir(), vuelo.desde(), vuelo.tramo(), quedan));
