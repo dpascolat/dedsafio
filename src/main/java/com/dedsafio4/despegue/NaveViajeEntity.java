@@ -66,6 +66,9 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private static final EntityDataAccessor<Integer> COMBUSTIBLE =
 			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.INT);
 	/** En qué parte de la Ruta de Vuelo va (para el tablero de los pasajeros): ver ETAPAS. */
+	/** El color de la nave (el número del tinte de Minecraft), o -1 si es la de siempre: ver NaveColores. */
+	private static final EntityDataAccessor<Integer> COLOR =
+			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Integer> ETAPA =
 			SynchedEntityData.defineId(NaveViajeEntity.class, EntityDataSerializers.INT);
 	/** 0 = en espera; 1..7 = las etapas del viaje; 8 = ya aterrizó (todas completas). */
@@ -108,6 +111,12 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		datos.define(HACIA_ROJO, true);
 		datos.define(COMBUSTIBLE, 0);
 		datos.define(ETAPA, 0);
+		datos.define(COLOR, -1);
+	}
+
+	/** El color de la nave (número de tinte de Minecraft) o -1 si es la de siempre. */
+	public int color() {
+		return entityData.get(COLOR);
 	}
 
 	public int combustible() {
@@ -205,6 +214,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 			nave.nombreDueno = jugador.getGameProfile().getName();
 		}
 		nave.combustible(combustibleDe(contexto.getItemInHand()));
+		nave.entityData.set(COLOR, NaveColores.colorDe(contexto.getItemInHand()));
 		level.addFreshEntity(nave);
 		level.playSound(null, pos, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.5f, 1.4f);
 		if (jugador == null || !jugador.getAbilities().instabuild) contexto.getItemInHand().shrink(1);
@@ -238,6 +248,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				nave.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
 						net.minecraft.world.item.component.CustomData.of(datos));
 			}
+			NaveColores.pintar(nave, color());
 			if (!jugador.getInventory().add(nave)) jugador.drop(nave, false);
 			level().playSound(null, blockPosition(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.8f, 0.8f);
 			discard();
@@ -552,6 +563,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		if (datos.hasUUID("Dueno")) dueno = datos.getUUID("Dueno");
 		nombreDueno = datos.getString("NombreDueno");
 		combustible(datos.getInt("Combustible"));
+		entityData.set(COLOR, datos.contains("Color") ? datos.getInt("Color") : -1);
 		int guardado = datos.getInt("Estado");
 		entityData.set(HACIA_ROJO, !datos.contains("HaciaRojo") || datos.getBoolean("HaciaRojo"));
 		// Si se guardó en el Espacio, vuelve a viajar; en el aire, baja hasta el piso; contando, vuelve a esperar.
@@ -572,6 +584,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		datos.putString("NombreDueno", nombreDueno);
 		datos.putInt("Estado", estado());
 		datos.putInt("Combustible", combustible());
+		if (color() >= 0) datos.putInt("Color", color());
 		datos.putBoolean("HaciaRojo", haciaRojo());
 		if (!Double.isNaN(sueloLlegada)) datos.putDouble("Suelo", sueloLlegada);
 	}

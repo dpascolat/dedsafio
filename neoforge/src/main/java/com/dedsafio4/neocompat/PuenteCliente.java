@@ -90,6 +90,9 @@ public final class PuenteCliente {
 				EntityModelLayerRegistry.CAPAS.forEach((capa, proveedor) -> e.registerLayerDefinition(capa, proveedor::createModelData)));
 		mod.addListener(EventPriority.NORMAL, false, EntityRenderersEvent.AddLayers.class, PuenteCliente::capas);
 		mod.addListener(EventPriority.NORMAL, false, RegisterKeyMappingsEvent.class, e -> KeyBindingHelper.TECLAS.forEach(e::register));
+		mod.addListener(EventPriority.NORMAL, false, net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item.class, e -> {
+			for (var r : com.dedsafio4.neocompat.fabric.api.client.rendering.v1.ColorProviderRegistry.ITEM.registros) e.register(r.proveedor(), r.cosas());
+		});
 		mod.addListener(EventPriority.NORMAL, false, RegisterMenuScreensEvent.class, e -> NeoCompat.PANTALLAS.forEach(p -> p.accept(e)));
 		mod.addListener(EventPriority.NORMAL, false, RegisterShadersEvent.class, e -> {
 			for (var o : CoreShaderRegistrationCallback.EVENT.oyentes()) {

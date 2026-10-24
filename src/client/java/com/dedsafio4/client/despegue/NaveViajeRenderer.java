@@ -16,6 +16,13 @@ public class NaveViajeRenderer extends GeoEntityRenderer<NaveViajeEntity> {
 		this.shadowRadius = 1.0f;
 	}
 
+	/** Pintada: toda la nave teñida del color de su tinte. */
+	@Override
+	public software.bernie.geckolib.util.Color getRenderColor(NaveViajeEntity nave, float parcial, int luz) {
+		if (nave.color() < 0) return super.getRenderColor(nave, parcial, luz);
+		return software.bernie.geckolib.util.Color.ofOpaque(net.minecraft.world.item.DyeColor.byId(nave.color()).getTextureDiffuseColor());
+	}
+
 	@Override
 	public void render(NaveViajeEntity nave, float giro, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
 		pose.pushPose();

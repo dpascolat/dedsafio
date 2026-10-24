@@ -35,6 +35,14 @@ public class ParteNaveRenderer extends GeoItemRenderer<ParteNaveItem> {
 		});
 	}
 
+	/** La nave pintada se dibuja teñida de su color (ver NaveColores). */
+	@Override
+	public software.bernie.geckolib.util.Color getRenderColor(ParteNaveItem item, float parcial, int luz) {
+		int color = this.currentItemStack == null ? -1 : com.dedsafio4.despegue.NaveColores.colorDe(this.currentItemStack);
+		if (color < 0) return super.getRenderColor(item, parcial, luz);
+		return software.bernie.geckolib.util.Color.ofOpaque(net.minecraft.world.item.DyeColor.byId(color).getTextureDiffuseColor());
+	}
+
 	/** Se llama al arrancar el cliente: cada parte arma su dibujo la primera vez que se muestra. */
 	public static void registrar() {
 		ParteNaveItem.dibujo = item -> new GeoRenderProvider() {

@@ -51,7 +51,11 @@ public class ParteNaveItem extends Item implements GeoItem {
 	/** El nombre en color (celeste las partes), como en el catálogo (la G). */
 	@Override
 	public net.minecraft.network.chat.Component getName(net.minecraft.world.item.ItemStack item) {
-		return super.getName(item).copy().withStyle(com.dedsafio4.items.DescritoItem.color(colorNombre));
+		net.minecraft.network.chat.MutableComponent nombre = super.getName(item).copy();
+		// La nave pintada lleva el color en el nombre: "Nave Espacial Biplaza (Rojo)".
+		net.minecraft.world.item.DyeColor color = item.get(net.minecraft.core.component.DataComponents.BASE_COLOR);
+		if (color != null) nombre.append(" (").append(net.minecraft.network.chat.Component.translatable("color.minecraft." + color.getName())).append(")");
+		return nombre.withStyle(com.dedsafio4.items.DescritoItem.color(colorNombre));
 	}
 
 	/** La Nave Espacial Biplaza se pone sobre la Plataforma de Despegue (ver NaveViajeEntity). */

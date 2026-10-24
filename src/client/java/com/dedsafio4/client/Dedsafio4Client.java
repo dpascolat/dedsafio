@@ -351,6 +351,11 @@ public class Dedsafio4Client implements ClientModInitializer {
 				com.dedsafio4.client.bestias.TungSahurModelo::crearCapa);
 		EntityRendererRegistry.register(ModEntidades.TUNG_TUNG_TUNG_SAHUR, com.dedsafio4.client.bestias.TungSahurModelo.Dibujante::new);
 		EntityRendererRegistry.register(ModEntidades.HORNET, com.dedsafio4.client.bestias.HornetRenderer::new);
+		// La Nave Espacial Biplaza pintada: el ícono teñido del color de su tinte (ver NaveColores).
+		net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry.ITEM.register((pila, capa) -> {
+			int color = com.dedsafio4.despegue.NaveColores.colorDe(pila);
+			return color < 0 ? -1 : net.minecraft.util.FastColor.ARGB32.opaque(net.minecraft.world.item.DyeColor.byId(color).getTextureDiffuseColor());
+		}, com.dedsafio4.nave.PartesNave.NAVE_BIPLAZA);
 		EntityRendererRegistry.register(ModEntidades.RANA_GIGANTE, com.dedsafio4.client.bestias.RanaGiganteRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.TRICERATOPS, com.dedsafio4.client.bestias.TriceratopsRenderer::new);
 		com.dedsafio4.client.bestias.RanaGiganteCliente.registrar();

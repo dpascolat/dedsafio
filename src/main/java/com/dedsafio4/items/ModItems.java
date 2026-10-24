@@ -745,7 +745,7 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.nave.PartesNave.MOTOR);
 						entradas.accept(com.dedsafio4.nave.PartesNave.ALERON_IZQUIERDO);
 						entradas.accept(com.dedsafio4.nave.PartesNave.ALERON_DERECHO);
-						entradas.accept(com.dedsafio4.nave.PartesNave.NAVE_BIPLAZA);
+						for (ItemStack nave : com.dedsafio4.despegue.NaveColores.todas()) entradas.accept(nave);
 						entradas.accept(com.dedsafio4.despegue.ModDespegue.SOPORTE_NAVE_ITEM);
 						entradas.accept(ALDEANO_ROBOT_SPAWN_EGG);
 						entradas.accept(CREEPER_PASTO_SPAWN_EGG);
