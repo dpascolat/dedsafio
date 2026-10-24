@@ -1230,8 +1230,8 @@ public final class DebugCielo {
 		});
 		// Colgado: si se aleja de más, la cuerda lo trae de vuelta.
 		if (t == 55) comando(mc, "tp @s 0.5 200 2.5 180 -32");
-		// Apunta para arriba y a la derecha: la línea va para ahí.
-		if (t == 68) { mc.player.setYRot(150); mc.player.setXRot(-25); }
+		// Mira para abajo: la línea va para arriba.
+		if (t == 68) { mc.player.setYRot(180); mc.player.setXRot(80); }
 		if (t == 75) captura(mc, "debug_gancho2_linea.png");
 		// Recoge: el gancho lo lanza hacia donde apunta (y salta, que no tiene que cambiar nada).
 		if (t == 80) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);

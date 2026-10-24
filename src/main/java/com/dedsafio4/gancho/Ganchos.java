@@ -29,7 +29,8 @@ import java.util.UUID;
  * Cómo funciona el Gancho de Huesos (como el látigo de Indiana Jones): se tira la caña de pescar y, si la boya pasa
  * cerca de un gancho, se queda enganchada en él y quedas colgado de la cuerda (no puedes alejarte más que el largo que
  * tenía al engancharse: te balanceas como en una soga). Mientras está enganchada se ve una línea de partículas (sólo
- * la ves tú) que muestra hacia dónde vas a ir: hacia donde apuntas, en línea recta. Con click derecho (recoger la caña)
+ * la ves tú) que muestra hacia dónde vas a ir, en línea recta: hacia el lado que apuntas, y mirando para abajo te
+ * lanza para arriba (abajo del todo: derecho para arriba; al frente: en diagonal; arriba del todo: derecho adelante). Con click derecho (recoger la caña)
  * el gancho te lanza en esa línea, siempre con la misma fuerza (saltes o no), la cantidad de bloques del gancho.
  * /ganchito <distancia> da un gancho con ese impulso.
  */
@@ -136,9 +137,15 @@ public final class Ganchos {
 		return j.position().add(0, 1.5, 0);
 	}
 
-	/** Hacia dónde te lanza: hacia donde apuntas, en línea recta. */
+	/**
+	 * Hacia dónde te lanza: hacia el lado que mira (izquierda/derecha), y la subida al revés de la mirada: mirando
+	 * abajo del todo va derecho para arriba, mirando al frente sube en diagonal (45°) y mirando arriba del todo va
+	 * derecho hacia adelante.
+	 */
 	private static Vec3 direccion(ServerPlayer j) {
-		return j.getLookAngle().normalize();
+		double subida = Math.toRadians((j.getXRot() + 90) / 2);   // getXRot: -90 arriba, 90 abajo
+		double yaw = Math.toRadians(j.getYRot());
+		return new Vec3(-Math.sin(yaw) * Math.cos(subida), Math.sin(subida), Math.cos(yaw) * Math.cos(subida));
 	}
 
 	/**
