@@ -32,7 +32,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * Triceratops (el del mod Fossils and Archeology): no pega ni rompe armadura. Cada 20 segundos, si hay un jugador
  * cerca, carga la embestida (2 segundos quieto, mirándolo) y sale corriendo en línea recta hacia donde estaba,
  * rompiendo todos los bloques que tenga adelante (menos los irrompibles). Al jugador que choca lo manda lejos, sin
- * hacerle daño.
+ * hacerle daño. /triceratops escala <tamaño> cambia el tamaño de los Triceratops (1 es el normal).
  */
 public class TriceratopsEntity extends Monster implements GeoEntity {
 	/** 0: normal, 1: cargando la embestida, 2: embistiendo (el cliente lo usa para la animación). */
@@ -52,6 +52,46 @@ public class TriceratopsEntity extends Monster implements GeoEntity {
 
 	public TriceratopsEntity(EntityType<? extends TriceratopsEntity> tipo, Level level) {
 		super(tipo, level);
+	}
+
+	/**
+	 * /triceratops escala <tamaño> [triceratops]: cambia el tamaño (y la caja de choque) del Triceratops más cercano
+	 * (a 16 bloques), o de los que se elijan. 1 es el tamaño normal; de 0,1 a 10.
+	 */
+	public static void registrarComandos(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+		dispatcher.register(net.minecraft.commands.Commands.literal("triceratops").requires(s -> s.hasPermission(2))
+				.then(net.minecraft.commands.Commands.literal("escala")
+						.then(net.minecraft.commands.Commands.argument("tamaño", com.mojang.brigadier.arguments.FloatArgumentType.floatArg(0.1f, 10f))
+								.executes(c -> {
+									var fuente = c.getSource();
+									var cerca = fuente.getLevel().getEntitiesOfClass(TriceratopsEntity.class,
+											new AABB(fuente.getPosition(), fuente.getPosition()).inflate(16));
+									cerca.sort(java.util.Comparator.comparingDouble(t -> t.distanceToSqr(fuente.getPosition())));
+									return escalar(c, cerca.isEmpty() ? java.util.List.of() : java.util.List.of(cerca.get(0)));
+								})
+								.then(net.minecraft.commands.Commands.argument("triceratops", net.minecraft.commands.arguments.EntityArgument.entities())
+										.executes(c -> escalar(c, net.minecraft.commands.arguments.EntityArgument.getEntities(c, "triceratops")))))));
+	}
+
+	private static int escalar(com.mojang.brigadier.context.CommandContext<net.minecraft.commands.CommandSourceStack> c,
+							   java.util.Collection<? extends net.minecraft.world.entity.Entity> entidades) {
+		float tamaño = com.mojang.brigadier.arguments.FloatArgumentType.getFloat(c, "tamaño");
+		int n = 0;
+		for (var e : entidades) {
+			if (!(e instanceof TriceratopsEntity t)) continue;
+			var atributo = t.getAttribute(Attributes.SCALE);
+			if (atributo == null) continue;
+			atributo.setBaseValue(tamaño);
+			n++;
+		}
+		if (n == 0) {
+			c.getSource().sendFailure(net.minecraft.network.chat.Component.literal("No hay ningún Triceratops cerca (a 16 bloques)."));
+			return 0;
+		}
+		int total = n;
+		c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(
+				(total == 1 ? "El Triceratops ahora tiene tamaño " : total + " Triceratops ahora tienen tamaño ") + tamaño + "."), true);
+		return n;
 	}
 
 	public static AttributeSupplier.Builder crearAtributos() {

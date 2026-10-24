@@ -1244,6 +1244,39 @@ public final class DebugCielo {
 		if (t == 130) { mc.options.hideGui = false; mc.stop(); }
 	}
 
+	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
+	private static void tickTriceEscala(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "time set 6000");
+			comando(mc, "kill @e[type=dedsafio4:triceratops]");
+			comando(mc, "kill @e[type=minecraft:item]");
+			comando(mc, "fill -16 199 -30 16 199 8 minecraft:grass_block");
+			comando(mc, "fill -16 200 -30 16 215 8 minecraft:air");
+			comando(mc, "tp @s 0.5 201 0.5 180 5");
+			comando(mc, "summon dedsafio4:triceratops -4.5 200 -14.5 {NoAI:1b,Rotation:[90f,0f]}");
+			comando(mc, "summon dedsafio4:triceratops 6.5 200 -16.5 {NoAI:1b,Rotation:[90f,0f]}");
+		}
+		if (t == 5) comando(mc, "execute positioned 6.5 200 -16.5 run triceratops escala 3");
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
+		if (t == 25) {
+			captura(mc, "debug_triceescala.png");
+			server.execute(() -> {
+				for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 230, 30))) {
+					Dedsafio4ClientDebug.info("trice x=" + e.getX() + " escala=" + e.getScale() + " ancho=" + e.getBbWidth() + " alto=" + e.getBbHeight());
+				}
+			});
+		}
+		if (t == 30) { comando(mc, "kill @e[type=dedsafio4:triceratops]"); mc.options.hideGui = false; mc.stop(); }
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -7755,6 +7788,10 @@ public final class DebugCielo {
 		}
 		if (GANCHO) {
 			tickGancho(mc);
+			return;
+		}
+		if (TRICE_ESCALA) {
+			tickTriceEscala(mc);
 			return;
 		}
 		if (ROBOT) {
