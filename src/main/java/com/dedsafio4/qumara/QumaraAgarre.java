@@ -4,14 +4,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * El "Atrapar" y "Sacar" del diseño: dónde está la pinza del brazo y dónde va el jugador agarrado en cada
- * momento. Lo usan el servidor (para mover al jugador) y el cliente (para dibujar el brazo), así los dos
- * calculan exactamente lo mismo.
+ * El "Atrapar" y "Sacar": dónde va el jugador agarrado en cada momento. Sigue al jugador de muestra de las
+ * animaciones del modelo (atrapar, atrapar_sostener y sacar; las tablas salen de qumara_a_modelo.py), así queda
+ * justo en la mano del brazo izquierdo. El servidor lo usa para mover al jugador. (La pinza y el alcance son para
+ * saber si el brazo llega a alguien.)
  *
- * Todo en el espacio del cuerpo de Qumara (+Z = el frente, y = 0 el piso). Tiempos en segundos, con los
- * del diseño (gT): 0–1,2 el brazo sale hacia el jugador; 1,2–1,6 lo agarra; 1,6–3,2 lo sube delante de la
- * cara; desde 3 le tira gas y lo sostiene. Al sacar: 5,3–6 toma impulso, 6–7 el jugador vuela en parábola
- * y queda tirado con una nube de gas hasta los 11,2; el brazo se esconde entre 6 y 7,6.
+ * Todo en el espacio del cuerpo de Qumara (+Z = el frente, y = 0 el piso). Tiempos en segundos: 0–3,6 la
+ * animación atrapar (el brazo va, lo agarra hacia los 1,6 s y lo sube delante de la cara); después lo sostiene
+ * (atrapar_sostener, con el gas y el minijuego); al sacar, la animación sacar lo revolea y cae a los 1,35 s, y
+ * queda tirado en una nube de gas.
  */
 public final class QumaraAgarre {
 	private QumaraAgarre() {}
@@ -19,9 +20,42 @@ public final class QumaraAgarre {
 	/** El brazo apunta al frente con este giro. */
 	public static final float A0 = -Mth.PI / 2;
 	/** Desde cuándo lo sostiene quieto (y empieza el minijuego), y cuánto tarda todo el "Sacar". */
-	public static final float SOSTIENE = 5.3f, MINIJUEGO = 3.2f, SUELTA = 7.0f, FIN = 11.6f;
-	/** Dónde cae el que tira (en el cuerpo, como en el diseño). */
-	public static final Vec3 ATERRIZA = new Vec3(8, 0, 24);
+	public static final float SOSTIENE = 3.6f, MINIJUEGO = 3.6f, SUELTA = SOSTIENE + 1.35f, FIN = SUELTA + 4.6f;
+	/** Dónde cae el que tira (en el cuerpo, donde lo deja la animación sacar). */
+	public static final Vec3 ATERRIZA = new Vec3(-26.035, 0, 23.409);
+	/** Cuándo lo agarra la mano (antes se queda donde estaba; un momento después ya va con la mano). */
+	private static final float AGARRA = 1.55f, AGARRADO = 1.75f;
+
+	/** Dónde va el jugador (los pies) en la animación atrapar, cada 0,05 s (0 a 3,6), y en sacar (0 a 1,35). */
+	private static final float[][] ATRAPAR = {
+			{-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f},
+			{-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f}, {-1.888f, 0.0f, 9.483f},
+			{-1.888f, 0.0f, 9.511f}, {-1.888f, 0.0f, 9.574f}, {-1.888f, 0.0f, 9.667f}, {-1.888f, 0.0f, 9.786f}, {-1.888f, 0.0f, 9.925f}, {-1.888f, 0.0f, 10.079f},
+			{-1.888f, 0.0f, 10.247f}, {-1.888f, 0.0f, 10.415f}, {-1.888f, 0.0f, 10.583f}, {-1.888f, 0.0f, 10.75f}, {-1.888f, 0.0f, 10.907f}, {-1.888f, 0.0f, 11.049f},
+			{-1.888f, 0.0f, 11.171f}, {-1.888f, 0.0f, 11.268f}, {-1.888f, 0.0f, 11.337f}, {-1.888f, 0.0f, 11.37f}, {-1.888f, 0.0f, 11.371f}, {-1.888f, 0.0f, 11.371f},
+			{-1.888f, 0.0f, 11.372f}, {-1.888f, 0.0f, 11.373f}, {-1.867f, 0.0f, 11.353f}, {-1.686f, 0.0f, 11.124f}, {-1.383f, 0.0f, 10.86f}, {-1.372f, 0.0f, 10.804f},
+			{-1.362f, 0.0f, 10.804f}, {-1.362f, 0.0f, 10.804f}, {-1.362f, 0.0f, 10.804f}, {-1.362f, 0.0f, 10.804f}, {-1.362f, 0.0f, 10.804f}, {-1.371f, 0.0f, 10.911f},
+			{-1.41f, 0.0f, 11.421f}, {-1.476f, 0.0f, 12.282f}, {-1.56f, 0.0f, 13.397f}, {-1.655f, 0.0f, 14.664f}, {-1.75f, 0.0f, 15.973f}, {-1.836f, 0.0f, 17.222f},
+			{-1.899f, 1.898f, 18.32f}, {-1.93f, 4.058f, 19.196f}, {-1.918f, 6.284f, 19.811f}, {-1.855f, 8.485f, 20.15f}, {-1.735f, 10.573f, 20.233f}, {-1.553f, 12.47f, 20.105f},
+			{-1.306f, 14.111f, 19.825f}, {-0.99f, 15.447f, 19.466f}, {-0.597f, 16.442f, 19.1f}, {-0.115f, 17.068f, 18.792f}, {0.43f, 17.32f, 18.586f}, {0.662f, 17.393f, 18.506f},
+			{0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f},
+			{0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.506f}, {0.662f, 17.393f, 18.505f},
+			{0.662f, 17.393f, 18.505f},
+	};
+	private static final float[][] SACAR = {
+			{0.662f, 17.393f, 18.505f}, {0.018f, 17.167f, 18.674f}, {-1.793f, 16.552f, 19.001f}, {-4.578f, 15.637f, 19.113f}, {-8.03f, 14.5f, 18.615f}, {-11.697f, 13.203f, 17.253f},
+			{-15.06f, 11.809f, 15.04f}, {-17.703f, 10.397f, 12.272f}, {-19.447f, 9.076f, 9.43f}, {-20.379f, 7.988f, 7.022f}, {-20.827f, 7.164f, 5.184f}, {-20.892f, 7.28f, 5.409f},
+			{-21.213f, 7.778f, 6.534f}, {-21.535f, 8.146f, 7.659f}, {-21.856f, 8.383f, 8.784f}, {-22.177f, 8.491f, 9.909f}, {-22.499f, 8.468f, 11.034f}, {-22.82f, 8.315f, 12.159f},
+			{-23.142f, 8.032f, 13.284f}, {-23.463f, 7.619f, 14.409f}, {-23.785f, 7.075f, 15.534f}, {-24.106f, 6.401f, 16.659f}, {-24.428f, 5.597f, 17.784f}, {-24.749f, 4.663f, 18.909f},
+			{-25.071f, 3.599f, 20.034f}, {-25.392f, 2.404f, 21.159f}, {-25.713f, 1.08f, 22.284f}, {-26.035f, 0.0f, 23.409f},
+	};
+
+	private static Vec3 tabla(float[][] t, float seg) {
+		float i = Mth.clamp(seg / 0.05f, 0, t.length - 1);
+		int a = (int) i, b = Math.min(a + 1, t.length - 1);
+		float k = i - a;
+		return new Vec3(Mth.lerp(k, t[a][0], t[b][0]), Mth.lerp(k, t[a][1], t[b][1]), Mth.lerp(k, t[a][2], t[b][2]));
+	}
 	/** Punto 13 bloques delante de la boca, a donde lo sube. */
 	private static final Vec3 CARA = new Vec3(0, 23, 16);
 
@@ -116,17 +150,16 @@ public final class QumaraAgarre {
 	 * (y = la altura del piso ahí).
 	 */
 	public static Vec3 pies(float g, Pose alcance, Vec3 inicio, Vec3 aterriza) {
-		if (g < 1.2f) return inicio;
-		if (g < 6.0f) {
-			Vec3 mano = pinza(brazo(g, alcance)).subtract(0, 1.5, 0);
-			return g < 1.6f ? inicio.lerp(mano, suave((g - 1.2f) / 0.4f)) : mano;
+		if (g < AGARRA) return inicio;
+		if (g <= SOSTIENE) {
+			Vec3 mano = tabla(ATRAPAR, g);
+			return g < AGARRADO ? inicio.lerp(mano, suave((g - AGARRA) / (AGARRADO - AGARRA))) : mano;
 		}
-		if (g < SUELTA) {
-			// Vuela en parábola (gravedad 30) y cae en 1 segundo.
-			Vec3 desde = pinza(brazo(6.0f, alcance)).subtract(0, 1.5, 0);
-			float k = g - 6.0f;
-			double vy = aterriza.y - desde.y + 15;
-			return new Vec3(Mth.lerp(k, desde.x, aterriza.x), desde.y + vy * k - 15 * k * k, Mth.lerp(k, desde.z, aterriza.z));
+		float s = g - SOSTIENE;
+		if (s < SUELTA - SOSTIENE) {
+			// Lo revolea; al final baja hasta la altura del piso donde cae.
+			Vec3 p = tabla(SACAR, s);
+			return p.add(0, aterriza.y * suave(s / (SUELTA - SOSTIENE)), 0);
 		}
 		return aterriza;
 	}

@@ -1,5 +1,6 @@
 package com.dedsafio4.qumara;
 
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -565,7 +566,7 @@ public class QumaraEntity extends PathfinderMob {
 
 	/** La boca (en el mundo), de donde sale el gas. */
 	public Vec3 boca() {
-		return alMundo(new Vec3(0, 24, 9.3));
+		return alMundo(new Vec3(0, 23, 8));
 	}
 
 	/** Al terminar el Atraer: agarra al jugador más cercano (si el brazo llega). */
@@ -622,7 +623,7 @@ public class QumaraEntity extends PathfinderMob {
 			if (mundo.getGameTime() - entityData.get(T_AGARRE) == 3) {
 				p.displayClientMessage(Component.literal("¡Qumara te agarró! Pulsá el espacio cuando el cosito esté en el recuadro").withColor(0xF0418F), true);
 			}
-			if (tA >= 3.3f && tickCount % 2 == 0) soplarGas(mundo, p);
+			if (tA >= QumaraAgarre.SOSTIENE && tickCount % 2 == 0) soplarGas(mundo, p);
 			if (tA >= QumaraAgarre.MINIJUEGO) {
 				if (aciertos() >= ACIERTOS_PARA_SALVARSE) {
 					p.displayClientMessage(Component.literal("¡Te salvaste!").withColor(0x7CFC6A), true);
@@ -643,7 +644,7 @@ public class QumaraEntity extends PathfinderMob {
 			p.fallDistance = 0;
 			p.hurtMarked = true;
 			// Queda tirado dentro de una nube de gas (hasta los 11,2 s del diseño).
-			mundo.addFreshEntity(GasMoradoEntity.nube(mundo, cae, (int) ((11.2f - QumaraAgarre.SUELTA) * 20), 1.6f));
+			mundo.addFreshEntity(GasMoradoEntity.nube(mundo, cae, (int) ((QumaraAgarre.FIN - 0.4f - QumaraAgarre.SUELTA) * 20), 1.6f));
 		}
 		if (g >= QumaraAgarre.FIN) entityData.set(AGARRADO, -1);
 	}
@@ -680,16 +681,25 @@ public class QumaraEntity extends PathfinderMob {
 		entityData.set(AGARRADO, -1);
 	}
 
+	/** El gas del agarre: esporas tóxicas verdes (de verde claro a verde oscuro) y chispitas que brillan. */
+	private static final net.minecraft.core.particles.DustColorTransitionOptions ESPORA = new net.minecraft.core.particles.DustColorTransitionOptions(
+			new org.joml.Vector3f(0.62f, 0.95f, 0.25f), new org.joml.Vector3f(0.16f, 0.36f, 0.08f), 2.6f);
+
 	/**
-	 * Un soplo de Gas Morado desde la boca hacia el agarrado (como el aliento del diseño: sale rápido,
-	 * se va frenando y agrandando). Al que toca le da el Veneno Primitivo.
+	 * Un soplo de esporas tóxicas desde la boca hacia el agarrado: un chorro que se abre al llegar y lo envuelve.
+	 * Le da el Veneno Primitivo.
 	 */
 	private void soplarGas(ServerLevel mundo, ServerPlayer p) {
-		Vec3 desde = boca();
-		Vec3 dir = p.position().add(0, 1, 0).subtract(desde).normalize();
-		Vec3 vel = dir.scale((7 + random.nextDouble() * 3) / 20)
-				.add((random.nextDouble() - 0.5) * 3 / 20, (random.nextDouble() - 0.5) * 2 / 20, (random.nextDouble() - 0.5) * 3 / 20);
-		mundo.addFreshEntity(GasMoradoEntity.soplo(mundo, desde, vel, 24 + random.nextInt(17), 0.6f + random.nextFloat() * 0.5f));
+		Vec3 desde = boca(), hasta = p.position().add(0, 1, 0);
+		for (int i = 0; i <= 14; i++) {
+			double k = i / 14.0, abre = 0.15 + k * 0.7;
+			Vec3 q = desde.lerp(hasta, k);
+			mundo.sendParticles(ESPORA, q.x, q.y, q.z, 2, abre, abre, abre, 0.01);
+		}
+		mundo.sendParticles(ParticleTypes.SNEEZE, hasta.x, hasta.y, hasta.z, 6, 0.6, 0.8, 0.6, 0.02);
+		mundo.sendParticles(ParticleTypes.SPORE_BLOSSOM_AIR, hasta.x, hasta.y, hasta.z, 8, 1.2, 1.2, 1.2, 0);
+		if (tickCount % 10 == 0) mundo.playSound(null, desde.x, desde.y, desde.z, SoundEvents.BREEZE_IDLE_GROUND, SoundSource.HOSTILE, 1.5f, 0.5f);
+		if (!com.dedsafio4.reptisaurios.VenenoPrimitivo.envenenado(p)) com.dedsafio4.reptisaurios.VenenoPrimitivo.aplicar(p);
 	}
 
 	// --- Estar pegado a la planta ---

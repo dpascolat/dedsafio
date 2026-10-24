@@ -4986,9 +4986,9 @@ public final class DebugCielo {
 		}
 		if (t == 302) server.execute(() -> qumaraServidor(server).agarrar(server.getPlayerList().getPlayer(uuid)));
 		if (t == 303) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
-		if (t == 302 + 18) captura(mc, "debug_qu_ag1_alcanza.png");
-		if (t == 302 + 60) captura(mc, "debug_qu_ag2_cara.png");
-		if (t == 372) {
+		if (t == 302 + 36) captura(mc, "debug_qu_ag1_alcanza.png");
+		if (t == 302 + 74) captura(mc, "debug_qu_ag2_cara.png");
+		if (t == 378) {
 			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
 			server.execute(() -> qumaraPrivado(server, "soltar", server.getPlayerList().getPlayer(uuid)));
 		}
