@@ -1249,6 +1249,69 @@ public final class DebugCielo {
 		if (t == 130) { mc.options.hideGui = false; mc.stop(); }
 	}
 
+	private static final boolean PUERTA_HUESO = "puertahueso".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Puerta de Hueso: /puertita le cambia el tamaño, se abre y se cierra, y el Triceratops la tira a la tercera embestida. */
+	private static void tickPuertaHueso(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "time set 6000");
+			comando(mc, "clear @s");
+			comando(mc, "effect give @s minecraft:resistance 999 10 true");
+			comando(mc, "kill @e[type=dedsafio4:triceratops]");
+			comando(mc, "kill @e[type=dedsafio4:puerta_hueso]");
+			comando(mc, "fill -12 199 -16 12 199 16 minecraft:grass_block");
+			comando(mc, "fill -12 200 -16 12 212 16 minecraft:air");
+			comando(mc, "summon dedsafio4:puerta_hueso 0.0 200 0.5 {Rotation:[180f,0f]}");
+			comando(mc, "summon dedsafio4:triceratops 0.5 200 9.5 {Rotation:[180f,0f]}");
+			comando(mc, "tp @s 0.5 200 -5.5 0 5");
+		}
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
+		if (t == 6) comando(mc, "puertita 0.5 3");
+		if (t == 10) comando(mc, "tp @s 0.5 200 -1.8 20 5");
+		if (t == 12) puertaHueso(mc, p -> mc.gameMode.interact(mc.player, p, net.minecraft.world.InteractionHand.MAIN_HAND));
+		if (t == 14) comando(mc, "tp @s 0.5 200 -5.5 0 5");
+		if (t == 19) captura(mc, "debug_puertahueso1_abierta.png");
+		if (t == 20) puertaHueso(mc, p -> mc.gameMode.interact(mc.player, p, net.minecraft.world.InteractionHand.MAIN_HAND));
+		if (t == 28) captura(mc, "debug_puertahueso2_cerrada.png");
+		if (t == 30 || t == 110 || t == 190) server.execute(() -> {
+			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30))) e.embestirYa();
+		});
+		if (t >= 30 && t <= 360 && t % 6 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var ps = server.overworld().getEntitiesOfClass(com.dedsafio4.puertas.PuertaHuesoEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30));
+			var tr = server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30));
+			Dedsafio4ClientDebug.info("puertahueso t" + (ticks - 20) + " puertas=" + ps.stream().map(p -> "golpes " + p.golpes() + " caja " + p.getBoundingBox()).toList()
+					+ " trice=" + tr.stream().map(x -> x.position() + " estado " + x.estadoActual()).toList() + " jugador=" + j.position());
+		});
+		puertaHueso(mc, p -> {
+			if (p.golpes() >= 3 && FOTOS_PUERTA[0] < 0) FOTOS_PUERTA[0] = t;
+		});
+		if (FOTOS_PUERTA[0] >= 0) {
+			int d = t - FOTOS_PUERTA[0];
+			if (d == 3) captura(mc, "debug_puertahueso4_revienta.png");
+			if (d == 12) captura(mc, "debug_puertahueso5_cayendo.png");
+			if (d == 40) captura(mc, "debug_puertahueso6_caida.png");
+		}
+		puertaHueso(mc, p -> {
+			if (p.golpes() == 1 && FOTOS_PUERTA[1] < 0) FOTOS_PUERTA[1] = t;
+		});
+		if (FOTOS_PUERTA[1] >= 0 && t - FOTOS_PUERTA[1] == 2) captura(mc, "debug_puertahueso3_golpe.png");
+		if (t == 400) { mc.options.hideGui = false; mc.stop(); }
+	}
+
+	private static final int[] FOTOS_PUERTA = {-1, -1};
+
+	private static void puertaHueso(Minecraft mc, java.util.function.Consumer<com.dedsafio4.puertas.PuertaHuesoEntity> accion) {
+		if (mc.level == null) return;
+		for (var e : mc.level.entitiesForRendering()) if (e instanceof com.dedsafio4.puertas.PuertaHuesoEntity p) { accion.accept(p); return; }
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -7871,6 +7934,10 @@ public final class DebugCielo {
 		}
 		if (GANCHO) {
 			tickGancho(mc);
+			return;
+		}
+		if (PUERTA_HUESO) {
+			tickPuertaHueso(mc);
 			return;
 		}
 		if (TRICE_ESCALA) {

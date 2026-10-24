@@ -32,7 +32,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * Triceratops (el del mod Fossils and Archeology): no pega ni rompe armadura. Cada 20 segundos, si hay un jugador
  * cerca, carga la embestida (2 segundos quieto, mirándolo) y sale corriendo en línea recta hacia donde estaba,
  * rompiendo todos los bloques que tenga adelante (menos los irrompibles). Al jugador que choca lo manda lejos, sin
- * hacerle daño. /triceratops escala <tamaño> cambia el tamaño de los Triceratops (1 es el normal).
+ * hacerle daño. La Puerta de Hueso lo frena: aguanta 2 embestidas y a la tercera se cae. /triceratops escala <tamaño> cambia el tamaño de los Triceratops (1 es el normal).
  */
 public class TriceratopsEntity extends Monster implements GeoEntity {
 	/** 0: normal, 1: cargando la embestida, 2: embistiendo (el cliente lo usa para la animación). */
@@ -173,6 +173,15 @@ public class TriceratopsEntity extends Monster implements GeoEntity {
 		mirarHacia(direccion);
 		this.setDeltaMovement(direccion.x * VELOCIDAD, this.getDeltaMovement().y, direccion.z * VELOCIDAD);
 		this.hurtMarked = true;
+		// Una Puerta de Hueso cerrada adelante: la golpea y se frena (a la tercera embestida, la puerta se cae).
+		AABB frente = this.getBoundingBox().move(direccion.scale(VELOCIDAD + 0.3));
+		for (var puerta : this.level().getEntitiesOfClass(com.dedsafio4.puertas.PuertaHuesoEntity.class, frente)) {
+			if (!puerta.embestida(direccion)) continue;
+			this.setDeltaMovement(direccion.x * -0.3, 0.2, direccion.z * -0.3);
+			this.playSound(SoundEvents.RAVAGER_ATTACK, 2f, 0.7f);
+			terminar();
+			return;
+		}
 		romperAdelante();
 		for (Player p : this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(0.5))) {
 			if (p.isSpectator() || p.isCreative()) continue;
