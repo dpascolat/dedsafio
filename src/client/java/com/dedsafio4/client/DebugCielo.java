@@ -3430,20 +3430,20 @@ public final class DebugCielo {
 		var uuid = mc.player.getUUID();
 		if (t == -5 || t == -3) revivir(mc);
 		if (t == 0) {
-			comando(mc, "forceload add 1380 -80 1520 120");
+			comando(mc, "forceload add -70 -80 70 120");
 			comando(mc, "gamemode creative");
 			comando(mc, "time set 6000");
 			comando(mc, "clear @s");
 			for (String e : new String[]{"qumara", "capullo", "bicho_cabeza", "bicho_no_cabeza", "circulo"}) comando(mc, "kill @e[type=dedsafio4:" + e + "]");
 		}
 		if (t == 20) {
-			comando(mc, "fill 1380 199 -80 1520 199 120 minecraft:grass_block");
-			for (int y = 200; y <= 250; y += 3) comando(mc, "fill 1380 " + y + " -80 1520 " + (y + 2) + " 120 minecraft:air");
-			comando(mc, "execute in minecraft:overworld run tp @s 1450.5 240 -60.5 0 30");
+			comando(mc, "fill -70 199 -80 70 199 120 minecraft:grass_block");
+			for (int y = 200; y <= 250; y += 3) comando(mc, "fill -70 " + y + " -80 70 " + (y + 2) + " 120 minecraft:air");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 240 -60.5 0 30");
 		}
 		if (t == 30) server.execute(() -> {
 			var q = new com.dedsafio4.qumara.QumaraEntity(com.dedsafio4.qumara.ModQumara.QUMARA, server.overworld());
-			q.moveTo(1450.5, 200, 30.5, 0, 0);
+			q.moveTo(0.5, 200, 30.5, 0, 0);
 			server.overworld().addFreshEntity(q);
 			qumaraPrueba = q.getUUID();
 			q.accion(server.getPlayerList().getPlayer(uuid), 1);
@@ -3465,7 +3465,7 @@ public final class DebugCielo {
 			for (String[] a : new String[][]{{"head", "helmet"}, {"chest", "chestplate"}, {"legs", "leggings"}, {"feet", "boots"}}) {
 				comando(mc, "item replace entity @s armor." + a[0] + " with minecraft:diamond_" + a[1] + "[minecraft:enchantments={levels:{'minecraft:protection':4}}]");
 			}
-			comando(mc, "execute in minecraft:overworld run tp @s 1450.5 200 58.5 180 0");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 58.5 180 0");
 		}
 		if (t == 200) server.execute(() -> {
 			var j = server.getPlayerList().getPlayer(uuid);
@@ -3511,7 +3511,7 @@ public final class DebugCielo {
 			server.execute(() -> {
 				var j = server.getPlayerList().getPlayer(uuid);
 				j.setHealth(j.getMaxHealth());
-				j.teleportTo(1455.5, 200, 50.5);
+				j.teleportTo(5.5, 200, 50.5);
 			});
 		}
 		if (t == 1110) server.execute(() -> qumaraServidor(server).agarrar(server.getPlayerList().getPlayer(uuid)));
@@ -3521,7 +3521,7 @@ public final class DebugCielo {
 					j.isAlive(), j.getHealth(), j.getOffhandItem(), qumaraServidor(server).tSacar(0)));
 		});
 		// Ronda 3: sin tótem, 5 fallos.
-		if (t == 1520) server.execute(() -> {
+		if (t == 70) server.execute(() -> {
 			var j = server.getPlayerList().getPlayer(uuid);
 			j.setHealth(j.getMaxHealth());
 			j.teleportTo(1445.5, 200, 52.5);
@@ -4863,6 +4863,15 @@ public final class DebugCielo {
 		return qumaraPrueba == null ? null : (com.dedsafio4.qumara.QumaraEntity) server.overworld().getEntity(qumaraPrueba);
 	}
 
+	/** Llama a un método privado de la Qumara de la prueba (sin jinete, accion no deja hacer nada). */
+	private static void qumaraPrivado(net.minecraft.server.MinecraftServer server, String metodo, net.minecraft.server.level.ServerPlayer j) {
+		try {
+			var m = com.dedsafio4.qumara.QumaraEntity.class.getDeclaredMethod(metodo, net.minecraft.server.level.ServerPlayer.class);
+			m.setAccessible(true);
+			m.invoke(qumaraServidor(server), j);
+		} catch (Exception ex) { Dedsafio4ClientDebug.info("qumara: " + metodo + " " + ex); }
+	}
+
 	/** Qumara: rosa, nacer, giro (y a quién le pega), enfriamiento, y derrotada. */
 	private static void tickQumara(Minecraft mc) {
 		int t = ticks - 20;
@@ -4872,7 +4881,7 @@ public final class DebugCielo {
 		var uuid = mc.player.getUUID();
 		if (t == -5 || t == -3) revivir(mc);
 		if (t == 0) {
-			comando(mc, "forceload add 1400 -60 1500 60");
+			comando(mc, "forceload add -50 -60 50 60");
 			comando(mc, "gamemode creative");
 			comando(mc, "gamerule doDaylightCycle false");
 			comando(mc, "time set 6000");
@@ -4881,60 +4890,88 @@ public final class DebugCielo {
 			comando(mc, "clear @s");
 		}
 		if (t == 20) {
-			comando(mc, "fill 1410 199 -40 1490 199 40 minecraft:grass_block");
-			for (int y = 200; y <= 250; y += 4) comando(mc, "fill 1410 " + y + " -40 1490 " + (y + 3) + " 40 minecraft:air");
-			comando(mc, "execute in minecraft:overworld run tp @s 1450.5 215 58.5 180 8");
+			comando(mc, "fill -40 199 -40 40 199 40 minecraft:grass_block");
+			for (int y = 200; y <= 250; y += 4) comando(mc, "fill -40 " + y + " -40 40 " + (y + 3) + " 40 minecraft:air");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 215 58.5 180 8");
 		}
 		if (t == 30) {
 			server.execute(() -> {
 				var q = new com.dedsafio4.qumara.QumaraEntity(com.dedsafio4.qumara.ModQumara.QUMARA, server.overworld());
-				q.moveTo(1450.5, 200, 0.5, 0, 0);
+				q.moveTo(0.5, 200, 0.5, 0, 0);
 				server.overworld().addFreshEntity(q);
 				qumaraPrueba = q.getUUID();
 			});
 		}
 		if (t == 36) mc.gui.getChat().clearMessages(false);
 		if (t > 20) { mc.player.getAbilities().flying = true; mc.player.setDeltaMovement(0, 0, 0); }
-		if (t == 50) { mc.options.hideGui = true; comando(mc, "tp @s 1450.5 215 58.5 180 8"); }
+		if (t == 50) { mc.options.hideGui = true; comando(mc, "tp @s 0.5 215 58.5 180 8"); }
 		if (t == 51) captura(mc, "debug_qu1_rosa.png");
 		// Nacer (con el botón, montado).
-		if (t == 52) server.execute(() -> qumaraServidor(server).accion(server.getPlayerList().getPlayer(uuid), 1));
+		if (t == 52) server.execute(() -> {
+			var q = qumaraServidor(server);
+			q.accion(server.getPlayerList().getPlayer(uuid), 1);
+			// Sin jinete accion no la deja nacer: la hacemos nacer a mano.
+			if (!q.nacida()) {
+				try {
+					var m = com.dedsafio4.qumara.QumaraEntity.class.getDeclaredMethod("nacer", net.minecraft.server.level.ServerPlayer.class);
+					m.setAccessible(true);
+					m.invoke(q, server.getPlayerList().getPlayer(uuid));
+				} catch (Exception ex) { Dedsafio4ClientDebug.info("qumara: no nace " + ex); }
+			}
+		});
 		if (t == 52 + 50) captura(mc, "debug_qu2_naciendo.png");
 		if (t == 52 + 75) captura(mc, "debug_qu3_naciendo.png");
 		if (t == 52 + 110) captura(mc, "debug_qu4_grito.png");
 		if (t == 52 + 140) captura(mc, "debug_qu5_nacida.png");
-		if (t == 52 + 142) comando(mc, "tp @s 1450.5 226 30.5 180 0");
+		if (t == 52 + 142) comando(mc, "tp @s 0.5 226 30.5 180 0");
 		if (t == 52 + 148) captura(mc, "debug_qu5_cara.png");
-		if (t == 52 + 150) comando(mc, "tp @s 1485.5 222 0.5 90 0");
+		if (t == 52 + 150) comando(mc, "tp @s 35.5 222 0.5 90 0");
 		if (t == 52 + 156) { mc.options.hideGui = false; captura(mc, "debug_qu5_costado.png"); }
 		// Giro: un zombi a 20 bloques de un costado y otro a 40 (fuera del alcance).
 		if (t == 200) {
-			comando(mc, "summon minecraft:zombie 1470.5 200 0.5 {active_effects:[{id:\"minecraft:fire_resistance\",duration:-1}],NoAI:1b,PersistenceRequired:1b,Fire:-1s,Invulnerable:0b,CustomName:'\"cerca\"'}");
-			comando(mc, "summon minecraft:zombie 1450.5 200 -38.5 {active_effects:[{id:\"minecraft:fire_resistance\",duration:-1}],NoAI:1b,PersistenceRequired:1b,CustomName:'\"lejos\"'}");
-			comando(mc, "tp @s 1450.5 250 40.5 180 45");
+			comando(mc, "summon minecraft:zombie 20.5 200 0.5 {active_effects:[{id:\"minecraft:fire_resistance\",duration:-1}],NoAI:1b,PersistenceRequired:1b,Fire:-1s,Invulnerable:0b,CustomName:'\"cerca\"'}");
+			comando(mc, "summon minecraft:zombie 0.5 200 -38.5 {active_effects:[{id:\"minecraft:fire_resistance\",duration:-1}],NoAI:1b,PersistenceRequired:1b,CustomName:'\"lejos\"'}");
+			comando(mc, "tp @s 0.5 250 40.5 180 45");
 		}
-		if (t == 208) { mc.options.hideGui = true; comando(mc, "tp @s 1450.5 268 38.5 180 62"); }
-		if (t == 210) server.execute(() -> qumaraServidor(server).accion(server.getPlayerList().getPlayer(uuid), 2));
-		if (t == 210 + 50) captura(mc, "debug_qu6_giro.png");
-		if (t == 210 + 75) captura(mc, "debug_qu7_giro.png");
-		if (t == 210 + 95) captura(mc, "debug_qu7b_giro.png");
+		if (t == 208) { mc.options.hideGui = true; comando(mc, "tp @s 0.5 268 38.5 180 62"); }
+		if (t == 210) server.execute(() -> qumaraPrivado(server, "barrer", server.getPlayerList().getPlayer(uuid)));
+		if (t == 210 + 8) captura(mc, "debug_qu6_giro.png");
+		if (t == 210 + 15) captura(mc, "debug_qu7_giro.png");
+		if (t == 210 + 21) captura(mc, "debug_qu7b_giro.png");
+		if (t == 250) { comando(mc, "tp @s 0.5 215 58.5 180 8"); server.execute(() -> qumaraPrivado(server, "barrer", server.getPlayerList().getPlayer(uuid))); }
+		if (t == 250 + 9) captura(mc, "debug_qu7c_giro_frente.png");
+		if (t == 250 + 15) captura(mc, "debug_qu7d_giro_frente.png");
 		if (t == 210 + 150) {
 			server.execute(() -> {
 				StringBuilder sb = new StringBuilder("qumara giro:");
 				for (var z : server.overworld().getEntitiesOfClass(net.minecraft.world.entity.monster.Zombie.class,
-						new net.minecraft.world.phys.AABB(1400, 190, -60, 1500, 230, 60))) {
+						new net.minecraft.world.phys.AABB(-50, 190, -60, 50, 230, 60))) {
 					sb.append(" [").append(z.getCustomName() == null ? "?" : z.getCustomName().getString()).append(" vida=").append(z.getHealth()).append("]");
 				}
 				Dedsafio4ClientDebug.info(sb.toString());
 			});
 		}
+		// Atrapar: lo agarra con el brazo derecho y lo sube delante de la cara (visto desde atrás del jugador).
+		if (t == 300) {
+			comando(mc, "effect give @s minecraft:resistance 60 255 true");
+			comando(mc, "tp @s 12.5 200 20.5 180 0");
+		}
+		if (t == 302) server.execute(() -> qumaraServidor(server).agarrar(server.getPlayerList().getPlayer(uuid)));
+		if (t == 303) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+		if (t == 302 + 18) captura(mc, "debug_qu_ag1_alcanza.png");
+		if (t == 302 + 60) captura(mc, "debug_qu_ag2_cara.png");
+		if (t == 372) {
+			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+			server.execute(() -> qumaraPrivado(server, "soltar", server.getPlayerList().getPlayer(uuid)));
+		}
 		// Enfriamiento.
 		if (t == 380) {
-			comando(mc, "tp @s 1450.5 215 58.5 180 8");
+			comando(mc, "tp @s 0.5 215 58.5 180 8");
 			server.execute(() -> {
 				var j = server.getPlayerList().getPlayer(uuid);
-				qumaraServidor(server).accion(j, 3);
-				qumaraServidor(server).accion(j, 2);   // debilitada no puede girar
+				// Un golpe grande: llega al primer pinchito y se enfría (debilitada).
+				qumaraServidor(server).hurt(server.overworld().damageSources().magic(), 5000f);
+				qumaraPrivado(server, "barrer", j);   // debilitada no puede girar
 			});
 		}
 		if (t == 440) {
@@ -4944,10 +4981,18 @@ public final class DebugCielo {
 		if (t == 442) server.execute(() -> qumaraServidor(server).accion(server.getPlayerList().getPlayer(uuid), 3));
 		// Derrotada: se le saca toda la vida.
 		if (t == 480) {
-			comando(mc, "tp @s 1450.5 215 58.5 180 8");
+			comando(mc, "tp @s 0.5 215 58.5 180 8");
 			server.execute(() -> {
 				var q = qumaraServidor(server);
-				q.hurt(server.overworld().damageSources().magic(), 5000f);
+				// Ya pasó todos los pinchitos: el golpe que la mataría la deja derrotada.
+				try {
+					var f = com.dedsafio4.qumara.QumaraEntity.class.getDeclaredField("PINCHITOS_PASADOS");
+					f.setAccessible(true);
+					@SuppressWarnings("unchecked")
+					var dato = (net.minecraft.network.syncher.EntityDataAccessor<Integer>) f.get(null);
+					q.getEntityData().set(dato, 99);
+				} catch (Exception ex) { Dedsafio4ClientDebug.info("qumara: " + ex); }
+				q.die(server.overworld().damageSources().magic());
 				Dedsafio4ClientDebug.info("qumara golpe final: viva=" + q.isAlive() + " derrotada=" + q.derrotada() + " vida=" + q.getHealth());
 			});
 		}

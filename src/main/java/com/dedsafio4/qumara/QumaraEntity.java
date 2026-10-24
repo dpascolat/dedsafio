@@ -35,7 +35,7 @@ import java.util.UUID;
  * Qumara (la Flor Mutante): un jefe de 40 bloques de alto, pegado al suelo, que maneja un admin montado
  * en su cara. Aparece como una rosa gigante cerrada. Botones:
  * 1. Nacer (una sola vez): la rosa se abre y sale Qumara.
- * 2. Giro: saca un brazo que da una vuelta entera (30 bloques de alcance); al que le pega le saca vida.
+ * 2. Giro: se echa para atrás y gira entera con los dos brazos estirados (30 bloques de alcance); al que le pega le saca vida.
  * 4. Círculos Explosivos en todos los jugadores (el nivel depende de la vida).
  * 5. Atraer: durante 15 segundos todos los jugadores se acercan a la planta. Al terminar agarra al más
  *    cercano con el brazo, lo sube delante de la cara y le tira gas: el agarrado juega un minijuego
@@ -56,7 +56,7 @@ import java.util.UUID;
  * dibuja exactamente lo mismo que calcula el servidor.
  */
 public class QumaraEntity extends PathfinderMob {
-	public static final float TICKS_NACER = 6.2f * 20, TICKS_BARRIDO = 7f * 20, TICKS_GRITO = 3.2f * 20;
+	public static final float TICKS_NACER = 6.2f * 20, TICKS_BARRIDO = 1.8f * 20, TICKS_GRITO = 3.2f * 20;
 	/** El barrido se puede volver a usar a los 10 segundos de haberlo usado. */
 	public static final int RECARGA_BARRIDO = 10 * 20;
 	/** Alcance del brazo (desde el centro) y lo que saca al pegar. */
@@ -873,10 +873,22 @@ public class QumaraEntity extends PathfinderMob {
 		if (level() instanceof ServerLevel mundo && !derrotada()) quizasRecuperarse(mundo);
 	}
 
-	/** Hacia dónde apunta el brazo (en el cuerpo), en radianes, como en el diseño. */
+	/**
+	 * El giro (animación "barrido" del modelo): hacia dónde apunta el brazo derecho en cada momento (radianes, en el
+	 * cuerpo; el izquierdo, al revés). Se echa para atrás, da una vuelta entera rapidísimo y vuelve a su lugar.
+	 */
+	private static final float[] GIRO_T = {0, 0.05f, 0.1f, 0.15f, 0.25f, 0.3f, 0.35f, 0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f,
+			0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f, 1.35f};
+	private static final double[] GIRO_A = {0, 0.0307, 0.1114, 0.2252, 0.4847, 0.5965, 0.6739, 0.6993, 0.5856, 0.2965, -0.1394,
+			-0.6934, -1.3369, -2.0411, -2.7774, -3.5172, -4.2318, -4.8924, -5.4705, -5.9374, -6.2644, -6.4228, -6.4232, -6.3828,
+			-6.3316, -6.2921, -6.2832};
+
 	public static double yawBrazo(float tSeg) {
-		double a0 = -Math.PI / 2;
-		return a0 + 0.6 * suave((tSeg - 1.4f) / 0.6f) - (2 * Math.PI + 0.6) * suave((tSeg - 2f) / 3.6f);
+		if (tSeg <= 0) return 0;
+		for (int i = 1; i < GIRO_T.length; i++) {
+			if (tSeg <= GIRO_T[i]) return Mth.lerp((tSeg - GIRO_T[i - 1]) / (GIRO_T[i] - GIRO_T[i - 1]), GIRO_A[i - 1], GIRO_A[i]);
+		}
+		return GIRO_A[GIRO_A.length - 1];
 	}
 
 	public static float suave(float x) {
@@ -884,7 +896,7 @@ public class QumaraEntity extends PathfinderMob {
 	}
 
 	/**
-	 * Durante la vuelta (de 2 a 5,6 s), le pega a quien esté dentro del alcance cuando el brazo pasa por
+	 * Durante la vuelta (de 0,4 a 1,15 s), le pega a quien esté dentro del alcance cuando un brazo pasa por
 	 * su dirección. Una vez por barrido a cada uno.
 	 */
 	private void golpearConElBrazo() {
@@ -892,7 +904,7 @@ public class QumaraEntity extends PathfinderMob {
 		double ahora = yawBrazo(tSeg);
 		double antes = brazoAntes;
 		brazoAntes = ahora;
-		if (tSeg < 2f || tSeg > 5.6f || Double.isNaN(antes)) return;
+		if (tSeg < 0.4f || tSeg > 1.15f || Double.isNaN(antes)) return;
 		// Para pasar del mundo al cuerpo se deshace el giro del cuerpo (el dibujo gira el cuerpo en -yaw).
 		double cuerpo = getYRot() * Mth.DEG_TO_RAD;
 		AABB zona = getBoundingBox().inflate(ALCANCE, 4, ALCANCE);
@@ -905,7 +917,7 @@ public class QumaraEntity extends PathfinderMob {
 			// Ángulo del jugador medido igual que el brazo: local x = (cos a, -sin a) en (x, z) del cuerpo.
 			Vec3 local = d.yRot((float) cuerpo);
 			double ang = Math.atan2(-local.z, local.x);
-			if (!pasoPor(antes, ahora, ang)) continue;
+			if (!pasoPor(antes, ahora, ang) && !pasoPor(antes, ahora, ang + Math.PI)) continue;
 			golpeados.add(quien.getUUID());
 			quien.hurt(damageSources().mobAttack(this), DANIO_BARRIDO);
 			Vec3 afuera = new Vec3(d.x, 0, d.z).normalize();
