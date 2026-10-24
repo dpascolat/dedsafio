@@ -1132,10 +1132,10 @@ public final class DebugCielo {
 			comando(mc, "fill -8 200 -8 8 206 8 minecraft:air");
 			comando(mc, "tp @s 0.5 200 0.5 0 0");
 			comando(mc, "cambiarmob skin:huron");
-			mc.options.fov().set(30);
+			mc.options.fov().set(50);
 			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
 		}
-		if (t > 0 && t < 90) mirar(mc, 0, 15);
+		if (t > 0 && t < 90) mirar(mc, 0, 6);
 		if (t == 20) captura(mc, "debug_huron1_frente.png");
 		// De costado: el cuerpo girado 90 grados (la cabeza mira a la cámara).
 		if (t > 22 && t < 45) { mc.player.yBodyRot = mc.player.yBodyRotO = 90; }
@@ -1146,7 +1146,7 @@ public final class DebugCielo {
 		if (t == 85) captura(mc, "debug_huron4_agachado.png");
 		if (t == 88) mc.options.keyShift.setDown(false);
 		// Caminando hacia la cámara.
-		if (t >= 90 && t < 105) { mirar(mc, 0, 15); mc.options.keyDown.setDown(true); }
+		if (t >= 90 && t < 105) { mirar(mc, 0, 6); mc.options.keyDown.setDown(true); }
 		if (t == 100) captura(mc, "debug_huron5_caminando.png");
 		if (t == 105) { mc.options.keyDown.setDown(false); comando(mc, "cambiarmob normal"); mc.options.fov().set(70);
 			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; }
