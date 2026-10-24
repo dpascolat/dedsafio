@@ -123,8 +123,11 @@ public class EntregaMisionBlock extends Block {
 		OCUPADOS.values().removeIf(t -> t <= ahora);
 		Misiones.Mision mision = Misiones.deDedita(servidor.server, pila);
 		int dia = mision != null ? mision.dia() : Misiones.diaDeDedita(pila);
-		List<ItemStack> premio = mision != null ? mision.premio() : List.of();
-		String texto = (dia >= 0 ? "¡Completaste la Misión Principal del Día " + dia + "!" : "¡Completaste una Misión Principal!")
+		// Las que reparten los OP con /deditas_de_mision traen su propio premio.
+		List<ItemStack> premioOp = com.dedsafio4.catalogo.DeditasMision.premioDe(servidor.server, pila);
+		List<ItemStack> premio = premioOp != null ? premioOp : mision != null ? mision.premio() : List.of();
+		String texto = (premioOp != null ? "¡Completaste una Misión!"
+				: dia >= 0 ? "¡Completaste la Misión Principal del Día " + dia + "!" : "¡Completaste una Misión Principal!")
 				+ (premio.isEmpty() ? " Gracias por entregar tu Dedita de la Misión." : " Aquí tienes tu premio.");
 		pila.consume(1, jugador);
 		com.dedsafio4.ruleta.RuletaPiso.mostrar(servidor.serverLevel(),

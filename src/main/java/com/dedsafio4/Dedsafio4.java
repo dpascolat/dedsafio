@@ -145,6 +145,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.bestias.AjustesMob.registrar();
 		com.dedsafio4.bestias.DropsMob.registrar();
 		com.dedsafio4.catalogo.Misiones.registrar();
+		com.dedsafio4.catalogo.DeditasMision.registrar();
 		com.dedsafio4.ruleta.Ruleta.registrar();
 		com.dedsafio4.bulag.Bulag.registrar();
 		com.dedsafio4.despegue.Tunel.registrar();
@@ -173,6 +174,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.puertas.PuertasHueso.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.TriceratopsEntity.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.TremorsaurioEntity.registrarComandos(dispatcher);
+			com.dedsafio4.catalogo.DeditasMision.registrarComandos(dispatcher);
 			com.dedsafio4.dimension.CerdosQuiu.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.MutacionArana.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.MutacionFantasma.registrarComandos(dispatcher);

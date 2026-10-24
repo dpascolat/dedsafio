@@ -34,11 +34,19 @@ public class DeditaMisionItem extends Item {
 
 	@Override
 	public void appendHoverText(ItemStack pila, TooltipContext contexto, List<Component> texto, TooltipFlag bandera) {
-		if (dia(pila) < 0) return;
+		int dia = dia(pila);
+		CustomData datos = pila.get(DataComponents.CUSTOM_DATA);
+		boolean deOp = datos != null && datos.copyTag().contains("tanda");
+		if (dia < 0 && !deOp) return;
 		int blanco = 0xE8E8E8;
 		texto.add(Component.empty());
 		texto.add(Component.literal("Canjéalo en el ").withColor(blanco).append(Component.literal("Pedestal de").withColor(0xC3E84E)));
 		texto.add(Component.literal("la Montaña").withColor(0xC3E84E).append(Component.literal(" para reclamar").withColor(blanco)));
+		if (deOp) {
+			texto.add(Component.literal("tu ").withColor(blanco).append(Component.literal("premio").withColor(0xF0D86A))
+					.append(Component.literal(".").withColor(blanco)));
+			return;
+		}
 		texto.add(Component.literal("la ").withColor(blanco).append(Component.literal("Misión Principal").withColor(0xF0D86A))
 				.append(Component.literal(" del día.").withColor(blanco)));
 	}

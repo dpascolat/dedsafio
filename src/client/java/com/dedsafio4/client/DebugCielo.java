@@ -1360,6 +1360,44 @@ public final class DebugCielo {
 		if (t == 310) { mc.options.hideGui = false; mc.stop(); }
 	}
 
+	private static final boolean DEDITAS_MISION = "deditasmision".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /deditas_de_mision: abre el editor del premio, se guarda, obtener/entregar, y cada tanda guarda su premio. */
+	private static void tickDeditasMision(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "clear @s");
+			comando(mc, "give @s minecraft:diamond 5");
+		}
+		if (t == 10) comando(mc, "deditas_de_mision");
+		if (t == 16) {
+			Dedsafio4ClientDebug.info("deditasmision pantalla: " + (mc.screen == null ? "ninguna" : mc.screen.getClass().getSimpleName()));
+			captura(mc, "debug_deditasmision1_editor.png");
+		}
+		if (t == 18 && mc.screen != null) mc.screen.onClose();
+		if (t == 22) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.catalogo.DeditasMision.GuardarPayload(
+				java.util.List.of(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND, 5))));
+		if (t == 26) comando(mc, "deditas_de_mision obtener");
+		if (t == 30) comando(mc, "dedita_de_mision entregar");
+		if (t == 34) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.catalogo.DeditasMision.GuardarPayload(
+				java.util.List.of(net.minecraft.world.item.ItemStack.EMPTY, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLD_INGOT, 3))));
+		if (t == 38) comando(mc, "dedita_de_mision obtener");
+		if (t == 44) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			for (var pila : j.getInventory().items) {
+				if (!pila.is(com.dedsafio4.items.ModItems.DEDITA_MISION)) continue;
+				Dedsafio4ClientDebug.info("deditasmision dedita x" + pila.getCount() + " " + pila.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA)
+						+ " premio " + com.dedsafio4.catalogo.DeditasMision.premioDe(server, pila).stream().filter(x -> !x.isEmpty()).map(Object::toString).toList());
+			}
+		});
+		if (t == 48) mc.stop();
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -7990,6 +8028,10 @@ public final class DebugCielo {
 		}
 		if (TREMOR) {
 			tickTremor(mc);
+			return;
+		}
+		if (DEDITAS_MISION) {
+			tickDeditasMision(mc);
 			return;
 		}
 		if (TRICE_ESCALA) {

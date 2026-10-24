@@ -28,6 +28,14 @@ public final class CatalogoCliente {
 			for (int i = 0; i < p.length; i++) p[i] = payload.progreso().get(i);
 			com.dedsafio4.catalogo.Misiones.PROGRESO_CLIENTE = p;
 		});
+		// /deditas_de_mision: el premio de las Deditas de la Misión de los OP, en el mismo editor que el de las misiones.
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.catalogo.DeditasMision.AbrirPayload.TYPE, (payload, context) -> context.client().execute(() -> {
+			net.minecraft.world.item.ItemStack[] premio = new net.minecraft.world.item.ItemStack[com.dedsafio4.catalogo.Misiones.MAX_PREMIO];
+			java.util.Arrays.fill(premio, net.minecraft.world.item.ItemStack.EMPTY);
+			for (int i = 0; i < premio.length && i < payload.premio().size(); i++) premio[i] = payload.premio().get(i).copy();
+			context.client().setScreen(new PremioEditorScreen(null, premio, net.minecraft.network.chat.Component.literal("Premio de la Dedita de la Misión"),
+					() -> ClientPlayNetworking.send(new com.dedsafio4.catalogo.DeditasMision.GuardarPayload(java.util.Arrays.asList(premio)))));
+		}));
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.catalogo.Misiones.ListaPayload.TYPE, (payload, context) ->
 				com.dedsafio4.catalogo.Misiones.LISTA_CLIENTE = List.copyOf(payload.misiones()));
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.catalogo.LibroMobs.Payload.TYPE, (payload, context) ->

@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
  * Click en algo tuyo lo toma (una copia: no se gasta) y click en una casilla del premio lo deja ahí, en el orden que
  * quieras. Con algo en el mouse, click derecho deja de a uno; sin nada, click toma lo que hay en la casilla (para
  * moverlo) y click derecho le resta uno. La ruedita suma o resta. Click afuera o Esc suelta lo que tienes en el mouse.
+ * También lo usa /deditas_de_mision (el premio de las Deditas de la Misión que reparten los OP): al cerrarlo se guarda.
  */
 public class PremioEditorScreen extends Screen {
 	private static final int CELDA = 18, ANCHO = 9 * CELDA + 16, ALTO = 3 * CELDA + 4 * CELDA + 62;
@@ -19,11 +20,18 @@ public class PremioEditorScreen extends Screen {
 	private final ItemStack[] premio;
 	private ItemStack enMano = ItemStack.EMPTY;
 	private int x0, y0;
+	/** Lo que se hace al cerrarlo (null: nada, el editor de la misión lo guarda después). */
+	private final Runnable alCerrar;
 
 	public PremioEditorScreen(Screen anterior, ItemStack[] premio) {
-		super(Component.literal("Premio de la misión"));
+		this(anterior, premio, Component.literal("Premio de la misión"), null);
+	}
+
+	public PremioEditorScreen(Screen anterior, ItemStack[] premio, Component titulo, Runnable alCerrar) {
+		super(titulo);
 		this.anterior = anterior;
 		this.premio = premio;
+		this.alCerrar = alCerrar;
 	}
 
 	@Override
@@ -38,6 +46,7 @@ public class PremioEditorScreen extends Screen {
 
 	@Override
 	public void onClose() {
+		if (alCerrar != null) alCerrar.run();
 		minecraft.setScreen(anterior);
 	}
 
