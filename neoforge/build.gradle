@@ -67,6 +67,11 @@ neoForge {
 				programArgument '--quickPlayMultiplayer'
 				programArgument project.property('servidorPrueba').toString()
 			}
+			// O a un mundo de un jugador (-PmundoPrueba="New World", en neoforge/run/saves).
+			if (project.hasProperty('mundoPrueba')) {
+				programArgument '--quickPlaySingleplayer'
+				programArgument project.property('mundoPrueba').toString()
+			}
 		}
 		server {
 			server()

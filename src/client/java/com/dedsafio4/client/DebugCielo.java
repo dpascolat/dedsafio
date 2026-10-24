@@ -1277,6 +1277,34 @@ public final class DebugCielo {
 		if (t == 30) { comando(mc, "kill @e[type=dedsafio4:triceratops]"); mc.options.hideGui = false; mc.stop(); }
 	}
 
+	private static final boolean XAERO_MARCAS = "xaeromarcas".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /marca crear: la marca sale como waypoint de Xaero's Minimap (y el efecto que bloqueaba los waypoints se saca). */
+	private static void tickXaeroMarcas(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "time set 6000");
+			comando(mc, "marca borrar \"Base Prueba\"");
+			comando(mc, "fill -8 199 -24 8 199 8 minecraft:grass_block");
+			comando(mc, "fill -8 200 -24 8 210 8 minecraft:air");
+			comando(mc, "tp @s 0.5 200 0.5 180 0");
+		}
+		if (t == 60) comando(mc, "execute positioned 0.5 200 -15.5 run marca crear \"Base Prueba\" rojo");
+		if (t == 70) mc.gui.getChat().clearMessages(false);
+		if (t == 100) {
+			var efectos = mc.player.getActiveEffects().stream().map(e -> e.getEffect().getRegisteredName()).toList();
+			Dedsafio4ClientDebug.info("xaero activo=" + XaeroMarcas.activo() + " cargadas=" + XaeroMarcas.cargadas() + " efectos=" + efectos);
+			captura(mc, "debug_xaero_marca.png");
+		}
+		if (t == 105) comando(mc, "marca borrar \"Base Prueba\"");
+		if (t == 130) Dedsafio4ClientDebug.info("xaero despues de borrar: cargadas=" + XaeroMarcas.cargadas());
+		if (t == 135) mc.stop();
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -7792,6 +7820,10 @@ public final class DebugCielo {
 		}
 		if (TRICE_ESCALA) {
 			tickTriceEscala(mc);
+			return;
+		}
+		if (XAERO_MARCAS) {
+			tickXaeroMarcas(mc);
 			return;
 		}
 		if (ROBOT) {

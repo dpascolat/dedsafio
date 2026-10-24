@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Marcas que ponen los admins y que ven todos los jugadores en el mundo (con nombre y distancia).
- * Reemplazan a los waypoints de Xaero's Minimap, que para los jugadores normales está bloqueado.
+ * Marcas que ponen los admins y que ven todos los jugadores: salen como waypoints de Xaero's Minimap (en el mundo y
+ * en el minimapa; ver XaeroMarcas). Si alguien no tiene Xaero, las dibuja el mod (MarcasCliente).
  *
  * /marca crear <nombre> [color]   en la posición del admin (o la de /execute positioned ...)
  * /marca borrar <nombre>

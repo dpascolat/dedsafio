@@ -14,8 +14,9 @@ import org.joml.Matrix4f;
 import java.util.List;
 
 /**
- * Dibuja en el mundo las marcas de los admins y las ubicaciones de tu Hermandad, como waypoints: se ven a través de las paredes,
- * siempre del mismo tamaño en pantalla, con un rombo, el nombre y la distancia.
+ * Dibuja en el mundo las ubicaciones de tu Hermandad (y las marcas de los admins si no está Xaero's Minimap; si está,
+ * esas van como waypoints de Xaero, ver XaeroMarcas), como waypoints: se ven a través de las paredes, siempre del
+ * mismo tamaño en pantalla, con un rombo, el nombre y la distancia.
  */
 public final class MarcasCliente {
 	private MarcasCliente() {}
@@ -29,15 +30,17 @@ public final class MarcasCliente {
 
 	public static void actualizar(MarcasPayload payload) {
 		marcas = List.copyOf(payload.marcas());
+		XaeroMarcas.poner(marcas);
 	}
 
 	public static void limpiar() {
 		marcas = List.of();
+		XaeroMarcas.poner(marcas);
 	}
 
 	public static void dibujar(WorldRenderContext contexto) {
 		Minecraft mc = Minecraft.getInstance();
-		List<MarcasPayload.Marca> todas = new java.util.ArrayList<>(marcas);
+		List<MarcasPayload.Marca> todas = new java.util.ArrayList<>(XaeroMarcas.activo() ? List.of() : marcas);
 		todas.addAll(HermandadesCliente.ubicaciones());
 		if (todas.isEmpty() || mc.level == null || mc.options.hideGui) return;
 		String dimension = mc.level.dimension().location().toString();

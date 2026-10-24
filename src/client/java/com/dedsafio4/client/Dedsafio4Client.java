@@ -242,6 +242,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(MarcasPayload.TYPE, (payload, context) ->
 				MarcasCliente.actualizar(payload));
 		WorldRenderEvents.LAST.register(MarcasCliente::dibujar);
+		ClientTickEvents.END_CLIENT_TICK.register(XaeroMarcas::tick);
 		WorldRenderEvents.AFTER_TRANSLUCENT.register(LinternaLuz::dibujarHaces);
 
 		EntityRendererRegistry.register(ModEntidades.NAVE, NaveRenderer::new);

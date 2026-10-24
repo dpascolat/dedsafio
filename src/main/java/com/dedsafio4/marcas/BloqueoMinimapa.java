@@ -21,7 +21,8 @@ import java.util.UUID;
  * Bloquea Xaero's Minimap. Por defecto a todos (también a los admins); con "/minimapa admins" los
  * admins lo pueden volver a usar, y con "/minimapa todos" se vuelve a sacar para todos.
  *
- * 1. Efectos de Xaero "no_minimap" y "no_waypoints", infinitos y ocultos. Se revisan cada
+ * 1. Efecto de Xaero "no_minimap", infinito y oculto (los waypoints sí se ven: las marcas de /marca son
+ *    waypoints de Xaero; el efecto "no_waypoints" de antes se saca). Se revisan cada
  *    cuarto de segundo, así no se pierden con leche ni al morir. Solo existen si Xaero está en el servidor
  *    (en un mundo de un jugador siempre).
  * 2. Por si no está: el código "nominimap" en un mensaje del sistema (con § antes de cada letra,
@@ -33,8 +34,9 @@ public final class BloqueoMinimapa {
 	private BloqueoMinimapa() {}
 
 	private static final List<ResourceLocation> EFECTOS = List.of(
-			ResourceLocation.fromNamespaceAndPath("xaerominimap", "no_minimap"),
-			ResourceLocation.fromNamespaceAndPath("xaerominimap", "no_waypoints"));
+			ResourceLocation.fromNamespaceAndPath("xaerominimap", "no_minimap"));
+	/** El que bloqueaba los waypoints: ya no se pone, y a quien lo tenga se le saca. */
+	private static final ResourceLocation SIN_WAYPOINTS = ResourceLocation.fromNamespaceAndPath("xaerominimap", "no_waypoints");
 
 	private static String codigo(String palabra) {
 		StringBuilder sb = new StringBuilder();
@@ -122,6 +124,9 @@ public final class BloqueoMinimapa {
 
 	/** Pone (o saca) los efectos que bloquean el minimapa. */
 	public static void aplicarEfectos(ServerPlayer jugador) {
+		BuiltInRegistries.MOB_EFFECT.getHolder(SIN_WAYPOINTS).ifPresent(e -> {
+			if (jugador.hasEffect(e)) jugador.removeEffect(e);
+		});
 		boolean admin = esAdmin(jugador);
 		for (ResourceLocation id : EFECTOS) {
 			Optional<Holder.Reference<MobEffect>> efecto = BuiltInRegistries.MOB_EFFECT.getHolder(id);
