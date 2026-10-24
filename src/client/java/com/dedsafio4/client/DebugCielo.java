@@ -1447,6 +1447,34 @@ public final class DebugCielo {
 
 	private static final net.minecraft.core.BlockPos[] SOPORTE_UVINA = {net.minecraft.core.BlockPos.ZERO};
 
+	private static final boolean NAUTILO = "nautilo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Nautilus Óseo: se acerca a un jugador en supervivencia y le pega (¿le saca vida?). */
+	private static void tickNautilo(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "difficulty normal");
+			comando(mc, "effect clear @s");
+			comando(mc, "kill @e[type=!player]");
+			comando(mc, "fill -12 199 -12 12 199 12 minecraft:grass_block");
+			comando(mc, "fill -12 200 -12 12 210 12 minecraft:air");
+			comando(mc, "tp @s 0.5 200 0.5 0 0");
+		}
+		if (t == 10) comando(mc, "summon dedsafio4:nautilus_oseo 0.5 202 5.5");
+		if (t >= 10 && t <= 200 && t % 10 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var ns = j.serverLevel().getEntitiesOfClass(com.dedsafio4.bestias.NautilusOseoEntity.class, j.getBoundingBox().inflate(20));
+			Dedsafio4ClientDebug.info("nautilo t" + (ticks - 20) + " vida " + j.getHealth() + " nautilos " + ns.stream()
+					.map(n -> n.position() + " obj " + (n.getTarget() != null) + " dist " + String.format("%.2f", n.distanceTo(j))).toList());
+		});
+		if (t == 205) mc.stop();
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -8130,6 +8158,10 @@ public final class DebugCielo {
 		}
 		if (UVINA_POCION) {
 			tickUvinaPocion(mc);
+			return;
+		}
+		if (NAUTILO) {
+			tickNautilo(mc);
 			return;
 		}
 		if (TRICE_ESCALA) {
