@@ -1398,6 +1398,55 @@ public final class DebugCielo {
 		if (t == 48) mc.stop();
 	}
 
+	private static final boolean UVINA_POCION = "uvinapocion".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Baya Uvina: comerla da respiración acuática 2 minutos; en el soporte, poción rara + baya = poción de respiración. */
+	private static void tickUvinaPocion(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "effect clear @s");
+			comando(mc, "clear @s");
+		}
+		if (t == 5) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			j.getFoodData().setFoodLevel(2);
+			// Comerla como la come un jugador.
+			var baya = new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.BAYA_UVINA);
+			baya.finishUsingItem(j.level(), j);
+			var e = j.getEffect(net.minecraft.world.effect.MobEffects.WATER_BREATHING);
+			Dedsafio4ClientDebug.info("uvinapocion comer: respiracion " + (e == null ? "no" : e.getDuration() + " ticks"));
+			var mundo = j.serverLevel();
+			SOPORTE_UVINA[0] = j.blockPosition().offset(2, 0, 0);
+			mundo.setBlockAndUpdate(SOPORTE_UVINA[0], net.minecraft.world.level.block.Blocks.BREWING_STAND.defaultBlockState());
+			if (mundo.getBlockEntity(SOPORTE_UVINA[0]) instanceof net.minecraft.world.level.block.entity.BrewingStandBlockEntity soporte) {
+				var brewing = mundo.potionBrewing();
+				var rara = net.minecraft.world.item.alchemy.PotionContents.createItemStack(net.minecraft.world.item.Items.POTION, net.minecraft.world.item.alchemy.Potions.AWKWARD);
+				var bayaIng = new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.BAYA_UVINA);
+				Dedsafio4ClientDebug.info("uvinapocion soporte: ingrediente " + brewing.isIngredient(bayaIng) + " mezcla " + brewing.hasMix(rara, bayaIng)
+						+ " pez globo " + brewing.isIngredient(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PUFFERFISH)));
+				soporte.setItem(0, rara.copy());
+				soporte.setItem(1, rara.copy());
+				soporte.setItem(3, bayaIng);
+				soporte.setItem(4, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BLAZE_POWDER));
+			}
+		});
+		if (t == 440) server.execute(() -> {
+			var mundo = server.getPlayerList().getPlayers().get(0).serverLevel();
+			if (mundo.getBlockEntity(SOPORTE_UVINA[0]) instanceof net.minecraft.world.level.block.entity.BrewingStandBlockEntity soporte) {
+				for (int i = 0; i < 5; i++) Dedsafio4ClientDebug.info("uvinapocion casilla " + i + ": " + soporte.getItem(i) + " "
+						+ soporte.getItem(i).get(net.minecraft.core.component.DataComponents.POTION_CONTENTS));
+			}
+		});
+		if (t == 445) mc.stop();
+	}
+
+	private static final net.minecraft.core.BlockPos[] SOPORTE_UVINA = {net.minecraft.core.BlockPos.ZERO};
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -8032,6 +8081,10 @@ public final class DebugCielo {
 		}
 		if (DEDITAS_MISION) {
 			tickDeditasMision(mc);
+			return;
+		}
+		if (UVINA_POCION) {
+			tickUvinaPocion(mc);
 			return;
 		}
 		if (TRICE_ESCALA) {
