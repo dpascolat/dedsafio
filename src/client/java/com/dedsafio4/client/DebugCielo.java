@@ -1305,6 +1305,56 @@ public final class DebugCielo {
 		if (t == 135) mc.stop();
 	}
 
+	private static final boolean PANTOME = "pantome".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /mutacion pantome: los fantasmas se ven como el mutante y al pegar mezclan el inventario (no armadura ni 2da mano). */
+	private static void tickPantome(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "time set 18000");
+			comando(mc, "kill @e[type=minecraft:phantom]");
+			comando(mc, "fill -8 199 -16 8 199 8 minecraft:grass_block");
+			comando(mc, "fill -8 200 -16 8 210 8 minecraft:air");
+			comando(mc, "tp @s 0.5 200 0.5 180 -15");
+			comando(mc, "mutacion pantome");
+			comando(mc, "clear @s");
+			String[] cosas = {"stone", "dirt", "oak_log", "iron_ingot", "gold_ingot", "diamond", "emerald", "apple", "bread"};
+			for (int i = 0; i < cosas.length; i++) comando(mc, "item replace entity @s hotbar." + i + " with minecraft:" + cosas[i]);
+			comando(mc, "item replace entity @s inventory.0 with minecraft:coal 5");
+			comando(mc, "item replace entity @s weapon.offhand with minecraft:totem_of_undying");
+			comando(mc, "item replace entity @s armor.head with minecraft:iron_helmet");
+			comando(mc, "summon minecraft:phantom 0.5 202.5 -3.5 {NoAI:1b,Rotation:[0f,0f]}");
+		}
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
+		if (t == 25) captura(mc, "debug_pantome1.png");
+		if (t == 27) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); comando(mc, "tp @s 0.5 200 -1.5 0 -30"); }
+		if (t == 40) captura(mc, "debug_pantome2.png");
+		if (t == 45) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			Dedsafio4ClientDebug.info("antes: " + inventario(j));
+			for (var f : server.overworld().getEntitiesOfClass(net.minecraft.world.entity.monster.Phantom.class, j.getBoundingBox().inflate(20))) {
+				j.invulnerableTime = 0;
+				Dedsafio4ClientDebug.info("pego=" + f.doHurtTarget(j));
+			}
+			Dedsafio4ClientDebug.info("despues: " + inventario(j));
+		});
+		if (t == 55) { comando(mc, "mutacion pantome desactivar"); comando(mc, "kill @e[type=minecraft:phantom]"); mc.options.hideGui = false; }
+		if (t == 60) mc.stop();
+	}
+
+	private static String inventario(net.minecraft.server.level.ServerPlayer j) {
+		var inv = j.getInventory();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 10; i++) sb.append(i).append('=').append(inv.getItem(i).getItem()).append(' ');
+		sb.append("| casco=").append(inv.getItem(39).getItem()).append(" mano2=").append(inv.getItem(40).getItem());
+		return sb.toString().replace("minecraft:", "");
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -7824,6 +7874,10 @@ public final class DebugCielo {
 		}
 		if (XAERO_MARCAS) {
 			tickXaeroMarcas(mc);
+			return;
+		}
+		if (PANTOME) {
+			tickPantome(mc);
 			return;
 		}
 		if (ROBOT) {

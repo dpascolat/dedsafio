@@ -23,12 +23,15 @@ import java.util.Map;
  * un modelo de Minecraft: cada parte del archivo cuelga de la parte de Minecraft que se le indique, así se mueve con
  * su animación normal. Lo usan la Araña Mutante, el Creeper de Papel y los zombis nuevos. Las piezas con su propia
  * textura (la ropa de los zombis: "texture" con shirt o pants) son otra capa, que se dibuja aparte con su textura.
+ * Si la parte de Minecraft está adentro de otra (como las alas del fantasma, dentro del cuerpo), se indica con su
+ * camino ("body/left_wing_base") y se aplican los movimientos de todas las partes de ese camino.
  */
 public final class ModeloJem {
 	/** Una pieza: su nombre, dónde gira (píxeles), cuánto (radianes), sus caras (por cara: 4 × (x, y, z, u, v) y la normal) y sus hijas. */
 	private record Nodo(String id, String capa, float[] pivote, float[] rot, float[] caras, List<Nodo> hijos) {}
 
-	private record Raiz(ModelPart parte, Nodo nodo) {}
+	/** camino: las partes de Minecraft desde la raíz hasta la que lleva la pieza (la última es esa). */
+	private record Raiz(List<ModelPart> camino, Nodo nodo) {}
 
 	private static final float[] NADA = new float[0];
 
@@ -43,7 +46,10 @@ public final class ModeloJem {
 	private final ModelPart raiz;
 	private List<Raiz> raices;
 
-	/** partes: de los nombres de OptiFine ("head", "leg1"...) a los de las partes del modelo de Minecraft. */
+	/**
+	 * partes: de los nombres de OptiFine ("head", "leg1"...) a los de las partes del modelo de Minecraft (o su camino,
+	 * con "/", si está adentro de otra).
+	 */
 	public ModeloJem(ResourceLocation archivo, Map<String, String> partes, ModelPart raiz) {
 		this.archivo = archivo;
 		this.partes = partes;
@@ -60,7 +66,11 @@ public final class ModeloJem {
 			for (JsonElement e : jem.getAsJsonArray("models")) {
 				JsonObject m = e.getAsJsonObject();
 				String parte = partes.get(m.get("part").getAsString());
-				if (parte != null) raices.add(new Raiz(raiz.getChild(parte), nodo(m, tw, th, null)));
+				if (parte == null) continue;
+				List<ModelPart> camino = new ArrayList<>();
+				ModelPart actual = raiz;
+				for (String nombre : parte.split("/")) camino.add(actual = actual.getChild(nombre));
+				raices.add(new Raiz(camino, nodo(m, tw, th, null)));
 			}
 		} catch (Exception ex) {
 			Dedsafio4.LOGGER.error("No se pudo cargar el modelo " + archivo, ex);
@@ -159,10 +169,11 @@ public final class ModeloJem {
 	/** Dibuja solo las piezas de esa capa ("camisa", "pantalon"; null = la textura principal). */
 	public void dibujar(PoseStack pose, VertexConsumer vc, int luz, int overlay, int color, Giro giro, String capa) {
 		for (Raiz r : raices()) {
-			ModelPart p = r.parte();
 			pose.pushPose();
-			pose.translate(p.x / 16f, p.y / 16f, p.z / 16f);
-			pose.mulPose(new Quaternionf().rotationZYX(p.zRot, p.yRot, p.xRot));
+			for (ModelPart p : r.camino()) {
+				pose.translate(p.x / 16f, p.y / 16f, p.z / 16f);
+				pose.mulPose(new Quaternionf().rotationZYX(p.zRot, p.yRot, p.xRot));
+			}
 			dibujar(r.nodo(), pose, vc, luz, overlay, color, giro, capa);
 			pose.popPose();
 		}
