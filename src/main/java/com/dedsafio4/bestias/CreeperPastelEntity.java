@@ -14,8 +14,8 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Level;
 
 /**
- * Creeper Pastel: una torta con cara de creeper, de 1 bloque de alto. Se porta como un creeper, pero la
- * explosión es chica y no rompe bloques; a los jugadores que estén a menos de 5 bloques les mancha la
+ * Creeper Pastel: una torta con cara de creeper, de 1 bloque de alto. Se porta como un creeper, pero explota al
+ * instante (sin el siseo de antes) y la explosión es chica y no rompe bloques; a los jugadores que estén a menos de 5 bloques les mancha la
  * pantalla con pastel unos segundos (eso lo dibuja el cliente al recibir PastelPayload).
  */
 public class CreeperPastelEntity extends Creeper {
@@ -24,8 +24,10 @@ public class CreeperPastelEntity extends Creeper {
 	public CreeperPastelEntity(EntityType<? extends Creeper> tipo, Level level) {
 		super(tipo, level);
 		// La explosión del creeper queda en 0: la de verdad (chiquita y sin romper nada) la hace tick().
+		// Mecha de 1 tick: explota al instante, apenas se activa.
 		CompoundTag datos = new CompoundTag();
 		datos.putByte("ExplosionRadius", (byte) 0);
+		datos.putShort("Fuse", (short) 1);
 		super.readAdditionalSaveData(datos);
 	}
 
