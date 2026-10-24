@@ -27,8 +27,8 @@ import java.util.UUID;
 
 /**
  * Cómo funciona el Gancho de Huesos (como el látigo de Indiana Jones): se tira la caña de pescar y, si la boya pasa
- * cerca de un gancho, se queda enganchada en él y quedas colgado de la cuerda (no puedes alejarte más que el largo que
- * tenía al engancharse: te balanceas como en una soga). Mientras está enganchada se ve una línea de partículas (sólo
+ * cerca de un gancho (a 2 bloques o menos en cualquier momento de su vuelo), se queda enganchada en él. Mientras está
+ * enganchada te mueves como quieras (la cuerda no te tira) y se ve una línea de partículas (sólo
  * la ves tú) que muestra hacia dónde vas a ir, en línea recta: hacia el lado que apuntas, y mirando para abajo te
  * lanza para arriba (abajo del todo: derecho para arriba; al frente: en diagonal; arriba del todo: derecho adelante). Con click derecho (recoger la caña)
  * el gancho te lanza en esa línea, siempre con la misma fuerza (saltes o no), la cantidad de bloques del gancho.
@@ -42,12 +42,9 @@ public final class Ganchos {
 	private static final DustParticleOptions PUNTA = new DustParticleOptions(new Vector3f(0.69f, 0.25f, 0.18f), 1.4f);
 
 	/** Jugador → el gancho donde quedó su boya. */
-	private record Enganche(BlockPos pos, Vec3 punto, int distancia, double largo) {}
+	private record Enganche(BlockPos pos, Vec3 punto, int distancia) {}
 
 	private static final Map<UUID, Enganche> ENGANCHES = new HashMap<>();
-
-	/** Dónde estaba cada jugador colgado el tick anterior (para saber cómo se está moviendo). */
-	private static final Map<UUID, Vec3> ANTES = new HashMap<>();
 
 	/** Velocidad del lanzamiento (bloques por tick). */
 	private static final double VELOCIDAD = 1.0;
@@ -88,13 +85,12 @@ public final class Ganchos {
 			ServerPlayer j = server.getPlayerList().getPlayer(id);
 			return j == null || j.fishing == null;
 		});
-		ANTES.keySet().removeIf(id -> !ENGANCHES.containsKey(id));
 		for (ServerPlayer j : server.getPlayerList().getPlayers()) {
 			FishingHook boya = j.fishing;
 			if (boya == null) continue;
 			Enganche e = ENGANCHES.get(j.getUUID());
 			if (e == null) {
-				e = buscarGancho(j.serverLevel(), boya, agarre(j));
+				e = buscarGancho(j.serverLevel(), boya);
 				if (e == null) continue;
 				ENGANCHES.put(j.getUUID(), e);
 				j.serverLevel().playSound(null, e.punto().x, e.punto().y, e.punto().z, SoundEvents.CHAIN_PLACE, SoundSource.PLAYERS, 1f, 0.8f);
@@ -109,32 +105,43 @@ public final class Ganchos {
 			boya.setNoGravity(true);
 			boya.setDeltaMovement(Vec3.ZERO);
 			boya.setPos(e.punto());
-			if (!VUELOS.containsKey(j.getUUID())) colgar(j, e);
 			if (server.getTickCount() % 2 == 0) mostrarLinea(j, e);
 		}
 	}
 
-	/** El gancho que está cerca de la boya (a menos de un bloque y medio de la curva del gancho), si hay. */
-	private static Enganche buscarGancho(ServerLevel mundo, FishingHook boya, Vec3 agarre) {
-		BlockPos centro = boya.blockPosition();
+	/** Hasta qué distancia de la curva del gancho tiene que pasar la boya para engancharse. */
+	private static final double ATRAPA = 2.0;
+
+	/**
+	 * El gancho por el que pasó cerca la boya en este tick (se mira todo el tramo que recorrió, así no se lo saltea
+	 * aunque vaya rápido), si hay.
+	 */
+	private static Enganche buscarGancho(ServerLevel mundo, FishingHook boya) {
+		Vec3 desde = new Vec3(boya.xo, boya.yo, boya.zo), hasta = boya.position();
+		BlockPos a = BlockPos.containing(desde), b = BlockPos.containing(hasta);
+		BlockPos min = new BlockPos(Math.min(a.getX(), b.getX()) - 3, Math.min(a.getY(), b.getY()) - 3, Math.min(a.getZ(), b.getZ()) - 3);
+		BlockPos max = new BlockPos(Math.max(a.getX(), b.getX()) + 3, Math.max(a.getY(), b.getY()) + 3, Math.max(a.getZ(), b.getZ()) + 3);
 		Enganche mejor = null;
-		double mejorDist = 1.5 * 1.5;
-		for (BlockPos pos : BlockPos.betweenClosed(centro.offset(-2, -2, -2), centro.offset(2, 2, 2))) {
+		double mejorDist = ATRAPA * ATRAPA;
+		for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
 			if (!(mundo.getBlockEntity(pos) instanceof GanchoBlockEntity gancho)) continue;
 			// La curva del gancho cuelga hasta casi un bloque más abajo.
 			Vec3 punto = Vec3.atBottomCenterOf(pos);
-			double d = punto.distanceToSqr(boya.position());
+			double d = distanciaAlTramo(punto, desde, hasta);
 			if (d < mejorDist) {
 				mejorDist = d;
-				mejor = new Enganche(pos.immutable(), punto, gancho.distancia(), Math.max(2, punto.distanceTo(agarre)));
+				mejor = new Enganche(pos.immutable(), punto, gancho.distancia());
 			}
 		}
 		return mejor;
 	}
 
-	/** De dónde agarra la cuerda el jugador (las manos, a la altura del pecho). */
-	private static Vec3 agarre(ServerPlayer j) {
-		return j.position().add(0, 1.5, 0);
+	/** La distancia (al cuadrado) del punto p al tramo de a a b. */
+	private static double distanciaAlTramo(Vec3 p, Vec3 a, Vec3 b) {
+		Vec3 ab = b.subtract(a);
+		double largo = ab.lengthSqr();
+		double k = largo < 1.0E-6 ? 0 : Math.max(0, Math.min(1, p.subtract(a).dot(ab) / largo));
+		return a.add(ab.scale(k)).distanceToSqr(p);
 	}
 
 	/**
@@ -146,25 +153,6 @@ public final class Ganchos {
 		double subida = Math.toRadians((j.getXRot() + 90) / 2);   // getXRot: -90 arriba, 90 abajo
 		double yaw = Math.toRadians(j.getYRot());
 		return new Vec3(-Math.sin(yaw) * Math.cos(subida), Math.sin(subida), Math.cos(yaw) * Math.cos(subida));
-	}
-
-	/**
-	 * Colgado de la cuerda: si te alejas del gancho más que el largo de la cuerda, te frena y te trae de vuelta (así te
-	 * balanceas por debajo del gancho en vez de caerte o irte caminando).
-	 */
-	private static void colgar(ServerPlayer j, Enganche e) {
-		Vec3 ahora = j.position(), antes = ANTES.put(j.getUUID(), ahora);
-		Vec3 r = agarre(j).subtract(e.punto());
-		double dist = r.length();
-		if (antes == null || dist <= e.largo() + 0.05 || j.getAbilities().flying) return;
-		Vec3 n = r.scale(1 / dist), v = ahora.subtract(antes);
-		double hacia = v.dot(n);
-		if (hacia > 0) v = v.subtract(n.scale(hacia));   // lo que se alejaba se corta; lo de costado (el balanceo) sigue
-		v = v.subtract(n.scale(Math.min(0.3, (dist - e.largo()) * 0.5)));
-		if (v.length() > 0.8) v = v.normalize().scale(0.8);   // sin tirones (por ejemplo, después de un /tp)
-		j.setDeltaMovement(v);
-		j.hurtMarked = true;
-		j.fallDistance = 0;
 	}
 
 	/** Una línea recta de partículas (sólo para ese jugador) desde él hacia donde lo va a llevar el gancho. */
@@ -183,7 +171,6 @@ public final class Ganchos {
 	 */
 	private static void lanzar(ServerPlayer j, Enganche e) {
 		double tramo = Math.max(0.5, e.distancia() - 1);
-		ANTES.remove(j.getUUID());
 		VUELOS.put(j.getUUID(), new Vuelo(direccion(j), j.position(), tramo, (int) (tramo / VELOCIDAD) * 2 + 10));
 		j.serverLevel().playSound(null, j.getX(), j.getY(), j.getZ(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1f, 0.7f);
 	}
