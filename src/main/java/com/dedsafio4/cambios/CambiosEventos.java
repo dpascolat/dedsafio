@@ -45,18 +45,25 @@ public final class CambiosEventos {
 			dejarChillador(level, entidad.blockPosition());
 		});
 
-		// magma 1: tocar un Bloque de Magma de cualquier lado mata, una vez cada 20 ticks (1 segundo).
+		// magma 1: tocar un Bloque de Magma de cualquier lado mata, pero recién después de 1 segundo (20 ticks) seguido
+		// tocándolo: así da tiempo a salir. Mientras tanto suena como que te quemas.
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
-			if (Cambios.nivel(server, Cambios.MAGMA) < 1) return;
-			long ahora = server.getTickCount();
+			if (Cambios.nivel(server, Cambios.MAGMA) < 1) {
+				TOCANDO_MAGMA.clear();
+				return;
+			}
 			for (ServerPlayer jugador : server.getPlayerList().getPlayers()) {
-				if (jugador.isCreative() || jugador.isSpectator() || !jugador.isAlive()) continue;
-				if (!tocaMagma(jugador) || protegidoDelMagma(jugador)) continue;
-				Long ultimo = ULTIMO_GOLPE_MAGMA.get(jugador.getUUID());
-				if (ultimo != null && ahora - ultimo < CADA_MAGMA) continue;
+				if (jugador.isCreative() || jugador.isSpectator() || !jugador.isAlive() || !tocaMagma(jugador) || protegidoDelMagma(jugador)) {
+					TOCANDO_MAGMA.remove(jugador.getUUID());
+					continue;
+				}
+				int ticks = TOCANDO_MAGMA.merge(jugador.getUUID(), 1, Integer::sum);
+				if (ticks % 5 == 1) jugador.serverLevel().playSound(null, jugador.blockPosition(),
+						net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH, net.minecraft.sounds.SoundSource.PLAYERS, 0.6f, 1.6f);
+				if (ticks < CADA_MAGMA) continue;
 				jugador.invulnerableTime = 0;
-				// Sólo cuenta si de verdad pegó (al aparecer Minecraft te da unos segundos sin daño).
-				if (jugador.hurt(Cambios.danioMagma(jugador.level()), DANIO_MAGMA)) ULTIMO_GOLPE_MAGMA.put(jugador.getUUID(), ahora);
+				// Sólo cuenta si de verdad pegó (al aparecer Minecraft te da unos segundos sin daño); si no, sigue contando.
+				if (jugador.hurt(Cambios.danioMagma(jugador.level()), DANIO_MAGMA)) TOCANDO_MAGMA.remove(jugador.getUUID());
 			}
 		});
 
@@ -118,11 +125,11 @@ public final class CambiosEventos {
 	/** Un trillón de daño: no hay forma de sobrevivirlo. */
 	private static final float DANIO_MAGMA = 1.0e12f;
 
-	/** Cada cuántos ticks mata el magma (20 = 1 segundo). */
+	/** Cuántos ticks seguidos hay que tocar el magma para morir (20 = 1 segundo). */
 	private static final int CADA_MAGMA = 20;
 
-	/** Último tick en que el magma golpeó a cada jugador. */
-	private static final java.util.Map<java.util.UUID, Long> ULTIMO_GOLPE_MAGMA = new java.util.HashMap<>();
+	/** Cuántos ticks seguidos lleva cada jugador tocando el magma. */
+	private static final java.util.Map<java.util.UUID, Integer> TOCANDO_MAGMA = new java.util.HashMap<>();
 
 	/**
 	 * El magma no te hace nada si tienes Resistencia V (el segundo de inmortalidad del Tótem Glebanoide), o si tienes
