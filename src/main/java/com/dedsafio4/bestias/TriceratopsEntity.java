@@ -43,8 +43,6 @@ public class TriceratopsEntity extends Monster implements GeoEntity {
 	private static final int CADA = 20 * 20, CARGA = 40, CORRIDA = 50;
 	/** A qué distancia busca jugadores para embestir, y qué tan rápido corre (bloques por tick). */
 	private static final double ALCANCE = 24, VELOCIDAD = 0.65;
-	/** Lo que saca la embestida (10 = 5 corazones). */
-	private static final float DANIO_EMBESTIDA = 10f;
 
 	private final AnimatableInstanceCache animaciones = GeckoLibUtil.createInstanceCache(this);
 
@@ -99,6 +97,8 @@ public class TriceratopsEntity extends Monster implements GeoEntity {
 	public static AttributeSupplier.Builder crearAtributos() {
 		return Monster.createMonsterAttributes()
 				.add(Attributes.MAX_HEALTH, 80.0)
+				// Lo que saca la embestida (10 = 5 corazones; se cambia con /dañomob).
+				.add(Attributes.ATTACK_DAMAGE, 10.0)
 				.add(Attributes.ARMOR, 10.0)
 				.add(Attributes.KNOCKBACK_RESISTANCE, 0.8)
 				.add(Attributes.MOVEMENT_SPEED, 0.22)
@@ -187,7 +187,7 @@ public class TriceratopsEntity extends Monster implements GeoEntity {
 		romperAdelante();
 		for (Player p : this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(0.5))) {
 			if (p.isSpectator() || p.isCreative()) continue;
-			p.hurt(this.damageSources().mobAttack(this), DANIO_EMBESTIDA);
+			p.hurt(this.damageSources().mobAttack(this), (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE));
 			p.setDeltaMovement(direccion.x * 2.5, 0.8, direccion.z * 2.5);
 			p.hurtMarked = true;
 			this.playSound(SoundEvents.RAVAGER_ATTACK, 2f, 0.8f);

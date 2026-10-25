@@ -11,7 +11,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 
 /**
- * La lanza de hueso que tira el Reptisaurio con Lanza: vuela como un tridente, lastima (6 = 3 corazones) y deja el
+ * La lanza de hueso que tira el Reptisaurio con Lanza: vuela como un tridente, lastima el doble del golpe del que la
+ * tira (6 = 3 corazones; si se le cambia el daño con /dañomob, la lanza también cambia) y deja el
  * Veneno Primitivo. No se puede juntar; clavada, desaparece a los 2 segundos. Se dibuja con la lanza del modelo del
  * lancero (LanzaLanzadaRenderer).
  */
@@ -25,6 +26,7 @@ public class LanzaLanzadaEntity extends AbstractArrow {
 	public LanzaLanzadaEntity(Level level, LivingEntity quien) {
 		this(ModEntidades.LANZA_LANZADA, level);
 		this.setOwner(quien);
+		this.setBaseDamage(quien.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * 2);
 		this.setPos(quien.getX(), quien.getEyeY() - 0.2, quien.getZ());
 	}
 

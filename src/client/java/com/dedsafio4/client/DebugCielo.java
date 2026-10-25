@@ -1179,6 +1179,10 @@ public final class DebugCielo {
 			comando(mc, "summon dedsafio4:triceratops 0.5 200 -16.5 {Rotation:[0f,0f]}");
 		}
 		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
+		// El daño cambiado con /dañomob vale también para los que aparecen después.
+		if (t == 10) comando(mc, "dañomob triceratops 3");
+		if (t == 12) { comando(mc, "kill @e[type=dedsafio4:triceratops]"); comando(mc, "summon dedsafio4:triceratops 0.5 200 -16.5 {Rotation:[0f,0f]}"); }
+		if (t == 14) comando(mc, "effect give @s minecraft:instant_health 1 5 true");
 		if (t == 20) captura(mc, "debug_trice1_quieto.png");
 		if (t == 25) server.execute(() -> {
 			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30))) e.embestirYa();

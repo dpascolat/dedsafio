@@ -171,7 +171,9 @@ public class TremorsaurioEntity extends Monster implements GeoEntity {
 		triggerAnim("accion", "mordida");
 		playSound(SONIDO_BITE, 2f, 1f);
 		Vec3 p = objetivo.position().add(0, objetivo.getBbHeight() / 2, 0);
-		mundo.explode(this, damageSources().explosion(this, this), null, p.x, p.y, p.z, fuerza(mundo.getServer()), false,
+		// La fuerza de /tremorsaurio fuerza, y además lo que se le cambie con /dañomob (14 es el normal).
+		float fuerza = fuerza(mundo.getServer()) * (float) (getAttributeValue(Attributes.ATTACK_DAMAGE) / 14.0);
+		mundo.explode(this, damageSources().explosion(this, this), null, p.x, p.y, p.z, fuerza, false,
 				Level.ExplosionInteraction.NONE);
 		return true;
 	}
