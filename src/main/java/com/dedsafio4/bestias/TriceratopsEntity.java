@@ -29,10 +29,10 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * Triceratops (el del mod Fossils and Archeology): no pega ni rompe armadura. Cada 20 segundos, si hay un jugador
+ * Triceratops (el del mod Fossils and Archeology): no pega con la boca ni rompe armadura. Cada 20 segundos, si hay un jugador
  * cerca, carga la embestida (2 segundos quieto, mirándolo) y sale corriendo en línea recta hacia donde estaba,
- * rompiendo todos los bloques que tenga adelante (menos los irrompibles). Al jugador que choca lo manda lejos, sin
- * hacerle daño. La Puerta de Hueso lo frena: aguanta 2 embestidas y a la tercera se cae. /triceratops escala <tamaño> cambia el tamaño de los Triceratops (1 es el normal).
+ * rompiendo todos los bloques que tenga adelante (menos los irrompibles). Al jugador que choca lo manda lejos y le
+ * saca 5 corazones. La Puerta de Hueso lo frena: aguanta 2 embestidas y a la tercera se cae. /triceratops escala <tamaño> cambia el tamaño de los Triceratops (1 es el normal).
  */
 public class TriceratopsEntity extends Monster implements GeoEntity {
 	/** 0: normal, 1: cargando la embestida, 2: embistiendo (el cliente lo usa para la animación). */
@@ -43,6 +43,8 @@ public class TriceratopsEntity extends Monster implements GeoEntity {
 	private static final int CADA = 20 * 20, CARGA = 40, CORRIDA = 50;
 	/** A qué distancia busca jugadores para embestir, y qué tan rápido corre (bloques por tick). */
 	private static final double ALCANCE = 24, VELOCIDAD = 0.65;
+	/** Lo que saca la embestida (10 = 5 corazones). */
+	private static final float DANIO_EMBESTIDA = 10f;
 
 	private final AnimatableInstanceCache animaciones = GeckoLibUtil.createInstanceCache(this);
 
@@ -185,6 +187,7 @@ public class TriceratopsEntity extends Monster implements GeoEntity {
 		romperAdelante();
 		for (Player p : this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(0.5))) {
 			if (p.isSpectator() || p.isCreative()) continue;
+			p.hurt(this.damageSources().mobAttack(this), DANIO_EMBESTIDA);
 			p.setDeltaMovement(direccion.x * 2.5, 0.8, direccion.z * 2.5);
 			p.hurtMarked = true;
 			this.playSound(SoundEvents.RAVAGER_ATTACK, 2f, 0.8f);

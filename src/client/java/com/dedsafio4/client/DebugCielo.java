@@ -5496,20 +5496,21 @@ public final class DebugCielo {
 		var uuid = mc.player.getUUID();
 		if (t == -5 || t == -3) revivir(mc);
 		if (t == 0) {
-			comando(mc, "forceload add 1200 -40 1300 80");
+			comando(mc, "forceload add 350 -40 450 80");
 			comando(mc, "gamemode creative");
 			comando(mc, "time set 6000");
 			comando(mc, "kill @e[type=dedsafio4:trex]");
 		}
 		if (t == 20) {
-			comando(mc, "fill 1200 199 -40 1300 199 80 minecraft:grass_block");
-			for (int z = -40; z <= 80; z += 41) comando(mc, "fill 1200 200 " + z + " 1300 206 " + Math.min(80, z + 40) + " minecraft:air");
-			comando(mc, "execute in minecraft:overworld run tp @s 1250.5 212 75.5 180 3");
+			comando(mc, "fill 350 199 -40 450 199 80 minecraft:grass_block");
+			comando(mc, "effect give @s minecraft:night_vision 999 0 true");
+			for (int z = -40; z <= 80; z += 41) comando(mc, "fill 350 200 " + z + " 450 206 " + Math.min(80, z + 40) + " minecraft:air");
+			comando(mc, "execute in minecraft:overworld run tp @s 400.5 212 75.5 180 3");
 		}
 		if (t == 30) {
 			server.execute(() -> {
 				var trex = new com.dedsafio4.trex.TRexEntity(com.dedsafio4.trex.ModTRex.TREX, server.overworld());
-				trex.moveTo(1250.5, 200, 0.5, 0, 0);
+				trex.moveTo(400.5, 200, 0.5, 0, 0);
 				server.overworld().addFreshEntity(trex);
 				trexPrueba = trex.getUUID();
 			});
@@ -5536,7 +5537,7 @@ public final class DebugCielo {
 		// Pisotón: el jugador (en supervivencia) queda delante del pie izquierdo; el T-Rex camina hacia él.
 		if (t == 230) {
 			comando(mc, "gamemode survival");
-			comando(mc, "tp @s 1242.5 200 28.5 180 -25");
+			comando(mc, "tp @s 392.5 200 28.5 180 -25");
 		}
 		if (t >= 240 && t < 470) {
 			server.execute(() -> {

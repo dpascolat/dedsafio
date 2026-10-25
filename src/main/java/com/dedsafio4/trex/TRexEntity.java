@@ -35,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
  * La animación de caminar se calcula igual en el servidor y en el cliente (así el servidor sabe dónde
  * están las patas para ver a quién pisa).
  */
-public class TRexEntity extends PathfinderMob {
+public class TRexEntity extends PathfinderMob implements software.bernie.geckolib.animatable.GeoEntity {
 	public static final byte EVENTO_RUGIDO = 61;
 	/** El rugido dura 3,2 segundos. */
 	public static final int TICKS_RUGIDO = 64;
@@ -43,7 +43,8 @@ public class TRexEntity extends PathfinderMob {
 	private static final float FASE_POR_TICK = 2.4f / 20f;
 	/** El jinete va parado arriba de la cabeza, al lado del cuerno (lo único con vista hacia adelante). */
 	/** El pivote de la cabeza (relativo al cuerpo, que está 5 bloques adelante) y los ojos en la cabeza. */
-	private static final Vec3 PIVOTE_CUERPO_CABEZA = new Vec3(0, 32, 13), OJOS = new Vec3(0, 5, 4.5);
+	/** Dónde gira la cabeza y dónde están los ojos (en bloques), con el modelo del Tremorsaurio agrandado (TRexRenderer). */
+	private static final Vec3 PIVOTE_CUERPO_CABEZA = new Vec3(0, 30, 6), OJOS = new Vec3(0, 5, 5);
 
 	/** Animación: fase de la caminata y qué tanto está caminando (0 quieto, 1 caminando). */
 	public float fase, faseAntes, mezcla, mezclaAntes;
@@ -205,6 +206,29 @@ public class TRexEntity extends PathfinderMob {
 	public void handleEntityEvent(byte evento) {
 		if (evento == EVENTO_RUGIDO) rugido = 0;
 		else super.handleEntityEvent(evento);
+	}
+
+	// --- Animaciones (las del Tremorsaurio: quieto, caminar y rugir) ---
+
+	private final software.bernie.geckolib.animatable.instance.AnimatableInstanceCache animaciones =
+			software.bernie.geckolib.util.GeckoLibUtil.createInstanceCache(this);
+
+	@Override
+	public void registerControllers(software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar controladores) {
+		var camina = software.bernie.geckolib.animation.RawAnimation.begin().thenLoop("animation.tremorsaurio.walk");
+		var quieto = software.bernie.geckolib.animation.RawAnimation.begin().thenLoop("animation.tremorsaurio.idle");
+		var ruge = software.bernie.geckolib.animation.RawAnimation.begin().thenPlay("animation.tremorsaurio.roar");
+		controladores.add(new software.bernie.geckolib.animation.AnimationController<>(this, "movimiento", 6, estado -> {
+			// Es enorme: los pasos van más lentos.
+			estado.getController().setAnimationSpeed(rugido >= 0 ? 1 : 0.45);
+			if (rugido >= 0) return estado.setAndContinue(ruge);
+			return estado.setAndContinue(mezcla > 0.2f ? camina : quieto);
+		}));
+	}
+
+	@Override
+	public software.bernie.geckolib.animatable.instance.AnimatableInstanceCache getAnimatableInstanceCache() {
+		return animaciones;
 	}
 
 	// --- Jefe: no se lastima, no se empuja, no desaparece ---
