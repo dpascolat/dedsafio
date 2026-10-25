@@ -24,8 +24,8 @@ import java.util.UUID;
 
 /**
  * Los bichos cubo que salen con el Enfriamiento de Qumara (7 bloques de alto, quietos, no atacan):
- * - Bicho no de la cabeza (naranja y morado): 100 de vida (aguanta 5 explosiones de Bichos de la cabeza),
- *   solo lo lastiman las explosiones.
+ * - Bicho no de la cabeza (naranja y morado): 640 de vida (aguanta 32 explosiones de Bichos de la cabeza:
+ *   20 jugadores tirando 8 cada uno), solo lo lastiman las explosiones.
  * - Bicho de la cabeza (blanco y rojo): con click derecho se sube a tu cabeza; con otro click derecho lo
  *   tirás (cae a unos 2 bloques, no explota al caer). Si lo tenés 2 segundos en la cabeza, te explota
  *   encima; y a los 20 segundos de nacer explota, esté donde esté. Salen del Capullo.
@@ -56,9 +56,9 @@ public class BichoCuboEntity extends PathfinderMob {
 				.add(Attributes.KNOCKBACK_RESISTANCE, 1);
 	}
 
-	/** El Bicho no de la cabeza: 100 de vida, así aguanta 5 explosiones de Bichos de la cabeza (20 cada una). */
+	/** El Bicho no de la cabeza: 640 de vida, así aguanta 32 explosiones de Bichos de la cabeza (20 cada una). */
 	public static AttributeSupplier.Builder crearAtributosNoCabeza() {
-		return crearAtributos().add(Attributes.MAX_HEALTH, 100);
+		return crearAtributos().add(Attributes.MAX_HEALTH, 640);
 	}
 
 	public boolean deLaCabeza() {
