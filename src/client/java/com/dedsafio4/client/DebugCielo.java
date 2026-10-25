@@ -1531,6 +1531,37 @@ public final class DebugCielo {
 		if (t == 165) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; mc.stop(); }
 	}
 
+	private static final boolean FLOR_CASCO = "florcasco".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** La armadura de Netherita con recubrimiento de planta puesta (con la flor arriba del casco), de frente y de costado. */
+	private static void tickFlorCasco(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "time set 6000");
+			comando(mc, "effect give @s minecraft:night_vision 999 0 true");
+			comando(mc, "forceload add 290 -20 310 0");
+			comando(mc, "kill @e[type=dedsafio4:puerta_hueso]");
+			comando(mc, "tp @s 300.5 200 -12.5 0 0");
+			comando(mc, "item replace entity @s armor.head with dedsafio4:casco_netherita_planta");
+			comando(mc, "item replace entity @s armor.chest with dedsafio4:pechera_netherita_planta");
+			comando(mc, "item replace entity @s armor.legs with dedsafio4:pantalones_netherita_planta");
+			comando(mc, "item replace entity @s armor.feet with dedsafio4:botas_netherita_planta");
+			comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:espada_hoja_qumara");
+		}
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }
+		if (t == 20) captura(mc, "debug_flor1_frente.png");
+		if (t == 22) comando(mc, "tp @s 300.5 200 -12.5 0 35");
+		if (t == 30) captura(mc, "debug_flor2_arriba.png");
+		if (t == 32) comando(mc, "tp @s 300.5 200 -12.5 90 0");
+		if (t == 40) captura(mc, "debug_flor3_costado.png");
+		if (t == 45) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; mc.stop(); }
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -8219,6 +8250,10 @@ public final class DebugCielo {
 		}
 		if (NAUTILO) {
 			tickNautilo(mc);
+			return;
+		}
+		if (FLOR_CASCO) {
+			tickFlorCasco(mc);
 			return;
 		}
 		if (REPTISAURIOS) {

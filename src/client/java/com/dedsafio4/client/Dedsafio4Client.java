@@ -194,6 +194,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 					if (dibujante instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer jugador) {
 						registro.register(new CapaEstandarteLayer(jugador, contexto.getModelSet()));
 						registro.register(new com.dedsafio4.client.bulag.CraneoLayer(jugador));
+						registro.register(new FlorCascoLayer(jugador));
 					}
 				});
 		ClientPlayNetworking.registerGlobalReceiver(HermandadInfoPayload.TYPE, (payload, context) -> {
