@@ -25,11 +25,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * La Puerta de Hueso y Chatarra: una puerta doble (dos hojas de huesos atados sobre chapas de hierro). Se abre y se
- * cierra con click derecho; cerrada no se puede pasar. El Triceratops no la rompe de una: a la tercera embestida las
- * hojas revientan (una choca contra la pared y la otra se arranca de las bisagras y cae al piso) y a los 5 segundos
- * desaparece dejando huesos y chatarra. Su grosor y su alto se eligen con /puertita <grueso> <alto> (en bloques); el
- * ancho es siempre de 2 bloques. Es una entidad (no un bloque) para poder tener cualquier tamaño.
+ * La Puerta de Hueso: una reja de cárcel de 7 × 7 bloques de hueso (los postes girados 45°, tocándose por las
+ * puntas, entre una fila de bloques abajo y otra arriba); las 3 columnas del medio son la puerta. Se abre y se cierra
+ * con click derecho; cerrada no se puede pasar (abierta, se pasa por toda la reja). El Triceratops no la rompe de
+ * una: las dos primeras embestidas la abomban y a la tercera se desarma bloque por bloque; a los 6 segundos
+ * desaparece dejando huesos. Su grosor y su alto se eligen con /puertita <grueso> <alto> (en bloques; lo normal es
+ * 1 y 7); el ancho es siempre de 7 bloques. Es una entidad (no bloques) para poder tener cualquier tamaño.
  */
 public class PuertaHuesoEntity extends Entity {
 	private static final EntityDataAccessor<Float> GRUESO = SynchedEntityData.defineId(PuertaHuesoEntity.class, EntityDataSerializers.FLOAT);
@@ -39,11 +40,11 @@ public class PuertaHuesoEntity extends Entity {
 	private static final EntityDataAccessor<Integer> GOLPES = SynchedEntityData.defineId(PuertaHuesoEntity.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Integer> LADO = SynchedEntityData.defineId(PuertaHuesoEntity.class, EntityDataSerializers.INT);
 
-	public static final float GRUESO_NORMAL = 0.3125f, ALTO_NORMAL = 2f;
+	public static final float GRUESO_NORMAL = 1f, ALTO_NORMAL = 7f, MEDIO_ANCHO = 3.5f;
 	public static final int EMBESTIDAS = 3;
 	/** Cuánto aguanta los golpes de los jugadores (como un bloque duro), y cuánto tarda en desaparecer caída. */
 	private static final float VIDA = 30;
-	private static final int TIEMPO_CAIDA = 100;
+	private static final int TIEMPO_CAIDA = 120;
 
 	private float vida = VIDA;
 	private int caidaTicks;
@@ -95,7 +96,7 @@ public class PuertaHuesoEntity extends Entity {
 		setBoundingBox(makeBoundingBox());
 	}
 
-	/** Hacia dónde mira el frente de la puerta (el lado con la calavera). */
+	/** Hacia dónde mira el frente de la reja. */
 	public Direction frente() {
 		return Direction.fromYRot(getYRot());
 	}
@@ -104,22 +105,22 @@ public class PuertaHuesoEntity extends Entity {
 	public void onSyncedDataUpdated(EntityDataAccessor<?> dato) {
 		super.onSyncedDataUpdated(dato);
 		if (dato == GRUESO || dato == ALTO) setBoundingBox(makeBoundingBox());
-		if (dato == GOLPES && level().isClientSide) animacion.golpe(golpes());
+		if (dato == GOLPES && level().isClientSide) animacion.golpe(golpes(), lado());
 	}
 
-	/** 2 bloques de ancho, el grosor y el alto elegidos, según hacia dónde mira. */
+	/** 7 bloques de ancho, el grosor y el alto elegidos, según hacia dónde mira. */
 	@Override
 	protected AABB makeBoundingBox() {
 		double medioGrueso = grueso() / 2, alto = alto();
 		boolean alongX = frente().getAxis() == Direction.Axis.X;
-		double mx = alongX ? medioGrueso : 1, mz = alongX ? 1 : medioGrueso;
+		double mx = alongX ? medioGrueso : MEDIO_ANCHO, mz = alongX ? MEDIO_ANCHO : medioGrueso;
 		Vec3 p = position();
 		return new AABB(p.x - mx, p.y, p.z - mz, p.x + mx, p.y + alto, p.z + mz);
 	}
 
 	@Override
 	public AABB getBoundingBoxForCulling() {
-		return getBoundingBox().inflate(2.5, 1, 2.5);
+		return getBoundingBox().inflate(4, 1, 4);
 	}
 
 	/** Cerrada no se puede pasar; abierta o caída, sí. */
@@ -147,9 +148,9 @@ public class PuertaHuesoEntity extends Entity {
 		}
 		if (caida() && ++caidaTicks >= TIEMPO_CAIDA) {
 			// Se deshace: quedan unos huesos y algo de chatarra.
-			spawnAtLocation(new ItemStack(Items.BONE, 4));
-			spawnAtLocation(new ItemStack(Items.IRON_NUGGET, 6));
-			((ServerLevel) level()).sendParticles(ParticleTypes.POOF, getX(), getY() + 0.3, getZ(), 20, 1, 0.2, 1, 0.02);
+			spawnAtLocation(new ItemStack(Items.BONE, 6));
+			spawnAtLocation(new ItemStack(Items.BONE_MEAL, 8));
+			((ServerLevel) level()).sendParticles(ParticleTypes.POOF, getX(), getY() + 0.3, getZ(), 40, 3, 0.2, 3, 0.02);
 			discard();
 		}
 	}
@@ -193,23 +194,20 @@ public class PuertaHuesoEntity extends Entity {
 		entityData.set(GOLPES, golpes);
 		ServerLevel mundo = (ServerLevel) level();
 		var hueso = new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BONE_BLOCK.defaultBlockState());
-		var hierro = new BlockParticleOption(ParticleTypes.BLOCK, Blocks.IRON_BLOCK.defaultBlockState());
 		double alto = alto();
 		if (golpes < EMBESTIDAS) {
 			mundo.playSound(null, getX(), getY() + 1, getZ(), SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.BLOCKS, 2f, 0.6f);
-			mundo.sendParticles(hueso, getX(), getY() + alto / 2, getZ(), 15, 0.8, alto / 3, 0.2, 0.1);
+			mundo.sendParticles(hueso, getX(), getY() + alto / 2, getZ(), 20, 2, alto / 3, 0.3, 0.1);
 			return true;
 		}
 		mundo.playSound(null, getX(), getY() + 1, getZ(), SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.BLOCKS, 2f, 0.7f);
-		mundo.playSound(null, getX(), getY() + 1, getZ(), SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 1f, 0.6f);
 		mundo.playSound(null, getX(), getY() + 1, getZ(), SoundEvents.BONE_BLOCK_BREAK, SoundSource.BLOCKS, 2f, 0.7f);
 		// Los pedazos salen volando hacia donde empujó el Triceratops.
 		for (int i = 0; i < 46; i++) {
-			var tipo = i % 2 == 0 ? hueso : hierro;
-			double x = getX() + (random.nextDouble() - 0.5) * 2, y = getY() + random.nextDouble() * alto, z = getZ() + (random.nextDouble() - 0.5) * 2;
-			mundo.sendParticles(tipo, x, y, z, 0, direccion.x, 0.4 + random.nextDouble() * 0.6, direccion.z, 0.6);
+			double x = getX() + (random.nextDouble() - 0.5) * 7, y = getY() + random.nextDouble() * alto, z = getZ() + (random.nextDouble() - 0.5) * 7;
+			mundo.sendParticles(hueso, x, y, z, 0, direccion.x, 0.4 + random.nextDouble() * 0.6, direccion.z, 0.6);
 		}
-		mundo.sendParticles(ParticleTypes.CLOUD, getX(), getY() + alto / 2, getZ(), 12, 0.8, alto / 3, 0.3, 0.05);
+		mundo.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 1, getZ(), 40, 3, 1, 1, 0.08);
 		return true;
 	}
 

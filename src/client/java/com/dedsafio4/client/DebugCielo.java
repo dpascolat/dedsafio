@@ -1263,29 +1263,31 @@ public final class DebugCielo {
 			comando(mc, "time set 6000");
 			comando(mc, "clear @s");
 			comando(mc, "effect give @s minecraft:resistance 999 10 true");
+			comando(mc, "effect give @s minecraft:night_vision 999 0 true");
+			comando(mc, "forceload add 280 -20 320 30");
 			comando(mc, "kill @e[type=dedsafio4:triceratops]");
 			comando(mc, "kill @e[type=dedsafio4:puerta_hueso]");
-			comando(mc, "fill -12 199 -16 12 199 16 minecraft:grass_block");
-			comando(mc, "fill -12 200 -16 12 212 16 minecraft:air");
-			comando(mc, "summon dedsafio4:puerta_hueso 0.0 200 0.5 {Rotation:[180f,0f]}");
-			comando(mc, "summon dedsafio4:triceratops 0.5 200 9.5 {Rotation:[180f,0f]}");
-			comando(mc, "tp @s 0.5 200 -5.5 0 5");
+			comando(mc, "fill 284 199 -16 316 199 24 minecraft:grass_block");
+			comando(mc, "fill 284 200 -16 316 212 24 minecraft:air");
+			comando(mc, "summon dedsafio4:puerta_hueso 300.5 200 0.5 {Rotation:[180f,0f]}");
+			comando(mc, "summon dedsafio4:triceratops 300.5 200 9.5 {Rotation:[180f,0f]}");
+			comando(mc, "tp @s 300.5 201 -11.5 0 5");
 		}
 		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
-		if (t == 6) comando(mc, "puertita 0.5 3");
-		if (t == 10) comando(mc, "tp @s 0.5 200 -1.8 20 5");
+		if (t == 6) comando(mc, "puertita 1 7");
+		if (t == 10) comando(mc, "tp @s 300.5 200 -2.5 0 5");
 		if (t == 12) puertaHueso(mc, p -> mc.gameMode.interact(mc.player, p, net.minecraft.world.InteractionHand.MAIN_HAND));
-		if (t == 14) comando(mc, "tp @s 0.5 200 -5.5 0 5");
-		if (t == 19) captura(mc, "debug_puertahueso1_abierta.png");
-		if (t == 20) puertaHueso(mc, p -> mc.gameMode.interact(mc.player, p, net.minecraft.world.InteractionHand.MAIN_HAND));
+		if (t == 15) puertaHueso(mc, p -> mc.gameMode.interact(mc.player, p, net.minecraft.world.InteractionHand.MAIN_HAND));
+		if (t == 17) comando(mc, "tp @s 300.5 201 -9.5 0 5");
+		if (t == 14) captura(mc, "debug_puertahueso1_abierta.png");
 		if (t == 28) captura(mc, "debug_puertahueso2_cerrada.png");
 		if (t == 30 || t == 110 || t == 190) server.execute(() -> {
-			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30))) e.embestirYa();
+			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(270, 190, -40, 330, 220, 30))) e.embestirYa();
 		});
 		if (t >= 30 && t <= 360 && t % 6 == 0) server.execute(() -> {
 			var j = server.getPlayerList().getPlayers().get(0);
-			var ps = server.overworld().getEntitiesOfClass(com.dedsafio4.puertas.PuertaHuesoEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30));
-			var tr = server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30));
+			var ps = server.overworld().getEntitiesOfClass(com.dedsafio4.puertas.PuertaHuesoEntity.class, new net.minecraft.world.phys.AABB(270, 190, -40, 330, 220, 30));
+			var tr = server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.TriceratopsEntity.class, new net.minecraft.world.phys.AABB(270, 190, -40, 330, 220, 30));
 			Dedsafio4ClientDebug.info("puertahueso t" + (ticks - 20) + " puertas=" + ps.stream().map(p -> "golpes " + p.golpes() + " caja " + p.getBoundingBox()).toList()
 					+ " trice=" + tr.stream().map(x -> x.position() + " estado " + x.estadoActual()).toList() + " jugador=" + j.position());
 		});

@@ -21,8 +21,7 @@ import java.util.List;
 
 /**
  * La Puerta de Hueso como ítem: lleva su grosor y su alto (los da /puertita <grueso> <alto>; sin nada, la de siempre).
- * Al usarla sobre un bloque se pone parada encima, con el frente (la calavera) hacia el que la pone, ocupando ese bloque
- * y el de su derecha.
+ * Al usarla sobre un bloque se pone parada encima, mirando hacia el que la pone, centrada en ese bloque (7 de ancho).
  */
 public class PuertaHuesoItem extends Item {
 	public PuertaHuesoItem(Properties propiedades) {
@@ -55,11 +54,11 @@ public class PuertaHuesoItem extends Item {
 		BlockPos pos = contexto.getClickedPos();
 		if (!level.getBlockState(pos).canBeReplaced()) pos = pos.relative(contexto.getClickedFace());
 		Direction mira = contexto.getHorizontalDirection();
-		Direction frente = mira.getOpposite(), derecha = mira.getClockWise();
+		Direction frente = mira.getOpposite();
 		ItemStack pila = contexto.getItemInHand();
 		PuertaHuesoEntity puerta = PuertasHueso.PUERTA.create(mundo);
 		if (puerta == null) return InteractionResult.FAIL;
-		Vec3 centro = Vec3.atBottomCenterOf(pos).add(Vec3.atLowerCornerOf(derecha.getNormal()).scale(0.5));
+		Vec3 centro = Vec3.atBottomCenterOf(pos);
 		puerta.moveTo(centro.x, centro.y, centro.z, frente.toYRot(), 0);
 		puerta.tamaño(grueso(pila), alto(pila));
 		if (!level.noCollision(puerta, puerta.getBoundingBox().deflate(0.01))) return InteractionResult.FAIL;
