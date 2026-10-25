@@ -1562,6 +1562,47 @@ public final class DebugCielo {
 		if (t == 45) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; mc.stop(); }
 	}
 
+	private static final boolean DUPE_BOLSA = "dupebolsa".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** El dupe de la bolsa: se abre y en el mismo momento se tira con la Q; no tiene que poder sacar nada de adentro. */
+	private static void tickDupeBolsa(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "clear @s");
+			comando(mc, "kill @e[type=item]");
+			comando(mc, "item replace entity @s hotbar.0 with dedsafio4:saco[minecraft:container=[{slot:0,item:{id:\"minecraft:diamond\",count:64}}]]");
+		}
+		if (t == 10) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			j.getInventory().selected = 0;
+			// Abre la bolsa y en el mismo tick la tira (como apretar click derecho y Q a la vez).
+			j.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND).use(j.level(), j, net.minecraft.world.InteractionHand.MAIN_HAND);
+			j.drop(true);
+			var menu = j.containerMenu;
+			Dedsafio4ClientDebug.info("dupebolsa menu=" + menu.getClass().getSimpleName() + " sigueValido=" + menu.stillValid(j));
+			// Intenta sacar los diamantes con shift-click del primer lugar de la bolsa.
+			menu.clicked(0, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, j);
+			int diamantes = 0;
+			for (var pila : j.getInventory().items) if (pila.is(net.minecraft.world.item.Items.DIAMOND)) diamantes += pila.getCount();
+			Dedsafio4ClientDebug.info("dupebolsa diamantes en el inventario=" + diamantes);
+		});
+		if (t == 20) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			int enPiso = 0;
+			for (var e : j.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, j.getBoundingBox().inflate(10))) {
+				var c = e.getItem().get(net.minecraft.core.component.DataComponents.CONTAINER);
+				if (c != null) for (var p : c.nonEmptyItems()) enPiso += p.getCount();
+			}
+			Dedsafio4ClientDebug.info("dupebolsa diamantes en la bolsa tirada=" + enPiso + " menu abierto=" + j.containerMenu.getClass().getSimpleName());
+		});
+		if (t == 25) mc.stop();
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -8254,6 +8295,10 @@ public final class DebugCielo {
 		}
 		if (FLOR_CASCO) {
 			tickFlorCasco(mc);
+			return;
+		}
+		if (DUPE_BOLSA) {
+			tickDupeBolsa(mc);
 			return;
 		}
 		if (REPTISAURIOS) {

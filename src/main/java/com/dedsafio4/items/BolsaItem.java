@@ -47,6 +47,7 @@ public class BolsaItem extends Item {
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level level, Player jugador, InteractionHand mano) {
 		ItemStack bolsa = jugador.getItemInHand(mano);
+		if (bolsa.isEmpty()) return InteractionResultHolder.pass(bolsa);
 		if (jugador instanceof ServerPlayer servidor) {
 			// El lugar del inventario donde está la bolsa: mientras está abierta no se puede mover.
 			int lugar = mano == InteractionHand.MAIN_HAND ? jugador.getInventory().selected : Inventory.SLOT_OFFHAND;
@@ -128,6 +129,7 @@ public class BolsaItem extends Item {
 		}
 
 		private static void guardar(ItemStack bolsa, SimpleContainer contenido) {
+			if (bolsa.isEmpty()) return;
 			bolsa.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(contenido.getItems()));
 		}
 
@@ -139,6 +141,9 @@ public class BolsaItem extends Item {
 
 		@Override
 		public void clicked(int lugarClick, int boton, ClickType tipo, Player jugador) {
+			// Si la bolsa ya no está (la tiraron con la Q justo al abrirla), no se puede tocar nada: si no, lo de
+			// adentro quedaría en la bolsa tirada y también en las manos (se duplicaría).
+			if (!stillValid(jugador)) return;
 			// La bolsa abierta no se puede agarrar, mover ni cambiar con los números o con F.
 			if (lugarClick >= 0 && lugarClick == lugarEnMenu()) return;
 			if (tipo == ClickType.SWAP && (boton == lugar || (boton == 40 && lugar == Inventory.SLOT_OFFHAND))) return;
@@ -147,14 +152,15 @@ public class BolsaItem extends Item {
 
 		@Override
 		public ItemStack quickMoveStack(Player jugador, int lugarClick) {
-			if (lugarClick == lugarEnMenu()) return ItemStack.EMPTY;
+			if (lugarClick == lugarEnMenu() || !stillValid(jugador)) return ItemStack.EMPTY;
 			return super.quickMoveStack(jugador, lugarClick);
 		}
 
 		@Override
 		public boolean stillValid(Player jugador) {
+			// Al tirarla, en la mano queda la misma bolsa pero con 0: eso ya no vale (la de verdad está en el piso).
 			ItemStack enLugar = lugar == Inventory.SLOT_OFFHAND ? jugador.getOffhandItem() : jugador.getInventory().getItem(lugar);
-			return enLugar == bolsa;
+			return !bolsa.isEmpty() && enLugar == bolsa;
 		}
 
 		@Override
