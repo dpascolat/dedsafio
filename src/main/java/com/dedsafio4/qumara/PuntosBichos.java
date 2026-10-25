@@ -29,7 +29,8 @@ import java.util.TreeMap;
  *   /spawn_eggs <x y z> <número>   pone (o mueve) el lugar con ese número: ahí aparece uno ya, y después cada 10
  *                                  minutos aparece otro, salvo que todavía haya uno ahí;
  *   /spawn_eggs quitar <número>    saca ese lugar;   /spawn_eggs lista   los muestra.
- *   /capullos abiertos | normal    los Capullos siempre abiertos, o como siempre (se cierran en el Enfriamiento).
+ *   /capullos abiertos | cerrados | normal   los Capullos siempre abiertos, siempre cerrados, o como siempre (se
+ *                                  cierran en el Enfriamiento).
  */
 public final class PuntosBichos {
 	private PuntosBichos() {}
@@ -43,7 +44,7 @@ public final class PuntosBichos {
 	private static final class Datos extends SavedData {
 		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
 		final Map<Integer, Punto> puntos = new TreeMap<>();
-		boolean capullosAbiertos;
+		boolean capullosAbiertos, capullosCerrados;
 
 		private static Datos leer(CompoundTag tag, HolderLookup.Provider registros) {
 			Datos d = new Datos();
@@ -54,6 +55,7 @@ public final class PuntosBichos {
 				d.puntos.put(Integer.parseInt(k), new Punto(mundo, BlockPos.of(t.getLong("pos")), t.getLong("ultimo")));
 			}
 			d.capullosAbiertos = tag.getBoolean("capullosAbiertos");
+			d.capullosCerrados = tag.getBoolean("capullosCerrados");
 			return d;
 		}
 
@@ -69,6 +71,7 @@ public final class PuntosBichos {
 			});
 			tag.put("puntos", p);
 			tag.putBoolean("capullosAbiertos", capullosAbiertos);
+			tag.putBoolean("capullosCerrados", capullosCerrados);
 			return tag;
 		}
 	}
@@ -80,6 +83,11 @@ public final class PuntosBichos {
 	/** ¿Están los Capullos siempre abiertos (/capullos abiertos)? */
 	public static boolean capullosAbiertos(MinecraftServer server) {
 		return datos(server).capullosAbiertos;
+	}
+
+	/** ¿Están los Capullos siempre cerrados (/capullos cerrados)? */
+	public static boolean capullosCerrados(MinecraftServer server) {
+		return datos(server).capullosCerrados;
 	}
 
 	public static void registrar() {
@@ -144,15 +152,18 @@ public final class PuntosBichos {
 							return 1;
 						}))));
 		dispatcher.register(Commands.literal("capullos").requires(s -> s.hasPermission(2))
-				.then(Commands.literal("abiertos").executes(c -> capullos(c.getSource(), true)))
-				.then(Commands.literal("normal").executes(c -> capullos(c.getSource(), false))));
+				.then(Commands.literal("abiertos").executes(c -> capullos(c.getSource(), true, false)))
+				.then(Commands.literal("cerrados").executes(c -> capullos(c.getSource(), false, true)))
+				.then(Commands.literal("normal").executes(c -> capullos(c.getSource(), false, false))));
 	}
 
-	private static int capullos(CommandSourceStack fuente, boolean abiertos) {
+	private static int capullos(CommandSourceStack fuente, boolean abiertos, boolean cerrados) {
 		Datos d = datos(fuente.getServer());
 		d.capullosAbiertos = abiertos;
+		d.capullosCerrados = cerrados;
 		d.setDirty();
 		fuente.sendSuccess(() -> Component.literal(abiertos ? "Listo: los Capullos quedan siempre abiertos."
+				: cerrados ? "Listo: los Capullos quedan siempre cerrados."
 				: "Listo: los Capullos se cierran como siempre en el Enfriamiento de Qumara.").withStyle(ChatFormatting.GOLD), true);
 		return 1;
 	}
