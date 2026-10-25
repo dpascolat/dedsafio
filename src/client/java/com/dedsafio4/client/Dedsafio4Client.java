@@ -295,6 +295,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.qumara.AtraerCliente.registrar();
 		CatalogoCliente.registrar();
 		EntityRendererRegistry.register(ModEntidades.MIRA, com.dedsafio4.client.bestias.ReptisaurioRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.LANZA_LANZADA, com.dedsafio4.client.lagartos.LanzaLanzadaRenderer::new);
 		for (int i = 0; i < ModEntidades.LAGARTOS.size(); i++) {
 			LagartoEntity.Variante variante = LagartoEntity.Variante.values()[i + 1];   // la 0 (Mira) ya no es lagarto
 			EntityRendererRegistry.register(ModEntidades.LAGARTOS.get(i),

@@ -1475,6 +1475,56 @@ public final class DebugCielo {
 		if (t == 205) mc.stop();
 	}
 
+	private static final boolean REPTISAURIOS = "reptisaurios".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Los tres Reptisaurios con los modelos nuevos: quietos (reposo) y después peleando (guardia, estocada, tajo, flechas, lanza). */
+	private static void tickReptisaurios(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "time set 6000");
+			comando(mc, "difficulty normal");
+			comando(mc, "effect clear @s");
+			comando(mc, "forceload add 180 -20 220 30");
+			comando(mc, "kill @e[type=!player]");
+			comando(mc, "fill 184 199 -16 216 199 24 minecraft:grass_block");
+			comando(mc, "fill 184 200 -16 216 210 24 minecraft:air");
+			comando(mc, "summon dedsafio4:reptisaurio_guerrero 196.5 200 4.5");
+			comando(mc, "summon dedsafio4:reptisaurio_arquero 200.5 200 4.5");
+			comando(mc, "summon dedsafio4:reptisaurio_lanza 204.5 200 4.5");
+			comando(mc, "tp @s 200.5 200.5 0.5 0 12");
+		}
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
+		if (t == 10) comando(mc, "tp @e[type=!player] ~ ~ ~ 180 0");
+		if (t == 12) comando(mc, "effect give @s minecraft:night_vision 999 0 true");
+		if (t == 30) captura(mc, "debug_lag1_reposo.png");
+		if (t == 32) {
+			comando(mc, "effect give @s minecraft:resistance 999 255 true");
+			comando(mc, "effect give @s minecraft:night_vision 999 0 true");
+			comando(mc, "gamemode survival");
+			comando(mc, "tp @s 200.5 200 -3.5 0 0");
+		}
+		if (t >= 34 && t <= 160 && t % 2 == 0) server.execute(() -> {
+			for (var l : server.overworld().getEntitiesOfClass(com.dedsafio4.lagartos.LagartoEntity.class, new net.minecraft.world.phys.AABB(170, 190, -30, 230, 220, 30))) {
+				if (l.accion() != 0 && l.tAccion(0) < 0.1f) Dedsafio4ClientDebug.info("lagartos t" + (ticks - 20) + " " + l.getType().toShortString() + " accion " + l.accion() + " piel " + l.piel());
+			}
+		});
+		if (t == 50) captura(mc, "debug_lag2_guardia.png");
+		if (t == 70) captura(mc, "debug_lag3_pelea.png");
+		if (t == 80) captura(mc, "debug_lag4_pelea.png");
+		if (t == 90) captura(mc, "debug_lag5_pelea.png");
+		if (t == 100) { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }
+		if (t == 104) captura(mc, "debug_lag6_frente.png");
+		if (t == 114) captura(mc, "debug_lag7_frente.png");
+		if (t == 124) captura(mc, "debug_lag8_frente.png");
+		if (t == 165) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; mc.stop(); }
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -8162,6 +8212,10 @@ public final class DebugCielo {
 		}
 		if (NAUTILO) {
 			tickNautilo(mc);
+			return;
+		}
+		if (REPTISAURIOS) {
+			tickReptisaurios(mc);
 			return;
 		}
 		if (TRICE_ESCALA) {

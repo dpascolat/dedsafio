@@ -38,8 +38,10 @@ import java.util.EnumSet;
 import net.minecraft.world.level.Level;
 
 /**
- * Los cuatro lagartos: Mira, Tizón, Jade y Ámbar. Comparten el cuerpo y cambian los colores
- * y algún adorno (cuernos, cresta alta, hombreras). Por ahora caminan y se defienden si los atacan.
+ * Los Reptisaurios (los tres lagartos que envenenan): el Guerrero (espadachín, marrón, espada y escudo: alterna
+ * estocada y tajo, y el escudo le para un golpe de frente cada 5 segundos), el Arquero (verde, arco de huesos) y el
+ * de la Lanza (naranja, lanza y escudo: estoca de cerca y de lejos le tira la lanza). Cada uno sale con uno de sus 3
+ * colores al azar. Lo que está haciendo (y desde cuándo) va al cliente para las animaciones (LagartoRenderer).
  */
 public class LagartoEntity extends PathfinderMob {
 	/** Cada hermano: colores (escamas, oscuro, panza, cresta, garras) y su adorno. */
@@ -67,6 +69,19 @@ public class LagartoEntity extends PathfinderMob {
 
 	private final Variante variante;
 
+	/** El color (0 a 2), qué está haciendo y desde cuándo (para las animaciones). */
+	private static final net.minecraft.network.syncher.EntityDataAccessor<Integer> PIEL =
+			net.minecraft.network.syncher.SynchedEntityData.defineId(LagartoEntity.class, net.minecraft.network.syncher.EntityDataSerializers.INT);
+	private static final net.minecraft.network.syncher.EntityDataAccessor<Integer> ACCION =
+			net.minecraft.network.syncher.SynchedEntityData.defineId(LagartoEntity.class, net.minecraft.network.syncher.EntityDataSerializers.INT);
+	private static final net.minecraft.network.syncher.EntityDataAccessor<Long> T_ACCION =
+			net.minecraft.network.syncher.SynchedEntityData.defineId(LagartoEntity.class, net.minecraft.network.syncher.EntityDataSerializers.LONG);
+	public static final int NADA = 0, DISPARO = 1, ESTOCADA = 2, TAJO = 3, LANZAR = 4, BLOQUEO = 5;
+	/** Cuándo sale la lanza de la mano al tirarla (0,4 s), cada cuánto puede tirarla y cada cuánto para un golpe con el escudo. */
+	private static final int SUELTA_LANZA = 8, CADA_LANZA = 80, CADA_BLOQUEO = 100;
+	private int lanzaEn, golpes;
+	private long ultimoBloqueo = -CADA_BLOQUEO;
+
 	public LagartoEntity(EntityType<? extends LagartoEntity> tipo, Level level, Variante variante) {
 		super(tipo, level);
 		this.variante = variante;
@@ -74,6 +89,82 @@ public class LagartoEntity extends PathfinderMob {
 
 	public Variante variante() {
 		return variante;
+	}
+
+	@Override
+	protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder datos) {
+		super.defineSynchedData(datos);
+		datos.define(PIEL, 0);
+		datos.define(ACCION, NADA);
+		datos.define(T_ACCION, -1000L);
+	}
+
+	public int piel() {
+		return entityData.get(PIEL);
+	}
+
+	public int accion() {
+		return entityData.get(ACCION);
+	}
+
+	/** Segundos desde que empezó lo que está haciendo. */
+	public float tAccion(float parcial) {
+		return (level().getGameTime() - entityData.get(T_ACCION) + parcial) / 20f;
+	}
+
+	private void accionar(int accion) {
+		entityData.set(ACCION, accion);
+		entityData.set(T_ACCION, level().getGameTime());
+	}
+
+	@Override
+	public net.minecraft.world.entity.SpawnGroupData finalizeSpawn(net.minecraft.world.level.ServerLevelAccessor mundo,
+			net.minecraft.world.DifficultyInstance dificultad, MobSpawnType razon, net.minecraft.world.entity.SpawnGroupData datos) {
+		entityData.set(PIEL, random.nextInt(3));
+		return super.finalizeSpawn(mundo, dificultad, razon, datos);
+	}
+
+	@Override
+	public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag datos) {
+		super.addAdditionalSaveData(datos);
+		datos.putInt("Piel", piel());
+	}
+
+	@Override
+	public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag datos) {
+		super.readAdditionalSaveData(datos);
+		entityData.set(PIEL, Math.floorMod(datos.getInt("Piel"), 3));
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+		if (level().isClientSide || lanzaEn <= 0 || --lanzaEn > 0) return;
+		// Suelta la lanza: va hacia el objetivo (un poco para arriba, porque cae).
+		LivingEntity objetivo = getTarget();
+		if (objetivo == null || !objetivo.isAlive()) return;
+		LanzaLanzadaEntity lanza = new LanzaLanzadaEntity(level(), this);
+		double dx = objetivo.getX() - getX(), dz = objetivo.getZ() - getZ();
+		double dy = objetivo.getY(0.5) - lanza.getY(), plano = Math.sqrt(dx * dx + dz * dz);
+		lanza.shoot(dx, dy + plano * 0.15, dz, 1.5f, 2f);
+		level().addFreshEntity(lanza);
+		playSound(SoundEvents.TRIDENT_THROW.value(), 1f, 0.8f);
+	}
+
+	/** El Guerrero para con el escudo un golpe de frente cada 5 segundos. */
+	@Override
+	public boolean hurt(DamageSource fuente, float cantidad) {
+		if (!level().isClientSide && esGuerrero() && fuente.getEntity() != null && level().getGameTime() - ultimoBloqueo >= CADA_BLOQUEO) {
+			Vec3 hacia = fuente.getEntity().position().subtract(position()).multiply(1, 0, 1).normalize();
+			Vec3 mira = Vec3.directionFromRotation(0, yBodyRot);
+			if (hacia.dot(mira) > 0.4) {
+				ultimoBloqueo = level().getGameTime();
+				accionar(BLOQUEO);
+				playSound(SoundEvents.SHIELD_BLOCK, 1f, 0.8f + random.nextFloat() * 0.4f);
+				return false;
+			}
+		}
+		return super.hurt(fuente, cantidad);
 	}
 
 	/** El Reptisaurio Salvaje aparece en las cuevas: donde no llega el cielo, a oscuras y sobre piso firme. */
@@ -105,6 +196,7 @@ public class LagartoEntity extends PathfinderMob {
 
 	/** Dispara una flecha con Veneno Primitivo. */
 	public void disparar(LivingEntity objetivo) {
+		accionar(DISPARO);
 		Arrow flecha = new Arrow(this.level(), this, new ItemStack(Items.ARROW), null);
 		flecha.setBaseDamage(2.0);
 		flecha.addEffect(new MobEffectInstance(VenenoPrimitivo.EFECTO, VenenoPrimitivo.DURACION, 0, false, true, true));
@@ -149,6 +241,7 @@ public class LagartoEntity extends PathfinderMob {
 			double distancia = lagarto.distanceTo(objetivo);
 			boolean loVe = lagarto.hasLineOfSight(objetivo);
 
+			lagarto.setAggressive(true);
 			if (distancia < MUY_CERCA) {
 				Vec3 atras = lagarto.position().subtract(objetivo.position()).normalize().scale(4);
 				Vec3 destino = lagarto.position().add(atras);
@@ -169,12 +262,13 @@ public class LagartoEntity extends PathfinderMob {
 		@Override
 		public void stop() {
 			lagarto.getNavigation().stop();
+			lagarto.setAggressive(false);
 		}
 	}
 
 	/**
-	 * Pelea con la lanza: se queda a distancia (ni muy lejos ni pegado) y estoca.
-	 * Si el objetivo se le acerca demasiado, retrocede.
+	 * Pelea con la lanza: se queda a distancia (ni muy lejos ni pegado) y estoca. Si el objetivo se le acerca
+	 * demasiado, retrocede; si está lejos (más de 6 bloques), le tira la lanza (cada 4 segundos).
 	 */
 	static class LanzaGoal extends Goal {
 		/** Alcance de la lanza y distancia a la que trata de quedarse. */
@@ -182,7 +276,7 @@ public class LagartoEntity extends PathfinderMob {
 		private static final int CADENCIA = 30;
 
 		private final LagartoEntity lagarto;
-		private int enfriamiento;
+		private int enfriamiento, enfriamientoLanzar = 40;
 
 		LanzaGoal(LagartoEntity lagarto) {
 			this.lagarto = lagarto;
@@ -206,6 +300,13 @@ public class LagartoEntity extends PathfinderMob {
 			if (objetivo == null) return;
 			lagarto.getLookControl().setLookAt(objetivo, 30f, 30f);
 			double distancia = lagarto.distanceTo(objetivo);
+			lagarto.setAggressive(true);
+			enfriamientoLanzar--;
+			if (distancia > 6 && distancia < 20 && enfriamientoLanzar <= 0 && lagarto.lanzaEn <= 0 && lagarto.hasLineOfSight(objetivo)) {
+				enfriamientoLanzar = CADA_LANZA;
+				lagarto.lanzaEn = SUELTA_LANZA;
+				lagarto.accionar(LANZAR);
+			}
 
 			if (distancia < MUY_CERCA) {
 				// Demasiado cerca: retrocede sin dejar de mirarlo.
@@ -221,6 +322,7 @@ public class LagartoEntity extends PathfinderMob {
 			if (--enfriamiento <= 0 && distancia <= ALCANCE && lagarto.hasLineOfSight(objetivo)) {
 				enfriamiento = CADENCIA;
 				lagarto.swing(InteractionHand.MAIN_HAND);
+				lagarto.accionar(ESTOCADA);
 				lagarto.doHurtTarget(objetivo);
 			}
 		}
@@ -228,6 +330,7 @@ public class LagartoEntity extends PathfinderMob {
 		@Override
 		public void stop() {
 			lagarto.getNavigation().stop();
+			lagarto.setAggressive(false);
 		}
 	}
 
@@ -281,6 +384,8 @@ public class LagartoEntity extends PathfinderMob {
 	/** Con la lanza pega de lejos y deja Veneno Primitivo. */
 	@Override
 	public boolean doHurtTarget(Entity objetivo) {
+		// El Guerrero alterna estocada y tajo.
+		if (esGuerrero()) accionar(golpes++ % 2 == 0 ? ESTOCADA : TAJO);
 		boolean pego = super.doHurtTarget(objetivo);
 		if (pego && esReptisaurio() && objetivo instanceof LivingEntity victima) {
 			VenenoPrimitivo.aplicar(victima);

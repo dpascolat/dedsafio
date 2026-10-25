@@ -50,6 +50,11 @@ public final class ModEntidades {
 			EntityType.Builder.<LagartoEntity>of((tipo, level) -> new LagartoEntity(tipo, level, LagartoEntity.Variante.REPTISAURIO_ARQUERO), MobCategory.CREATURE)
 					.sized(1.2f, 2.0f).clientTrackingRange(10));
 
+	/** La lanza que tira el Reptisaurio con Lanza. */
+	public static final EntityType<com.dedsafio4.lagartos.LanzaLanzadaEntity> LANZA_LANZADA = registrar("lanza_lanzada",
+			EntityType.Builder.<com.dedsafio4.lagartos.LanzaLanzadaEntity>of(com.dedsafio4.lagartos.LanzaLanzadaEntity::new, MobCategory.MISC)
+					.sized(0.5f, 0.5f).clientTrackingRange(6).updateInterval(20));
+
 	public static final EntityType<LagartoEntity> REPTISAURIO_LANZA = registrar("reptisaurio_lanza",
 			EntityType.Builder.<LagartoEntity>of((tipo, level) -> new LagartoEntity(tipo, level, LagartoEntity.Variante.REPTISAURIO_LANZA), MobCategory.CREATURE)
 					.sized(1.2f, 2.0f).clientTrackingRange(10));
