@@ -198,4 +198,11 @@ public class BichoCuboEntity extends PathfinderMob {
 		super.readAdditionalSaveData(tag);
 		lanzado = tag.getBoolean("Lanzado");
 	}
+
+	/** El Bicho no de la cabeza suelta 2 Pimpollos de Qumara al morir. */
+	@Override
+	protected void dropCustomDeathLoot(ServerLevel mundo, DamageSource fuente, boolean porJugador) {
+		super.dropCustomDeathLoot(mundo, fuente, porJugador);
+		if (!deLaCabeza()) spawnAtLocation(new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.PIMPOLLO_QUMARA, 2));
+	}
 }

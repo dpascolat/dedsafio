@@ -1603,6 +1603,41 @@ public final class DebugCielo {
 		if (t == 25) mc.stop();
 	}
 
+	private static final boolean PUNTOS_BICHOS = "puntosbichos".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /spawn_eggs: aparece el Bicho no de la cabeza; /vidamob le cambia la vida; al morir suelta 2 Pimpollos. */
+	private static void tickPuntosBichos(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "forceload add 290 -40 310 -20");
+			comando(mc, "kill @e[type=dedsafio4:bicho_no_cabeza]");
+			comando(mc, "kill @e[type=item]");
+			comando(mc, "tp @s 300.5 200 -18.5 180 0");
+		}
+		if (t == 5) comando(mc, "spawn_eggs 300 200 -30 1");
+		if (t == 8) comando(mc, "spawn_eggs 300 200 -30 1");   // ya hay uno: no aparece otro
+		if (t == 10) comando(mc, "vidamob bicho_no_cabeza 100");
+		if (t == 14) server.execute(() -> {
+			var bs = server.overworld().getEntitiesOfClass(com.dedsafio4.qumara.BichoCuboEntity.class, new net.minecraft.world.phys.AABB(280, 190, -50, 320, 220, -10));
+			Dedsafio4ClientDebug.info("puntosbichos bichos=" + bs.size() + " vida=" + bs.stream().map(b -> b.getMaxHealth()).toList());
+		});
+		if (t == 16) comando(mc, "kill @e[type=dedsafio4:bicho_no_cabeza]");
+		if (t == 24) server.execute(() -> {
+			int pimpollos = 0;
+			for (var e : server.overworld().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(280, 190, -50, 320, 220, -10))) {
+				if (e.getItem().is(com.dedsafio4.items.ModItems.PIMPOLLO_QUMARA)) pimpollos += e.getItem().getCount();
+			}
+			Dedsafio4ClientDebug.info("puntosbichos pimpollos tirados=" + pimpollos);
+		});
+		if (t == 26) { comando(mc, "spawn_eggs quitar 1"); comando(mc, "vidamob bicho_no_cabeza normal"); }
+		if (t == 30) mc.stop();
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -8299,6 +8334,10 @@ public final class DebugCielo {
 		}
 		if (DUPE_BOLSA) {
 			tickDupeBolsa(mc);
+			return;
+		}
+		if (PUNTOS_BICHOS) {
+			tickPuntosBichos(mc);
 			return;
 		}
 		if (REPTISAURIOS) {

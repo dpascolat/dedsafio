@@ -71,8 +71,9 @@ public class CapulloEntity extends PathfinderMob {
 		if (espera > 0) espera--;
 		// Cerrado mientras alguna Qumara cerca está en Enfriamiento.
 		if (tickCount % 10 == 0) {
-			boolean enfriando = !level().getEntitiesOfClass(QumaraEntity.class, getBoundingBox().inflate(120),
-					q -> q.debil() && !q.derrotada()).isEmpty();
+			// Con /capullos abiertos no se cierra nunca.
+			boolean enfriando = !PuntosBichos.capullosAbiertos(level().getServer()) && !level().getEntitiesOfClass(QumaraEntity.class,
+					getBoundingBox().inflate(120), q -> q.debil() && !q.derrotada()).isEmpty();
 			if (abierto() == enfriando) {
 				entityData.set(ABIERTO, !enfriando);
 				level().playSound(null, getX(), getY() + 7, getZ(), enfriando ? SoundEvents.CHORUS_FLOWER_DEATH : SoundEvents.CHORUS_FLOWER_GROW,
