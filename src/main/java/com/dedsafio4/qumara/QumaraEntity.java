@@ -49,8 +49,7 @@ import java.util.UUID;
  * la maneja no son afectados por nada de esto. Se la puede lastimar con proyectiles.
  * Enfriamiento (solo, al llegar la vida a cada pinchito de la barra: 75%, 50% y 25%): se debilita (se
  * marchita y se pone celeste), no puede atacar ni recibir daño; aparecen 5 Bichos no de la cabeza (a 30
- * bloques) y el Capullo, que se cierra y larga Bichos de la cabeza si le pegan. Cuando mueren los 5, se
- * recupera.
+ * bloques). Cuando mueren los 5, se recupera. (Debilitada ya no saca Capullos.)
  * Todo el cuerpo recibe golpes. Al morir hace la animación de derrota y queda ahí (no desaparece).
  *
  * Los tiempos de cada animación se guardan como el tick del mundo en que empezaron, así el cliente
@@ -252,10 +251,7 @@ public class QumaraEntity extends PathfinderMob {
 		return true;
 	}
 
-	/**
-	 * 5 Bichos no de la cabeza a 30 bloques, repartidos alrededor, y un Capullo para cada uno, a 20 bloques
-	 * de él (hacia afuera). Los Capullos de antes se van. Del Capullo salen los Bichos de la cabeza cuando le pegan.
-	 */
+	/** 5 Bichos no de la cabeza a 30 bloques, repartidos alrededor. Ya no salen Capullos (y si quedaba alguno, se va). */
 	private void sacarBichos(ServerLevel mundo) {
 		double a0 = random.nextDouble() * Math.PI * 2;
 		for (int i = 0; i < BICHOS_NO; i++) {
@@ -263,10 +259,6 @@ public class QumaraEntity extends PathfinderMob {
 			poner(mundo, ModQumara.BICHO_NO_CABEZA, getX() + Math.cos(a) * 30, getZ() + Math.sin(a) * 30, (float) Math.toDegrees(a) + 90);
 		}
 		mundo.getEntitiesOfClass(CapulloEntity.class, getBoundingBox().inflate(120)).forEach(Entity::discard);
-		for (int i = 0; i < BICHOS_NO; i++) {
-			double a = a0 + i * Math.PI * 2 / BICHOS_NO;
-			poner(mundo, ModQumara.CAPULLO, getX() + Math.cos(a) * 50, getZ() + Math.sin(a) * 50, random.nextFloat() * 360);
-		}
 		mundo.playSound(null, getX(), getY() + 5, getZ(), SoundEvents.EVOKER_PREPARE_SUMMON, SoundSource.HOSTILE, 4f, 0.7f);
 	}
 
