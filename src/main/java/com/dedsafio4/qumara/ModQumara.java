@@ -83,7 +83,7 @@ public final class ModQumara {
 
 	public static void registrar() {
 		FabricDefaultAttributeRegistry.register(QUMARA, QumaraEntity.crearAtributos());
-		FabricDefaultAttributeRegistry.register(BICHO_NO_CABEZA, BichoCuboEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(BICHO_NO_CABEZA, BichoCuboEntity.crearAtributosNoCabeza());
 		FabricDefaultAttributeRegistry.register(BICHO_CABEZA, BichoCuboEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CAPULLO, CapulloEntity.crearAtributos());
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playC2S().register(LanzarPayload.TYPE, LanzarPayload.CODEC);
