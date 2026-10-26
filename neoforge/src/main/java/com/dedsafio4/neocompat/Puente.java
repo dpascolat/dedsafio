@@ -162,6 +162,12 @@ public final class Puente {
 	// ---------------- Eventos del juego ----------------
 
 	private static void eventosDelJuego(IEventBus juego) {
+		juego.addListener(EventPriority.NORMAL, false, net.neoforged.neoforge.event.server.ServerAboutToStartEvent.class,
+				e -> com.dedsafio4.neocompat.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTING.oyentes()
+						.forEach(o -> o.onServerStarting(e.getServer())));
+		juego.addListener(EventPriority.NORMAL, false, net.neoforged.neoforge.event.server.ServerStoppedEvent.class,
+				e -> com.dedsafio4.neocompat.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPED.oyentes()
+						.forEach(o -> o.onServerStopped(e.getServer())));
 		juego.addListener(EventPriority.NORMAL, false, ServerTickEvent.Pre.class,
 				e -> ServerTickEvents.START_SERVER_TICK.oyentes().forEach(o -> o.onStartTick(e.getServer())));
 		juego.addListener(EventPriority.NORMAL, false, ServerTickEvent.Post.class,

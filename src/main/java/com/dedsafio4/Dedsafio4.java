@@ -103,6 +103,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.trex.ModTRex.registrar();
 		com.dedsafio4.qumara.ModQumara.registrar();
 		com.dedsafio4.qumara.PuntosBichos.registrar();
+		com.dedsafio4.dimension.GlebaNueva.registrar();
 		com.dedsafio4.eclipse.Eclipse.registrar();
 		com.dedsafio4.cofres.ModCofres.registrar();
 		com.dedsafio4.robots.ModRobots.registrar();
@@ -193,6 +194,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.qumara.BossComandos.registrar(dispatcher);
 			com.dedsafio4.qumara.PuntosBichos.registrarComandos(dispatcher);
 			com.dedsafio4.despegue.ZonaGleba.registrarComandos(dispatcher);
+			com.dedsafio4.dimension.GlebaNueva.registrarComandos(dispatcher);
 			AdminComandos.registrar(dispatcher);
 			AyudaComando.registrar(dispatcher);
 			com.dedsafio4.almas.Almas.registrarComandos(dispatcher);
