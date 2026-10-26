@@ -27,6 +27,8 @@ public class NaveViajeRenderer extends GeoEntityRenderer<NaveViajeEntity> {
 	public void render(NaveViajeEntity nave, float giro, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
 		pose.pushPose();
 		pose.translate(0, nave.altura(parcial), 0);
+		// GeckoLib sólo gira a los mobs: la nave se gira acá para que mire hacia donde la pusieron.
+		pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-nave.getYRot()));
 		super.render(nave, giro, parcial, pose, buffers, luz);
 		pose.popPose();
 	}

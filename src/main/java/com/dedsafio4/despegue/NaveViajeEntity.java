@@ -90,7 +90,11 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private static final double ALTURA_LLEGADA = 45;
 	private static final int AMARILLO = 0xF0D86A, NARANJA = 0xFFA23C, VIOLETA = 0xC883FF;
 	/** Dónde van los pasajeros dentro de la cabina, corridos a mano (1 píxel = 1/16 de bloque). */
-	private static final double AJUSTE_X = 6 / 16.0, AJUSTE_Y = 12 / 16.0;
+	private static final double AJUSTE_X = 6 / 16.0 - 0.4, AJUSTE_Y = 12 / 16.0;   // al medio de la cabina
+	/** Cuánto más atrás (más abajo, hacia el motor: la nave está parada) va el segundo pasajero. */
+	private static final double ATRAS = 0.8;
+	/** Corridos hacia atrás de la nave (lejos de la ventanita), así la cabeza no se sale del vidrio. */
+	private static final double AJUSTE_Z = 0.35;
 
 	private UUID dueno;
 	private String nombreDueno = "";
@@ -230,7 +234,11 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private static void poner(Level level, Player jugador, ItemStack item, double x, double y, double z) {
 		NaveViajeEntity nave = ModDespegue.NAVE_VIAJE.create(level);
 		if (nave == null) return;
-		nave.moveTo(x, y, z, jugador == null ? 0 : jugador.getYRot(), 0);
+		// Mira hacia quien la pone, derecho (norte, sur, este u oeste): si la pones mirando al norte, mira al sur
+		// (el frente de la nave, la ventanita, queda del lado contrario a su giro).
+		float giro = jugador == null ? 0 : net.minecraft.core.Direction.fromYRot(jugador.getYRot()).toYRot();
+		nave.moveTo(x, y, z, giro, 0);
+		nave.setYHeadRot(giro);
 		if (jugador != null) {
 			nave.dueno = jugador.getUUID();
 			nave.nombreDueno = jugador.getGameProfile().getName();
@@ -306,11 +314,11 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		return getPassengers().size() < 2;
 	}
 
-	/** Los dos van adentro de la cabina, uno al lado del otro, acostados boca arriba (ver PlayerRendererNaveMixin). */
+	/** Los dos van adentro de la cabina, uno atrás del otro, acostados boca arriba (ver PlayerRendererNaveMixin). */
 	@Override
 	protected Vec3 getPassengerAttachmentPoint(Entity pasajero, EntityDimensions dimensiones, float escala) {
 		int lugar = Math.max(0, getPassengers().indexOf(pasajero));
-		return new Vec3((lugar == 0 ? -0.4 : 0.4) + AJUSTE_X, 2.0 + AJUSTE_Y + altura, 0).yRot(-getYRot() * Mth.DEG_TO_RAD);
+		return new Vec3(AJUSTE_X, 2.0 + AJUSTE_Y + altura - (lugar == 0 ? 0 : ATRAS), AJUSTE_Z).yRot(-getYRot() * Mth.DEG_TO_RAD);
 	}
 
 	/** Al bajarse queda parado al costado de la nave (busca un lado libre). */
