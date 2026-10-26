@@ -5,7 +5,7 @@
 		"y": {
 			"type": "minecraft:uniform",
 			"min_inclusive": {
-				"absolute": 85
+				"absolute": 82
 			},
 			"max_inclusive": {
 				"absolute": 175
