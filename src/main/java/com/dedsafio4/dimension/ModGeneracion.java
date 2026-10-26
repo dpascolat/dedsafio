@@ -27,6 +27,10 @@ public final class ModGeneracion {
 	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> PULMONES =
 			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "pulmones"), new PulmonesFeature());
 
+	/** Las minas de Gleba: una sola por isla (ver MinaGlebaCarver). */
+	public static final MinaGlebaCarver MINA_GLEBA = Registry.register(BuiltInRegistries.CARVER,
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "mina_gleba"), new MinaGlebaCarver());
+
 	/** Fuerza la carga de la clase. */
 	public static void registrar() {}
 }

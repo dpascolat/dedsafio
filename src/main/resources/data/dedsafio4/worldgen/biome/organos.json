@@ -54,9 +54,6 @@
 	"spawn_costs": {},
 	"carvers": {
 		"air": [
-			"minecraft:cave",
-			"minecraft:cave_extra_underground",
-			"minecraft:canyon",
 			"dedsafio4:minas_gleba"
 		]
 	},

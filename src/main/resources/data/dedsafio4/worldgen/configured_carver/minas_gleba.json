@@ -1,7 +1,7 @@
 {
-	"type": "minecraft:cave",
+	"type": "dedsafio4:mina_gleba",
 	"config": {
-		"probability": 0.45,
+		"probability": 1.0,
 		"y": {
 			"type": "minecraft:uniform",
 			"min_inclusive": {
