@@ -1638,6 +1638,61 @@ public final class DebugCielo {
 		if (t == 30) mc.stop();
 	}
 
+	private static final boolean VIAJE_GLEBA = "viajegleba".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+	private static int viajeGlebaVuelta = -1;
+
+	/**
+	 * La nave con /spawn_gleba: sale del Overworld, aterriza en el lugar de aterrizaje de Gleba (al lado de otra nave
+	 * que ya estaba, con un bloque libre) y, subiéndose de nuevo, vuelve al lugar exacto de donde salió.
+	 */
+	private static void tickViajeGleba(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "execute in minecraft:overworld run kill @e[type=dedsafio4:nave_viaje]");
+			comando(mc, "execute in dedsafio4:organos run kill @e[type=dedsafio4:nave_viaje]");
+			comando(mc, "execute in dedsafio4:organos run forceload add 0 0 16 16");
+			comando(mc, "spawn_gleba 0 70 0 12 70 12");
+			// Una nave que ya estaba en el primer lugar.
+			comando(mc, "execute in dedsafio4:organos run summon dedsafio4:nave_viaje 1 120 1");
+			comando(mc, "execute in minecraft:overworld run tp @s 300.5 200 -12.5 0 0");
+			comando(mc, "execute in minecraft:overworld run summon dedsafio4:nave_viaje 300.5 200 -10.5 {Combustible:100}");
+		}
+		if (t == 10) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var n = ((net.minecraft.server.level.ServerLevel) j.level()).getEntitiesOfClass(com.dedsafio4.despegue.NaveViajeEntity.class, j.getBoundingBox().inflate(6));
+			if (!n.isEmpty()) j.startRiding(n.get(0), true);
+			Dedsafio4ClientDebug.info("viajegleba salida desde " + (n.isEmpty() ? "?" : n.get(0).position()));
+		});
+		if (t > 10 && t % 100 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var v = j.getVehicle();
+			Dedsafio4ClientDebug.info("viajegleba t" + (ticks - 20) + " mundo=" + j.level().dimension().location().getPath() + " nave="
+					+ (v instanceof com.dedsafio4.despegue.NaveViajeEntity nv ? nv.position() + " estado " + nv.estado() : "ninguna"));
+			// Ya aterrizó en Gleba: se baja, se fija dónde quedó al lado de la otra y se vuelve a subir.
+			if (viajeGlebaVuelta < 0 && v instanceof com.dedsafio4.despegue.NaveViajeEntity nv && nv.estado() == 0
+					&& j.level().dimension().location().getPath().equals("organos")) {
+				var todas = ((net.minecraft.server.level.ServerLevel) j.level()).getEntitiesOfClass(com.dedsafio4.despegue.NaveViajeEntity.class,
+						new net.minecraft.world.phys.AABB(-10, -64, -10, 30, 320, 30));
+				Dedsafio4ClientDebug.info("viajegleba en Gleba: " + todas.stream().map(x -> String.format("(%.1f, %.1f)", x.getX(), x.getZ())).toList());
+				j.stopRiding();
+				viajeGlebaVuelta = ticks - 20;
+			} else if (viajeGlebaVuelta >= 0 && v == null && j.level().dimension().location().getPath().equals("organos")) {
+				// Se vuelve a subir (un rato después de bajarse): vuelve a donde salió.
+				var nv = ((net.minecraft.server.level.ServerLevel) j.level()).getEntitiesOfClass(com.dedsafio4.despegue.NaveViajeEntity.class,
+						j.getBoundingBox().inflate(6));
+				nv.sort(java.util.Comparator.comparingDouble(x -> x.distanceToSqr(j)));
+				if (!nv.isEmpty()) j.startRiding(nv.get(0), true);
+			}
+		});
+		if (t == 2300) mc.stop();
+	}
+
 	private static final boolean TRICE_ESCALA = "triceescala".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** /triceratops escala: uno normal y otro agrandado al triple, uno al lado del otro. */
@@ -8338,6 +8393,10 @@ public final class DebugCielo {
 		}
 		if (PUNTOS_BICHOS) {
 			tickPuntosBichos(mc);
+			return;
+		}
+		if (VIAJE_GLEBA) {
+			tickViajeGleba(mc);
 			return;
 		}
 		if (REPTISAURIOS) {

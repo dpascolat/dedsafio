@@ -52,7 +52,10 @@ import java.util.UUID;
  *   el de destino arriba, acercándose (ver EspacioCielo en el cliente). Después llega a la otra dimensión.
  * - Llegada: aparece en el cielo de la otra dimensión y baja despacio hasta que toca el piso. Ahí se queda quieta
  *   y te bajás vos (Shift). No vuelve a despegar hasta que alguien se baje y se suba de nuevo.
- * - Desde la Dimensión de los Órganos, subirse de nuevo te lleva de vuelta al Overworld.
+ * - Desde la Dimensión de los Órganos, subirse de nuevo te lleva de vuelta al Overworld: al mismo lugar de donde
+ *   salió (la nave se acuerda, aunque la guarden y la vuelvan a poner). Si hay lugar de aterrizaje en Gleba
+ *   (/spawn_gleba, ver ZonaGleba), llega ahí, en un lugar libre con un bloque de distancia de las otras naves; y ahí
+ *   adentro se puede poner una nave guardada sin soporte.
  * - Shift + click derecho: el dueño la guarda en el inventario (sólo cuando está quieta y vacía).
  */
 public class NaveViajeEntity extends Entity implements GeoEntity {
@@ -95,6 +98,8 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private double velocidad;
 	/** Dónde se apoya al terminar de aterrizar (NaN = calcularlo cuando haga falta). */
 	private double sueloLlegada = Double.NaN;
+	/** De dónde salió en el Overworld (adonde vuelve desde Gleba), o null si no se sabe. */
+	private net.minecraft.world.phys.Vec3 origen;
 	/** Recién aterrizó con gente adentro: no arranca otra cuenta regresiva hasta que se bajen todos. */
 	private boolean recienLlegada;
 	private final AnimatableInstanceCache animaciones = GeckoLibUtil.createInstanceCache(this);
@@ -187,6 +192,17 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		Level level = contexto.getLevel();
 		BlockPos pos = contexto.getClickedPos();
 		Player jugador = contexto.getPlayer();
+		// En el lugar de aterrizaje de Gleba se pone sin soporte (con un bloque libre hasta la otra nave).
+		BlockPos arriba = pos.relative(contexto.getClickedFace());
+		if (!level.isClientSide && ZonaGleba.dentro(level, arriba.getX() + 0.5, arriba.getZ() + 0.5)) {
+			if (ZonaGleba.naveCerca(level, arriba.getX() + 0.5, arriba.getZ() + 0.5, null)) {
+				if (jugador != null) jugador.displayClientMessage(
+						Component.literal("Muy cerca de otra nave: deja un bloque libre entre las dos.").withColor(AMARILLO), true);
+				return InteractionResult.FAIL;
+			}
+			poner(level, jugador, contexto.getItemInHand(), arriba.getX() + 0.5, arriba.getY(), arriba.getZ() + 0.5);
+			return InteractionResult.CONSUME;
+		}
 		if (!level.getBlockState(pos).is(ModDespegue.SOPORTE_NAVE)) {
 			if (!level.isClientSide && jugador != null) {
 				jugador.displayClientMessage(Component.literal("Colócala en un Soporte de Nave.")
@@ -206,19 +222,29 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 					Component.literal("Ya hay una nave en este soporte.").withColor(AMARILLO), true);
 			return InteractionResult.FAIL;
 		}
+		poner(level, jugador, contexto.getItemInHand(), pos.getX() + 1, pos.getY() + 0.25, pos.getZ() + 1);
+		return InteractionResult.CONSUME;
+	}
+
+	/** Pone la nave del ítem en ese lugar (con su combustible, su color y de dónde salió). */
+	private static void poner(Level level, Player jugador, ItemStack item, double x, double y, double z) {
 		NaveViajeEntity nave = ModDespegue.NAVE_VIAJE.create(level);
-		if (nave == null) return InteractionResult.FAIL;
-		nave.moveTo(pos.getX() + 1, pos.getY() + 0.25, pos.getZ() + 1, jugador == null ? 0 : jugador.getYRot(), 0);
+		if (nave == null) return;
+		nave.moveTo(x, y, z, jugador == null ? 0 : jugador.getYRot(), 0);
 		if (jugador != null) {
 			nave.dueno = jugador.getUUID();
 			nave.nombreDueno = jugador.getGameProfile().getName();
 		}
-		nave.combustible(combustibleDe(contexto.getItemInHand()));
-		nave.entityData.set(COLOR, NaveColores.colorDe(contexto.getItemInHand()));
+		nave.combustible(combustibleDe(item));
+		nave.entityData.set(COLOR, NaveColores.colorDe(item));
+		CompoundTag datos = item.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+				net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+		if (datos.contains("OrigenX")) {
+			nave.origen = new net.minecraft.world.phys.Vec3(datos.getDouble("OrigenX"), datos.getDouble("OrigenY"), datos.getDouble("OrigenZ"));
+		}
 		level.addFreshEntity(nave);
-		level.playSound(null, pos, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.5f, 1.4f);
-		if (jugador == null || !jugador.getAbilities().instabuild) contexto.getItemInHand().shrink(1);
-		return InteractionResult.CONSUME;
+		level.playSound(null, BlockPos.containing(x, y, z), SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.5f, 1.4f);
+		if (jugador == null || !jugador.getAbilities().instabuild) item.shrink(1);
 	}
 
 	/** El combustible que le quedaba a la nave cuando se guardó en el inventario. */
@@ -242,12 +268,16 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				return InteractionResult.CONSUME;
 			}
 			ItemStack nave = new ItemStack(PartesNave.NAVE_BIPLAZA);
-			if (combustible() > 0) {
-				CompoundTag datos = new CompoundTag();
-				datos.putInt("Combustible", combustible());
-				nave.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-						net.minecraft.world.item.component.CustomData.of(datos));
+			CompoundTag datos = new CompoundTag();
+			if (combustible() > 0) datos.putInt("Combustible", combustible());
+			// Guardada fuera del Overworld (en Gleba), se acuerda de adónde volver.
+			if (origen != null && !level().dimension().equals(Level.OVERWORLD)) {
+				datos.putDouble("OrigenX", origen.x);
+				datos.putDouble("OrigenY", origen.y);
+				datos.putDouble("OrigenZ", origen.z);
 			}
+			if (!datos.isEmpty()) nave.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+					net.minecraft.world.item.component.CustomData.of(datos));
 			NaveColores.pintar(nave, color());
 			if (!jugador.getInventory().add(nave)) jugador.drop(nave, false);
 			level().playSound(null, blockPosition(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.8f, 0.8f);
@@ -339,6 +369,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 				if (tiempo > 60) mundo.sendParticles(ParticleTypes.FLAME, getX(), getY() + 0.1, getZ(), 2, 0.2, 0.05, 0.2, 0.01);
 				if (tiempo >= TIEMPO_CUENTA) {
 					combustible(combustible() - COMBUSTIBLE_VIAJE);
+					if (mundo.dimension().equals(Level.OVERWORLD)) origen = position();
 					estado(DESPEGANDO);
 					List<Player> viajeros = new ArrayList<>();
 					for (Entity p : getPassengers()) if (p instanceof Player jugador) viajeros.add(jugador);
@@ -496,11 +527,28 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		ResourceKey<Level> hacia = haciaRojo() ? Organos.DIMENSION : Level.OVERWORLD;
 		ServerLevel destino = mundo.getServer().getLevel(hacia);
 		if (destino == null) return;
-		BlockPos suelo = Portales.lugarSeguro(destino, blockPosition());
-		double llegadaY = Math.min(suelo.getY() + ALTURA_LLEGADA, destino.getMaxBuildHeight() - 10);
-		NaveViajeEntity nueva = saltar(destino, suelo.getX() + 0.5, llegadaY, suelo.getZ() + 0.5, ATERRIZANDO);
+		double x, z, suelo;
+		BlockPos lugar = hacia.equals(Organos.DIMENSION) ? ZonaGleba.lugarLibre(destino, this) : null;
+		if (lugar != null) {
+			// En Gleba, en el lugar de aterrizaje (/spawn_gleba).
+			x = lugar.getX();
+			z = lugar.getZ();
+			suelo = lugar.getY();
+		} else if (!hacia.equals(Organos.DIMENSION) && origen != null) {
+			// De vuelta al Overworld: al mismo lugar de donde salió.
+			x = origen.x;
+			z = origen.z;
+			suelo = origen.y;
+		} else {
+			BlockPos seguro = Portales.lugarSeguro(destino, blockPosition());
+			x = seguro.getX() + 0.5;
+			z = seguro.getZ() + 0.5;
+			suelo = seguro.getY();
+		}
+		double llegadaY = Math.min(suelo + ALTURA_LLEGADA, destino.getMaxBuildHeight() - 10);
+		NaveViajeEntity nueva = saltar(destino, x, llegadaY, z, ATERRIZANDO);
 		if (nueva == null) return;
-		nueva.sueloLlegada = suelo.getY();
+		nueva.sueloLlegada = suelo;
 		nueva.titulo(hacia.equals(Organos.DIMENSION) ? "Dimensión de los Órganos" : "Overworld", VIOLETA, "Aterrizando...");
 	}
 
@@ -515,6 +563,8 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		nueva.nombreDueno = nombreDueno;
 		nueva.entityData.set(HACIA_ROJO, haciaRojo());
 		nueva.combustible(combustible());
+		nueva.origen = origen;
+		nueva.entityData.set(COLOR, color());
 		destino.addFreshEntity(nueva);
 		nueva.estado(estadoNuevo);
 		for (Entity pasajero : pasajeros) {
@@ -563,6 +613,7 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		if (datos.hasUUID("Dueno")) dueno = datos.getUUID("Dueno");
 		nombreDueno = datos.getString("NombreDueno");
 		combustible(datos.getInt("Combustible"));
+		if (datos.contains("OrigenX")) origen = new net.minecraft.world.phys.Vec3(datos.getDouble("OrigenX"), datos.getDouble("OrigenY"), datos.getDouble("OrigenZ"));
 		entityData.set(COLOR, datos.contains("Color") ? datos.getInt("Color") : -1);
 		int guardado = datos.getInt("Estado");
 		entityData.set(HACIA_ROJO, !datos.contains("HaciaRojo") || datos.getBoolean("HaciaRojo"));
@@ -587,6 +638,11 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 		if (color() >= 0) datos.putInt("Color", color());
 		datos.putBoolean("HaciaRojo", haciaRojo());
 		if (!Double.isNaN(sueloLlegada)) datos.putDouble("Suelo", sueloLlegada);
+		if (origen != null) {
+			datos.putDouble("OrigenX", origen.x);
+			datos.putDouble("OrigenY", origen.y);
+			datos.putDouble("OrigenZ", origen.z);
+		}
 	}
 
 	@Override

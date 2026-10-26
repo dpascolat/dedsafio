@@ -192,6 +192,7 @@ public class Dedsafio4 implements ModInitializer {
 			Marcas.registrarComandos(dispatcher);
 			com.dedsafio4.qumara.BossComandos.registrar(dispatcher);
 			com.dedsafio4.qumara.PuntosBichos.registrarComandos(dispatcher);
+			com.dedsafio4.despegue.ZonaGleba.registrarComandos(dispatcher);
 			AdminComandos.registrar(dispatcher);
 			AyudaComando.registrar(dispatcher);
 			com.dedsafio4.almas.Almas.registrarComandos(dispatcher);
