@@ -108,6 +108,8 @@ public final class ModItems {
 	/** Cuero Glebanoide: un ingrediente (lo sueltan el Gusano de Carne y el Parásito Volador). */
 	public static final Item CUERO_GLEBANOIDE = registrar("cuero_glebanoide",
 			new DescritoItem(new Item.Properties(), DescritoItem::cueroGlebanoide));
+	/** Grasa: la suelta el Mineral de Grasa al picarlo (como el carbón); es un ingrediente. */
+	public static final Item GRASA = registrar("grasa", new DescritoItem(new Item.Properties(), DescritoItem::grasa));
 	/** Diente Glebanoide: sale de romper una Dentadura Glebanoide con espada. */
 	public static final Item DIENTE_GLEBANOIDE = registrar("diente_glebanoide",
 			new DescritoItem(new Item.Properties(), DescritoItem::dienteGlebanoide));
@@ -668,6 +670,7 @@ public final class ModItems {
 						entradas.accept(PEGAMENTO_PRIMITIVO);
 						entradas.accept(ESCUPITAJO_DACTYLO);
 						entradas.accept(CUERO_GLEBANOIDE);
+						entradas.accept(GRASA);
 						entradas.accept(FIBRA_GLEBANOIDE);
 						entradas.accept(CARNE_GLEBANOIDE);
 						entradas.accept(DIENTE_GLEBANOIDE);
