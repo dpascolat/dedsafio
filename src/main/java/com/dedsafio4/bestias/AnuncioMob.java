@@ -61,6 +61,7 @@ public final class AnuncioMob {
 		LUGARES.put("bomba_warden", "la Oscuridad Profunda y las cuevas");
 		LUGARES.put("creeper_amarillo", "la Dimensión de los Órganos");
 		LUGARES.put("nautilus_oseo", "la Dimensión de los Órganos, en grupo");
+		LUGARES.put("nautilus_oseo_grande", "la Dimensión de los Órganos");
 		LUGARES.put("cerebro_amarillo", "la Dimensión de los Órganos");
 		LUGARES.put("garrapata_cerebral", "la Dimensión de los Órganos");
 		LUGARES.put("wraith", "todo el Overworld, a oscuras");

@@ -56,7 +56,7 @@ public class NautilusOseoEntity extends Monster {
 	}
 
 	/** Aparece en el aire o en el piso, con cualquier luz (en los Órganos), salvo en pacífico. Nunca sobre el agua. */
-	public static boolean puedeAparecer(EntityType<NautilusOseoEntity> tipo, ServerLevelAccessor mundo, MobSpawnType razon,
+	public static boolean puedeAparecer(EntityType<? extends NautilusOseoEntity> tipo, ServerLevelAccessor mundo, MobSpawnType razon,
 										BlockPos pos, RandomSource azar) {
 		if (mundo.getDifficulty() == Difficulty.PEACEFUL || !mundo.getBlockState(pos).isAir()) return false;
 		// Lo primero que hay debajo (bajando por el aire): si es agua, no.

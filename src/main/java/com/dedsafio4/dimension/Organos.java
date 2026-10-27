@@ -62,23 +62,29 @@ public final class Organos {
 				if (jugador.isAlive() && jugador.isInWater()) jugador.hurt(fuente, DANIO);
 			}
 		});
-		// Creepers Amarillos también arriba de las islas (los normales casi solo salen en las minas).
+		// Creepers Amarillos también arriba de las islas (los normales casi solo salen en las minas), y los Nautilus
+		// Óseos Grandes flotando arriba de las islas.
 		ServerTickEvents.END_WORLD_TICK.register(mundo -> {
-			if (!mundo.dimension().equals(DIMENSION) || mundo.getGameTime() % 200 != 0) return;
-			net.minecraft.world.entity.EntityType<?> tipo = com.dedsafio4.nave.ModEntidades.CREEPER_AMARILLO;
-			if (mundo.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL
-					|| !com.dedsafio4.bestias.AnuncioMob.activo(mundo.getServer(), tipo)) return;
-			for (ServerPlayer jugador : mundo.players()) {
-				if (jugador.isSpectator()) continue;
-				int cerca = mundo.getEntities(tipo, jugador.getBoundingBox().inflate(64), e -> e.level().canSeeSky(e.blockPosition())).size();
-				if (cerca >= 4) continue;
-				creeperArriba(mundo, jugador);
-			}
+			if (!mundo.dimension().equals(DIMENSION)) return;
+			if (mundo.getGameTime() % 200 == 0) arribaDeLasIslas(mundo, com.dedsafio4.nave.ModEntidades.CREEPER_AMARILLO, 4, 0);
+			if (mundo.getGameTime() % 400 == 100) arribaDeLasIslas(mundo, com.dedsafio4.nave.ModEntidades.NAUTILUS_OSEO_GRANDE, 2, 4);
 		});
 	}
 
-	/** Pone un Creeper Amarillo arriba de una isla, a entre 24 y 56 bloques del jugador. */
-	private static void creeperArriba(ServerLevel mundo, ServerPlayer jugador) {
+	/** Cerca de cada jugador, si hay menos de "maximo" de ese mob al aire libre, pone uno arriba de una isla. */
+	private static void arribaDeLasIslas(ServerLevel mundo, net.minecraft.world.entity.EntityType<?> tipo, int maximo, int altura) {
+		if (mundo.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL
+				|| !com.dedsafio4.bestias.AnuncioMob.activo(mundo.getServer(), tipo)) return;
+		for (ServerPlayer jugador : mundo.players()) {
+			if (jugador.isSpectator()) continue;
+			int cerca = mundo.getEntities(tipo, jugador.getBoundingBox().inflate(64), e -> e.level().canSeeSky(e.blockPosition())).size();
+			if (cerca >= maximo) continue;
+			ponerArriba(mundo, jugador, tipo, altura);
+		}
+	}
+
+	/** Pone el mob arriba de una isla (a "altura" bloques del piso), a entre 24 y 56 bloques del jugador. */
+	private static void ponerArriba(ServerLevel mundo, ServerPlayer jugador, net.minecraft.world.entity.EntityType<?> tipo, int altura) {
 		var azar = mundo.getRandom();
 		for (int intento = 0; intento < 8; intento++) {
 			double angulo = azar.nextDouble() * Math.PI * 2, distancia = 24 + azar.nextDouble() * 32;
@@ -90,7 +96,7 @@ public final class Organos {
 			if (!mundo.getFluidState(abajo).isEmpty() || !mundo.getBlockState(abajo).isFaceSturdy(mundo, abajo, net.minecraft.core.Direction.UP)) continue;
 			if (!mundo.getBlockState(pos).getCollisionShape(mundo, pos).isEmpty() || !mundo.getBlockState(pos.above()).getCollisionShape(mundo, pos.above()).isEmpty()) continue;
 			if (mundo.getNearestPlayer(x + 0.5, pos.getY(), z + 0.5, 20, false) != null) continue;
-			com.dedsafio4.nave.ModEntidades.CREEPER_AMARILLO.spawn(mundo, pos, net.minecraft.world.entity.MobSpawnType.NATURAL);
+			tipo.spawn(mundo, pos.above(altura), net.minecraft.world.entity.MobSpawnType.NATURAL);
 			return;
 		}
 	}

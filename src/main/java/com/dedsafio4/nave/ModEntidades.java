@@ -126,6 +126,9 @@ public final class ModEntidades {
 	/** Nautilus Óseo (pequeño): vuela; la caja de choque es chica aunque el caparazón y los tentáculos son largos. */
 	public static final EntityType<com.dedsafio4.bestias.NautilusOseoEntity> NAUTILUS_OSEO = registrar("nautilus_oseo",
 			EntityType.Builder.of(com.dedsafio4.bestias.NautilusOseoEntity::new, MobCategory.MONSTER).sized(0.7f, 0.7f).clientTrackingRange(8));
+	/** Nautilus Óseo Grande: vuela y embiste; la caja de choque abarca el caparazón y los tentáculos que cuelgan. */
+	public static final EntityType<com.dedsafio4.bestias.NautilusOseoGrandeEntity> NAUTILUS_OSEO_GRANDE = registrar("nautilus_oseo_grande",
+			EntityType.Builder.of(com.dedsafio4.bestias.NautilusOseoGrandeEntity::new, MobCategory.MONSTER).sized(2.1f, 3.1f).clientTrackingRange(10));
 
 	/** Cerebro Amarillo: una medusa-cerebro de algo más de un bloque. */
 	public static final EntityType<com.dedsafio4.bestias.CerebroAmarilloEntity> CEREBRO_AMARILLO = registrar("cerebro_amarillo",
@@ -263,6 +266,7 @@ public final class ModEntidades {
 				com.dedsafio4.bestias.ReptisaurioEntity::puedeAparecerEnCueva);
 		FabricDefaultAttributeRegistry.register(MIRA, com.dedsafio4.bestias.ReptisaurioEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(NAUTILUS_OSEO, com.dedsafio4.bestias.NautilusOseoEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(NAUTILUS_OSEO_GRANDE, com.dedsafio4.bestias.NautilusOseoGrandeEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CEREBRO_AMARILLO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(GARRAPATA_CEREBRAL, com.dedsafio4.bestias.GarrapataCerebralEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(FLASHBANG, com.dedsafio4.bestias.FlashbangEntity.crearAtributos());
@@ -296,6 +300,8 @@ public final class ModEntidades {
 				Monster::checkAnyLightMonsterSpawnRules);
 		// Nautilus Óseo: en la Dimensión de los Órganos, en grupos, volando (no necesita piso) y con cualquier luz.
 		SpawnPlacements.register(NAUTILUS_OSEO, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				com.dedsafio4.bestias.NautilusOseoEntity::puedeAparecer);
+		SpawnPlacements.register(NAUTILUS_OSEO_GRANDE, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				com.dedsafio4.bestias.NautilusOseoEntity::puedeAparecer);
 	}
 }

@@ -167,6 +167,13 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("Son MUY peligrosos en grupo.", GRIS));
 	}
 
+	public static void nautilusOseoGrande(List<Component> t) {
+		t.add(parte("Criatura voladora de gran tamaño.", GRIS));
+		t.add(parte("Te ", GRIS).append(parte("embiste", VIOLETA)).append(parte(" cada 7 segundos.", GRIS)));
+		t.add(parte("No puedes empujarla. Aplica ", GRIS).append(parte("Levitación", VIOLETA)).append(parte(".", GRIS)));
+		t.add(parte("Son MUY peligrosos en grupo.", GRIS));
+	}
+
 	public static void zombiePlata(List<Component> t) {
 		t.add(parte("Zombie consumido por Qumara.", GRIS));
 		t.add(parte("Muy rápido y fuerte. ", GRIS).append(parte("Puede escalar", VIOLETA)));
