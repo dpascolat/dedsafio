@@ -336,6 +336,9 @@ public final class ModItems {
 	public static final Item NAUTILUS_OSEO_GRANDE_SPAWN_EGG = registrar("nautilus_oseo_grande_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.NAUTILUS_OSEO_GRANDE, 0xE9DFC9, 0xB04FC0, new Item.Properties(),
 					HuevoConDescripcion::nautilusOseoGrande));
+	public static final Item PARASITO_VOLADOR_SPAWN_EGG = registrar("parasito_volador_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.PARASITO_VOLADOR, 0xD8322A, 0x2A1616, new Item.Properties(),
+					HuevoConDescripcion::parasitoVolador));
 	public static final Item CEREBRO_AMARILLO_SPAWN_EGG = registrar("cerebro_amarillo_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.CEREBRO_AMARILLO, 0xE3949A, 0xF2C230, new Item.Properties(),
 					HuevoConDescripcion::cerebroAmarillo));
@@ -724,6 +727,7 @@ public final class ModItems {
 						entradas.accept(ZOMBIE_PLATA_SPAWN_EGG);
 						entradas.accept(NAUTILUS_OSEO_SPAWN_EGG);
 						entradas.accept(NAUTILUS_OSEO_GRANDE_SPAWN_EGG);
+						entradas.accept(PARASITO_VOLADOR_SPAWN_EGG);
 						entradas.accept(CEREBRO_AMARILLO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
 						entradas.accept(TOTEM_LIMBO);

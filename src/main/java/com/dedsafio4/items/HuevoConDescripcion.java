@@ -174,6 +174,12 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("Son MUY peligrosos en grupo.", GRIS));
 	}
 
+	public static void parasitoVolador(List<Component> t) {
+		t.add(parte("Habita dentro de las Verrugas Claras", GRIS));
+		t.add(parte("y Oscuras de Gleba. Al romperlas,", GRIS));
+		t.add(parte("saldrá y te atacará. ", GRIS).append(parte("Es muy veloz.", VIOLETA)));
+	}
+
 	public static void zombiePlata(List<Component> t) {
 		t.add(parte("Zombie consumido por Qumara.", GRIS));
 		t.add(parte("Muy rápido y fuerte. ", GRIS).append(parte("Puede escalar", VIOLETA)));

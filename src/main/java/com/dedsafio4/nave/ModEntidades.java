@@ -126,6 +126,9 @@ public final class ModEntidades {
 	/** Nautilus Óseo (pequeño): vuela; la caja de choque es chica aunque el caparazón y los tentáculos son largos. */
 	public static final EntityType<com.dedsafio4.bestias.NautilusOseoEntity> NAUTILUS_OSEO = registrar("nautilus_oseo",
 			EntityType.Builder.of(com.dedsafio4.bestias.NautilusOseoEntity::new, MobCategory.MONSTER).sized(0.7f, 0.7f).clientTrackingRange(8));
+	/** Parásito Volador: sale de las Verrugas de Gleba al romperlas; chiquito y muy rápido. */
+	public static final EntityType<com.dedsafio4.bestias.ParasitoVoladorEntity> PARASITO_VOLADOR = registrar("parasito_volador",
+			EntityType.Builder.of(com.dedsafio4.bestias.ParasitoVoladorEntity::new, MobCategory.MONSTER).sized(0.9f, 0.9f).clientTrackingRange(8));
 	/** Nautilus Óseo Grande: vuela y embiste; la caja de choque abarca el caparazón y los tentáculos que cuelgan. */
 	public static final EntityType<com.dedsafio4.bestias.NautilusOseoGrandeEntity> NAUTILUS_OSEO_GRANDE = registrar("nautilus_oseo_grande",
 			EntityType.Builder.of(com.dedsafio4.bestias.NautilusOseoGrandeEntity::new, MobCategory.MONSTER).sized(2.1f, 3.1f).clientTrackingRange(10));
@@ -267,6 +270,7 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(MIRA, com.dedsafio4.bestias.ReptisaurioEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(NAUTILUS_OSEO, com.dedsafio4.bestias.NautilusOseoEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(NAUTILUS_OSEO_GRANDE, com.dedsafio4.bestias.NautilusOseoGrandeEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(PARASITO_VOLADOR, com.dedsafio4.bestias.ParasitoVoladorEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CEREBRO_AMARILLO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(GARRAPATA_CEREBRAL, com.dedsafio4.bestias.GarrapataCerebralEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(FLASHBANG, com.dedsafio4.bestias.FlashbangEntity.crearAtributos());
