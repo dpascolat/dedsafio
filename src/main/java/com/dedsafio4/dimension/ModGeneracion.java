@@ -23,6 +23,11 @@ public final class ModGeneracion {
 			Registry.register(BuiltInRegistries.FEATURE,
 					ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "circulo_portal"), new CirculoPortalFeature());
 
+	/** Los Árboles de Grasa de Gleba: flores de Grasa Líquida y Coagulada arriba. */
+	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> ARBOL_GRASA =
+			Registry.register(BuiltInRegistries.FEATURE,
+					ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "arbol_grasa"), new ArbolGrasaFeature());
+
 	/** Los Pulmones en las minas de Gleba. */
 	public static final Feature<net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> PULMONES =
 			Registry.register(BuiltInRegistries.FEATURE, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "pulmones"), new PulmonesFeature());
