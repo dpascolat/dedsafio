@@ -255,9 +255,9 @@ public final class ModBloques {
 	 * Dimensión de los Órganos. Al romperlas puede salir un Gusano de Carne (GrasaBlock).
 	 */
 	public static final Block GRASA_LIQUIDA = registrar("grasa_liquida", new GrasaBlock(BlockBehaviour.Properties.of()
-			.mapColor(MapColor.COLOR_YELLOW).strength(1.5f, 3f).sound(SoundType.SLIME_BLOCK).requiresCorrectToolForDrops()));
+			.mapColor(MapColor.COLOR_YELLOW).strength(1.5f, 3f).sound(SoundType.SLIME_BLOCK)));
 	public static final Block GRASA_COAGULADA = registrar("grasa_coagulada", new GrasaBlock(BlockBehaviour.Properties.of()
-			.mapColor(MapColor.SAND).strength(1.5f, 3f).sound(SoundType.SLIME_BLOCK).requiresCorrectToolForDrops()));
+			.mapColor(MapColor.SAND).strength(1.5f, 3f).sound(SoundType.SLIME_BLOCK)));
 	public static final Item GRASA_LIQUIDA_ITEM = registrarItem("grasa_liquida", GRASA_LIQUIDA);
 	public static final Item GRASA_COAGULADA_ITEM = registrarItem("grasa_coagulada", GRASA_COAGULADA);
 
