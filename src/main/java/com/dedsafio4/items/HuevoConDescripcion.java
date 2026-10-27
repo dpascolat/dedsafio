@@ -90,8 +90,9 @@ public class HuevoConDescripcion extends SpawnEggItem {
 	}
 
 	public static void gusanoCarne(List<Component> t) {
-		t.add(parte("Criatura pequeña y lenta que ataca", GRIS));
-		t.add(parte("directamente a quien se le acerque.", GRIS));
+		t.add(parte("Criatura que habita en los Jugos", GRIS));
+		t.add(parte("Gástricos de Gleba. Ataca cuerpo a", GRIS));
+		t.add(parte("cuerpo sin pensarlo.", GRIS));
 		t.add(Component.empty());
 		t.add(parte("🎁 Drop:", DROP));
 		t.add(Component.empty());

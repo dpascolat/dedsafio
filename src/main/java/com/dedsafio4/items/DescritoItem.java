@@ -257,14 +257,14 @@ public class DescritoItem extends Item {
 		t.add(parte("◆ Narval con Reptisaurio", SALMON));
 	}
 
-	/** Cuero Glebanoide: lo sueltan el Gusano de Carne y el Parásito Volador. */
+	/** Cuero Glebanoide: lo sueltan el Parásito (id gusano_carne) y el Parásito Volador. */
 	public static void cueroGlebanoide(List<Component> t) {
 		t.add(parte("Combínalo con otros ingredientes", GRIS));
 		t.add(parte("para conseguir nuevos objetos.", GRIS));
 		t.add(Component.empty());
 		t.add(parte("Consíguelo al Eliminar:", GRIS));
 		t.add(Component.empty());
-		t.add(parte("◆ Gusano de Carne", SALMON));
+		t.add(parte("◆ Parásito", SALMON));
 		t.add(parte("◆ Parásito Volador", SALMON));
 	}
 
