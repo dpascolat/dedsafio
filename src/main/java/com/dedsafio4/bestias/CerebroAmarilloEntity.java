@@ -129,6 +129,13 @@ public class CerebroAmarilloEntity extends Monster {
 		}
 	}
 
+	/**
+	 * El golpe que mata. No puede ser "infinito" (Float.MAX_VALUE): Minecraft gasta la armadura según el daño y, con
+	 * Irrompibilidad, tira un dado por cada punto; con daño infinito eran miles de millones de tiradas y el servidor
+	 * se colgaba. 1000 alcanza para matar a cualquiera (y si algo lo frena, abajo se lo mata igual).
+	 */
+	private static final float GOLPE_FINAL = 1000f;
+
 	/** Medio corazón, pase lo que pase (armadura, Protección...); se cura con lo que saca. Al final te mata. */
 	private void drenar(Player jugador) {
 		DamageSource fuente = damageSources().mobAttack(this);
@@ -140,14 +147,14 @@ public class CerebroAmarilloEntity extends Monster {
 			// El golpe que lo mata (si tiene un tótem en la mano, el tótem lo salva como siempre).
 			int totemsAntes = totemsUsados(jugador);
 			jugador.invulnerableTime = 0;
-			jugador.hurt(fuente, Float.MAX_VALUE);
+			jugador.hurt(fuente, GOLPE_FINAL);
 			if (jugador.isAlive() && !jugador.isCreative()) {
 				if (totemsUsados(jugador) > totemsAntes) {
 					vidaTope = jugador.getHealth();   // lo salvó un tótem: se sigue desde la vida que le dejó
 				} else {
 					// El golpe no llegó (por la dificultad, algún efecto, otro mod...): se muere igual.
 					jugador.invulnerableTime = 0;
-					jugador.hurt(damageSources().genericKill(), Float.MAX_VALUE);
+					jugador.hurt(damageSources().genericKill(), GOLPE_FINAL);
 					if (jugador.isAlive()) {
 						jugador.setHealth(0f);
 						jugador.die(fuente);
