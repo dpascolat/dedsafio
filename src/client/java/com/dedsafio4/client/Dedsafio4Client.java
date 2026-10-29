@@ -375,6 +375,13 @@ public class Dedsafio4Client implements ClientModInitializer {
 			com.dedsafio4.client.ruleta.AnimacionesCliente.limpiar();
 		});
 
+		// El Arco de Huesos Grande se tensa como el arco (sus 3 dibujos al tensar, ver models/item/arco_huesos_grande.json).
+		ItemProperties.register(ModItems.ARCO_HUESOS_GRANDE, ResourceLocation.withDefaultNamespace("pull"),
+				(stack, level, entidad, semilla) -> entidad == null || entidad.getUseItem() != stack ? 0
+						: (stack.getUseDuration(entidad) - entidad.getUseItemRemainingTicks()) / 20f);
+		ItemProperties.register(ModItems.ARCO_HUESOS_GRANDE, ResourceLocation.withDefaultNamespace("pulling"),
+				(stack, level, entidad, semilla) -> entidad != null && entidad.isUsingItem() && entidad.getUseItem() == stack ? 1 : 0);
+
 		for (Item manuscrito : ModItems.MANUSCRITOS) {
 			ItemProperties.register(manuscrito, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "sellado"),
 					(stack, level, entidad, semilla) -> ManuscritoDatos.sellado(stack) ? 1 : 0);

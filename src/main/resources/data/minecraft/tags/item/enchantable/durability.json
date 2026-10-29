@@ -1,6 +1,7 @@
 {
 	"replace": false,
 	"values": [
-		"dedsafio4:arco_glebanoide"
+		"dedsafio4:arco_glebanoide",
+		"dedsafio4:arco_huesos_grande"
 	]
 }

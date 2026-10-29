@@ -134,6 +134,8 @@ public final class ModItems {
 	public static final Item SACO = registrar("saco", new BolsaItem(new Item.Properties().stacksTo(1), 4, "a"));
 	/** Arco Glebanoide: sus flechas rebotan en los enemigos cercanos. */
 	public static final Item ARCO_GLEBANOIDE = registrar("arco_glebanoide", new ArcoGlebanoideItem(new Item.Properties().durability(384)));
+	/** Arco de Huesos Grande: sus flechas traspasan e impactan hasta 3 enemigos. */
+	public static final Item ARCO_HUESOS_GRANDE = registrar("arco_huesos_grande", new ArcoHuesosGrandeItem(new Item.Properties().durability(500)));
 
 	/** Semilla de Fruta Solaria: se planta en el costado de los troncos del Centro de Quiu. */
 	public static final Item SEMILLA_SOLARIA = registrar("semilla_solaria",
@@ -694,6 +696,7 @@ public final class ModItems {
 						for (Item bolsa : BolsasDeColores.BOLSAS.values()) entradas.accept(bolsa);
 						entradas.accept(SACO);
 						entradas.accept(ARCO_GLEBANOIDE);
+						entradas.accept(ARCO_HUESOS_GRANDE);
 						entradas.accept(FRUTA_ESPACIO);
 						entradas.accept(PILDORA_VACIA);
 						entradas.accept(JERINGA);
