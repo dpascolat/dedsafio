@@ -28,6 +28,17 @@ public final class CambiosEventos {
 	private CambiosEventos() {}
 
 	public static void registrar() {
+		// aranas 1: todas las arañas (también las de cueva) tienen Velocidad infinita.
+		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			if (server.getTickCount() % 40 != 0 || Cambios.nivel(server, Cambios.ARANAS) < 1) return;
+			for (var mundo : server.getAllLevels()) {
+				for (var arana : mundo.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(net.minecraft.world.entity.monster.Spider.class),
+						a -> !a.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED))) {
+					arana.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED,
+							net.minecraft.world.effect.MobEffectInstance.INFINITE_DURATION, 1, false, false));
+				}
+			}
+		});
 		// vacas 1: no se puede ordeñar ninguna vaca (incluye champiñacas).
 		UseEntityCallback.EVENT.register((jugador, level, mano, entidad, hit) -> {
 			if (!(jugador instanceof ServerPlayer servidor) || !(entidad instanceof Cow)) return InteractionResult.PASS;

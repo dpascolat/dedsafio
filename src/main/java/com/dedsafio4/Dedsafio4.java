@@ -277,6 +277,18 @@ public class Dedsafio4 implements ModInitializer {
 		// El Creeper de Papel aparece de día en todo el Overworld.
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.CREEPER_PAPEL, 15, 1, 1);
+		// El Creeper Resorte aparece de día en todo el Overworld (solo después de /mob creeper_resorte).
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.CREEPER_RESORTE, 15, 1, 1);
+		// Solo después de su /cambio (SpawnPlacementsMixin): Zombie Planta, Creeper Raíz de Azalea, Parásito y Araña de Cueva.
+		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.FOREST),
+				MobCategory.MONSTER, ModEntidades.ZOMBIE_PLATA, 40, 1, 2);
+		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.PLAINS),
+				MobCategory.MONSTER, ModEntidades.CREEPER_AZALEA, 30, 1, 1);
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.GUSANO_CARNE, 15, 1, 2);
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, EntityType.CAVE_SPIDER, 50, 1, 2);
 		// El Creeper Nuclear aparece en la nieve y en el desierto.
 		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.SNOWY_PLAINS, Biomes.SNOWY_TAIGA, Biomes.ICE_SPIKES,
 						Biomes.SNOWY_SLOPES, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.GROVE, Biomes.SNOWY_BEACH, Biomes.FROZEN_RIVER,

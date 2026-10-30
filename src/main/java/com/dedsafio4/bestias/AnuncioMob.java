@@ -57,6 +57,7 @@ public final class AnuncioMob {
 		LUGARES.put("creeper_nuclear", "los biomas de nieve y el desierto");
 		LUGARES.put("creeper_pastel", "todo el Overworld, a oscuras");
 		LUGARES.put("creeper_papel", "todo el Overworld, de día");
+		LUGARES.put("creeper_resorte", "todo el Overworld, de día");
 		LUGARES.put("flashbang", "el Limbito, el bioma del Limbo");
 		LUGARES.put("bomba_warden", "la Oscuridad Profunda y las cuevas");
 		LUGARES.put("creeper_amarillo", "la Dimensión de los Órganos");

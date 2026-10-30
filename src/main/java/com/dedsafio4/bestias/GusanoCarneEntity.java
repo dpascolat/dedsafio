@@ -35,6 +35,20 @@ public class GusanoCarneEntity extends Monster {
 				.add(Attributes.FOLLOW_RANGE, 12.0);
 	}
 
+	/** En el agua, con cualquier luz (fuera de pacífico). */
+	public static boolean puedeAparecer(EntityType<GusanoCarneEntity> tipo, net.minecraft.world.level.ServerLevelAccessor mundo,
+										net.minecraft.world.entity.MobSpawnType razon, net.minecraft.core.BlockPos pos,
+										net.minecraft.util.RandomSource azar) {
+		return mundo.getDifficulty() != net.minecraft.world.Difficulty.PEACEFUL
+				&& mundo.getFluidState(pos).is(net.minecraft.tags.FluidTags.WATER);
+	}
+
+	/** Con sol también le sirve el lugar (a los monstruos normales la luz no los deja aparecer). */
+	@Override
+	public float getWalkTargetValue(net.minecraft.core.BlockPos pos, net.minecraft.world.level.LevelReader mundo) {
+		return 0;
+	}
+
 	@Override
 	protected void registerGoals() {
 		goalSelector.addGoal(1, new FloatGoal(this));

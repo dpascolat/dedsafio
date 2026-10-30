@@ -25,6 +25,12 @@ public class CreeperAzaleaEntity extends Creeper {
 		super.readAdditionalSaveData(datos);
 	}
 
+	/** Con sol también le sirve el lugar (a los monstruos normales la luz no los deja aparecer). */
+	@Override
+	public float getWalkTargetValue(net.minecraft.core.BlockPos pos, net.minecraft.world.level.LevelReader mundo) {
+		return 0;
+	}
+
 	@Override
 	public void tick() {
 		super.tick();

@@ -319,6 +319,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.CREEPER_AZALEA, com.dedsafio4.client.bestias.CreeperAzaleaRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.RAICES, com.dedsafio4.client.bestias.RaicesRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.ZOMBIE_PLATA, com.dedsafio4.client.bestias.ZombiePlataRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.CREEPER_RESORTE, com.dedsafio4.client.bestias.CreeperResorteRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NAUTILUS_OSEO, com.dedsafio4.client.bestias.NautilusOseoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NAUTILUS_OSEO_GRANDE, com.dedsafio4.client.bestias.NautilusOseoGrandeRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.PARASITO_VOLADOR, com.dedsafio4.client.bestias.ParasitoVoladorRenderer::new);

@@ -115,6 +115,9 @@ public final class ModEntidades {
 	/** Creeper Raíz de Azalea: 1,5 bloques de alto con la flor. */
 	public static final EntityType<com.dedsafio4.bestias.CreeperAzaleaEntity> CREEPER_AZALEA = registrar("creeper_raiz_azalea",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperAzaleaEntity::new, MobCategory.MONSTER).sized(0.8f, 1.5f).clientTrackingRange(8));
+	/** Creeper Resorte: una cabeza de creeper sobre un resorte; al explotar lanza para arriba. */
+	public static final EntityType<com.dedsafio4.bestias.CreeperResorteEntity> CREEPER_RESORTE = registrar("creeper_resorte",
+			EntityType.Builder.of(com.dedsafio4.bestias.CreeperResorteEntity::new, MobCategory.MONSTER).sized(0.7f, 1.5f).clientTrackingRange(8));
 	/** Las raíces que atrapan al jugador (las crea el Creeper Raíz de Azalea al explotar). */
 	public static final EntityType<com.dedsafio4.bestias.RaicesEntity> RAICES = registrar("raices",
 			EntityType.Builder.<com.dedsafio4.bestias.RaicesEntity>of(com.dedsafio4.bestias.RaicesEntity::new, MobCategory.MISC)
@@ -248,7 +251,16 @@ public final class ModEntidades {
 		SpawnPlacements.register(ZARINOSA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				com.dedsafio4.bestias.ZarinosaEntity::puedeAparecerEnCueva);
 		FabricDefaultAttributeRegistry.register(CREEPER_AZALEA, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		// Con "/cambio azalea_plains 1", de día en el bioma Plains (ver SpawnPlacementsMixin y Dedsafio4#onInitialize).
+		SpawnPlacements.register(CREEPER_AZALEA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				com.dedsafio4.bestias.CreeperPapelEntity::puedeAparecer);
+		FabricDefaultAttributeRegistry.register(CREEPER_RESORTE, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		SpawnPlacements.register(CREEPER_RESORTE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				com.dedsafio4.bestias.CreeperPapelEntity::puedeAparecer);
 		FabricDefaultAttributeRegistry.register(ZOMBIE_PLATA, com.dedsafio4.bestias.ZombiePlataEntity.crearAtributos());
+		// Con "/cambio zombi_planta 1", en el bioma Forest (ver SpawnPlacementsMixin y Dedsafio4#onInitialize).
+		SpawnPlacements.register(ZOMBIE_PLATA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				net.minecraft.world.entity.monster.Monster::checkMonsterSpawnRules);
 		com.dedsafio4.bestias.RaicesEntity.registrar();
 		FabricDefaultAttributeRegistry.register(NARVAL, com.dedsafio4.bestias.NarvalEntity.crearAtributos());
 		// Narval: en el agua de las cuevas del Centro de Quiu (acuíferos).
@@ -291,6 +303,9 @@ public final class ModEntidades {
 					Monster::checkAnyLightMonsterSpawnRules);
 		}
 		FabricDefaultAttributeRegistry.register(GUSANO_CARNE, com.dedsafio4.bestias.GusanoCarneEntity.crearAtributos());
+		// Con "/cambio parasitos_agua 1", en el agua del Overworld (ver SpawnPlacementsMixin y Dedsafio4#onInitialize).
+		SpawnPlacements.register(GUSANO_CARNE, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR,
+				com.dedsafio4.bestias.GusanoCarneEntity::puedeAparecer);
 		com.dedsafio4.bestias.FlashbangEntity.registrar();
 		// Flashbang: en el Limbito (bioma del Limbo), a oscuras, pero nunca sobre la piedra del piso del Limbo.
 		SpawnPlacements.register(FLASHBANG, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

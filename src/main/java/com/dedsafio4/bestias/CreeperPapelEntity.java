@@ -64,6 +64,12 @@ public class CreeperPapelEntity extends Creeper {
 		return mundo.getLevel().isDay() && mundo.canSeeSky(pos) && Mob.checkMobSpawnRules(tipo, mundo, razon, pos, azar);
 	}
 
+	/** Con sol también le sirve el lugar (a los monstruos normales la luz no los deja aparecer). */
+	@Override
+	public float getWalkTargetValue(BlockPos pos, net.minecraft.world.level.LevelReader mundo) {
+		return 0;
+	}
+
 	/** En vez de explotar: un "puf" de papeles y la solicitud de empleo para los que estaban cerca. */
 	public void papeleo(ServerLevel mundo) {
 		mundo.sendParticles(ParticleTypes.POOF, getX(), getY(0.5), getZ(), 25, 0.5, 0.6, 0.5, 0.05);

@@ -72,6 +72,15 @@ public final class Cambios {
 	/** menos_perlas 1: los Endermen sueltan Perlas del End un 20% menos. */
 	public static final String MENOS_PERLAS = "menos_perlas";
 
+	/** zombi_planta 1: los Zombies Planta (id zombie_plata) aparecen en el bioma Forest. */
+	public static final String ZOMBI_PLANTA = "zombi_planta";
+	/** azalea_plains 1: los Creepers Raíz de Azalea aparecen de día en el bioma Plains. */
+	public static final String AZALEA_PLAINS = "azalea_plains";
+	/** parasitos_agua 1: los Parásitos (id gusano_carne) aparecen en el agua del Overworld. */
+	public static final String PARASITOS_AGUA = "parasitos_agua";
+	/** aranas 1: las Arañas de Cueva aparecen de noche en el Overworld y todas las arañas tienen Velocidad infinita. */
+	public static final String ARANAS = "aranas";
+
 	/** Tipo de daño propio del mod para la Perla del End: no lo frena la armadura ni sus encantamientos. */
 	public static final ResourceKey<DamageType> DANIO_ENDERPERLA = ResourceKey.create(Registries.DAMAGE_TYPE,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "enderperla"));
@@ -132,7 +141,15 @@ public final class Cambios {
 			new Cambio(PERLAS_FALLAN, "perlas_fallan", Map.of(
 					1, "Reviil desestabilizó las Perlas del End. Ahora cada perla tiene un 1% de fallar.")),
 			new Cambio(MENOS_PERLAS, "menos_perlas", Map.of(
-					1, "Los Endermen esconden sus perlas. Ahora sueltan Perlas del End un 20% menos."))
+					1, "Los Endermen esconden sus perlas. Ahora sueltan Perlas del End un 20% menos.")),
+			new Cambio(ZOMBI_PLANTA, "zombi_planta", Map.of(
+					1, "Ahora los Zombies Planta aparecen en el bioma Forest.")),
+			new Cambio(AZALEA_PLAINS, "azalea_plains", Map.of(
+					1, "Ahora los Creepers Raíz de Azalea aparecen naturalmente en el bioma Plains (durante el día).")),
+			new Cambio(PARASITOS_AGUA, "parasitos_agua", Map.of(
+					1, "¡NO PUEDE SER POSIBLE! El día de ayer ALK4PON3OP trajo en su nave a un Parásito Glebanoide y comenzaron a reproducirse. Ahora aparecen en el agua del Overworld.")),
+			new Cambio(ARANAS, "aranas", Map.of(
+					1, "Ahora las Arañas de Cueva aparecen en el Overworld durante la Noche. Además, todas las arañas tienen Velocidad infinita."))
 	);
 
 	public static CambiosData data(MinecraftServer server) {

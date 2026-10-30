@@ -82,6 +82,11 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("Centro de Quiu", BLANCO));
 	}
 
+	public static void creeperResorte(List<Component> t) {
+		t.add(parte("Al explotar, te lanzará hacia arriba", GRIS));
+		t.add(parte("hasta una gran altura.", VIOLETA));
+	}
+
 	public static void creeperAzalea(List<Component> t) {
 		t.add(parte("Al explotar, te atrapará con sus raíces.", GRIS));
 		t.add(parte("Debes ser rápido para librarte de ellas.", VIOLETA));

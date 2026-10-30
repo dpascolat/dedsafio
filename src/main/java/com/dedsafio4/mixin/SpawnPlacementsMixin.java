@@ -36,8 +36,30 @@ public abstract class SpawnPlacementsMixin {
 	private static void dedsafio4$mobsHabilitados(EntityType<?> tipo, ServerLevelAccessor level, MobSpawnType razon,
 												  BlockPos pos, RandomSource random, CallbackInfoReturnable<Boolean> cir) {
 		if (razon != MobSpawnType.NATURAL && razon != MobSpawnType.CHUNK_GENERATION) return;
+		// El Parásito está en /mob solo por el anuncio: sale de la grasa siempre y del agua con "parasitos_agua 1".
+		if (tipo == com.dedsafio4.nave.ModEntidades.GUSANO_CARNE) return;
 		if (!com.dedsafio4.bestias.AnuncioMob.controla(tipo)) return;
 		if (!com.dedsafio4.bestias.AnuncioMob.activo(level.getLevel().getServer(), tipo)) cir.setReturnValue(false);
+	}
+
+	/** Los mobs que aparecen solos únicamente después de un /cambio (ver Dedsafio4#onInitialize). */
+	@Inject(method = "checkSpawnRules", at = @At("HEAD"), cancellable = true)
+	private static void dedsafio4$conCambio(EntityType<?> tipo, ServerLevelAccessor level, MobSpawnType razon,
+											BlockPos pos, RandomSource random, CallbackInfoReturnable<Boolean> cir) {
+		if (razon != MobSpawnType.NATURAL && razon != MobSpawnType.CHUNK_GENERATION) return;
+		var mundo = level.getLevel();
+		String cambio = tipo == com.dedsafio4.nave.ModEntidades.ZOMBIE_PLATA ? Cambios.ZOMBI_PLANTA
+				: tipo == com.dedsafio4.nave.ModEntidades.CREEPER_AZALEA ? Cambios.AZALEA_PLAINS
+				: tipo == com.dedsafio4.nave.ModEntidades.GUSANO_CARNE ? Cambios.PARASITOS_AGUA
+				: tipo == EntityType.CAVE_SPIDER ? Cambios.ARANAS : null;
+		if (cambio == null) return;
+		if (Cambios.nivel(mundo.getServer(), cambio) < 1) {
+			cir.setReturnValue(false);
+		} else if (tipo == EntityType.CAVE_SPIDER) {
+			// Minecraft no tiene reglas para la araña de cueva: de noche, en el piso, con las de los monstruos.
+			cir.setReturnValue(mundo.isNight() && SpawnPlacementTypes.ON_GROUND.isSpawnPositionOk(level, pos, tipo)
+					&& Monster.checkMonsterSpawnRules(EntityType.CAVE_SPIDER, level, razon, pos, random));
+		}
 	}
 
 	/** En el Centro de Quiu no aparecen cerdos solos, salvo con /cerdos_quiu activar (ver CerdosQuiu). */
