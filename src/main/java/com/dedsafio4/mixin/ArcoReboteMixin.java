@@ -19,6 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Las flechas del Arco Glebanoide rebotan: cuando le pegan a algo, sale una flecha nueva desde ahí hacia el enemigo
  * más cercano (hasta 3 rebotes, a 10 bloques como mucho). Las flechas del rebote no se pueden juntar.
+ * Si el golpe no hizo daño (fuego amigo desactivado, por ejemplo), Minecraft deja la flecha rebotando encima del
+ * jugador y le vuelve a "pegar" en cada tick: esa flecha se termina ahí, y no rebota (si no, era una metralleta).
  */
 @Mixin(AbstractArrow.class)
 public abstract class ArcoReboteMixin {
@@ -26,10 +28,30 @@ public abstract class ArcoReboteMixin {
 	private static final double ALCANCE = 10;
 	private static final String MARCA = "dedsafio4_rebotes_";
 
+	/** Cómo venía la flecha antes de golpear: si después va para el otro lado, Minecraft la hizo rebotar (no hubo daño). */
+	@org.spongepowered.asm.mixin.Unique
+	private Vec3 dedsafio4$velocidadAntes = Vec3.ZERO;
+
+	@org.spongepowered.asm.mixin.Shadow
+	protected abstract ItemStack getPickupItem();
+
+	@Inject(method = "onHitEntity", at = @At("HEAD"))
+	private void dedsafio4$antesDeGolpear(EntityHitResult golpe, CallbackInfo ci) {
+		dedsafio4$velocidadAntes = ((AbstractArrow) (Object) this).getDeltaMovement();
+	}
+
 	@Inject(method = "onHitEntity", at = @At("TAIL"))
 	private void dedsafio4$rebotar(EntityHitResult golpe, CallbackInfo ci) {
 		AbstractArrow flecha = (AbstractArrow) (Object) this;
 		if (!(flecha.level() instanceof ServerLevel mundo)) return;
+		if (!flecha.isRemoved() && flecha.getDeltaMovement().dot(dedsafio4$velocidadAntes) < 0) {
+			// No hizo daño. Con el escudo sigue rebotando como siempre; en un jugador sin escudo se termina acá.
+			if (golpe.getEntity() instanceof net.minecraft.world.entity.player.Player jugador && !jugador.isBlocking()) {
+				if (flecha.pickup == AbstractArrow.Pickup.ALLOWED) flecha.spawnAtLocation(getPickupItem());
+				flecha.discard();
+			}
+			return;
+		}
 		int quedan = rebotesQueQuedan(flecha);
 		if (quedan <= 0) return;
 		Entity golpeado = golpe.getEntity();
