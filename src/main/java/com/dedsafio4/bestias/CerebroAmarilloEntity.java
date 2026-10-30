@@ -130,15 +130,15 @@ public class CerebroAmarilloEntity extends Monster {
 	}
 
 	/**
-	 * El golpe que mata. No puede ser "infinito" (Float.MAX_VALUE): Minecraft gasta la armadura según el daño y, con
-	 * Irrompibilidad, tira un dado por cada punto; con daño infinito eran miles de millones de tiradas y el servidor
-	 * se colgaba. 1000 alcanza para matar a cualquiera (y si algo lo frena, abajo se lo mata igual).
+	 * El golpe que mata. Es mágico, así no gasta la armadura. Tampoco puede ser "infinito" (Float.MAX_VALUE): con
+	 * daño infinito el servidor se colgaba calculando la armadura. 1000 alcanza para matar a cualquiera (y si algo lo
+	 * frena, abajo se lo mata igual).
 	 */
 	private static final float GOLPE_FINAL = 1000f;
 
 	/** Medio corazón, pase lo que pase (armadura, Protección...); se cura con lo que saca. Al final te mata. */
 	private void drenar(Player jugador) {
-		DamageSource fuente = damageSources().mobAttack(this);
+		DamageSource fuente = damageSources().indirectMagic(this, this);
 		vidaTope = Math.min(vidaTope, jugador.getHealth()) - 1f;
 		if (vidaTope > 0f) {
 			jugador.setHealth(vidaTope);
