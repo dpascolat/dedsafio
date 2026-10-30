@@ -16,5 +16,5 @@ public final class SkinsDedsafio {
 	public static final List<String> NOMBRES = List.of("ajolote", "banquito", "churri", "diabli", "eon", "huron", "juansnutria", "mapache",
 			"nec", "nec2", "nutria", "nutria2", "nutriaabeja", "nutriabetis", "nutriacalabaza", "nutriaconstructora", "nutriadetective", "nutriadj",
 			"nutriaelegante", "nutriahoja", "nutriaia", "nutrianeitor", "nutriape", "nutriaplaya", "nutriawatona", "papuche",
-			"papunutria", "parcenutria", "pe23", "ribbit", "sombrita", "unicornio");
+			"papunutria", "parcenutria", "pe23", "ribbit", "rosita", "sombrita", "unicornio");
 }
