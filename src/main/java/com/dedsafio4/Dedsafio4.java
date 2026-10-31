@@ -175,6 +175,7 @@ public class Dedsafio4 implements ModInitializer {
 			BancoComandos.registrar(dispatcher);
 			com.dedsafio4.subastas.Subastas.registrar(dispatcher);
 			com.dedsafio4.subastas.Puja.registrarComandos(dispatcher);
+			com.dedsafio4.cambios.GasToxico.registrarComandos(dispatcher);
 			com.dedsafio4.gancho.Ganchos.registrarComandos(dispatcher);
 			com.dedsafio4.puertas.PuertasHueso.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.TriceratopsEntity.registrarComandos(dispatcher);

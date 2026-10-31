@@ -29,6 +29,7 @@ public final class CambiosEventos {
 
 	public static void registrar() {
 		CambiosDificultad.registrar();
+		GasToxico.registrar();
 		// aranas 1: todas las arañas (también las de cueva) tienen Velocidad infinita.
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (server.getTickCount() % 40 != 0 || Cambios.nivel(server, Cambios.ARANAS) < 1) return;
@@ -186,7 +187,7 @@ public final class CambiosEventos {
 	public static void alActivar(MinecraftServer server, String cambio, int nivel) {
 		if (Cambios.HEROBRINE.equals(cambio) && nivel >= 1) com.dedsafio4.herobrine.ModHerobrine.alActivar(server);
 		// Los zombis que ya estaban en el mundo también.
-		if ((Cambios.ZOMBI.equals(cambio) || Cambios.ZOMBI_CASCO.equals(cambio)) && nivel >= 1) {
+		if ((Cambios.ZOMBI.equals(cambio) || Cambios.ZOMBI_CASCO.equals(cambio) || Cambios.ZOMBI_PICO.equals(cambio)) && nivel >= 1) {
 			for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
 				for (Entity entidad : level.getAllEntities()) {
 					if (Zombis.esZombi(entidad)) Zombis.preparar((net.minecraft.world.entity.monster.Zombie) entidad, level);

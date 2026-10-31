@@ -166,6 +166,8 @@
 	"item.dedsafio4.aldeano_robot_spawn_egg": "Huevo generador de Aldeano Phora",
 	"death.attack.magma": "%1$s se derritió al tocar el magma",
 	"death.attack.interactuar": "%1$s touched what they should not",
+	"death.attack.gas_toxico": "%1$s breathed in Reviil's toxic gas",
+	"death.attack.gas_toxico.player": "%1$s breathed in Reviil's toxic gas",
 	"death.attack.interactuar.player": "%1$s touched what they should not",
 	"death.attack.altavoz": "%1$s could not stand the noise",
 	"death.attack.altavoz.player": "%1$s could not stand the noise of %2$s",

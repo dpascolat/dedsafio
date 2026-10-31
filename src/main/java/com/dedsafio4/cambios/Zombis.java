@@ -18,6 +18,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
  * - zombi 1: la mitad de los zombis (al azar, una sola vez por zombi) escalan paredes como las arañas.
  * - zombi 2: además, todos los zombis llevan una Espada de Hierro con Filo V (que no sueltan).
  * - zombi 3: además, aparecen en el Nether sin importar la luz (ver SpawnPlacementsMixin).
+ * Cambio "zombi_pico": aparecen con Pico de Diamante; de noche con "luna_roja", pican y construyen (ver ZombiMinero).
  * Cuentan los zombis, zombis aldeanos, momias y ahogados; no los piglins zombificados.
  */
 public final class Zombis {
@@ -38,6 +39,7 @@ public final class Zombis {
 	/** Al aparecer (o al activar el cambio): decide si escala y, en nivel 2, le da la espada. */
 	public static void preparar(Zombie zombi, ServerLevel level) {
 		casco(zombi, level);
+		pico(zombi, level);
 		int nivel = Cambios.nivel(level.getServer(), Cambios.ZOMBI);
 		if (nivel < 1) return;
 		if (!zombi.getTags().contains(DECIDIDO)) {
@@ -62,6 +64,21 @@ public final class Zombis {
 		if (!zombi.getItemBySlot(EquipmentSlot.HEAD).isEmpty() || zombi.getRandom().nextFloat() >= PROBABILIDAD_CASCO) return;
 		net.minecraft.world.item.Item[] cascos = {Items.LEATHER_HELMET, Items.CHAINMAIL_HELMET, Items.IRON_HELMET, Items.GOLDEN_HELMET};
 		zombi.setItemSlot(EquipmentSlot.HEAD, new ItemStack(cascos[zombi.getRandom().nextInt(cascos.length)]));
+	}
+
+	/** zombi_pico 1: el Pico de Diamante (que no suelta) en la mano libre, y lo que sabe hacer con él durante la Luna Roja. */
+	private static void pico(Zombie zombi, ServerLevel level) {
+		if (((com.dedsafio4.mixin.MobAccessor) zombi).dedsafio4$goals().getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof ZombiMinero)) {
+			((com.dedsafio4.mixin.MobAccessor) zombi).dedsafio4$goals().addGoal(1, new ZombiMinero(zombi));
+		}
+		if (Cambios.nivel(level.getServer(), Cambios.ZOMBI_PICO) < 1 || tienePico(zombi)) return;
+		EquipmentSlot mano = zombi.getMainHandItem().isEmpty() ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+		zombi.setItemSlot(mano, new ItemStack(Items.DIAMOND_PICKAXE));
+		zombi.setDropChance(mano, 0f);
+	}
+
+	public static boolean tienePico(Zombie zombi) {
+		return zombi.getMainHandItem().is(Items.DIAMOND_PICKAXE) || zombi.getOffhandItem().is(Items.DIAMOND_PICKAXE);
 	}
 
 	private static boolean tieneLaEspada(Zombie zombi) {

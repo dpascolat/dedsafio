@@ -101,6 +101,12 @@ public final class Cambios {
 	public static final String CARNE = "carne";
 	/** manzanas 1: las Manzanas de Oro y Encantadas ya no dan Absorción. */
 	public static final String MANZANAS = "manzanas";
+	/** gas_toxico 1: por encima de la capa 150 del Overworld se pierde vida hasta morir (ver GasToxico). */
+	public static final String GAS_TOXICO = "gas_toxico";
+	/** zombi_pico 1: los zombis aparecen con Pico de Diamante (que no sueltan). */
+	public static final String ZOMBI_PICO = "zombi_pico";
+	/** luna_roja 1: de noche, los zombis con pico pican y construyen (ver ZombiMinero). */
+	public static final String LUNA_ROJA = "luna_roja";
 
 	/** Tipo de daño propio del mod para la Perla del End: no lo frena la armadura ni sus encantamientos. */
 	public static final ResourceKey<DamageType> DANIO_ENDERPERLA = ResourceKey.create(Registries.DAMAGE_TYPE,
@@ -167,6 +173,12 @@ public final class Cambios {
 					1, "El bambú esconde algo. Ahora al romper bambú puede aparecer una Araña de Cueva.")),
 			new Cambio(LIMBO, "limbo", Map.of(
 					1, "El Limbo se acerca. Ahora al romper una cama aparece un Wraith.")),
+			new Cambio(GAS_TOXICO, "gas_toxico", Map.of(
+					1, "Reviil liberó un gas tóxico permanente en la Capa 150 del Overworld. Estar por encima de esa capa causa daño hasta morir. Dentro de una nave no recibes daño, y la Montaña está protegida por Eón.")),
+			new Cambio(ZOMBI_PICO, "zombi_pico", Map.of(
+					1, "Ahora los Zombies aparecen con Pico de Diamante. Durante la Luna Roja pueden picar y construir.")),
+			new Cambio(LUNA_ROJA, "luna_roja", Map.of(
+					1, "Ha llegado la Luna Roja. De noche, los Zombies con pico pueden picar y construir.")),
 			new Cambio(ZOMBI_CASCO, "zombi_casco", Map.of(
 					1, "Los muertos se protegen del sol. Ahora los Zombis aparecen más seguido con casco.")),
 			new Cambio(PERLAS_FALLAN, "perlas_fallan", Map.of(
