@@ -87,6 +87,21 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("hasta una gran altura.", VIOLETA));
 	}
 
+	public static void creeperVisceral(List<Component> t) {
+		t.add(parte("Invulnerable al daño convencional, sólo", GRIS));
+		t.add(parte("puedes eliminarlo utilizando un Altavoz.", VIOLETA));
+		t.add(Component.empty());
+		t.add(parte("🫀 Aparece en: ", APARECE).append(parte("la Dimensión de los Órganos.", BLANCO)));
+	}
+
+	public static void vindicador(List<Component> t) {
+		t.add(parte("Es capaz de deshabilitar el Escudo por", GRIS));
+		t.add(parte("algunos segundos al golpearte.", GRIS));
+		t.add(parte("Al eliminarlo dropea Manzana de Oro.", VIOLETA));
+		t.add(Component.empty());
+		t.add(parte("👻 Aparece en: ", APARECE).append(parte("el Limbo.", BLANCO)));
+	}
+
 	public static void creeperAcuatico(List<Component> t) {
 		t.add(parte("Nada hacia ti y, al explotar,", GRIS));
 		t.add(parte("te deja con Náusea por 30 segundos.", VIOLETA));

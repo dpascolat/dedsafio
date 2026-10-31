@@ -28,6 +28,7 @@ public final class CambiosEventos {
 	private CambiosEventos() {}
 
 	public static void registrar() {
+		CambiosDificultad.registrar();
 		// aranas 1: todas las arañas (también las de cueva) tienen Velocidad infinita.
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (server.getTickCount() % 40 != 0 || Cambios.nivel(server, Cambios.ARANAS) < 1) return;

@@ -337,6 +337,14 @@ public final class ModItems {
 	public static final Item CREEPER_RESORTE_SPAWN_EGG = registrar("creeper_resorte_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.CREEPER_RESORTE, 0x3F453F, 0xC9CED3, new Item.Properties(),
 					HuevoConDescripcion::creeperResorte));
+	public static final Item CREEPER_VISCERAL_SPAWN_EGG = registrar("creeper_visceral_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.CREEPER_VISCERAL, 0xB8352B, 0x7C2560, new Item.Properties(),
+					HuevoConDescripcion::creeperVisceral));
+	public static final Item VINDICADOR_SPAWN_EGG = registrar("vindicador_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.VINDICADOR, 0x8A4A42, 0x3B2A24, new Item.Properties(),
+					HuevoConDescripcion::vindicador));
+	/** Altavoz: su onda de sonido es lo único que lastima al Creeper Visceral. */
+	public static final Item ALTAVOZ = registrar("altavoz", new AltavozItem(new Item.Properties().stacksTo(1)));
 	public static final Item CREEPER_ACUATICO_SPAWN_EGG = registrar("creeper_acuatico_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.CREEPER_ACUATICO, 0x1F7FA8, 0x0B2C3F, new Item.Properties(),
 					HuevoConDescripcion::creeperAcuatico));
@@ -739,6 +747,9 @@ public final class ModItems {
 						entradas.accept(ZOMBIE_PLATA_SPAWN_EGG);
 						entradas.accept(CREEPER_RESORTE_SPAWN_EGG);
 						entradas.accept(CREEPER_ACUATICO_SPAWN_EGG);
+						entradas.accept(CREEPER_VISCERAL_SPAWN_EGG);
+						entradas.accept(VINDICADOR_SPAWN_EGG);
+						entradas.accept(ALTAVOZ);
 						entradas.accept(NAUTILUS_OSEO_SPAWN_EGG);
 						entradas.accept(NAUTILUS_OSEO_GRANDE_SPAWN_EGG);
 						entradas.accept(PARASITO_VOLADOR_SPAWN_EGG);

@@ -9,6 +9,8 @@
 		"ChatTypeMixin",
 		"ChatTypeBoundMixin",
 		"ArcoReboteMixin",
+		"LivingEntityCambiosMixin",
+		"MobTelaranaMixin",
 		"AfiladoraDesencantaMixin",
 		"FlechaAccessor",
 		"ChestBlockMixin",

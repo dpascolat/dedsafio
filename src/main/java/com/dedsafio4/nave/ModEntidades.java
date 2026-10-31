@@ -118,6 +118,10 @@ public final class ModEntidades {
 	/** Creeper Resorte: una cabeza de creeper sobre un resorte; al explotar lanza para arriba. */
 	public static final EntityType<com.dedsafio4.bestias.CreeperResorteEntity> CREEPER_RESORTE = registrar("creeper_resorte",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperResorteEntity::new, MobCategory.MONSTER).sized(0.7f, 1.5f).clientTrackingRange(8));
+	public static final EntityType<com.dedsafio4.bestias.VindicadorEntity> VINDICADOR = registrar("vindicador",
+			EntityType.Builder.of(com.dedsafio4.bestias.VindicadorEntity::new, MobCategory.MONSTER).sized(0.6f, 1.95f).clientTrackingRange(8));
+	public static final EntityType<com.dedsafio4.bestias.CreeperVisceralEntity> CREEPER_VISCERAL = registrar("creeper_visceral",
+			EntityType.Builder.of(com.dedsafio4.bestias.CreeperVisceralEntity::new, MobCategory.MONSTER).sized(0.9f, 2.4f).fireImmune().clientTrackingRange(8));
 	public static final EntityType<com.dedsafio4.bestias.CreeperAcuaticoEntity> CREEPER_ACUATICO = registrar("creeper_acuatico",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperAcuaticoEntity::new, MobCategory.MONSTER).sized(0.6f, 1.7f).clientTrackingRange(8));
 	/** Las raíces que atrapan al jugador (las crea el Creeper Raíz de Azalea al explotar). */
@@ -259,6 +263,14 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(CREEPER_RESORTE, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		SpawnPlacements.register(CREEPER_RESORTE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				com.dedsafio4.bestias.CreeperPapelEntity::puedeAparecer);
+		FabricDefaultAttributeRegistry.register(VINDICADOR, net.minecraft.world.entity.monster.Vindicator.createAttributes());
+		// En el Limbo y el Limbito (solo después de /mob vindicador).
+		SpawnPlacements.register(VINDICADOR, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkAnyLightMonsterSpawnRules);
+		FabricDefaultAttributeRegistry.register(CREEPER_VISCERAL, net.minecraft.world.entity.monster.Creeper.createAttributes());
+		// En la Dimensión de los Órganos, con cualquier luz (solo después de /mob creeper_visceral).
+		SpawnPlacements.register(CREEPER_VISCERAL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				Monster::checkAnyLightMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(CREEPER_ACUATICO, net.minecraft.world.entity.monster.Creeper.createAttributes());
 		// En el agua del Overworld (solo después de /mob creeper_acuatico).
 		SpawnPlacements.register(CREEPER_ACUATICO, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR,

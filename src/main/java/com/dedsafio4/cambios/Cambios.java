@@ -81,6 +81,25 @@ public final class Cambios {
 	/** aranas 1: las Arañas de Cueva aparecen de noche en el Overworld y todas las arañas tienen Velocidad infinita. */
 	public static final String ARANAS = "aranas";
 
+	/** invisibilidad 1: la invisibilidad no esconde de los mobs. */
+	public static final String INVISIBILIDAD = "invisibilidad";
+	/** aranas_telas 1: las Arañas y Arañas de Cueva dejan una telaraña al golpearte y al morir. */
+	public static final String ARANAS_TELAS = "aranas_telas";
+	/** fuego_armadura 1: en el Nether, sin las cuatro piezas de armadura te prendes fuego sin parar. */
+	public static final String FUEGO_ARMADURA = "fuego_armadura";
+	/** fuego_nether 1: si te quemas en el Nether, el fuego no se apaga solo. */
+	public static final String FUEGO_NETHER = "fuego_nether";
+	/** fuego_danio 1: el fuego y la lava hacen 10 veces más daño. */
+	public static final String FUEGO_DANIO = "fuego_danio";
+	/** interactuar 1: tocar Botones, Puertas o Placas de Presión mata (solo te salva un tótem). */
+	public static final String INTERACTUAR = "interactuar";
+	/** respiracion 1: el aire se acaba 5 veces más rápido y ahogarse hace 10 veces más daño. */
+	public static final String RESPIRACION = "respiracion";
+	/** carne 1: la carne, el pollo y el pescado del inventario se pudren. */
+	public static final String CARNE = "carne";
+	/** manzanas 1: las Manzanas de Oro y Encantadas ya no dan Absorción. */
+	public static final String MANZANAS = "manzanas";
+
 	/** Tipo de daño propio del mod para la Perla del End: no lo frena la armadura ni sus encantamientos. */
 	public static final ResourceKey<DamageType> DANIO_ENDERPERLA = ResourceKey.create(Registries.DAMAGE_TYPE,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "enderperla"));
@@ -91,6 +110,14 @@ public final class Cambios {
 
 	public static DamageSource danioMagma(Level level) {
 		return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DANIO_MAGMA));
+	}
+
+	/** Tipo de daño de tocar Botones, Puertas o Placas: no pasa por la armadura (con tanto daño, colgaría el servidor). */
+	public static final ResourceKey<DamageType> DANIO_INTERACTUAR = ResourceKey.create(Registries.DAMAGE_TYPE,
+			ResourceLocation.fromNamespaceAndPath("dedsafio4", "interactuar"));
+
+	public static DamageSource danioInteractuar(Level level) {
+		return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DANIO_INTERACTUAR));
 	}
 
 	public static DamageSource danioEnderperla(Level level) {
@@ -149,7 +176,25 @@ public final class Cambios {
 			new Cambio(PARASITOS_AGUA, "parasitos_agua", Map.of(
 					1, "¡NO PUEDE SER POSIBLE! El día de ayer ALK4PON3OP trajo en su nave a un Parásito Glebanoide y comenzaron a reproducirse. Ahora aparecen en el agua del Overworld.")),
 			new Cambio(ARANAS, "aranas", Map.of(
-					1, "Ahora las Arañas de Cueva aparecen en el Overworld durante la Noche. Además, todas las arañas tienen Velocidad infinita."))
+					1, "Ahora las Arañas de Cueva aparecen en el Overworld durante la Noche. Además, todas las arañas tienen Velocidad infinita.")),
+			new Cambio(INVISIBILIDAD, "invisibilidad", Map.of(
+					1, "Reviil ha hecho que todas las criaturas desarrollen su olfato. Ahora pueden detectar la presencia de entidades invisibles. La invisibilidad ya no sirve para esconderse de los mobs.")),
+			new Cambio(ARANAS_TELAS, "aranas_telas", Map.of(
+					1, "Ahora las Arañas y Arañas de Cueva dejan una Tela de Araña al golpearte y al morir.")),
+			new Cambio(FUEGO_ARMADURA, "fuego_armadura", Map.of(
+					1, "Ahora debes tener las cuatro piezas de la Armadura mientras estés en el Nether, de lo contrario recibirás Fuego Infinito.")),
+			new Cambio(FUEGO_NETHER, "fuego_nether", Map.of(
+					1, "Si te quemas en el Nether el Fuego es Infinito.")),
+			new Cambio(FUEGO_DANIO, "fuego_danio", Map.of(
+					1, "El daño del Fuego y de la Lava han sido multiplicados x10.")),
+			new Cambio(INTERACTUAR, "interactuar", Map.of(
+					1, "Interactuar con Botones, Puertas o Placas de Presión ahora te hace 4 mil millones de millones de millones de millones de daño.")),
+			new Cambio(RESPIRACION, "respiracion", Map.of(
+					1, "Ahora pierdes la respiración 5 veces más rápido cuando te sumerges en agua y el daño por ahogamiento ha sido multiplicado x10.")),
+			new Cambio(CARNE, "carne", Map.of(
+					1, "¡Todos los tipos de Carne, Pollo y Pescado se pudren!")),
+			new Cambio(MANZANAS, "manzanas", Map.of(
+					1, "La Manzana de Oro y la Manzana Encantada ya no dan el efecto de Absorción."))
 	);
 
 	public static CambiosData data(MinecraftServer server) {

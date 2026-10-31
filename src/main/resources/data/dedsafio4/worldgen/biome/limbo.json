@@ -25,6 +25,12 @@
 	"spawners": {
 		"monster": [
 			{
+				"type": "dedsafio4:vindicador",
+				"weight": 30,
+				"minCount": 1,
+				"maxCount": 2
+			},
+			{
 				"type": "dedsafio4:fantasma_amarillo",
 				"weight": 20,
 				"minCount": 1,

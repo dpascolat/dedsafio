@@ -67,6 +67,7 @@ public final class Organos {
 		ServerTickEvents.END_WORLD_TICK.register(mundo -> {
 			if (!mundo.dimension().equals(DIMENSION)) return;
 			if (mundo.getGameTime() % 200 == 0) arribaDeLasIslas(mundo, com.dedsafio4.nave.ModEntidades.CREEPER_AMARILLO, 4, 0);
+			if (mundo.getGameTime() % 400 == 200) arribaDeLasIslas(mundo, com.dedsafio4.nave.ModEntidades.CREEPER_VISCERAL, 2, 0);
 			if (mundo.getGameTime() % 400 == 100) arribaDeLasIslas(mundo, com.dedsafio4.nave.ModEntidades.NAUTILUS_OSEO_GRANDE, 2, 4);
 		});
 	}
