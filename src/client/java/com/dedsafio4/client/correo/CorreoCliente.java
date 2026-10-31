@@ -17,7 +17,6 @@ import java.util.List;
 public final class CorreoCliente {
 	private CorreoCliente() {}
 
-	private static final ResourceLocation SOBRE = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/sobre.png");
 	private static List<Correo.CartaVista> cartas = List.of();
 	/** Cuándo llegó la lista (para ir sumando el tiempo de cada mensaje). */
 	private static long recibido;
@@ -64,7 +63,7 @@ public final class CorreoCliente {
 		g.fill(x, 0, 0, alto, 0xFF55555A);             // borde
 		g.fill(x + 1, 1, -1, alto - 1, 0xFF1E1E22);    // fondo
 		g.drawString(mc.font, n, x + relleno, relleno + 2, 0xFFFFFFFF, true);
-		g.blit(SOBRE, x + relleno + mc.font.width(n) + 4, relleno, 0, 0, icono, icono, icono, icono);
+		com.dedsafio4.client.cajero.EstiloCajero.pieza(g, "correo/icono_correo_hud", x + relleno + mc.font.width(n) + 4, relleno, icono, icono);
 		g.pose().popPose();
 	}
 }

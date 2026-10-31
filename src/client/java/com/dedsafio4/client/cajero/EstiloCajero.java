@@ -22,6 +22,25 @@ public final class EstiloCajero {
 		return ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/" + nombre + ".png");
 	}
 
+	/** Una imagen de textures/gui/ a su tamaño (el archivo mide lo mismo que en pantalla). */
+	public static void pieza(GuiGraphics g, String nombre, int x, int y, int ancho, int alto) {
+		pieza(g, BotonImagen.Imagen.de(nombre, ancho, alto), x, y);
+	}
+
+	public static void pieza(GuiGraphics g, BotonImagen.Imagen imagen, int x, int y) {
+		com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+		g.blit(icono(imagen.nombre()), x, y, imagen.ancho(), imagen.alto(), 0, 0, imagen.texAncho(), imagen.texAlto(), imagen.texAncho(), imagen.texAlto());
+		com.mojang.blaze3d.systems.RenderSystem.disableBlend();
+	}
+
+	/** Las casillas del inventario desde (x, y), con la barra de abajo a "barra" píxeles de la primera fila. */
+	public static void casillasInventario(GuiGraphics g, int x, int y, int barra) {
+		for (int col = 0; col < 9; col++) {
+			for (int fila = 0; fila < 3; fila++) pieza(g, "correo/casilla_inventario", x + col * 18, y + fila * 18, 18, 18);
+			pieza(g, "correo/casilla_barra_" + col, x + col * 18, y + barra, 18, 18);
+		}
+	}
+
 	/** Color del arcoíris (0..1 da toda la vuelta). */
 	public static int arcoiris(float matiz) {
 		return 0xFF000000 | Mth.hsvToRgb(((matiz % 1f) + 1f) % 1f, 0.75f, 1f);

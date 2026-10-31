@@ -9,18 +9,17 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Ingresar dinero: la grilla de 3x3 para poner deditas, el botón "Ingresar" y el saldo. */
 public class CajeroIngresarScreen extends AbstractContainerScreen<CajeroMenu> {
-	private static final int BORDE = 6;
-
 	public CajeroIngresarScreen(CajeroMenu menu, Inventory inventario, Component titulo) {
 		super(menu, inventario, titulo);
-		imageWidth = 176;
-		imageHeight = CajeroMenu.INVENTARIO_Y + 58 + 18 + 8;
+		imageWidth = 177;
+		imageHeight = 166;
 	}
 
 	@Override
 	protected void init() {
 		super.init();
-		addRenderableWidget(new BotonCajero(leftPos + 108, topPos + 38, 56, 20, "Ingresar",
+		addRenderableWidget(new BotonImagen(leftPos + 107, topPos + 34, new BotonImagen.Imagen("cajero/boton_ingresar", 38, 18, 114, 54),
+				new BotonImagen.Imagen("cajero/boton_ingresar_encima", 40, 20, 120, 60), null, -1, -1, "", 1,
 				() -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, CajeroMenu.BOTON_INGRESAR)));
 	}
 
@@ -32,41 +31,19 @@ public class CajeroIngresarScreen extends AbstractContainerScreen<CajeroMenu> {
 
 	@Override
 	protected void renderBg(GuiGraphics g, float delta, int mouseX, int mouseY) {
-		int x = leftPos - BORDE, y = topPos - BORDE;
-		EstiloCajero.marco(g, font, x, y, imageWidth + BORDE * 2, imageHeight + BORDE * 2, null);
-
-		// La grilla: cada casilla con su borde de arcoíris.
-		float t = EstiloCajero.tiempo();
-		for (int fila = 0; fila < 3; fila++) {
-			for (int col = 0; col < 3; col++) {
-				int cx = leftPos + CajeroMenu.GRILLA_X + col * CajeroMenu.CELDA;
-				int cy = topPos + CajeroMenu.GRILLA_Y + fila * CajeroMenu.CELDA;
-				float matiz = t + (fila * 3 + col) / 9f;
-				EstiloCajero.bordeArcoiris(g, cx, cy, 20, 20, matiz, matiz + 0.12f);
-				g.fill(cx + 1, cy + 1, cx + 19, cy + 19, 0xFF0E121B);
-			}
-		}
-
-		// El inventario, en el panel metálico de abajo.
-		int invY = topPos + CajeroMenu.INVENTARIO_Y - 6;
-		g.fillGradient(leftPos - 1, invY, leftPos + imageWidth + 1, topPos + imageHeight + 1, 0xFFB9BEC6, 0xFF80868F);
-		for (int fila = 0; fila < 4; fila++) {
-			int sy = topPos + CajeroMenu.INVENTARIO_Y + fila * 18 + (fila == 3 ? 4 : 0);
-			for (int col = 0; col < 9; col++) {
-				int sx = leftPos + 8 + col * 18;
-				g.fill(sx - 1, sy - 1, sx + 17, sy + 17, 0xFF3A3F4A);
-				g.fill(sx, sy, sx + 16, sy + 16, 0xFF1A1D24);
-			}
-		}
+		EstiloCajero.pieza(g, "cajero/marco_ingresar", leftPos, topPos, imageWidth, imageHeight);
+		EstiloCajero.pieza(g, "cajero/cuadricula", leftPos + 39, topPos + 14, 57, 57);
+		EstiloCajero.casillasInventario(g, leftPos + 7, topPos + 83, 139 - 83);
 
 		// El saldo, debajo del botón.
 		long saldo = Math.max(0, Dedsafio4Client.saldo());
-		float escala = 0.75f;
-		int ancho = Math.round(EstiloCajero.anchoMonedas(font, saldo) * escala);
+		// Con mucho saldo se achica, para no pisar la grilla.
+		float escala = Math.min(0.75f, 70f / EstiloCajero.anchoMonedas(font, saldo, 10));
+		int ancho = Math.round(EstiloCajero.anchoMonedas(font, saldo, 10) * escala);
 		g.pose().pushPose();
-		g.pose().translate(leftPos + 136 - ancho / 2f, topPos + 66, 0);
+		g.pose().translate(leftPos + 126 - ancho / 2f, topPos + 57, 0);
 		g.pose().scale(escala, escala, 1);
-		EstiloCajero.dibujarMonedas(g, font, 0, 0, saldo);
+		EstiloCajero.dibujarMonedas(g, font, 0, 0, saldo, 10);
 		g.pose().popPose();
 	}
 

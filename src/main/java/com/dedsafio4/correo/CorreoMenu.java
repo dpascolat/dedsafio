@@ -18,9 +18,9 @@ import java.util.List;
  */
 public class CorreoMenu extends AbstractContainerMenu {
 	// Posiciones (las usa también la pantalla).
-	public static final int ANCHO = 190, ALTO = 262;
-	public static final int GRILLA_X = 14, GRILLA_Y = 102, CELDA_W = 18, CELDA_H = 18, COLUMNAS = 9, FILAS = 3;
-	public static final int INVENTARIO_X = 15, INVENTARIO_Y = 180;
+	public static final int ANCHO = 176, ALTO = 221;
+	public static final int GRILLA_X = 12, GRILLA_Y = 67, CELDA_W = 17, CELDA_H = 17, COLUMNAS = 9, FILAS = 3;
+	public static final int INVENTARIO_X = 8, INVENTARIO_Y = 136, BARRA = 60;
 
 	final int carta;
 	private final SimpleContainer grilla = new SimpleContainer(Correo.CASILLAS);
@@ -50,7 +50,7 @@ public class CorreoMenu extends AbstractContainerMenu {
 				addSlot(new Slot(inventario, col + fila * 9 + 9, INVENTARIO_X + col * 18, INVENTARIO_Y + fila * 18));
 			}
 		}
-		for (int col = 0; col < 9; col++) addSlot(new Slot(inventario, col, INVENTARIO_X + col * 18, INVENTARIO_Y + 58));
+		for (int col = 0; col < 9; col++) addSlot(new Slot(inventario, col, INVENTARIO_X + col * 18, INVENTARIO_Y + BARRA));
 	}
 
 	public boolean leyendo() {

@@ -30,13 +30,15 @@ public class CatalogoScreen extends Screen {
 	private static final int[] ARCOIRIS = {0xFFFF5A5A, 0xFFFFB347, 0xFFFFF06A, 0xFF7CFF8A, 0xFF5AD8FF, 0xFF8A7CFF, 0xFFE07CFF};
 	/** Las pestañas que ya tienen su dibujo (del diseño); las demás se arman con un ítem. */
 	private static final net.minecraft.resources.ResourceLocation[] DIBUJO_PESTANA = {
-			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/catalogo/pestana_libro.png"),
-			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/catalogo/pestana_espada.png"),
-			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/catalogo/pestana_papel.png"),
-			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/catalogo/pestana_lupa.png")};
-	/** El marco del diseño (836×470; lo de adentro es transparente). */
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/icono_libro.png"),
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/icono_espada.png"),
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/icono_pergamino.png"),
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/icono_lupa.png")};
+	/** Cuánto mide cada dibujo de pestaña. */
+	private static final int[][] TAMANO_PESTANA = {{22, 19}, {21, 21}, {20, 22}, {22, 22}};
+	/** El marco del diseño (480×270; lo de adentro es transparente). */
 	private static final net.minecraft.resources.ResourceLocation MARCO =
-			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/catalogo/marco.png");
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/marco.png");
 	private static final ItemStack[] PESTANAS = {new ItemStack(Items.BOOK), new ItemStack(Items.DIAMOND_SWORD), new ItemStack(Items.PAPER), new ItemStack(Items.SPYGLASS)};
 
 	private int x0, y0, ancho, alto, tab, xIzq, xDer, yGrilla, filasVisibles, desplazamiento;
@@ -405,7 +407,7 @@ public class CatalogoScreen extends Screen {
 		// El fondo oscuro y el marco del diseño.
 		g.fill(x0 + ancho * 3 / 100, y0 + alto * 4 / 100, x0 + ancho * 97 / 100, y0 + alto * 95 / 100, 0xF20B0E14);
 		com.mojang.blaze3d.systems.RenderSystem.enableBlend();
-		g.blit(MARCO, x0, y0, ancho, alto, 0, 0, 836, 470, 836, 470);
+		g.blit(MARCO, x0, y0, ancho, alto, 0, 0, 480, 270, 480, 270);
 		com.mojang.blaze3d.systems.RenderSystem.disableBlend();
 		if (modo == 2) buscador.render(g, mx, my, parcial);
 		if (modo == 1) {
@@ -424,9 +426,12 @@ public class CatalogoScreen extends Screen {
 			}
 			if (DIBUJO_PESTANA[i] != null) {
 				com.mojang.blaze3d.systems.RenderSystem.enableBlend();
-				g.blit(DIBUJO_PESTANA[i], tx, ty, tab, tab, 0, 0, 40, 40, 40, 40);
+				if (i != elegida) g.setColor(0.6f, 0.6f, 0.6f, 1);
+				int[] t = TAMANO_PESTANA[i];
+				int dw = tab * t[0] / 22, dh = tab * t[1] / 22;
+				g.blit(DIBUJO_PESTANA[i], tx + (tab - dw) / 2, ty + (tab - dh) / 2, dw, dh, 0, 0, t[0], t[1], t[0], t[1]);
+				g.setColor(1, 1, 1, 1);
 				com.mojang.blaze3d.systems.RenderSystem.disableBlend();
-				if (i != elegida) g.fill(tx + 3, ty + 3, tx + tab - 3, ty + tab - 3, 0x50000000);
 				continue;
 			}
 			cajaPlateada(g, tx, ty, tx + tab, ty + tab, 3);

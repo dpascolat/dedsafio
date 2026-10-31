@@ -1,13 +1,12 @@
 package com.dedsafio4.client.correo;
 
-import com.dedsafio4.client.cajero.BotonCajero;
+import com.dedsafio4.client.cajero.BotonImagen;
 import com.dedsafio4.client.cajero.EstiloCajero;
 import com.dedsafio4.correo.Correo;
 import com.dedsafio4.correo.CorreoMenu;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
@@ -17,15 +16,17 @@ import org.lwjgl.glfw.GLFW;
 import java.util.List;
 
 /**
- * Un mensaje del Buzón, como en las imágenes: "<< ATRÁS" arriba a la izquierda, el título "Mensaje", arriba el texto
- * (o los campos "Para:" y "Mensaje:" si se está escribiendo), la grilla de 9×3 (como un cofre) con bordes de arcoíris para los objetos,
- * "ENVIAR" (si se está escribiendo) y el inventario abajo. Un mensaje recibido desaparece solo cuando se cierra sin
- * objetos adentro.
+ * Un mensaje del Buzón: "<< ATRÁS" arriba a la izquierda, el título "Mensaje", arriba el texto (con la rueda del mouse
+ * si es largo) o los campos "Para:" y "Mensaje:" si se está escribiendo, la grilla de 9×3 para los objetos, "ENVIAR" (si
+ * se está escribiendo) y el inventario abajo. Un mensaje recibido desaparece solo cuando se cierra sin objetos adentro.
  */
 public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
-	private EditBox para;
-	private MultiLineEditBox texto;
+	private static final float CHICO = 2f / 3f, MEDIO = 0.8f;
+	/** Cuántos renglones del mensaje entran arriba de la grilla, y a qué distancia van. */
+	private static final int RENGLONES = 3, ALTO_RENGLON = 7;
+	private EditBox para, texto;
 	private String error = "";
+	private int bajado;
 
 	public CorreoScreen(CorreoMenu menu, Inventory inventario, Component titulo) {
 		super(menu, inventario, titulo);
@@ -41,25 +42,15 @@ public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
 	protected void init() {
 		super.init();
 		int l = leftPos, t = topPos;
-		addRenderableWidget(new BotonCajero(l + 8, t + 8, 46, 14, "<< ATRÁS", () -> {
+		addRenderableWidget(new BotonImagen(l + (menu.leyendo() ? 8 : 4), t + 4, BotonImagen.Imagen.de("correo/boton_atras", 42, 16),
+				BotonImagen.Imagen.de("correo/boton_atras_encima", 42, 16), () -> {
 			minecraft.player.closeContainer();
 			minecraft.setScreen(new BuzonScreen());
 		}));
-		int yBoton = t + CorreoMenu.GRILLA_Y + CorreoMenu.FILAS * CorreoMenu.CELDA_H + 3;
-		int xBoton = l + CorreoMenu.GRILLA_X + CorreoMenu.COLUMNAS * CorreoMenu.CELDA_W - 50;
 		if (!menu.leyendo()) {
-			para = new EditBox(font, l + 44, t + 27, 132, 12, Component.literal("Para"));
-			para.setMaxLength(16);
-			para.setHint(Component.literal("nombre del jugador").withColor(0xFF5A6070));
-			addRenderableWidget(para);
-			texto = new MultiLineEditBox(font, l + 14, t + 54, 162, 42, Component.literal("Escribe tu mensaje...").withColor(0xFF5A6070),
-					Component.literal("Mensaje"));
-			// Sin límite en la caja (así no muestra el "0/500"); si se pasa, se corta acá.
-			texto.setValueListener(v -> {
-				if (v.length() > Correo.MAX_TEXTO) texto.setValue(v.substring(0, Correo.MAX_TEXTO));
-			});
-			addRenderableWidget(texto);
-			addRenderableWidget(new BotonCajero(xBoton, yBoton, 50, 13, "ENVIAR", () -> {
+			para = campo(l + 30, t + 31, 16, "nombre del jugador", "Para");
+			texto = campo(l + 30, t + 53, Correo.MAX_TEXTO, "Escribe tu mensaje...", "Mensaje");
+			addRenderableWidget(new BotonImagen(l + 126, t + 123, BotonImagen.Imagen.de("correo/boton_enviar", 37, 10), null, () -> {
 				error = "";
 				ClientPlayNetworking.send(new Correo.EnviarPayload(para.getValue(), texto.getValue()));
 			}));
@@ -67,55 +58,70 @@ public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
 		}
 	}
 
+	private EditBox campo(int x, int y, int maximo, String ayuda, String nombre) {
+		EditBox caja = new EditBox(font, x, y, 118, 10, Component.literal(nombre));
+		caja.setBordered(false);
+		caja.setMaxLength(maximo);
+		caja.setHint(Component.literal(ayuda).withColor(0xFF5A6070));
+		return addRenderableWidget(caja);
+	}
+
+	private void chico(GuiGraphics g, Component texto, float x, float y, float escala, int color) {
+		g.pose().pushPose();
+		g.pose().translate(x, y, 0);
+		g.pose().scale(escala, escala, 1);
+		g.drawString(font, texto, 0, 0, color, false);
+		g.pose().popPose();
+	}
+
 	@Override
 	protected void renderBg(GuiGraphics g, float delta, int mouseX, int mouseY) {
 		int l = leftPos, t = topPos;
-		EstiloCajero.marco(g, font, l, t, imageWidth, imageHeight, null);
-		// La grilla del mensaje: cada columna con su color del arcoíris.
+		EstiloCajero.pieza(g, menu.leyendo() ? "correo/marco_leer" : "correo/marco_escribir", l, t, imageWidth, imageHeight);
+		if (!menu.leyendo()) {
+			EstiloCajero.pieza(g, "correo/campo", l + 26, t + 28, 125, 13);
+			EstiloCajero.pieza(g, "correo/campo", l + 26, t + 50, 125, 13);
+		}
+		// La grilla del mensaje: 9 columnas con los 7 colores del diseño, las casillas pegadas para que entren en el marco.
 		for (int fila = 0; fila < CorreoMenu.FILAS; fila++) {
 			for (int col = 0; col < CorreoMenu.COLUMNAS; col++) {
-				int x = l + CorreoMenu.GRILLA_X + col * CorreoMenu.CELDA_W, y = t + CorreoMenu.GRILLA_Y + fila * CorreoMenu.CELDA_H;
-				int color = EstiloCajero.arcoiris(0.16f + col / (float) CorreoMenu.COLUMNAS * 0.85f);
-				g.fill(x, y, x + CorreoMenu.CELDA_W + 1, y + CorreoMenu.CELDA_H + 1, color);
-				g.fill(x + 1, y + 1, x + CorreoMenu.CELDA_W, y + CorreoMenu.CELDA_H, 0xFF0B0D12);
+				EstiloCajero.pieza(g, new BotonImagen.Imagen("correo/casilla_cuadricula_" + col % 7, 18, 18, 19, 19),
+						l + CorreoMenu.GRILLA_X + col * CorreoMenu.CELDA_W, t + CorreoMenu.GRILLA_Y + fila * CorreoMenu.CELDA_H);
 			}
 		}
-		// El inventario.
-		for (int fila = 0; fila < 4; fila++) {
-			for (int col = 0; col < 9; col++) {
-				int x = l + CorreoMenu.INVENTARIO_X - 1 + col * 18;
-				int y = t + CorreoMenu.INVENTARIO_Y - 1 + (fila < 3 ? fila * 18 : 58);
-				g.fill(x, y, x + 18, y + 18, 0xFF2A2E38);
-				g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF151821);
-			}
-		}
+		EstiloCajero.casillasInventario(g, l + CorreoMenu.INVENTARIO_X - 1, t + CorreoMenu.INVENTARIO_Y - 1, CorreoMenu.BARRA);
+	}
+
+	/** Los renglones del mensaje abierto, ya cortados al ancho de la pantalla. */
+	private List<FormattedCharSequence> renglones(Correo.CartaVista c) {
+		return font.split(Component.literal(c.texto()), (int) (130 / CHICO));
 	}
 
 	@Override
 	protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-		g.drawString(font, title, (imageWidth - font.width(title)) / 2 + 12, 11, 0xFFFFFFFF, false);
+		int medio = imageWidth / 2;
+		g.drawString(font, title, medio - font.width(title) / 2, menu.leyendo() ? 9 : 15, 0xFFFFFFFF, false);
 		if (menu.leyendo()) {
 			Correo.CartaVista c = CorreoCliente.carta(menu.carta());
 			if (c == null) return;
-			g.drawString(font, "De: " + c.autor(), 14, 28, 0xFFFFFFFF, false);
-			int y = 40;
-			if (!c.asunto().isEmpty()) {
-				g.drawString(font, c.asunto(), 14, 38, 0xFF55FFFF, false);
-				y = 50;
+			Component de = Component.literal("De: " + c.autor());
+			if (!c.asunto().isEmpty()) de = de.copy().append(Component.literal(" · " + c.asunto()).withColor(0xFF55FFFF));
+			chico(g, de, 24.67f, 34.67f, CHICO, 0xFFFFFFFF);
+			List<FormattedCharSequence> lineas = renglones(c);
+			bajado = Math.max(0, Math.min(bajado, lineas.size() - RENGLONES));
+			for (int i = 0; i < RENGLONES && bajado + i < lineas.size(); i++) {
+				g.pose().pushPose();
+				g.pose().translate(24.67f, 44.67f + i * ALTO_RENGLON, 0);
+				g.pose().scale(CHICO, CHICO, 1);
+				g.drawString(font, lineas.get(bajado + i), 0, 0, 0xFFD8DCE4, false);
+				g.pose().popPose();
 			}
-			List<FormattedCharSequence> lineas = font.split(Component.literal(c.texto()), 162);
-			for (FormattedCharSequence linea : lineas) {
-				if (y > CorreoMenu.GRILLA_Y - 10) break;
-				g.drawString(font, linea, 14, y, 0xFFD8DCE4, false);
-				y += 9;
-			}
+			if (lineas.size() > RENGLONES) chico(g, Component.literal((bajado > 0 ? "▲" : " ") + (bajado + RENGLONES < lineas.size() ? "▼" : " ")),
+					150, 44.67f, CHICO, 0xFFAAAAAA);
 		} else {
-			g.drawString(font, "Para:", 14, 29, 0xFFC0C6D0, false);
-			g.drawString(font, "Mensaje:", 14, 44, 0xFFC0C6D0, false);
-			if (!error.isEmpty()) {
-				int y = CorreoMenu.GRILLA_Y + CorreoMenu.FILAS * CorreoMenu.CELDA_H + 5;
-				g.drawString(font, font.plainSubstrByWidth(error, 105), 14, y, 0xFFFF6060, false);
-			}
+			chico(g, Component.literal("Para:"), 24.67f, 20.67f, MEDIO, 0xFFFFFFFF);
+			chico(g, Component.literal("Mensaje:"), 24.67f, 42.33f, MEDIO, 0xFFFFFFFF);
+			if (!error.isEmpty()) chico(g, Component.literal(font.plainSubstrByWidth(error, 150)), 14, 124.67f, CHICO, 0xFFFF6060);
 		}
 	}
 
@@ -125,12 +131,21 @@ public class CorreoScreen extends AbstractContainerScreen<CorreoMenu> {
 		renderTooltip(g, mouseX, mouseY);
 	}
 
+	@Override
+	public boolean mouseScrolled(double mx, double my, double dx, double dy) {
+		if (menu.leyendo() && dy != 0) {
+			bajado = Math.max(0, bajado - (int) Math.signum(dy));
+			return true;
+		}
+		return super.mouseScrolled(mx, my, dx, dy);
+	}
+
 	/** Escribiendo, las teclas son para el texto (la E y los números no cierran ni mueven nada). */
 	@Override
 	public boolean keyPressed(int tecla, int scan, int mods) {
 		if (tecla != GLFW.GLFW_KEY_ESCAPE) {
 			if (para != null && para.isFocused()) return para.keyPressed(tecla, scan, mods) || para.canConsumeInput();
-			if (texto != null && texto.isFocused()) return texto.keyPressed(tecla, scan, mods) || true;
+			if (texto != null && texto.isFocused()) return texto.keyPressed(tecla, scan, mods) || texto.canConsumeInput();
 		}
 		return super.keyPressed(tecla, scan, mods);
 	}

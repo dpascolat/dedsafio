@@ -7,20 +7,22 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * Sacar dinero: con las flechitas se elige cuántas Rojas, Verdes y Deditas sacar (Shift = de a 10),
  * sin pasarse del saldo, y con "Sacar" el servidor las descuenta y te las da.
  */
 public class CajeroSacarScreen extends Screen {
-	private static final ResourceLocation[] ICONOS = {EstiloCajero.ICONO_ROJA, EstiloCajero.ICONO_VERDE, EstiloCajero.ICONO_DEDITA};
+	private static final String[] MONEDAS = {"cajero/moneda_roja", "cajero/moneda_verde", "cajero/moneda_azul"};
 	private static final long[] VALORES = {10_000, 100, 1};
+	/** Cuánto hay entre una columna de monedas y la siguiente. */
+	private static final int COLUMNA = 50;
 
 	private final BlockPos pos;
 	private final int[] cantidades = new int[3];
-	private int x, y, lado;
+	private int x, y;
 	private String mensaje = "";
+	private BotonImagen botonSacar;
 
 	public CajeroSacarScreen(BlockPos pos) {
 		super(Component.literal("Sacar Dinero"));
@@ -37,21 +39,20 @@ public class CajeroSacarScreen extends Screen {
 		return total;
 	}
 
-	private int columnaX(int i) {
-		return x + lado * (i + 1) / 4 + (i - 1) * lado / 20;
-	}
-
 	@Override
 	protected void init() {
-		lado = Math.min(200, height - 16);
-		x = (width - lado) / 2;
-		y = (height - lado) / 2 + 4;
+		x = (width - CajeroScreen.ANCHO) / 2;
+		y = Math.max(0, (height - CajeroScreen.ALTO) / 2);
+		BotonImagen.Imagen arriba = BotonImagen.Imagen.de("cajero/flecha_arriba", 11, 9), arribaEncima = BotonImagen.Imagen.de("cajero/flecha_arriba_encima", 13, 10);
+		BotonImagen.Imagen abajo = BotonImagen.Imagen.de("cajero/flecha_abajo", 11, 9), abajoEncima = BotonImagen.Imagen.de("cajero/flecha_abajo_encima", 13, 10);
 		for (int i = 0; i < 3; i++) {
-			int moneda = i, cx = columnaX(i) - FlechaCajero.ANCHO / 2;
-			addRenderableWidget(new FlechaCajero(cx, y + lado * 30 / 100, true, () -> cambiar(moneda, +1)));
-			addRenderableWidget(new FlechaCajero(cx, y + lado * 48 / 100, false, () -> cambiar(moneda, -1)));
+			int moneda = i, cx = x + 65 + COLUMNA * i;
+			addRenderableWidget(new BotonImagen(cx, y + 82, arriba, arribaEncima, null, -1, -1, "", 1, () -> cambiar(moneda, +1)));
+			addRenderableWidget(new BotonImagen(cx, y + 121, abajo, abajoEncima, null, -1, 0, "", 1, () -> cambiar(moneda, -1)));
 		}
-		addRenderableWidget(new BotonCajero(x + (lado - 56) / 2, y + lado * 78 / 100, 56, 20, "Sacar", this::sacar));
+		botonSacar = addRenderableWidget(new BotonImagen(x + 102, y + 194, new BotonImagen.Imagen("cajero/boton_sacar", 38, 18, 114, 54),
+				new BotonImagen.Imagen("cajero/boton_sacar_encima", 40, 20, 120, 60), new BotonImagen.Imagen("cajero/boton_sacar_apagado", 38, 18, 114, 54),
+				-1, -1, "", 1, this::sacar));
 	}
 
 	/** Suma o resta una moneda (Shift: de a 10), sin pasarse del saldo ni bajar de 0. */
@@ -70,10 +71,7 @@ public class CajeroSacarScreen extends Screen {
 
 	private void sacar() {
 		long total = total();
-		if (total <= 0) {
-			mensaje = "Elige cuántas monedas sacar.";
-			return;
-		}
+		if (total <= 0) return;
 		if (total > saldo()) {
 			mensaje = "No tienes suficientes deditas.";
 			return;
@@ -86,44 +84,33 @@ public class CajeroSacarScreen extends Screen {
 	@Override
 	public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float delta) {
 		super.renderBackground(g, mouseX, mouseY, delta);
-		EstiloCajero.marco(g, font, x, y, lado, lado, "Sacar Dinero");
+		botonSacar.active = total() > 0;
+		EstiloCajero.pieza(g, "cajero/marco_grande", x, y, CajeroScreen.ANCHO, CajeroScreen.ALTO);
+		g.drawCenteredString(font, title, x + CajeroScreen.ANCHO / 2, y + 8, 0xFFFFFFFF);
 
 		// Saldo: 1 (verde) 29 (dedita)
-		float escala = 0.7f;
 		String etiqueta = "Saldo: ";
-		int anchoMonedas = Math.round(EstiloCajero.anchoMonedas(font, saldo()) * escala);
-		int sx = x + (lado - font.width(etiqueta) - anchoMonedas) / 2, sy = y + lado * 19 / 100;
-		g.drawString(font, etiqueta, sx, sy, 0xFFFFD34D, true);
-		g.pose().pushPose();
-		g.pose().translate(sx + font.width(etiqueta), sy - 2, 0);
-		g.pose().scale(escala, escala, 1);
-		EstiloCajero.dibujarMonedas(g, font, 0, 0, saldo());
-		g.pose().popPose();
+		int icono = 10, anchoMonedas = EstiloCajero.anchoMonedas(font, saldo(), icono);
+		int sx = x + (CajeroScreen.ANCHO - font.width(etiqueta) - anchoMonedas) / 2, sy = y + 64;
+		g.drawString(font, etiqueta, sx, sy + 2, 0xFFEBCF78, true);
+		EstiloCajero.dibujarMonedas(g, font, sx + font.width(etiqueta), sy, saldo(), icono);
 
 		// Cada columna: la moneda y cuántas vas a sacar.
 		for (int i = 0; i < 3; i++) {
-			String cantidad = Integer.toString(cantidades[i]);
-			int ancho = 11 + 3 + font.width(cantidad);
-			int cx = columnaX(i) - ancho / 2, cy = y + lado * 39 / 100;
-			g.pose().pushPose();
-			g.pose().translate(cx, cy - 1, 0);
-			g.pose().scale(11 / 16f, 11 / 16f, 1);
-			g.blit(ICONOS[i], 0, 0, 0, 0, 16, 16, 16, 16);
-			g.pose().popPose();
-			g.drawString(font, cantidad, cx + 14, cy + 1, 0xFFFFFFFF, true);
+			EstiloCajero.pieza(g, new BotonImagen.Imagen(MONEDAS[i], 8, 8, 10, 10), x + 62 + COLUMNA * i, y + 101);
+			g.drawString(font, Integer.toString(cantidades[i]), x + 75 + COLUMNA * i, y + 102, 0xFFFFFFFF, true);
 		}
 
-		// El recuadro oscuro: cuánto vas a sacar, o el aviso.
-		int rx = x + lado / 4, ry = y + lado * 60 / 100, rAncho = lado / 2, rAlto = lado * 12 / 100;
-		g.fill(rx, ry, rx + rAncho, ry + rAlto, 0xFF15181F);
+		// El recuadro: cuánto vas a sacar, o el aviso.
+		EstiloCajero.pieza(g, "cajero/recuadro", x + 61, y + 151, 120, 30);
 		String texto = !mensaje.isEmpty() ? mensaje : total() > 0 ? "Total: " + total() : "";
-		int color = mensaje.startsWith("Sacaste") ? 0xFF7CF08A : !mensaje.isEmpty() ? 0xFFFF6B6B : 0xFFC6CFD6;
+		int color = mensaje.startsWith("Sacaste") ? 0xFF7CF08A : !mensaje.isEmpty() ? 0xFFFF6B6B : 0xFFFFFFFF;
 		if (!texto.isEmpty()) {
-			float escalaTexto = Math.min(1f, (rAncho - 6) / (float) font.width(texto));
+			float escala = Math.min(1f, 112f / font.width(texto));
 			g.pose().pushPose();
-			g.pose().translate(rx + rAncho / 2f, ry + rAlto / 2f, 0);
-			g.pose().scale(escalaTexto, escalaTexto, 1);
-			g.drawString(font, texto, -font.width(texto) / 2, -4, color, true);
+			g.pose().translate(x + 121f, y + 166f, 0);
+			g.pose().scale(escala, escala, 1);
+			g.drawString(font, texto, -font.width(texto) / 2, -4, color, false);
 			g.pose().popPose();
 		}
 	}

@@ -23,8 +23,8 @@ public class CajeroMenu extends AbstractContainerMenu {
 	public static final int BOTON_INGRESAR = 0;
 
 	// Posiciones (las usa también la pantalla).
-	public static final int GRILLA_X = 22, GRILLA_Y = 20, CELDA = 22;
-	public static final int INVENTARIO_Y = 102;
+	private static final int[] CASILLA_X = {41, 60, 78}, CASILLA_Y = {16, 35, 53};
+	private static final int INVENTARIO_Y = 84, BARRA_Y = 140;
 
 	private final Container grilla = new SimpleContainer(9);
 	private final ContainerLevelAccess acceso;
@@ -39,7 +39,7 @@ public class CajeroMenu extends AbstractContainerMenu {
 		this.acceso = acceso;
 		for (int fila = 0; fila < 3; fila++) {
 			for (int col = 0; col < 3; col++) {
-				addSlot(new Slot(grilla, fila * 3 + col, GRILLA_X + col * CELDA + 2, GRILLA_Y + fila * CELDA + 2) {
+				addSlot(new Slot(grilla, fila * 3 + col, CASILLA_X[col], CASILLA_Y[fila]) {
 					@Override
 					public boolean mayPlace(ItemStack pila) {
 						return valor(pila) > 0;
@@ -52,7 +52,7 @@ public class CajeroMenu extends AbstractContainerMenu {
 				addSlot(new Slot(inventario, col + fila * 9 + 9, 8 + col * 18, INVENTARIO_Y + fila * 18));
 			}
 		}
-		for (int col = 0; col < 9; col++) addSlot(new Slot(inventario, col, 8 + col * 18, INVENTARIO_Y + 58));
+		for (int col = 0; col < 9; col++) addSlot(new Slot(inventario, col, 8 + col * 18, BARRA_Y));
 	}
 
 	/** Cuántas deditas vale una sola de estas monedas (0 si el Cajero no la acepta). */
