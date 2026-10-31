@@ -280,6 +280,9 @@ public class Dedsafio4 implements ModInitializer {
 		// El Creeper Resorte aparece de día en todo el Overworld (solo después de /mob creeper_resorte).
 		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
 				MobCategory.MONSTER, ModEntidades.CREEPER_RESORTE, 15, 1, 1);
+		// El Creeper Acuático aparece en el agua del Overworld (solo después de /mob creeper_acuatico).
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.CREEPER_ACUATICO, 30, 1, 2);
 		// Solo después de su /cambio (SpawnPlacementsMixin): Zombie Planta, Creeper Raíz de Azalea, Parásito y Araña de Cueva.
 		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.FOREST),
 				MobCategory.MONSTER, ModEntidades.ZOMBIE_PLATA, 40, 1, 2);

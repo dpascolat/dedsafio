@@ -87,6 +87,13 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("hasta una gran altura.", VIOLETA));
 	}
 
+	public static void creeperAcuatico(List<Component> t) {
+		t.add(parte("Nada hacia ti y, al explotar,", GRIS));
+		t.add(parte("te deja con Náusea por 30 segundos.", VIOLETA));
+		t.add(Component.empty());
+		t.add(parte("🌊 Aparece en: ", APARECE).append(parte("el agua del Overworld.", BLANCO)));
+	}
+
 	public static void creeperAzalea(List<Component> t) {
 		t.add(parte("Al explotar, te atrapará con sus raíces.", GRIS));
 		t.add(parte("Debes ser rápido para librarte de ellas.", VIOLETA));
