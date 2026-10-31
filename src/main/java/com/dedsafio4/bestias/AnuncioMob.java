@@ -60,6 +60,7 @@ public final class AnuncioMob {
 		LUGARES.put("creeper_resorte", "todo el Overworld, de día");
 		LUGARES.put("creeper_acuatico", "el agua del Overworld");
 		LUGARES.put("creeper_visceral", "la Dimensión de los Órganos");
+		LUGARES.put("soarer", "de noche, sobre quien lleva 3 días sin dormir");
 		LUGARES.put("vindicador", "el Limbo y el Limbito");
 		LUGARES.put("flashbang", "el Limbito, el bioma del Limbo");
 		LUGARES.put("bomba_warden", "la Oscuridad Profunda y las cuevas");
