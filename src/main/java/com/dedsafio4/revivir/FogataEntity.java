@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 /**
  * La Fogata grande de revivir. Con clic derecho abre el menú con los baneados; al elegir uno empieza el ritual
  * (30,4 segundos, los efectos los dibuja FogataRitual en cada cliente). Cerca del segundo 7 empuja a todos para afuera.
- * Al terminar, el baneado queda desbaneado y, cuando entre, aparece a 9 bloques de la fogata.
+ * El revivido lo mira en espectador y al terminar vuelve a ser jugador, a 9 bloques de la fogata (ver Fogata).
  * La animación, el modelo, las texturas y los sonidos son de NavithLabs / AlieRequiem, usados con su permiso.
  */
 public final class FogataEntity extends Entity {
@@ -61,7 +61,7 @@ public final class FogataEntity extends Entity {
 	/** El lugar donde aparece el revivido. */
 	private double lugarY;
 	private float lugarYaw;
-	private boolean revivio, aviso, reservada;
+	private boolean revivio, aviso;
 	private final Set<UUID> empujados = new HashSet<>();
 	private final Map<UUID, double[]> envion = new HashMap<>();
 	private AABB caja;
@@ -115,21 +115,7 @@ public final class FogataEntity extends Entity {
 		return entityData.get(LUGAR_Z);
 	}
 
-	/** Ocupada: en un ritual, o a punto de empezar uno. */
-	boolean ocupada() {
-		return reviviendo() || reservada;
-	}
-
-	void reservar() {
-		reservada = true;
-	}
-
-	void liberar() {
-		reservada = false;
-	}
-
 	void empezar(UUID id, String nombre, String textura, String firma, double x, double y, double z, float yaw, String quien) {
-		reservada = false;
 		this.quien = quien;
 		revivio = false;
 		aviso = false;
@@ -285,7 +271,7 @@ public final class FogataEntity extends Entity {
 	private void revivir(ServerLevel mundo) {
 		revivio = true;
 		double x = getX() + lugarX(), z = getZ() + lugarZ();
-		Fogata.revivir(mundo, UUID.fromString(muerto()), nombre(), x, lugarY, z, lugarYaw);
+		Fogata.revivir(mundo, UUID.fromString(muerto()), x, lugarY, z, lugarYaw);
 		mundo.sendParticles(ParticleTypes.SOUL, x, lugarY + 1, z, 24, 0.3, 0.6, 0.3, 0.03);
 	}
 
