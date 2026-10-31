@@ -40,7 +40,8 @@ public final class FogataSkins {
 				skin = CompletableFuture.supplyAsync(() -> {
 					var resultado = mc.getMinecraftSessionService().fetchProfile(id, false);
 					return resultado == null ? new GameProfile(id, nombre) : resultado.profile();
-				}, Util.backgroundExecutor()).thenCompose(perfil -> mc.getSkinManager().getOrLoad(perfil));
+				}, Util.backgroundExecutor()).thenCompose(perfil -> mc.getSkinManager().getOrLoad(perfil))
+						.exceptionally(error -> DefaultPlayerSkin.get(id));   // sin internet o si Mojang no responde
 			}
 			return skin.getNow(DefaultPlayerSkin.get(id));
 		}
