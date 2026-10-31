@@ -19,8 +19,8 @@ import java.util.UUID;
 /**
  * /ah: la casa de subastas (menú MenuSubastas, pantalla SubastasScreen): pestañas Comprar, Vender, Mis ventas y
  * Recuperar. También se puede vender lo que tienes en la mano con /ah vender <precio>. Al comprar, al comprador le
- * llega un mensaje de la Subasta al Buzón ("Compraste ..."); al vendedor también ("Vendiste ..."), con las Deditas
- * de la venta en mano adentro (aunque no esté conectado). Lo que sacas de la venta queda en Recuperar hasta que lo tomes.
+ * llega un mensaje de la Subasta al Buzón ("Compraste ...") con lo que compró adentro; al vendedor también
+ * ("Vendiste ..."), con las Deditas de la venta en mano adentro (aunque no esté conectado). Lo que sacas de la venta queda en Recuperar hasta que lo tomes.
  * Un admin la cierra con /ahah desactivar: a cada jugador le llega en un mensaje todo lo que tenía a la venta y en
  * Recuperar, y nadie la puede usar hasta /ahah activar.
  */
@@ -190,16 +190,15 @@ public final class Subastas {
 			return false;
 		}
 		data.quitar(venta);
-		darItem(jugador, venta.item().copy());
 		jugador.sendSystemMessage(Component.literal("Compraste ").withStyle(ChatFormatting.GREEN)
 				.append(venta.item().getHoverName().copy().withStyle(ChatFormatting.WHITE))
-				.append(Component.literal(" x" + venta.item().getCount() + " por " + venta.precio() + " deditas.").withStyle(ChatFormatting.GREEN)));
+				.append(Component.literal(" x" + venta.item().getCount() + " por " + venta.precio() + " deditas. Te llega al Buzón.").withStyle(ChatFormatting.GREEN)));
 		jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5f, 1.5f);
 		// Los mensajes de la Subasta: al que compró, y al que vendió con sus deditas en mano.
 		String que = venta.item().getHoverName().getString() + " x" + venta.item().getCount();
 		com.dedsafio4.correo.Correo.mandar(jugador.server, jugador.getUUID(), REMITENTE, "Compraste " + que,
-				"Compraste " + que + " por " + venta.precio() + " deditas en el /ah (lo vendía " + venta.nombreVendedor() + ").",
-				java.util.List.of());
+				"Compraste " + que + " por " + venta.precio() + " deditas en el /ah (lo vendía " + venta.nombreVendedor() + "). Aquí tienes tu compra.",
+				java.util.List.of(venta.item()));
 		java.util.List<ItemStack> deditas = new java.util.ArrayList<>();
 		long sobra = enDeditas(venta.precio(), deditas);
 		if (sobra > 0) Banco.sumar(jugador.server, venta.vendedor(), sobra);
@@ -232,10 +231,5 @@ public final class Subastas {
 			}
 		}
 		return resto;
-	}
-
-	/** Al inventario; si no entra, al piso a sus pies. */
-	private static void darItem(ServerPlayer jugador, ItemStack item) {
-		if (!jugador.getInventory().add(item) && !item.isEmpty()) jugador.drop(item, false);
 	}
 }
