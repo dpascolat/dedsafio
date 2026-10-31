@@ -331,6 +331,9 @@ public final class ModItems {
 	public static final Item CREEPER_AZALEA_SPAWN_EGG = registrar("creeper_raiz_azalea_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.CREEPER_AZALEA, 0x1F8A2A, 0xE274AC, new Item.Properties(),
 					HuevoConDescripcion::creeperAzalea));
+	public static final Item MEDUSA_MIMO_SPAWN_EGG = registrar("medusa_mimo_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.MEDUSA_MIMO, 0x6A2BB5, 0xD38CF5, new Item.Properties(),
+					HuevoConDescripcion::medusaMimo));
 	public static final Item ZOMBIE_PLATA_SPAWN_EGG = registrar("zombie_plata_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.ZOMBIE_PLATA, 0x4A4A1E, 0xD474D4, new Item.Properties(),
 					HuevoConDescripcion::zombiePlata));
@@ -746,6 +749,7 @@ public final class ModItems {
 						entradas.accept(CREEPER_PASTEL_SPAWN_EGG);
 						entradas.accept(ZARINOSA_SPAWN_EGG);
 						entradas.accept(CREEPER_AZALEA_SPAWN_EGG);
+						entradas.accept(MEDUSA_MIMO_SPAWN_EGG);
 						entradas.accept(ZOMBIE_PLATA_SPAWN_EGG);
 						entradas.accept(CREEPER_RESORTE_SPAWN_EGG);
 						entradas.accept(CREEPER_ACUATICO_SPAWN_EGG);

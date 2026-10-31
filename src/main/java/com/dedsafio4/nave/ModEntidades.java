@@ -115,6 +115,9 @@ public final class ModEntidades {
 	/** Creeper Raíz de Azalea: 1,5 bloques de alto con la flor. */
 	public static final EntityType<com.dedsafio4.bestias.CreeperAzaleaEntity> CREEPER_AZALEA = registrar("creeper_raiz_azalea",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperAzaleaEntity::new, MobCategory.MONSTER).sized(0.8f, 1.5f).clientTrackingRange(8));
+	/** Medusa Mimo: como medusa mide 2,6 de ancho y 3 de alto; como jugador, lo de un jugador (ver getDefaultDimensions). */
+	public static final EntityType<com.dedsafio4.bestias.MedusaMimoEntity> MEDUSA_MIMO = registrar("medusa_mimo",
+			EntityType.Builder.of(com.dedsafio4.bestias.MedusaMimoEntity::new, MobCategory.MONSTER).sized(2.6f, 3f).clientTrackingRange(10));
 	/** Creeper Resorte: una cabeza de creeper sobre un resorte; al explotar lanza para arriba. */
 	public static final EntityType<com.dedsafio4.bestias.CreeperResorteEntity> CREEPER_RESORTE = registrar("creeper_resorte",
 			EntityType.Builder.of(com.dedsafio4.bestias.CreeperResorteEntity::new, MobCategory.MONSTER).sized(0.7f, 1.5f).clientTrackingRange(8));
@@ -209,6 +212,7 @@ public final class ModEntidades {
 
 	public static void registrar() {
 		FabricDefaultAttributeRegistry.register(NAVE, NaveEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(MEDUSA_MIMO, com.dedsafio4.bestias.MedusaMimoEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(NAVE_VELOZ, NaveVelozEntity.crearAtributos());
 		// En el bioma Phora, de día o de noche.
 		SpawnPlacements.register(NAVE, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

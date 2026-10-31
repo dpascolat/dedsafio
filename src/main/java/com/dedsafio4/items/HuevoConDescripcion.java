@@ -29,6 +29,11 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		this.descripcion = descripcion;
 	}
 
+	public static void medusaMimo(List<Component> texto) {
+		texto.add(Component.literal("Cuando ve a un jugador, se convierte en él.").withColor(VIOLETA));
+		texto.add(Component.literal("Copia su nick, su skin y sus ítems, pelea y se cura.").withColor(GRIS));
+	}
+
 	@Override
 	public void appendHoverText(ItemStack pila, TooltipContext contexto, List<Component> texto, TooltipFlag bandera) {
 		texto.add(Component.empty());

@@ -336,6 +336,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.bestias.PastelPantalla.registrar();
 		com.dedsafio4.client.bestias.ZarinosaPantalla.registrar();
 		EntityRendererRegistry.register(ModEntidades.CREEPER_AZALEA, com.dedsafio4.client.bestias.CreeperAzaleaRenderer::new);
+		EntityRendererRegistry.register(ModEntidades.MEDUSA_MIMO, com.dedsafio4.client.bestias.MedusaMimoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.RAICES, com.dedsafio4.client.bestias.RaicesRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.ZOMBIE_PLATA, com.dedsafio4.client.bestias.ZombiePlataRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.CREEPER_RESORTE, com.dedsafio4.client.bestias.CreeperResorteRenderer::new);
@@ -392,6 +393,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(com.dedsafio4.momentito.MomentitoEntity.TIPO, com.dedsafio4.client.momentito.MomentitoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NARVAL, com.dedsafio4.client.bestias.NarvalRenderer::new);
 		EntityModelLayerRegistry.registerModelLayer(BombaWardenRenderer.CAPA, BombaWardenModelo::crearCapa);
+		EntityModelLayerRegistry.registerModelLayer(com.dedsafio4.client.bestias.MedusaMimoModelo.CAPA, com.dedsafio4.client.bestias.MedusaMimoModelo::crearCapa);
 		EntityModelLayerRegistry.registerModelLayer(com.dedsafio4.client.bestias.AlmitaModelo.CAPA,
 				com.dedsafio4.client.bestias.AlmitaModelo::crearCapa);
 		EntityRendererRegistry.register(ModEntidades.ALMITA, com.dedsafio4.client.bestias.AlmitaModelo.Dibujante::new);
