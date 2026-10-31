@@ -1,7 +1,9 @@
 package com.dedsafio4.client.ruleta;
 
 import com.dedsafio4.Dedsafio4;
+import com.dedsafio4.client.fogata.FogataRitual;
 import com.dedsafio4.client.mixin.LightTextureAccessor;
+import com.dedsafio4.revivir.FogataEntity;
 import com.dedsafio4.ruleta.EntregaAnimacion;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
@@ -46,6 +48,8 @@ import java.util.UUID;
  *   4,6–6,4  las piezas se encogen hacia el aro chico, una detrás de otra
  *   7,95     el golpe: el aro grande sale del chico y salta una lluvia de chispas
  *   9        la luz se apaga con un estallido de chispas grandes
+ * El ritual de la Fogata usa el mismo Vacío Cósmico, con sus colores: para los que están a 60 bloques o menos (la onda empuja hasta 45), de los
+ * 8,2 s a los 25,45 s; desde los 16,8 s las estrellitas vuelan hacia los aros.
  */
 public final class EntregaCliente {
 	private EntregaCliente() {}
@@ -60,6 +64,8 @@ public final class EntregaCliente {
 	/** r, g, b y hasta qué número al azar sale ese color. */
 	private static final float[][] COLORES_GOLPE = {{0.45f, 1, 0.72f, 0.45f}, {0.4f, 0.85f, 1, 0.65f}, {1, 0.45f, 0.85f, 0.8f}, {1, 0.62f, 0.3f, 0.9f}, {1, 0.92f, 0.4f, 1}};
 	private static final float[][] COLORES_ESTRELLA = {{1, 0.38f, 0.78f}, {0.72f, 0.38f, 1}, {0.38f, 0.55f, 1}, {0.85f, 0.88f, 1}, {1, 0.45f, 0.95f}};
+	private static final float[][] COLORES_FOGATA = {{0.31f, 0.92f, 0.95f}, {0.81f, 0.98f, 0.39f}, {0.45f, 1, 0.85f}, {0.9f, 1, 0.6f}, {0.85f, 1, 1}};
+	private static final float FOGATA_DESDE = 8.2f, FOGATA_HASTA = 25.45f, FOGATA_ALCANCE = 60f;
 
 	private static final SoundEvent SONIDO = SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "entrega_mision"));
 
@@ -70,6 +76,10 @@ public final class EntregaCliente {
 	private static final RandomSource AZAR = RandomSource.create();
 	/** Cuánto se ve el Vacío Cósmico y sus estrellas en este cuadro (0..1), y adónde miraba quien entró. */
 	private static float vacio, estrellas, adelanteX, adelanteZ = 1;
+	/** La fogata cuyo ritual está en el vacío de este jugador, y desde qué segundo la ve. */
+	private static FogataEntity fogata;
+	private static float fogataDesde, parcialCuadro;
+	private static boolean estrellasFogata;
 	private static long ultimoCuadro = System.nanoTime();
 	private static final int[] LUZ_GUARDADA = new int[256];
 	private static boolean luzApagada;
@@ -120,9 +130,35 @@ public final class EntregaCliente {
 		return vacio;
 	}
 
-	private static void calcularVacio(Minecraft mc, float parcial) {
+	private static void mirarAdelante(Minecraft mc) {
+		Vec3 vista = mc.player.getViewVector(1f);
+		double largo = Math.hypot(vista.x, vista.z);
+		if (largo < 0.001) return;
+		adelanteX = (float) (vista.x / largo);
+		adelanteZ = (float) (vista.z / largo);
+	}
+
+	private static void calcularVacioFogata(Minecraft mc, Vec3 ojo, float parcial) {
+		FogataEntity cerca = FogataRitual.a(ojo);
+		if (fogata != null && (fogata != cerca || fogata.isRemoved())) fogata = null;
+		if (cerca == null) return;
+		float t = FogataRitual.segundos(cerca, parcial);
+		if (t < FOGATA_DESDE || t >= FOGATA_HASTA) return;
+		if (fogata == null) {
+			if (mc.player.distanceToSqr(cerca) > FOGATA_ALCANCE * FOGATA_ALCANCE) return;
+			fogata = cerca;
+			fogataDesde = t;
+			mirarAdelante(mc);
+		}
+		float pasa = t - fogataDesde, queda = FOGATA_HASTA - t;
+		vacio = Math.max(vacio, Math.min(suave(pasa / ENTRA), suave(queda / SALE)));
+		estrellas = Math.max(estrellas, Math.min(suave((pasa - ENTRA) / ENTRA), suave((queda - SALE) / ENTRA)));
+	}
+
+	private static void calcularVacio(Minecraft mc, Vec3 ojo, float parcial) {
 		vacio = estrellas = 0;
 		if (mc.player == null) return;
+		calcularVacioFogata(mc, ojo, parcial);
 		UUID yo = mc.player.getUUID();
 		for (Animacion a : ANIMACIONES) {
 			if (!a.quien.equals(yo)) continue;
@@ -131,12 +167,7 @@ public final class EntregaCliente {
 			if (!a.vacioMirado) {
 				a.vacioMirado = true;
 				a.conVacio = mc.player.position().distanceToSqr(a.x, a.y + 1, a.z) <= ALCANCE * ALCANCE;
-				Vec3 vista = mc.player.getViewVector(1f);
-				double largo = Math.hypot(vista.x, vista.z);
-				if (a.conVacio && largo >= 0.001) {
-					adelanteX = (float) (vista.x / largo);
-					adelanteZ = (float) (vista.z / largo);
-				}
+				if (a.conVacio) mirarAdelante(mc);
 			}
 			float queda = VACIO_DURA - t;
 			if (!a.conVacio || queda <= 0) continue;
@@ -184,16 +215,17 @@ public final class EntregaCliente {
 	}
 
 	/** Antes de las criaturas: el terreno y el cielo se vuelven espacio. */
-	public static void dibujarVacio(Matrix4f vista, Matrix4f proyeccion, float parcial) {
+	public static void dibujarVacio(Camera camara, Matrix4f vista, Matrix4f proyeccion, float parcial) {
 		Minecraft mc = Minecraft.getInstance();
-		calcularVacio(mc, parcial);
+		parcialCuadro = parcial;
+		calcularVacio(mc, camara.getPosition(), parcial);
 		if (vacio <= 0.001f || shaderEspacio == null) return;
 		int textura = copiarProfundidad();
 		ShaderInstance shader = shaderEspacio;
 		RenderSystem.setShader(() -> shader);
 		uniforme(shader, "InvVistaProy", new Matrix4f(proyeccion).mul(vista).invert());
 		uniforme(shader, "Forma", adelanteX, adelanteZ, 0, (System.nanoTime() / 1_000_000L % 600_000L) / 1000f);
-		uniforme(shader, "Fundido", vacio, estrellas, 0, 0);
+		uniforme(shader, "Fundido", vacio, estrellas, fogata != null ? 1 : 0, 0);
 		// El bloque de la entrega es invisible: no hay caja que dejar sin tapar.
 		uniforme(shader, "PilarMin", 1e6f, 1e6f, 1e6f, 0);
 		uniforme(shader, "PilarMax", -1e6f, -1e6f, -1e6f, 0);
@@ -222,16 +254,19 @@ public final class EntregaCliente {
 	private static void reiniciar(Estrella e, Vec3 ojo, boolean mezclada) {
 		double distancia = 2.5 + 27.5 * Math.pow(AZAR.nextFloat(), 1.4), angulo = AZAR.nextFloat() * Math.PI * 2;
 		double alto = (AZAR.nextFloat() * 2 - 0.6f) * 0.9, plano = Math.sqrt(Math.max(0, 1 - alto * alto));
-		e.x = ojo.x + Math.cos(angulo) * plano * distancia;
-		e.y = ojo.y + alto * distancia * 0.6 + 1;
-		e.z = ojo.z + Math.sin(angulo) * plano * distancia;
+		// En el ritual nacen alrededor de la fogata; si no, alrededor de quien mira.
+		e.x = (fogata != null ? fogata.getX() : ojo.x) + Math.cos(angulo) * plano * distancia;
+		e.y = (fogata != null ? fogata.getY() + 1.6 : ojo.y) + alto * distancia * 0.6 + 1;
+		e.z = (fogata != null ? fogata.getZ() : ojo.z) + Math.sin(angulo) * plano * distancia;
 		e.vx = (AZAR.nextFloat() - 0.5f) * 0.25f;
 		e.vy = (AZAR.nextFloat() - 0.3f) * 0.18f;
 		e.vz = (AZAR.nextFloat() - 0.5f) * 0.25f;
 		e.dura = 2 + 2 * AZAR.nextFloat();
 		e.vida = mezclada ? AZAR.nextFloat() * e.dura : 0;
 		e.tamanio = (0.09f + 0.11f * AZAR.nextFloat()) * (float) (0.6 + distancia * 0.05);
-		e.color = COLORES_ESTRELLA[AZAR.nextInt(COLORES_ESTRELLA.length)];
+		if (fogata != null) e.dura = 3.5f + 2.5f * AZAR.nextFloat();
+		float[][] colores = fogata != null ? COLORES_FOGATA : COLORES_ESTRELLA;
+		e.color = colores[AZAR.nextInt(colores.length)];
 		e.fase = AZAR.nextFloat() * 6.28f;
 	}
 
@@ -239,6 +274,10 @@ public final class EntregaCliente {
 		if (estrellas <= 0.01f || shaderLuz == null) {
 			ESTRELLAS.clear();
 			return;
+		}
+		if (estrellasFogata != (fogata != null)) {
+			ESTRELLAS.clear();
+			estrellasFogata = fogata != null;
 		}
 		if (ESTRELLAS.isEmpty()) {
 			for (int i = 0; i < 220; i++) {
@@ -248,17 +287,39 @@ public final class EntregaCliente {
 			}
 		}
 		BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+		// Desde los 16,8 s del ritual, las estrellitas vuelan hacia los aros y se apagan al llegar.
+		float atrae = fogata == null ? -1 : FogataRitual.b(fogata, parcialCuadro);
+		double metaX = 0, metaY = 0, metaZ = 0;
+		if (atrae >= 0) {
+			metaX = fogata.getX();
+			metaY = fogata.getY() + FogataRitual.a(fogata, parcialCuadro);
+			metaZ = fogata.getZ();
+		}
 		for (Estrella e : ESTRELLAS) {
 			e.vida += paso;
-			e.x += e.vx * paso;
-			e.y += e.vy * paso;
-			e.z += e.vz * paso;
-			float avance = e.vida / e.dura;
-			if (e.vida >= e.dura || ojo.distanceToSqr(e.x, e.y, e.z) > 1156) {
+			float avance = e.vida / e.dura, cerca = 1;
+			if (atrae >= 0) {
+				double dx = metaX - e.x, dy = metaY - e.y, dz = metaZ - e.z, largo = Math.sqrt(dx * dx + dy * dy + dz * dz);
+				double avanza = Math.min(largo, (1.5 + 7 * Math.min(1, atrae / 1.5f)) * (0.7 + 0.1 * e.fase) * paso);
+				if (largo > 0.001) {
+					e.x += dx / largo * avanza;
+					e.y += dy / largo * avanza;
+					e.z += dz / largo * avanza;
+				}
+				cerca = (float) Math.min(1, largo / 1.5);
+				if (largo < 0.3) e.vida = e.dura + 1;
+			} else {
+				e.x += e.vx * paso;
+				e.y += e.vy * paso;
+				e.z += e.vz * paso;
+			}
+			Vec3 centro = fogata != null ? fogata.position() : ojo;
+			if (atrae >= 0 ? e.vida > e.dura + 0.5f : e.vida >= e.dura || centro.distanceToSqr(e.x, e.y, e.z) > 1156) {
 				reiniciar(e, ojo, false);
 				avance = 0;
 			}
-			float brillo = (float) Math.sin(Math.PI * Math.min(1, avance)) * (0.75f + 0.25f * Mth.sin(reloj * 5 + e.fase)) * estrellas;
+			float forma = atrae >= 0 ? Math.min(1, avance / 0.12f) * cerca : (float) Math.sin(Math.PI * Math.min(1, avance));
+			float brillo = forma * (0.75f + 0.25f * Mth.sin(reloj * 5 + e.fase)) * estrellas;
 			if (brillo <= 0.01f) continue;
 			cuadrado(b, (float) (e.x - ojo.x), (float) (e.y - ojo.y), (float) (e.z - ojo.z), derecha, arriba, e.tamanio * 2.2f,
 					Math.round(255 * e.color[0] * brillo), Math.round(255 * e.color[1] * brillo), Math.round(255 * e.color[2] * brillo), 210);

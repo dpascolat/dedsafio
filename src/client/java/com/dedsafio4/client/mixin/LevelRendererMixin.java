@@ -90,10 +90,10 @@ public abstract class LevelRendererMixin {
 		if (com.dedsafio4.client.EclipseCliente.activoAqui() || EntregaCliente.vacioCompleto()) ci.cancel();
 	}
 
-	/** La entrega de la Dedita: el Vacío Cósmico tapa lo que se dibujó hasta acá (el terreno y el cielo). */
+	/** La entrega de la Dedita y el ritual de la Fogata: el Vacío Cósmico tapa lo que se dibujó hasta acá (el terreno y el cielo). */
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=entities"))
 	private void dedsafio4$vacio(DeltaTracker tiempo, boolean contorno, Camera camara, GameRenderer juego, LightTexture luz, Matrix4f vista, Matrix4f proyeccion, CallbackInfo ci) {
-		EntregaCliente.dibujarVacio(vista, proyeccion, tiempo.getGameTimeDeltaPartialTick(false));
+		EntregaCliente.dibujarVacio(camara, vista, proyeccion, tiempo.getGameTimeDeltaPartialTick(false));
 	}
 
 	/** La entrega de la Dedita: el piso, la luz y las chispas. */

@@ -705,6 +705,7 @@ public final class FogataRitual {
 			var9 = 1.0F;
 		}
 
+		var7 *= 1.0F - com.dedsafio4.client.ruleta.EntregaCliente.vacio();
 		if (!(var8 <= 0.002F) && !(var7 <= 0.004F)) {
 			float var18 = -0.13962634F * var6;
 			VertexConsumer var19 = var0.getBuffer(RenderType.eyes(a));
@@ -1493,11 +1494,16 @@ public final class FogataRitual {
 		return var2 >= 16.8F && var2 < 25.45F ? var2 - 16.8F : -1.0F;
 	}
 
+	/** Los segundos que lleva el ritual de esa fogata. */
+	public static float segundos(FogataEntity var0, float var1) {
+		return c(var0, var1);
+	}
+
 	public static FogataEntity a(Vec3 var0) {
 		Minecraft var1 = Minecraft.getInstance();
 		if (!E.isEmpty() && var1.level != null) {
 			for (FogataEntity var3 : E) {
-				if (!var3.isRemoved() && var3.reviviendo() && !(var3.distanceToSqr(var0) > 1600.0)) {
+				if (!var3.isRemoved() && var3.reviviendo() && !(var3.distanceToSqr(var0) > 3600.0)) {
 					float var4 = c(var3, 0.0F);
 					if (var4 >= 8.0F && var4 < 25.6F) {
 						return var3;

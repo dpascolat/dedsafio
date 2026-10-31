@@ -206,7 +206,7 @@ public final class FogataEntity extends Entity {
 		float segundos = t / 20f;
 		if (segundos >= ONDA_DESDE && segundos <= ONDA_DESDE + 0.9f) empujar(mundo, radioOnda(segundos));
 		if (!envion.isEmpty()) seguirEnvion(mundo);
-		// Se flota: la caída lenta dura hasta poco antes del final (como en el espacio).
+		// Se flota en el Vacío Cósmico (lo dibuja EntregaCliente): la caída lenta dura hasta poco antes del final.
 		if (t >= LIVIANO && t < 469 && (t - LIVIANO) % 10 == 0) flotar(mundo, (int) (509 - t));
 		if (t >= REVIVE && !revivio) revivir(mundo);
 		if (t >= AVISA && !aviso) {
