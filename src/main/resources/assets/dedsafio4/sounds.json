@@ -1,4 +1,28 @@
 {
+	"cofre_gleba_abrir": {
+		"sounds": [
+			"dedsafio4:cofre_gleba_abrir"
+		],
+		"subtitle": "subtitles.dedsafio4.cofre_gleba_abrir"
+	},
+	"cofre_gleba_cerrar": {
+		"sounds": [
+			"dedsafio4:cofre_gleba_cerrar"
+		],
+		"subtitle": "subtitles.dedsafio4.cofre_gleba_cerrar"
+	},
+	"cofre_limbo_abrir": {
+		"sounds": [
+			"dedsafio4:cofre_limbo_abrir"
+		],
+		"subtitle": "subtitles.dedsafio4.cofre_limbo_abrir"
+	},
+	"cofre_limbo_cerrar": {
+		"sounds": [
+			"dedsafio4:cofre_limbo_cerrar"
+		],
+		"subtitle": "subtitles.dedsafio4.cofre_limbo_cerrar"
+	},
 	"cofre_abrir": {
 		"sounds": [
 			"dedsafio4:cofre_abrir"

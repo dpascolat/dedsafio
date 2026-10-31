@@ -65,6 +65,7 @@ public final class Catalogo {
 				fila(com.dedsafio4.boveda.ModBoveda.BOVEDA_ITEM, com.dedsafio4.despegue.ModDespegue.COMBUSTIBLE, com.dedsafio4.despegue.ModDespegue.TANQUE_DILITIO, ModItems.TARJETA_SUBASTA),
 				fila(ModItems.CHIP_PHORA, com.dedsafio4.robots.ModRobots.ROBOT_DORMIDO_ITEM, ModItems.LINTERNA, ModItems.BATERIA_DILITIO, ModItems.TOTEM_FRERICO, ModItems.MANUSCRITO_HERMANDAD_ADMIN),
 				fila(ModItems.MARTILLO_NETHERITE, ModItems.CANDADO, ModItems.LLAVE_CANDADO, ModItems.LLAVE, ModItems.TARJETA_ROSA, ModItems.AMULETO_VERDE),
+				fila(ModCofres.COFRE_GLEBA_ITEM, ModCofres.COFRE_LIMBO_ITEM),
 				fila(ModItems.TARJETA_PUERTA_ROSA, ModItems.TARJETA_PUERTA_VERDE, com.dedsafio4.puertas.ModPuertas.PUERTA_ROSA_ITEM,
 						com.dedsafio4.puertas.ModPuertas.PUERTA_VERDE_ITEM, ModCofres.COFRE_ITEM, ModCofres.COFRE_HUESOS_ITEM),
 				fila(ModItems.CASCO_NETHERITA_PLANTA, ModItems.PECHERA_NETHERITA_PLANTA, ModItems.PANTALONES_NETHERITA_PLANTA, ModItems.BOTAS_NETHERITA_PLANTA,

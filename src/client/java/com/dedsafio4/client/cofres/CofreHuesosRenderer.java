@@ -131,7 +131,7 @@ public class CofreHuesosRenderer implements BlockEntityRenderer<CofreBlockEntity
 		pose.popPose();
 	}
 
-	private static void caja(VertexConsumer vc, PoseStack.Pose p, float w, float h, float d, int luz, int overlay) {
+	static void caja(VertexConsumer vc, PoseStack.Pose p, float w, float h, float d, int luz, int overlay) {
 		float x0 = -w / 2, x1 = w / 2, y0 = -h / 2, y1 = h / 2, z0 = -d / 2, z1 = d / 2;
 		cara(vc, p, luz, overlay, 1, 0, 0, d, h, x1, y0, z1, x1, y0, z0, x1, y1, z0, x1, y1, z1);
 		cara(vc, p, luz, overlay, -1, 0, 0, d, h, x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0);

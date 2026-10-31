@@ -618,6 +618,8 @@ public final class ModItems {
 						entradas.accept(BATERIA_DILITIO);
 						entradas.accept(com.dedsafio4.cofres.ModCofres.COFRE_ITEM);
 						entradas.accept(com.dedsafio4.cofres.ModCofres.COFRE_HUESOS_ITEM);
+						entradas.accept(com.dedsafio4.cofres.ModCofres.COFRE_GLEBA_ITEM);
+						entradas.accept(com.dedsafio4.cofres.ModCofres.COFRE_LIMBO_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.MINERAL_DE_AMBAR_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.MINERAL_DE_GRASA_ITEM);
 						entradas.accept(com.dedsafio4.bloques.ModBloques.PULMONES_ITEM);

@@ -101,6 +101,25 @@ public class Dedsafio4Client implements ClientModInitializer {
 							net.minecraft.core.Direction.SOUTH, 0f, false);
 					pose.popPose();
 				});
+		// El Cofre de Gleba y el Cofre del Limbo: igual, cada uno con su modelo.
+		for (var tema : java.util.Map.of(com.dedsafio4.cofres.ModCofres.COFRE_GLEBA_ENTIDAD, com.dedsafio4.client.cofres.CofreTemaRenderer.GLEBA,
+				com.dedsafio4.cofres.ModCofres.COFRE_LIMBO_ENTIDAD, com.dedsafio4.client.cofres.CofreTemaRenderer.LIMBO).entrySet()) {
+			net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(tema.getKey(),
+					contexto -> new com.dedsafio4.client.cofres.CofreTemaRenderer(contexto, tema.getValue()));
+		}
+		for (var tema : java.util.Map.of(com.dedsafio4.cofres.ModCofres.COFRE_GLEBA_ITEM, com.dedsafio4.client.cofres.CofreTemaRenderer.GLEBA,
+				com.dedsafio4.cofres.ModCofres.COFRE_LIMBO_ITEM, com.dedsafio4.client.cofres.CofreTemaRenderer.LIMBO).entrySet()) {
+			net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.INSTANCE.register(
+					tema.getKey(), (pila, modo, pose, buffers, luz, overlay) -> {
+						pose.pushPose();
+						pose.translate(0.5, 0, 0.5);
+						pose.scale(0.5f, 0.5f, 0.5f);
+						pose.translate(0, 0.5, 0);
+						com.dedsafio4.client.cofres.CofreTemaRenderer.dibujar(tema.getValue(), pose, buffers, luz, overlay,
+								net.minecraft.core.Direction.SOUTH, 0f, false);
+						pose.popPose();
+					});
+		}
 		// Las puertas de 3x3 con llave: las dibuja su bloque principal.
 		net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
 				com.dedsafio4.puertas.ModPuertas.PUERTA_ENTIDAD, com.dedsafio4.client.puertas.PuertaRenderer::new);
