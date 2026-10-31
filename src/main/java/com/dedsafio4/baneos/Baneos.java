@@ -177,7 +177,7 @@ public final class Baneos {
 	}
 
 	/** Los baneados del servidor (los que tienen uuid), ordenados por nombre. */
-	private static List<GameProfile> baneados(ServerPlayer jugador) {
+	public static List<GameProfile> baneados(ServerPlayer jugador) {
 		List<GameProfile> lista = new ArrayList<>();
 		for (UserBanListEntry entrada : jugador.server.getPlayerList().getBans().getEntries()) {
 			Object usuario = ((com.dedsafio4.mixin.StoredUserEntryAccessor) entrada).dedsafio4$usuario();
@@ -196,11 +196,31 @@ public final class Baneos {
 		ServerPlayNetworking.send(jugador, new ListaPayload(pos, ids, nombres));
 	}
 
+	/** La cuchara o el tenedor que tiene en la mano (o nada). */
+	public static ItemStack cubierto(Player jugador) {
+		return esCubierto(jugador.getMainHandItem()) ? jugador.getMainHandItem() : esCubierto(jugador.getOffhandItem()) ? jugador.getOffhandItem() : ItemStack.EMPTY;
+	}
+
+	/** Cobra el revivir: gasta el cubierto y, si es la Cuchara de la Resurrección, el Alma. Devuelve false si no puede. */
+	public static boolean pagar(ServerPlayer jugador) {
+		ItemStack item = cubierto(jugador);
+		if (item.isEmpty()) {
+			jugador.displayClientMessage(Component.literal("Necesitas una cuchara o un tenedor en la mano.").withStyle(ChatFormatting.RED), true);
+			return false;
+		}
+		boolean usaAlma = item.is(ModItems.CUCHARA_HOJAS);
+		if (usaAlma && !com.dedsafio4.almas.Almas.tieneAlma(jugador)) {
+			jugador.displayClientMessage(Component.literal("La Cuchara de la Resurrección necesita tu Alma.").withStyle(ChatFormatting.RED), true);
+			return false;
+		}
+		if (usaAlma) com.dedsafio4.almas.Almas.ponerAlma(jugador, false);
+		item.consume(1, jugador);
+		return true;
+	}
+
 	private static void desbanear(ServerPlayer jugador, BlockPos pos, String id) {
 		if (!jugador.level().getBlockState(pos).is(BLOQUE) || jugador.distanceToSqr(pos.getCenter()) > DISTANCIA * DISTANCIA) return;
-		InteractionHand mano = esCubierto(jugador.getMainHandItem()) ? InteractionHand.MAIN_HAND
-				: esCubierto(jugador.getOffhandItem()) ? InteractionHand.OFF_HAND : null;
-		if (mano == null) {
+		if (cubierto(jugador).isEmpty()) {
 			jugador.displayClientMessage(Component.literal("Necesitas una cuchara o un tenedor en la mano.").withStyle(ChatFormatting.RED), true);
 			return;
 		}
@@ -216,14 +236,8 @@ public final class Baneos {
 			enviarLista(jugador, pos);
 			return;
 		}
-		boolean usaAlma = jugador.getItemInHand(mano).is(ModItems.CUCHARA_HOJAS);
-		if (usaAlma && !com.dedsafio4.almas.Almas.tieneAlma(jugador)) {
-			jugador.displayClientMessage(Component.literal("La Cuchara de la Resurrección necesita tu Alma.").withStyle(ChatFormatting.RED), true);
-			return;
-		}
+		if (!pagar(jugador)) return;
 		bans.remove(perfil);
-		if (usaAlma) com.dedsafio4.almas.Almas.ponerAlma(jugador, false);
-		jugador.getItemInHand(mano).consume(1, jugador);
 		jugador.level().playSound(null, pos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 0.6f, 1.2f);
 		// El mensaje y el cartel salen cuando termina su animación de revivir (o ya, si no hay lugar de /revivir).
 		String revivido = perfil.getName() != null ? perfil.getName() : id;

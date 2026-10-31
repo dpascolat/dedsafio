@@ -178,6 +178,19 @@
 			}
 		]
 	},
+	"fogata.revivir": {
+		"sounds": [
+			{
+				"name": "dedsafio4:fogata/ritual",
+				"stream": true
+			}
+		]
+	},
+	"fogata.revivido": {
+		"sounds": [
+			"dedsafio4:fogata/revivido"
+		]
+	},
 	"mensaje_nuevo": {
 		"sounds": [
 			{

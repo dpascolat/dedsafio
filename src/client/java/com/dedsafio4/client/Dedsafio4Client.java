@@ -322,6 +322,26 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.CREEPER_RESORTE, com.dedsafio4.client.bestias.CreeperResorteRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.CREEPER_ACUATICO, com.dedsafio4.client.bestias.CreeperAcuaticoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.CREEPER_VISCERAL, com.dedsafio4.client.bestias.CreeperVisceralRenderer::new);
+		EntityRendererRegistry.register(com.dedsafio4.revivir.Fogata.TIPO, com.dedsafio4.client.fogata.FogataRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.INSTANCE.register(com.dedsafio4.revivir.Fogata.ITEM, com.dedsafio4.client.fogata.FogataRenderer::a);
+		com.dedsafio4.revivir.FogataEntity.enRitualCliente = com.dedsafio4.client.fogata.FogataRitual::a;
+		WorldRenderEvents.AFTER_ENTITIES.register(com.dedsafio4.client.fogata.FogataRitual::a);
+		WorldRenderEvents.LAST.register(com.dedsafio4.client.fogata.FogataRitual::b);
+		net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register(com.dedsafio4.client.fogata.FogataRitual::a);
+		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(com.dedsafio4.client.fogata.FogataRitual::a);
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler, cliente) -> {
+			com.dedsafio4.client.fogata.FogataRitual.a();
+			com.dedsafio4.client.fogata.FogataSkins.limpiar();
+		});
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.revivir.Fogata.CieloPayload.TYPE, (payload, contexto) ->
+				contexto.client().execute(() -> com.dedsafio4.client.fogata.FogataRitual.cielo(payload)));
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.revivir.Fogata.ListaPayload.TYPE, (payload, contexto) ->
+				contexto.client().execute(() -> {
+					com.dedsafio4.client.fogata.FogataSkins.cargar(payload);
+					if (contexto.client().level != null && contexto.client().level.getEntity(payload.fogata()) instanceof com.dedsafio4.revivir.FogataEntity fogata) {
+						contexto.client().setScreen(new com.dedsafio4.client.fogata.FogataScreen(fogata));
+					}
+				}));
 		EntityRendererRegistry.register(ModEntidades.VINDICADOR, com.dedsafio4.client.bestias.VindicadorRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NAUTILUS_OSEO, com.dedsafio4.client.bestias.NautilusOseoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NAUTILUS_OSEO_GRANDE, com.dedsafio4.client.bestias.NautilusOseoGrandeRenderer::new);

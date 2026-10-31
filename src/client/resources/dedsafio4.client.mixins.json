@@ -3,6 +3,8 @@
 	"package": "com.dedsafio4.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"CieloFogataMixin",
+		"NieblaFogataMixin",
 		"AbstractTextureAccessor",
 		"CameraNaveMixin",
 		"MomentitoCamaraMixin",

@@ -748,6 +748,7 @@ public final class ModItems {
 						entradas.accept(CREEPER_RESORTE_SPAWN_EGG);
 						entradas.accept(CREEPER_ACUATICO_SPAWN_EGG);
 						entradas.accept(CREEPER_VISCERAL_SPAWN_EGG);
+						entradas.accept(com.dedsafio4.revivir.Fogata.ITEM);
 						entradas.accept(VINDICADOR_SPAWN_EGG);
 						entradas.accept(ALTAVOZ);
 						entradas.accept(NAUTILUS_OSEO_SPAWN_EGG);
