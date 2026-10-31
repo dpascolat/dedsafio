@@ -46,12 +46,10 @@ public class EspadaLimboItem extends SwordItem {
 		texto.add(Component.empty());
 	}
 
-	/** Viene encantada: si a alguna le falta Perdición del Limbo (recién sacada de un cofre, del creativo...), se le pone. */
+	/** Viene encantada: si a alguna le falta Perdición del Limbo (recién sacada de un cofre, del creativo...), se le pone. Salvo si pasó por la afiladora. */
 	@Override
 	public void inventoryTick(ItemStack pila, Level mundo, Entity entidad, int lugar, boolean enMano) {
 		if (mundo.isClientSide) return;
-		mundo.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolder(PERDICION).ifPresent(perdicion -> {
-			if (pila.getEnchantments().getLevel(perdicion) <= 0) pila.enchant(perdicion, 1);
-		});
+		PerdicionEspada.ponerSiFalta(pila, mundo, PERDICION);
 	}
 }

@@ -9,6 +9,7 @@
 		"ChatTypeMixin",
 		"ChatTypeBoundMixin",
 		"ArcoReboteMixin",
+		"AfiladoraDesencantaMixin",
 		"FlechaAccessor",
 		"ChestBlockMixin",
 		"DrownedSinTridenteMixin",

@@ -33,14 +33,12 @@ public class EspadaGlebanoideItem extends SwordItem {
 		return Component.translatable(getDescriptionId()).withColor(0xE07AE6);
 	}
 
-	/** Apenas está en el inventario de alguien, ya está encantada con Perdición de Gleba. */
+	/** Apenas está en el inventario de alguien, ya está encantada con Perdición de Gleba (salvo si pasó por la afiladora). */
 	@Override
 	public void inventoryTick(ItemStack pila, Level mundo, Entity duenio, int casilla, boolean enMano) {
 		super.inventoryTick(pila, mundo, duenio, casilla, enMano);
 		if (mundo.isClientSide) return;
-		mundo.registryAccess().registry(Registries.ENCHANTMENT).flatMap(r -> r.getHolder(PERDICION_DE_GLEBA)).ifPresent(perdicion -> {
-			if (pila.getEnchantments().getLevel(perdicion) < 1) pila.enchant(perdicion, 1);
-		});
+		PerdicionEspada.ponerSiFalta(pila, mundo, PERDICION_DE_GLEBA);
 	}
 
 	@Override
