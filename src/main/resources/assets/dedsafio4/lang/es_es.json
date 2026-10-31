@@ -167,6 +167,7 @@
 	"death.attack.magma": "%1$s se derritió al tocar el magma",
 	"death.attack.interactuar": "%1$s tocó lo que no debía",
 	"death.attack.gas_toxico": "%1$s respiró el gas tóxico de Reviil",
+	"subtitles.dedsafio4.entrega_mision": "Entrega de la misión",
 	"death.attack.gas_toxico.player": "%1$s respiró el gas tóxico de Reviil",
 	"death.attack.interactuar.player": "%1$s tocó lo que no debía",
 	"death.attack.altavoz": "%1$s no aguantó el ruido",

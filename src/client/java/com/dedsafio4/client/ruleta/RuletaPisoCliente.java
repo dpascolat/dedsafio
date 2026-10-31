@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 /**
- * La ruleta de 8 colores en el piso (/mision 1 y el bloque de Entrega de Misiones), dibujada lisa con triángulos, y
+ * La ruleta de 8 colores en el piso (/mision 1), dibujada lisa con triángulos, y
  * la esfera aurora. Ciclo de 236 ticks (11,8 s):
  *   0–80     salen los 8 colores a la vez, del centro al borde (rápido al principio, frena al final; el borde tiembla)
  *   80–140   quieta, completa

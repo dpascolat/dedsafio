@@ -17,10 +17,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * /mision 1 (por ahora), y también al entregar la Dedita de la Misión: aparece la ruleta de 8 colores acostada en el
+ * /mision 1 (por ahora): aparece la ruleta de 8 colores acostada en el
  * piso (18 bloques de diámetro) con la esfera aurora. Salen los 8 colores a la vez, queda completa 3 s, se encoge y
- * sale un anillo de colores (11,8 s en total). Con /mision 1 sale a los pies del jugador, con la esfera grande en el
- * centro; con el bloque de misión, sale en el bloque y la esfera chiquita arriba del bloque. La dibuja
+ * sale un anillo de colores (11,8 s en total). Sale a los pies del jugador, con la esfera grande en el centro. La dibuja
  * cada cliente (RuletaPisoCliente) como un círculo liso, no de bloques. "Abajo" de la ruleta es la espalda del
  * jugador: la ve como si estuviera parado mirando hacia adelante.
  */

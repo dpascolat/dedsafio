@@ -6,6 +6,8 @@
 		"CieloFogataMixin",
 		"NieblaFogataMixin",
 		"AbstractTextureAccessor",
+		"BlockEntityVacioMixin",
+		"LightTextureAccessor",
 		"CameraNaveMixin",
 		"MomentitoCamaraMixin",
 		"MomentitoNieblaMixin",

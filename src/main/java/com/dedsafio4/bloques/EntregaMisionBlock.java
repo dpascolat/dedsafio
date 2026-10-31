@@ -3,11 +3,10 @@ package com.dedsafio4.bloques;
 import com.dedsafio4.catalogo.Misiones;
 import com.dedsafio4.correo.Correo;
 import com.dedsafio4.items.ModItems;
+import com.dedsafio4.ruleta.EntregaAnimacion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -24,10 +23,9 @@ import java.util.List;
 /**
  * Entrega de Misiones: un bloque invisible pero sólido (como la barrera: se choca con él, no hace sombra en el piso y
  * se pone y se saca en creativo). Al tocarlo con la
- * Dedita de la Misión en la mano, se la queda, aparece la ruleta de 8 colores en el piso, centrada en el bloque y
- * siempre mirando hacia +X (si hay varios bloques uno encima del otro, en el de más abajo), con la esfera aurora
- * chiquita apoyada arriba del bloque de más arriba y, cuando
- * termina la animación, Eón te manda un mensaje al Buzón ("Misión diaria") con el premio que se eligió para esa
+ * Dedita de la Misión en la mano, se la queda, sale la animación de la entrega (EntregaAnimacion) centrada en el bloque
+ * (si hay varios bloques uno encima del otro, el piso en el de más abajo y la luz arriba del de más arriba) y, cuando
+ * llega su final, Eón te manda un mensaje al Buzón ("Misión diaria") con el premio que se eligió para esa
  * Misión Principal en el editor de Misiones.
  */
 public class EntregaMisionBlock extends Block {
@@ -39,39 +37,17 @@ public class EntregaMisionBlock extends Block {
 
 	private static final List<Pendiente> PENDIENTES = new java.util.ArrayList<>();
 
-	/** Las animaciones que están sonando: dónde, desde y hasta qué tick (el sonido mágico). */
-	private record Magia(net.minecraft.server.level.ServerLevel level, BlockPos pos, long inicio, long fin) {}
-
-	private static final List<Magia> MAGIAS = new java.util.ArrayList<>();
-	/** Los bloques de misión con la ruleta andando (el de más abajo, por mundo) y en qué tick termina: hasta entonces no se puede poner otra Dedita. */
+	/** Los bloques de misión con la animación andando (el de más abajo, por mundo) y en qué tick termina: hasta entonces no se puede poner otra Dedita. */
 	private static final java.util.Map<String, Long> OCUPADOS = new java.util.HashMap<>();
 
 	public static void registrar() {
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
-			// Mientras gira la ruleta: campanitas mágicas que van subiendo; al final, el sonido de premio.
-			long ahora = server.getTickCount();
-			for (var it = MAGIAS.iterator(); it.hasNext(); ) {
-				Magia m = it.next();
-				if (ahora >= m.fin()) {
-					m.level().playSound(null, m.pos(), SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 1f, 1.3f);
-					m.level().playSound(null, m.pos(), SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.2f, 1.2f);
-					it.remove();
-					continue;
-				}
-				long t = ahora - m.inicio();
-				float avance = Math.min(1f, t / (float) Math.max(1, m.fin() - m.inicio()));
-				if (t % 8 == 0) {
-					m.level().playSound(null, m.pos(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.2f,
-							0.8f + avance * 1.0f + m.level().random.nextFloat() * 0.2f);
-				}
-				if (t % 40 == 20) m.level().playSound(null, m.pos(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1f, 1f + avance * 0.5f);
-			}
 			for (var it = PENDIENTES.iterator(); it.hasNext(); ) {
 				Pendiente p = it.next();
 				if (server.getTickCount() < p.cuando()) continue;
 				it.remove();
 				Correo.mandar(server, p.jugador(), REMITENTE, "Misión diaria", p.texto(), p.premio());
-				// En el chat de todos, cuando termina la animación: "(icono) X ha completado la misión diaria."
+				// En el chat de todos, cuando llega el final de la animación: "(icono) X ha completado la misión diaria."
 				server.getPlayerList().broadcastSystemMessage(Component.empty()
 						.append(Component.literal(String.valueOf((char) 0xE004)).withStyle(net.minecraft.network.chat.Style.EMPTY
 								.withFont(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "iconos"))))
@@ -107,7 +83,7 @@ public class EntregaMisionBlock extends Block {
 											  InteractionHand mano, BlockHitResult golpe) {
 		if (!pila.is(ModItems.DEDITA_MISION)) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		if (!(jugador instanceof ServerPlayer servidor)) return ItemInteractionResult.SUCCESS;
-		// Primero la ruleta en el piso, en el bloque de más abajo; el mensaje llega cuando termina.
+		// Primero la animación, en el bloque de más abajo; el mensaje llega hacia el final.
 		BlockPos abajo = pos, arriba = pos;
 		while (level.getBlockState(abajo.below()).is(this)) abajo = abajo.below();
 		while (level.getBlockState(arriba.above()).is(this)) arriba = arriba.above();
@@ -116,10 +92,10 @@ public class EntregaMisionBlock extends Block {
 		long ahora = servidor.server.getTickCount();
 		Long termina = OCUPADOS.get(clave);
 		if (termina != null && ahora < termina) {
-			jugador.displayClientMessage(Component.literal("Espera a que termine la ruleta para poner otra Dedita.").withColor(0xFFD966), true);
+			jugador.displayClientMessage(Component.literal("Espera a que termine la entrega para poner otra Dedita.").withColor(0xFFD966), true);
 			return ItemInteractionResult.SUCCESS;
 		}
-		OCUPADOS.put(clave, ahora + com.dedsafio4.ruleta.RuletaPiso.DURACION);
+		OCUPADOS.put(clave, ahora + EntregaAnimacion.DURACION);
 		OCUPADOS.values().removeIf(t -> t <= ahora);
 		Misiones.Mision mision = Misiones.deDedita(servidor.server, pila);
 		int dia = mision != null ? mision.dia() : Misiones.diaDeDedita(pila);
@@ -130,19 +106,11 @@ public class EntregaMisionBlock extends Block {
 				: dia >= 0 ? "¡Completaste la Misión Principal del Día " + dia + "!" : "¡Completaste una Misión Principal!")
 				+ (premio.isEmpty() ? " Gracias por entregar tu Dedita de la Misión." : " Aquí tienes tu premio.");
 		pila.consume(1, jugador);
-		com.dedsafio4.ruleta.RuletaPiso.mostrar(servidor.serverLevel(),
-				new net.minecraft.world.phys.Vec3(abajo.getX() + 0.5, abajo.getY(), abajo.getZ() + 0.5), -90f,
-				// La esfera chiquita (0,5 de diámetro), apoyada arriba del bloque de más arriba.
-				new net.minecraft.world.phys.Vec3(arriba.getX() + 0.5, arriba.getY() + 1 + 0.25 + 0.05, arriba.getZ() + 0.5), 0.25f);
-		// Mientras dura la ruleta, el cielo se pone de noche con estrellas para los que están a menos de 10 bloques.
-		com.dedsafio4.cielo.CieloNoche.mostrar(servidor.serverLevel(), pos.getCenter(), 10f, com.dedsafio4.ruleta.RuletaPiso.DURACION);
+		jugador.displayClientMessage(Component.literal("✔ Dedita aceptada.").withColor(0x55FF55), true);
+		EntregaAnimacion.mostrar(servidor.serverLevel(), new EntregaAnimacion.Payload(abajo.getX() + 0.5, abajo.getY(), abajo.getZ() + 0.5,
+				arriba.getY() + 1.35, servidor.getUUID()));
 		PENDIENTES.add(new Pendiente(servidor.getUUID(), servidor.getGameProfile().getName(), texto, List.copyOf(premio),
-				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
-		// El sonido mágico: arranca con un destello y sigue mientras dura la ruleta (ver MAGIAS).
-		level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1f, 1.6f);
-		level.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1f, 1.2f);
-		MAGIAS.add(new Magia(servidor.serverLevel(), abajo.immutable(), servidor.server.getTickCount(),
-				servidor.server.getTickCount() + com.dedsafio4.ruleta.RuletaPiso.DURACION));
+				servidor.server.getTickCount() + EntregaAnimacion.AVISO));
 		return ItemInteractionResult.SUCCESS;
 	}
 

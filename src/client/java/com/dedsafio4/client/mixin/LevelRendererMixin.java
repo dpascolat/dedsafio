@@ -3,9 +3,14 @@ package com.dedsafio4.client.mixin;
 import com.dedsafio4.client.CieloCliente;
 import com.dedsafio4.client.PocionesCliente;
 import com.dedsafio4.client.cielo2.CieloRojo2;
+import com.dedsafio4.client.ruleta.EntregaCliente;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.material.FogType;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -82,7 +87,40 @@ public abstract class LevelRendererMixin {
 	/** Eclipse: sin nubes. */
 	@Inject(method = "renderClouds", at = @At("HEAD"), cancellable = true)
 	private void dedsafio4$sinNubes(CallbackInfo ci) {
-		if (com.dedsafio4.client.EclipseCliente.activoAqui()) ci.cancel();
+		if (com.dedsafio4.client.EclipseCliente.activoAqui() || EntregaCliente.vacioCompleto()) ci.cancel();
+	}
+
+	/** La entrega de la Dedita: el Vacío Cósmico tapa lo que se dibujó hasta acá (el terreno y el cielo). */
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=entities"))
+	private void dedsafio4$vacio(DeltaTracker tiempo, boolean contorno, Camera camara, GameRenderer juego, LightTexture luz, Matrix4f vista, Matrix4f proyeccion, CallbackInfo ci) {
+		EntregaCliente.dibujarVacio(vista, proyeccion, tiempo.getGameTimeDeltaPartialTick(false));
+	}
+
+	/** La entrega de la Dedita: el piso, la luz y las chispas. */
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderSnowAndRain(Lnet/minecraft/client/renderer/LightTexture;FDDD)V"))
+	private void dedsafio4$entrega(DeltaTracker tiempo, boolean contorno, Camera camara, GameRenderer juego, LightTexture luz, Matrix4f vista, Matrix4f proyeccion, CallbackInfo ci) {
+		EntregaCliente.dibujar(camara, vista, proyeccion, tiempo.getGameTimeDeltaPartialTick(false));
+	}
+
+	/** En el Vacío Cósmico no llueve. */
+	@Inject(method = "renderSnowAndRain", at = @At("HEAD"), cancellable = true)
+	private void dedsafio4$sinLluvia(CallbackInfo ci) {
+		if (EntregaCliente.vacioCompleto()) ci.cancel();
+	}
+
+	/** En el Vacío Cósmico se apaga la luz del terreno y no se ve el agua (se dibuja después del vacío). */
+	@Inject(method = "renderSectionLayer", at = @At("HEAD"), cancellable = true)
+	private void dedsafio4$terrenoVacio(RenderType capa, double x, double y, double z, Matrix4f vista, Matrix4f proyeccion, CallbackInfo ci) {
+		if (EntregaCliente.vacioCompleto() && (capa == RenderType.translucent() || capa == RenderType.tripwire())) {
+			ci.cancel();
+			return;
+		}
+		EntregaCliente.apagarTerreno();
+	}
+
+	@Inject(method = "renderSectionLayer", at = @At("RETURN"))
+	private void dedsafio4$terrenoVacioFin(CallbackInfo ci) {
+		EntregaCliente.encenderTerreno();
 	}
 
 	/** Con el cielo rojo ya completo, se dibuja en lugar del de Minecraft (sin sol, luna ni estrellas). */

@@ -35,6 +35,15 @@
 		],
 		"subtitle": "subtitles.dedsafio4.cofre_cerrar"
 	},
+	"entrega_mision": {
+		"subtitle": "subtitles.dedsafio4.entrega_mision",
+		"sounds": [
+			{
+				"name": "dedsafio4:entrega_mision",
+				"attenuation_distance": 48
+			}
+		]
+	},
 	"ruleta": {
 		"sounds": [
 			{

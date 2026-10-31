@@ -48,6 +48,15 @@ public abstract class FogRendererMixin {
 			RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0f);
 			return;
 		}
+		// El Vacío Cósmico de la entrega de la Dedita: lo lejano se pierde en el negro.
+		float vacio = com.dedsafio4.client.ruleta.EntregaCliente.vacio();
+		if (vacio > 0.001f) {
+			fogRed = Mth.lerp(vacio, fogRed, 0.006f);
+			fogGreen = Mth.lerp(vacio, fogGreen, 0.006f);
+			fogBlue = Mth.lerp(vacio, fogBlue, 0.014f);
+			RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0f);
+			return;
+		}
 		// El cielo de noche de las animaciones: el horizonte también se oscurece.
 		float noche = com.dedsafio4.client.CieloNocheCliente.noche();
 		if (noche > 0f) {

@@ -89,6 +89,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.dimension.Phora.registrar();
 		com.dedsafio4.bloques.EntregaMisionBlock.registrar();
 		com.dedsafio4.ruleta.RuletaPiso.registrar();
+		com.dedsafio4.ruleta.EntregaAnimacion.registrar();
 		com.dedsafio4.revivir.Revivir.registrar();
 		com.dedsafio4.subastas.Subastas.registrarRed();
 		com.dedsafio4.correo.Correo.registrar();
