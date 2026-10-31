@@ -36,7 +36,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 /**
  * Wraith: un espectro flotante con una guadaña. Aparece en la oscuridad del Overworld. Si te golpea con la guadaña te
  * arrastra al Limbo: a las coordenadas de /spawn_limbo, o a un lugar seguro cerca de donde estabas si no hay. Si ya
- * estás en el Limbo, el golpe solo lastima.
+ * estás en el Limbo, el golpe solo lastima. Después de golpear a un jugador, desaparece.
  */
 public class WraithEntity extends Monster implements GeoEntity {
 	private static final RawAnimation MUEVE = RawAnimation.begin().thenLoop("move"), QUIETO = RawAnimation.begin().thenLoop("idle"),
@@ -82,9 +82,19 @@ public class WraithEntity extends Monster implements GeoEntity {
 			}
 			Limbo.mandar(jugador);
 			jugador.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40, 0, false, false));
+			desaparecer();
 			return true;
 		}
-		return super.doHurtTarget(objetivo);
+		boolean pego = super.doHurtTarget(objetivo);
+		if (pego && objetivo instanceof Player) desaparecer();
+		return pego;
+	}
+
+	private void desaparecer() {
+		if (level() instanceof ServerLevel mundo) {
+			mundo.sendParticles(ParticleTypes.SOUL, getX(), getY() + 1, getZ(), 20, 0.3, 0.8, 0.3, 0.03);
+		}
+		discard();
 	}
 
 	// Flota: no le pasa nada al caer.

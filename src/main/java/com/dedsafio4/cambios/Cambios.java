@@ -65,6 +65,8 @@ public final class Cambios {
 	public static final String BLAZE = "blaze";
 	/** bambu 1: al romper bambú puede aparecer una araña de cueva (10%). */
 	public static final String BAMBU = "bambu";
+	/** limbo 1: al romper una cama aparece un Wraith. */
+	public static final String LIMBO = "limbo";
 	/** zombi_casco 1: los zombis aparecen más seguido con casco (y con casco el sol no los quema). */
 	public static final String ZOMBI_CASCO = "zombi_casco";
 	/** perlas_fallan 1: cada Perla del End que se tira tiene 1% de fallar (se rompe y no te lleva). */
@@ -163,6 +165,8 @@ public final class Cambios {
 					1, "Los esqueletos Stray pueden salir durante la noche en el Overworld.")),
 			new Cambio(BAMBU, "bambu", Map.of(
 					1, "El bambú esconde algo. Ahora al romper bambú puede aparecer una Araña de Cueva.")),
+			new Cambio(LIMBO, "limbo", Map.of(
+					1, "El Limbo se acerca. Ahora al romper una cama aparece un Wraith.")),
 			new Cambio(ZOMBI_CASCO, "zombi_casco", Map.of(
 					1, "Los muertos se protegen del sol. Ahora los Zombis aparecen más seguido con casco.")),
 			new Cambio(PERLAS_FALLAN, "perlas_fallan", Map.of(

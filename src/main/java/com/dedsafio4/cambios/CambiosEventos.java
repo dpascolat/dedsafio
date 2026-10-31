@@ -103,6 +103,13 @@ public final class CambiosEventos {
 			net.minecraft.world.entity.EntityType.CAVE_SPIDER.spawn(mundo, pos, net.minecraft.world.entity.MobSpawnType.EVENT);
 		});
 
+		// limbo 1: al romper una cama aparece un Wraith.
+		net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.AFTER.register((level, jugador, pos, estado, entidad) -> {
+			if (!(level instanceof ServerLevel mundo) || !estado.is(net.minecraft.tags.BlockTags.BEDS)) return;
+			if (Cambios.nivel(mundo.getServer(), Cambios.LIMBO) < 1) return;
+			com.dedsafio4.nave.ModEntidades.WRAITH.spawn(mundo, pos, net.minecraft.world.entity.MobSpawnType.EVENT);
+		});
+
 		// miel 1: romper un panal (o colmena) hace la explosión de un Creeper.
 		net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.AFTER.register((level, jugador, pos, estado, entidad) -> {
 			if (!(level instanceof ServerLevel mundo) || !esPanal(estado)) return;
