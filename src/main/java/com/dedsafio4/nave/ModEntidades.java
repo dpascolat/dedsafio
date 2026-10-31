@@ -272,7 +272,7 @@ public final class ModEntidades {
 		SpawnPlacements.register(CREEPER_VISCERAL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				Monster::checkAnyLightMonsterSpawnRules);
 		FabricDefaultAttributeRegistry.register(CREEPER_ACUATICO, net.minecraft.world.entity.monster.Creeper.createAttributes());
-		// En el agua del Overworld (solo después de /mob creeper_acuatico).
+		// En el agua del Overworld, con cualquier luz (ver CreeperAcuaticoAparicion).
 		SpawnPlacements.register(CREEPER_ACUATICO, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR,
 				com.dedsafio4.bestias.CreeperAcuaticoEntity::puedeAparecer);
 		FabricDefaultAttributeRegistry.register(ZOMBIE_PLATA, com.dedsafio4.bestias.ZombiePlataEntity.crearAtributos());

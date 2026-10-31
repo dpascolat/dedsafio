@@ -1,6 +1,7 @@
 package com.dedsafio4.bestias;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
@@ -21,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Creeper Acuático: aparece en el agua del Overworld, respira abajo del agua (tag can_breathe_under_water) y nada
- * hacia su objetivo. Explota como un creeper normal y deja con Náusea a los jugadores que estén cerca.
+ * hacia su objetivo. Explota al instante, como un creeper normal, y deja con Náusea a los jugadores que estén cerca.
  */
 public class CreeperAcuaticoEntity extends Creeper {
 	private static final float ALCANCE = 7;
@@ -33,6 +34,10 @@ public class CreeperAcuaticoEntity extends Creeper {
 	public CreeperAcuaticoEntity(EntityType<? extends Creeper> tipo, Level level) {
 		super(tipo, level);
 		setPathfindingMalus(PathType.WATER, 0);
+		// Mecha de 1 tick: explota al instante, apenas se activa.
+		CompoundTag datos = new CompoundTag();
+		datos.putShort("Fuse", (short) 1);
+		super.readAdditionalSaveData(datos);
 	}
 
 	/** En el agua, con cualquier luz (fuera de pacífico). */
