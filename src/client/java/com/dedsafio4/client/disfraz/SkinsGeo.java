@@ -37,7 +37,7 @@ import java.util.Map;
  * jugador (cabeza, cuerpo, brazos y piernas) según su nombre, y los huesos "armor_..." no se dibujan con la skin:
  * se dibujan con la textura de la armadura que tiene puesta el jugador, así la armadura queda a la medida del
  * personaje (casco en armor_helmet, pechera en armor_body y los brazos, pantalones en armor_leggings y las piernas,
- * botas en armor_..._foot).
+ * botas en armor_..._foot). Con "dedsafio4:torso" en la descripción usa las animaciones propias de SkinAnimacion.
  */
 public final class SkinsGeo {
 	private SkinsGeo() {}
@@ -50,9 +50,12 @@ public final class SkinsGeo {
 
 	/** El modelo: sus huesos, cuáles van colgados de cada parte del jugador, y para cuál armadura es cada uno. */
 	private record Modelo(ResourceLocation textura, List<Hueso> huesos, List<Integer> raices, Map<Integer, Integer> parte,
-						  Map<Integer, EquipmentSlot> armadura, boolean agachadoSimple) {}
+						  Map<Integer, EquipmentSlot> armadura, boolean agachadoSimple, float torso) {}
 
 	private static final Map<String, Modelo> MODELOS = new HashMap<>();
+
+	/** Lo que calculó SkinAnimacion para el jugador que se está dibujando (null = la animación normal). */
+	private static float[][] animacion;
 
 	/** Skins que usan el modelo de otra, con su propia textura (skin → la del modelo). */
 	private static final Map<String, String> MISMO_MODELO = Map.of("nec2", "nec");
@@ -142,8 +145,10 @@ public final class SkinsGeo {
 		// "dedsafio4:agachado_simple": true en la descripción = un personaje que no tiene forma de persona (por ejemplo una
 		// nutria): al agacharse sólo baja un poco, sin inclinar el cuerpo ni correr la cabeza y las piernas como un humano.
 		boolean simple = desc.has("dedsafio4:agachado_simple") && desc.get("dedsafio4:agachado_simple").getAsBoolean();
+		// "dedsafio4:torso": de la cintura al cuello, en píxeles: usa las animaciones de SkinAnimacion.
+		float torso = desc.has("dedsafio4:torso") ? desc.get("dedsafio4:torso").getAsFloat() : 0;
 		return new Modelo(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/skins/" + nombre + ".png"),
-				huesos, raices, parte, armadura, simple);
+				huesos, raices, parte, armadura, simple, torso);
 	}
 
 	/** Arma las 6 caras de un cubo como lo hace Minecraft (el mismo orden de vértices y la misma textura por caja). */
@@ -218,6 +223,8 @@ public final class SkinsGeo {
 		ModelPart[] partes = {jugadorModelo.head, jugadorModelo.body, jugadorModelo.leftArm, jugadorModelo.rightArm,
 				jugadorModelo.leftLeg, jugadorModelo.rightLeg};
 		boolean simple = m.agachadoSimple() && jugadorModelo.crouching;
+		animacion = m.torso() > 0
+				? SkinAnimacion.calcular(jugador, jugadorModelo, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false), m.torso()) : null;
 		for (int i : m.raices()) {
 			EquipmentSlot lugar = m.armadura().get(i);
 			if (lugar == null) {
@@ -249,6 +256,16 @@ public final class SkinsGeo {
 							 int color, int luz, int overlay) {
 		Hueso h = m.huesos().get(i);
 		float[] p = h.pivote(), reposo = REPOSO[cual];
+		if (animacion != null) {
+			float[] a = animacion[cual];
+			pose.pushPose();
+			pose.translate((p[0] + a[0]) / 16f, (p[1] + a[1]) / 16f, (p[2] + a[2]) / 16f);
+			pose.mulPose(new Quaternionf().rotationZYX(a[5], a[4], a[3]));
+			pose.translate(-p[0] / 16f, -p[1] / 16f, -p[2] / 16f);
+			dibujarHueso(m, h, pose, vc, color, luz, overlay);
+			pose.popPose();
+			return;
+		}
 		float x = simple ? reposo[0] : parte.x, y = simple ? reposo[1] : parte.y, z = simple ? reposo[2] : parte.z;
 		float xRot = !simple ? parte.xRot : cual == 1 ? 0 : cual == 2 || cual == 3 ? parte.xRot - 0.4f : parte.xRot;
 		pose.pushPose();
@@ -265,7 +282,7 @@ public final class SkinsGeo {
 		float[] p = h.pivote();
 		pose.pushPose();
 		pose.translate(p[0] / 16f, p[1] / 16f, p[2] / 16f);
-		pose.mulPose(new Quaternionf().rotationZYX(h.rot()[2], h.rot()[1], h.rot()[0]));
+		pose.mulPose(new Quaternionf().rotationZYX(h.rot()[2], h.rot()[1], h.rot()[0] + (animacion != null && h.nombre().equals("falda") ? SkinAnimacion.falda : 0)));
 		pose.translate(-p[0] / 16f, -p[1] / 16f, -p[2] / 16f);
 		dibujarHueso(m, h, pose, vc, color, luz, overlay);
 		pose.popPose();
