@@ -48,7 +48,7 @@ public class CatalogoScreen extends Screen {
 	/** 0: el catálogo de ítems (la espada); 1: las Misiones (el pergamino); 2: el buscador (la lupa); 3: Cambios & Mobs (el libro). */
 	private int modo = 0;   // con la G se abre en los ítems (con sus crafteos)
 	private final LibroMobsVista libro = new LibroMobsVista();
-	/** El buscador: escribes el nombre de cualquier ítem o bloque (del mod o de Minecraft) y aparece. */
+	/** El buscador: escribes el nombre de un ítem o bloque de Minecraft, o del mod si está en la G, y aparece. */
 	private net.minecraft.client.gui.components.EditBox buscador;
 	private String textoBuscado = "";
 	private List<Item> resultados = List.of();
@@ -153,8 +153,8 @@ public class CatalogoScreen extends Screen {
 	}
 
 	/**
-	 * Los ítems cuyo nombre tiene lo escrito (primero los que empiezan así). paraEditar: también los ocultos,
-	 * y sin escribir nada salen todos.
+	 * Los ítems cuyo nombre tiene lo escrito (primero los que empiezan así). paraEditar: todos los ítems (también
+	 * los ocultos y los que no están en la G), y sin escribir nada salen todos.
 	 */
 	static List<Item> filtrar(String texto, boolean paraEditar) {
 		String q = normalizar(texto.trim());
@@ -163,7 +163,7 @@ public class CatalogoScreen extends Screen {
 		List<Item> empiezan = new java.util.ArrayList<>(), contienen = new java.util.ArrayList<>();
 		for (int i = 0; i < todosLosItems.size(); i++) {
 			Item item = todosLosItems.get(i);
-			if (!paraEditar && Catalogo.ocultoEnCliente(item)) continue;
+			if (!paraEditar && !Catalogo.seBuscaEnCliente(item)) continue;
 			String n = nombresNormalizados.get(i);
 			if (n.startsWith(q)) empiezan.add(item);
 			else if (n.contains(q)) contienen.add(item);

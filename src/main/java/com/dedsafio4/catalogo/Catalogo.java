@@ -247,6 +247,13 @@ public final class Catalogo {
 		return disenoCliente().get(clave(panel, fila, columna));
 	}
 
+	/** ¿Sale en el buscador de la G? Lo de Minecraft sí; lo del mod, solo si está en alguna casilla. Lo de otros mods, no. */
+	public static boolean seBuscaEnCliente(Item item) {
+		if (ocultoEnCliente(item) || item == ModItems.SIGNO_INTERROGACION) return false;
+		String mod = BuiltInRegistries.ITEM.getKey(item).getNamespace();
+		return mod.equals("minecraft") || (mod.equals(Dedsafio4.MOD_ID) && disenoCliente().containsValue(item));
+	}
+
 	/** Cambia una casilla en el cliente (al toque, antes de que conteste el servidor). */
 	public static void ponerEnCliente(int panel, int fila, int columna, @org.jetbrains.annotations.Nullable Item item) {
 		java.util.Map<String, Item> m = new java.util.HashMap<>(disenoCliente());
