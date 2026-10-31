@@ -8,7 +8,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -36,10 +35,7 @@ public class TotemYunqueItem extends Item {
 			if (TotemEspacioItem.enEspacio(entidad)) return true;   // ahí sólo sirve el Tótem del Espacio
 			if (!(entidad instanceof ServerPlayer jugador)) return true;
 			if (fuente.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return true;
-			for (InteractionHand mano : InteractionHand.values()) {
-				ItemStack otra = jugador.getItemInHand(mano);
-				if (otra.is(Items.TOTEM_OF_UNDYING) || otra.is(ModItems.TOTEM_FRERICO)) return true;
-			}
+			if (!TotemManos.leToca(jugador, ModItems.TOTEM_YUNQUE)) return true;
 			for (InteractionHand mano : InteractionHand.values()) {
 				ItemStack pila = jugador.getItemInHand(mano);
 				if (!pila.is(ModItems.TOTEM_YUNQUE)) continue;

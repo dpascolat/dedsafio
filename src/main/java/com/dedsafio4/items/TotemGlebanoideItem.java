@@ -7,7 +7,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -16,8 +15,8 @@ import java.util.List;
 /**
  * Tótem Glebanoide: si vas a morir con él en la mano (o en la mano secundaria), te salva y se gasta, como el
  * Nutritótem, pero además al saltar empuja lejos a los mobs que tienes alrededor (para que tengas espacio y te
- * puedas salvar) y te deja 1 segundo sin recibir daño. Si también tienes el de Minecraft o el de Gólem en la mano,
- * se usa ése primero.
+ * puedas salvar) y te deja 1 segundo sin recibir daño. Si tienes otro tótem en la otra mano, se gasta el de la mano
+ * principal (ver TotemManos).
  */
 public class TotemGlebanoideItem extends Item {
 	/** Hasta dónde empuja a los mobs, y con cuánta fuerza. */
@@ -40,10 +39,7 @@ public class TotemGlebanoideItem extends Item {
 			if (TotemEspacioItem.enEspacio(entidad)) return true;   // ahí sólo sirve el Tótem del Espacio
 			if (!(entidad instanceof ServerPlayer jugador)) return true;
 			if (fuente.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return true;
-			for (InteractionHand mano : InteractionHand.values()) {
-				ItemStack otra = jugador.getItemInHand(mano);
-				if (otra.is(Items.TOTEM_OF_UNDYING) || otra.is(ModItems.TOTEM_FRERICO)) return true;
-			}
+			if (!TotemManos.leToca(jugador, ModItems.TOTEM_GLEBANOIDE)) return true;
 			for (InteractionHand mano : InteractionHand.values()) {
 				ItemStack pila = jugador.getItemInHand(mano);
 				if (!pila.is(ModItems.TOTEM_GLEBANOIDE)) continue;

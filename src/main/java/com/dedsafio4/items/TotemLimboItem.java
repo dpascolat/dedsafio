@@ -8,7 +8,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -45,10 +44,7 @@ public class TotemLimboItem extends Item {
 			if (TotemEspacioItem.enEspacio(entidad)) return true;   // ahí sólo sirve el Tótem del Espacio
 			if (!(entidad instanceof ServerPlayer jugador)) return true;
 			if (fuente.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return true;
-			for (InteractionHand mano : InteractionHand.values()) {
-				ItemStack otra = jugador.getItemInHand(mano);
-				if (otra.is(Items.TOTEM_OF_UNDYING) || otra.is(ModItems.TOTEM_FRERICO) || otra.is(ModItems.TOTEM_GLEBANOIDE)) return true;
-			}
+			if (!TotemManos.leToca(jugador, ModItems.TOTEM_LIMBO)) return true;
 			for (InteractionHand mano : InteractionHand.values()) {
 				ItemStack pila = jugador.getItemInHand(mano);
 				if (!pila.is(ModItems.TOTEM_LIMBO)) continue;

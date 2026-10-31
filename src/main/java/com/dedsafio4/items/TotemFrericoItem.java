@@ -70,9 +70,7 @@ public class TotemFrericoItem extends Item {
 			if (TotemEspacioItem.enEspacio(entidad)) return true;   // ahí sólo sirve el Tótem del Espacio
 			if (!(entidad instanceof ServerPlayer jugador)) return true;
 			if (fuente.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return true;
-			// Si también tiene un Tótem de la Inmortalidad, que lo use Minecraft como siempre.
-			if (jugador.getMainHandItem().is(net.minecraft.world.item.Items.TOTEM_OF_UNDYING)
-					|| jugador.getOffhandItem().is(net.minecraft.world.item.Items.TOTEM_OF_UNDYING)) return true;
+			if (!TotemManos.leToca(jugador, ModItems.TOTEM_FRERICO)) return true;
 			for (net.minecraft.world.InteractionHand mano : net.minecraft.world.InteractionHand.values()) {
 				ItemStack pila = jugador.getItemInHand(mano);
 				if (!pila.is(ModItems.TOTEM_FRERICO)) continue;
