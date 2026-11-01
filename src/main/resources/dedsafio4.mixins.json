@@ -30,6 +30,7 @@
 		"EntityStorageReinicioMixin",
 		"EntityVueloMixin",
 		"LivingEntityAjustesMixin",
+		"LivingEntitySinCaidaMixin",
 		"LivingEntityMixin",
 		"LivingEntityTotemEspacioMixin",
 		"MerchantMenuMixin",

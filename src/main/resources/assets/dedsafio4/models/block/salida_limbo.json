@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"top": "dedsafio4:block/salida_limbo_lado",
+		"side": "dedsafio4:block/salida_limbo_lado",
+		"front": "dedsafio4:block/salida_limbo_ojo"
+	}
+}

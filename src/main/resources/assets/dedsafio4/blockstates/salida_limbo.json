@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=north": {
+			"model": "dedsafio4:block/salida_limbo"
+		},
+		"facing=east": {
+			"model": "dedsafio4:block/salida_limbo",
+			"y": 90
+		},
+		"facing=south": {
+			"model": "dedsafio4:block/salida_limbo",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "dedsafio4:block/salida_limbo",
+			"y": 270
+		}
+	}
+}
