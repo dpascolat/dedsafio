@@ -401,6 +401,9 @@ public final class ModItems {
 	/** Corazón Glebanoide: con click derecho golpea a las criaturas de Gleba cercanas (enfrente o debajo). */
 	public static final Item CORAZON_GLEBANOIDE = registrar("corazon_glebanoide", new CorazonGlebanoideItem(new Item.Properties().rarity(Rarity.RARE)));
 	/** Pechera Glebanoide: 9 de armadura, 3 de resistencia y medio corazón extra. */
+	/** Plantilla de Gleba: en la herrería, con un Corazón, convierte la armadura de netherita con flores en la Glebanoide. */
+	public static final Item PLANTILLA_GLEBA = registrar("plantilla_gleba",
+			new DescritoItem(new Item.Properties().rarity(Rarity.RARE), DescritoItem::plantillaGleba));
 	/** Casco Glebanoide: 4 de armadura, 3 de resistencia y medio corazón extra. */
 	public static final Item CASCO_GLEBANOIDE = registrar("casco_glebanoide",
 			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.HELMET, 907, 16, new Item.Properties().rarity(Rarity.RARE)));
@@ -767,6 +770,7 @@ public final class ModItems {
 						entradas.accept(TOTEM_YUNQUE);
 						entradas.accept(ESPADA_GLEBANOIDE);
 						entradas.accept(CORAZON_GLEBANOIDE);
+						entradas.accept(PLANTILLA_GLEBA);
 						entradas.accept(CASCO_GLEBANOIDE);
 						entradas.accept(PECHERA_GLEBANOIDE);
 						entradas.accept(PANTALONES_GLEBANOIDES);

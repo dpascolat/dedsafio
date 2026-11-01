@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:smithing_transform",
+	"template": {
+		"item": "dedsafio4:plantilla_gleba"
+	},
+	"base": {
+		"item": "dedsafio4:botas_netherita_planta"
+	},
+	"addition": {
+		"item": "dedsafio4:corazon"
+	},
+	"result": {
+		"id": "dedsafio4:botas_glebanoides",
+		"count": 1
+	}
+}
