@@ -144,9 +144,20 @@ public class CerebroAmarilloEntity extends Monster {
 	 */
 	private static final float GOLPE_FINAL = 1000f;
 
-	/** Medio corazón, pase lo que pase (armadura, Protección...); se cura con lo que saca. Al final te mata. */
+	/**
+	 * Medio corazón, pase lo que pase (armadura, Protección...); primero gasta los corazones de absorción. Se cura con
+	 * lo que saca. Al final te mata.
+	 */
 	private void drenar(Player jugador) {
 		DamageSource fuente = damageSources().indirectMagic(this, this);
+		float absorcion = jugador.getAbsorptionAmount();
+		if (absorcion > 0f) {
+			jugador.setAbsorptionAmount(Math.max(0f, absorcion - 1f));
+			level().broadcastDamageEvent(jugador, fuente);
+			heal(1f);
+			playSound(SoundEvents.HONEY_DRINK, 0.6f, 0.6f);
+			return;
+		}
 		vidaTope = Math.min(vidaTope, jugador.getHealth()) - 1f;
 		if (vidaTope > 0f) {
 			jugador.setHealth(vidaTope);
