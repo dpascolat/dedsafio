@@ -96,7 +96,7 @@ public final class Ganchos {
 				j.serverLevel().playSound(null, e.punto().x, e.punto().y, e.punto().z, SoundEvents.CHAIN_PLACE, SoundSource.PLAYERS, 1f, 0.8f);
 			}
 			// Si rompieron el gancho, se suelta.
-			if (!(j.serverLevel().getBlockEntity(e.pos()) instanceof GanchoBlockEntity)) {
+			if (!j.serverLevel().hasChunkAt(e.pos()) || !(j.serverLevel().getBlockEntity(e.pos()) instanceof GanchoBlockEntity)) {
 				ENGANCHES.remove(j.getUUID());
 				boya.setNoGravity(false);
 				continue;
@@ -112,19 +112,25 @@ public final class Ganchos {
 	/** Hasta qué distancia de la curva del gancho tiene que pasar la boya para engancharse. */
 	private static final double ATRAPA = 2.0;
 
+	/** El tramo más largo que se revisa de la boya en un tick. */
+	private static final double TRAMO_MAXIMO = 16.0;
+
 	/**
 	 * El gancho por el que pasó cerca la boya en este tick (se mira todo el tramo que recorrió, así no se lo saltea
 	 * aunque vaya rápido), si hay.
 	 */
 	private static Enganche buscarGancho(ServerLevel mundo, FishingHook boya) {
 		Vec3 desde = new Vec3(boya.xo, boya.yo, boya.zo), hasta = boya.position();
+		// Si la boya saltó muy lejos en un tick (teletransporte), no se revisa todo el camino.
+		if (desde.distanceToSqr(hasta) > TRAMO_MAXIMO * TRAMO_MAXIMO) desde = hasta;
 		BlockPos a = BlockPos.containing(desde), b = BlockPos.containing(hasta);
 		BlockPos min = new BlockPos(Math.min(a.getX(), b.getX()) - 3, Math.min(a.getY(), b.getY()) - 3, Math.min(a.getZ(), b.getZ()) - 3);
 		BlockPos max = new BlockPos(Math.max(a.getX(), b.getX()) + 3, Math.max(a.getY(), b.getY()) + 3, Math.max(a.getZ(), b.getZ()) + 3);
 		Enganche mejor = null;
 		double mejorDist = ATRAPA * ATRAPA;
 		for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-			if (!(mundo.getBlockEntity(pos) instanceof GanchoBlockEntity gancho)) continue;
+			// Un chunk sin cargar no se mira: cargarlo acá puede congelar el servidor.
+			if (!mundo.hasChunkAt(pos) || !(mundo.getBlockEntity(pos) instanceof GanchoBlockEntity gancho)) continue;
 			// La curva del gancho cuelga hasta casi un bloque más abajo.
 			Vec3 punto = Vec3.atBottomCenterOf(pos);
 			double d = distanciaAlTramo(punto, desde, hasta);
