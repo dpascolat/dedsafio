@@ -1,5 +1,6 @@
 package com.dedsafio4.bestias;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
@@ -23,6 +24,7 @@ import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 
 /**
  * Cerebro Amarillo: una medusa con campana de cerebro y 18 tentáculos, de la Dimensión de los Órganos. Camina y
@@ -49,6 +51,12 @@ public class CerebroAmarilloEntity extends Monster {
 				.add(Attributes.MOVEMENT_SPEED, 0.28)
 				.add(Attributes.ATTACK_DAMAGE, 1.0)
 				.add(Attributes.FOLLOW_RANGE, 20.0);
+	}
+
+	/** Sin esto, como todo monstruo, no aparecería donde hay mucha luz (de día, a cielo abierto). */
+	@Override
+	public float getWalkTargetValue(BlockPos pos, LevelReader mundo) {
+		return 0;
 	}
 
 	@Override
