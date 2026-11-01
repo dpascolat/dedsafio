@@ -270,7 +270,7 @@ public class DescritoItem extends Item {
 	/** Cuero Glebanoide: lo sueltan el Parásito (id gusano_carne) y el Parásito Volador. */
 	public static void plantillaGleba(List<Component> t) {
 		t.add(parte("Úsala en la Mesa de Herrería con una pieza", GRIS));
-		t.add(parte("de Netherita con flores y un Corazón", GRIS));
+		t.add(parte("de Netherita con flores y un Corazón Glebanoide", GRIS));
 		t.add(parte("para hacer la armadura de Gleba.", GRIS));
 	}
 
