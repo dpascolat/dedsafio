@@ -48,6 +48,8 @@ public final class Limbo {
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "limbo"));
 	public static final ResourceKey<net.minecraft.world.damagesource.DamageType> DANIO_AGUA = ResourceKey.create(Registries.DAMAGE_TYPE,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "agua_limbo"));
+	private static final int LILA = 0xB9A5FF;
+	private static final int MORADO = 0xB060E0;
 	private static final ResourceLocation MODIFICADOR = ResourceLocation.fromNamespaceAndPath("dedsafio4", "limbo_corazones");
 
 	/** Cuántos corazones perdió cada jugador en el agua del Limbo. */
@@ -116,6 +118,10 @@ public final class Limbo {
 			if (!bloqueado(jugador, mundo) || !esBloqueOBalde(pila)) return net.minecraft.world.InteractionResultHolder.pass(pila);
 			return net.minecraft.world.InteractionResultHolder.fail(pila);
 		});
+		// Entre como entre (Wraith, /admin limbo, /tp...), lo ven todos en el chat.
+		net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((jugador, desde, hasta) -> {
+			if (hasta.dimension().equals(DIMENSION)) anunciarEntrada(jugador);
+		});
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (server.getTickCount() % 20 != 0) return;
 			Datos d = datos(server);
@@ -156,6 +162,13 @@ public final class Limbo {
 		vida.removeModifier(MODIFICADOR);
 		if (perdidos > 0) vida.addTransientModifier(new AttributeModifier(MODIFICADOR, quiere, AttributeModifier.Operation.ADD_VALUE));
 		if (p.getHealth() > p.getMaxHealth()) p.setHealth(p.getMaxHealth());
+	}
+
+	/** "✝ Jugador ha sido desterrado al Limbo." en el chat de todos. */
+	private static void anunciarEntrada(ServerPlayer jugador) {
+		jugador.server.getPlayerList().broadcastSystemMessage(Component.literal("✝ ").withColor(LILA)
+				.append(Component.literal(jugador.getGameProfile().getName()).withColor(MORADO).withStyle(ChatFormatting.BOLD))
+				.append(Component.literal(" ha sido desterrado al Limbo.").withColor(LILA)), false);
 	}
 
 	/** Lo manda al Limbo: a las coordenadas de /spawn_limbo o, si no hay, a un lugar seguro cerca de donde estaba. */
