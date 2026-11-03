@@ -366,8 +366,12 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntidades.NAUTILUS_OSEO, com.dedsafio4.client.bestias.NautilusOseoRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.NAUTILUS_OSEO_GRANDE, com.dedsafio4.client.bestias.NautilusOseoGrandeRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.PARASITO_VOLADOR, com.dedsafio4.client.bestias.ParasitoVoladorRenderer::new);
-		EntityRendererRegistry.register(ModEntidades.CEREBRO_AMARILLO, c -> new com.dedsafio4.client.bestias.CerebroRenderer<>(c,
+		EntityModelLayerRegistry.registerModelLayer(com.dedsafio4.client.bestias.CerebroGlebaModelo.CAPA,
+				com.dedsafio4.client.bestias.CerebroGlebaModelo::crearCapa);
+		EntityRendererRegistry.register(ModEntidades.CEREBRO_AMARILLO, c -> new com.dedsafio4.client.bestias.CerebroGlebaModelo.Dibujante<>(c,
 				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/cerebro_amarillo.png")));
+		EntityRendererRegistry.register(ModEntidades.CEREBRO_ROJO, c -> new com.dedsafio4.client.bestias.CerebroGlebaModelo.Dibujante<>(c,
+				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/cerebro_rojo.png")));
 		EntityRendererRegistry.register(ModEntidades.GUSANO_CARNE, com.dedsafio4.client.bestias.GusanoCarneRenderer::new);
 		EntityRendererRegistry.register(ModEntidades.FLASHBANG, com.dedsafio4.client.bestias.FlashbangCliente.Dibujante::new);
 		// Los fantasmas del Limbo (modelos del Dedsafío 3: geo/entity/fantasma_*.geo.json).
@@ -387,7 +391,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.ruleta.EntregaCliente.registrar();
 		com.dedsafio4.client.revivir.RevivirCliente.registrar();
 		com.dedsafio4.client.correo.CorreoCliente.registrar();
-		EntityRendererRegistry.register(ModEntidades.GARRAPATA_CEREBRAL, c -> new com.dedsafio4.client.bestias.CerebroRenderer<>(c,
+		EntityRendererRegistry.register(ModEntidades.GARRAPATA_CEREBRAL, c -> new com.dedsafio4.client.bestias.CerebroGlebaModelo.Dibujante<>(c,
 				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/garrapata_cerebral.png")));
 		com.dedsafio4.client.bestias.RaicesCliente.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.momentito.MomentitoEntity.TIPO, com.dedsafio4.client.momentito.MomentitoRenderer::new);

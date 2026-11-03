@@ -85,7 +85,7 @@ public class CerebroAmarilloEntity extends Monster {
 	/** ¿Se puede subir a este jugador? (No a los de creativo, ni si ya tiene otro cerebro encima.) */
 	private static boolean sirve(Player jugador) {
 		return jugador.isAlive() && !jugador.isCreative() && !jugador.isSpectator()
-				&& jugador.getPassengers().stream().noneMatch(e -> e instanceof CerebroAmarilloEntity);
+				&& jugador.getPassengers().stream().noneMatch(e -> e instanceof CerebroAmarilloEntity);   // (el Rojo también es uno)
 	}
 
 	/** En lugar de pegar, se sube a la cabeza. */
@@ -116,7 +116,7 @@ public class CerebroAmarilloEntity extends Monster {
 				return;
 			}
 			// Se metió con él en un lugar de 2 bloques con techo: el cerebro choca contra el techo y queda aplastado.
-			if (aplastado()) {
+			if (seAplasta() && aplastado()) {
 				playSound(SoundEvents.SLIME_DEATH, 1.2f, 0.5f);
 				if (level() instanceof net.minecraft.server.level.ServerLevel mundo) {
 					mundo.sendParticles(new net.minecraft.core.particles.ItemParticleOption(net.minecraft.core.particles.ParticleTypes.ITEM,
@@ -129,7 +129,11 @@ public class CerebroAmarilloEntity extends Monster {
 			jugador.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 40, 0, false, false, true));
 			// Mientras lo tiene encima no se cura (ni comiendo, ni regenerando, ni con pociones).
 			if (vidaTope > 0f && jugador.getHealth() > vidaTope) jugador.setHealth(vidaTope);
-			if (++drenando % CADA == 0) drenar(jugador);
+			if (++drenando % CADA == 0) {
+				swing(net.minecraft.world.InteractionHand.MAIN_HAND);   // la animación de pegar
+				drenar(jugador);
+			}
+			if (getVehicle() == jugador) montado(jugador);
 		} else if (getTarget() instanceof Player jugador && sirve(jugador)
 				&& getBoundingBox().inflate(0.3).intersects(jugador.getBoundingBox())) {
 			// Lo tocó (por ejemplo, después del salto): se sube.
@@ -222,6 +226,38 @@ public class CerebroAmarilloEntity extends Monster {
 		}
 		return super.hurt(fuente, cantidad);
 	}
+
+	/**
+	 * Le avisa al jugador mismo quién tiene en la cabeza. Minecraft se lo manda a los demás, pero no al que lleva al
+	 * pasajero (por eso /ride lo hace a mano): sin esto, el que tiene el cerebro encima no lo ve.
+	 */
+	private static void avisar(Entity vehiculo) {
+		if (vehiculo instanceof net.minecraft.server.level.ServerPlayer sp) {
+			sp.connection.send(new net.minecraft.network.protocol.game.ClientboundSetPassengersPacket(sp));
+		}
+	}
+
+	@Override
+	public boolean startRiding(Entity vehiculo, boolean forzar) {
+		boolean subio = super.startRiding(vehiculo, forzar);
+		if (subio) avisar(vehiculo);
+		return subio;
+	}
+
+	@Override
+	public void stopRiding() {
+		Entity vehiculo = getVehicle();
+		super.stopRiding();
+		if (vehiculo != null) avisar(vehiculo);
+	}
+
+	/** ¿Se muere si el jugador se mete bajo un techo bajo? (el Rojo no: sólo se saca matándolo). */
+	protected boolean seAplasta() {
+		return true;
+	}
+
+	/** Cada tick que está en la cabeza de un jugador (el Rojo lo usa para controlarlo). */
+	protected void montado(Player jugador) {}
 
 	/** ¿Arriba de la cabeza del jugador hay techo justo donde está el cerebro? (2 bloques de alto con techo) */
 	private boolean aplastado() {

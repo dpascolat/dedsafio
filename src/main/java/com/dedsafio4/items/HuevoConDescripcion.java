@@ -193,6 +193,13 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("una flecha hacia arriba o pide ayuda.", VIOLETA));
 	}
 
+	public static void cerebroRojo(List<Component> t) {
+		t.add(parte("Se sube a tu cabeza como el Amarillo", GRIS));
+		t.add(parte("y drena tu vida, pero además ", GRIS).append(parte("te controla", VIOLETA)));
+		t.add(parte("para que ataques al que tengas cerca.", GRIS));
+		t.add(parte("Sólo se saca matándolo: pide ayuda.", VIOLETA));
+	}
+
 	public static void nautilusOseo(List<Component> t) {
 		t.add(parte("Criatura voladora que atacará si", GRIS));
 		t.add(parte("te acercas. No puedes empujarla.", GRIS));
