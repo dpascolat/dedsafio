@@ -117,7 +117,7 @@ public class BombaWardenEntity extends Monster {
 	private void chispa() {
 		if (this.tickCount % 2 != 0) return;
 		Vec3 atras = Vec3.directionFromRotation(0f, this.getYRot()).scale(-0.8);
-		double x = this.getX() + atras.x, y = this.getY(0.9), z = this.getZ() + atras.z;
+		double x = this.getX() + atras.x, y = this.getY(0.7), z = this.getZ() + atras.z;
 		this.level().addParticle(ParticleTypes.SMALL_FLAME, x, y, z, 0, 0.01, 0);
 		if (this.random.nextInt(3) == 0) this.level().addParticle(ParticleTypes.SMOKE, x, y, z, 0, 0.02, 0);
 	}
