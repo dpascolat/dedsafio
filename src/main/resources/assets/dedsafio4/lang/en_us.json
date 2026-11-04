@@ -220,6 +220,8 @@
 	"entity.dedsafio4.nave_viaje": "Nave Espacial Biplaza",
 	"death.attack.agua_organos": "%1$s se disolvió en el agua de los Órganos",
 	"death.attack.agua_organos.player": "%1$s se disolvió en el agua de los Órganos escapando de %2$s",
+	"death.attack.zombificacion": "%1$s se quedó sin Zombificación",
+	"death.attack.zombificacion.player": "%1$s se quedó sin Zombificación",
 	"death.attack.agua_limbo": "%1$s se ahogó en el agua del Limbo",
 	"death.attack.fantasma_amarillo": "%1$s was caught by %2$s",
 	"death.attack.fantasma_amarillo.player": "%1$s was caught by %2$s",

@@ -108,6 +108,12 @@ public final class Cambios {
 	/** luna_roja 1: de noche, los zombis con pico pican y construyen (ver ZombiMinero). */
 	public static final String LUNA_ROJA = "luna_roja";
 
+	/**
+	 * zombificacion 1: hace falta Zombificación (Protección contra Zombificación) para vivir: al empezar todos reciben 20
+	 * minutos, la Píldora da 2 horas y cada tótem que salta da 5 minutos; al que se le acaba, muere (ver Zombificacion).
+	 */
+	public static final String ZOMBIFICACION = "zombificacion";
+
 	/** Tipo de daño propio del mod para la Perla del End: no lo frena la armadura ni sus encantamientos. */
 	public static final ResourceKey<DamageType> DANIO_ENDERPERLA = ResourceKey.create(Registries.DAMAGE_TYPE,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "enderperla"));
@@ -210,7 +216,9 @@ public final class Cambios {
 			new Cambio(CARNE, "carne", Map.of(
 					1, "¡Todos los tipos de Carne, Pollo y Pescado se pudren!")),
 			new Cambio(MANZANAS, "manzanas", Map.of(
-					1, "La Manzana de Oro y la Manzana Encantada ya no dan el efecto de Absorción."))
+					1, "La Manzana de Oro y la Manzana Encantada ya no dan el efecto de Absorción.")),
+			new Cambio(ZOMBIFICACION, "zombificacion", Map.of(
+					1, "Reviil liberó la Zombificación. Ahora necesitas Zombificación para seguir vivo: si se te acaba, mueres. Todos reciben 20 minutos, la Píldora da 2 horas y cada Tótem que salta da 5 minutos."))
 	);
 
 	public static CambiosData data(MinecraftServer server) {

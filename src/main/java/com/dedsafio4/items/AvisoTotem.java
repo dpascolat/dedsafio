@@ -29,5 +29,6 @@ public final class AvisoTotem {
 				.append(Component.literal(" ha consumido un ").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(AMARILLO))))
 				.append(totem.getDescription().copy().withStyle(Style.EMPTY.withColor(TextColor.fromRgb(AMARILLO))));
 		jugador.server.getPlayerList().broadcastSystemMessage(mensaje, false);
+		com.dedsafio4.cambios.Zombificacion.saltoTotem(jugador);   // con el cambio zombificacion, 5 minutos
 	}
 }

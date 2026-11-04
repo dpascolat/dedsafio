@@ -195,7 +195,7 @@ public final class ModItems {
 	/** Llave de Candado: le saca el candado a un cofre tuyo. */
 	public static final Item LLAVE_CANDADO = registrar("llave_candado", new LlaveCandadoItem(new Item.Properties().stacksTo(1)));
 
-	/** Píldora: contrarresta la Zombificación durante 24 horas. */
+	/** Píldora: contrarresta la Zombificación durante 2 horas. */
 	public static final Item PILDORA = registrar("pildora", new PildoraItem(new Item.Properties()
 			.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0f)
 					.alwaysEdible().fast().build())));

@@ -22,11 +22,11 @@ import java.util.List;
 
 /**
  * Píldora: al consumirla contrarresta los efectos de la Zombificación durante la duración actual
- * (24 horas de juego conectado). Da el efecto "Protección contra Zombificación".
+ * (2 horas de juego conectado). Da el efecto "Protección contra Zombificación" (la Zombificación del cambio zombificacion).
  */
 public class PildoraItem extends Item {
 	/** Cuántas horas dura la protección (la "Duración Actual" del tooltip). */
-	public static final int HORAS = 24;
+	public static final int HORAS = 2;
 	public static final int DURACION = HORAS * 60 * 60 * 20;
 
 	public static final Holder<MobEffect> PROTECCION_ZOMBIFICACION = Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT,
