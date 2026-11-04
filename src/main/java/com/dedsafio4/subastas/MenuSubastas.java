@@ -28,13 +28,19 @@ import java.util.UUID;
  * Con páginas («« 1 / N »»). Abajo, tu inventario. La grilla no es de nadie: nada se puede sacar ni poner.
  */
 public class MenuSubastas extends AbstractContainerMenu {
-	// Posiciones (las usa también la pantalla).
-	public static final int ANCHO = 190, ALTO = 236;
-	public static final int GRILLA_X = 14, GRILLA_Y = 24, COLUMNAS = 9, FILAS = 5, POR_PAGINA = COLUMNAS * FILAS;
-	public static final int PAGINAS_Y = GRILLA_Y + FILAS * 18 + 4;
-	public static final int INVENTARIO_X = 15, INVENTARIO_Y = 152;
+	// Posiciones (las usa también la pantalla), medidas sobre el fondo de Patricio (textures/gui/subastas.png).
+	public static final int ANCHO = 180, ALTO = 246;
+	public static final int GRILLA_X = 13, COLUMNAS = 9, FILAS = 5, POR_PAGINA = COLUMNAS * FILAS;
+	/** Dónde va el ítem de cada fila de la grilla (en el dibujo las filas no están todas a 18). */
+	public static final int[] FILAS_Y = {27, 47, 66, 85, 105};
+	public static final int GRILLA_Y = FILAS_Y[0];
+	/** Los botones de página: «« a la izquierda, »» a la derecha, y el número en el medio. */
+	public static final int PAGINAS_Y = 129, PAGINAS_ALTO = 16, BOTON_IZQ_X = 13, BOTON_DER_X = 137, BOTON_ANCHO = 35, PAGINA_TEXTO_X = 93;
+	public static final int INVENTARIO_X = 13;
+	public static final int[] INVENTARIO_FILAS_Y = {155, 174, 193};
+	public static final int BARRA_Y = 218;
 	/** La casilla para vender (en la pestaña Vender), al medio de la grilla. */
-	public static final int VENTA_X = GRILLA_X + 4 * 18 + 1, VENTA_Y = GRILLA_Y + 18 + 1;
+	public static final int VENTA_X = GRILLA_X + 4 * 18, VENTA_Y = FILAS_Y[1];
 	public static final int COMPRAR = 0, VENDER = 1, MIS_VENTAS = 2, RECUPERAR = 3;
 	/** Los botones (clickMenuButton): 0..3 las pestañas; estos, las páginas. */
 	public static final int ANTERIOR = 10, SIGUIENTE = 11;
@@ -59,7 +65,7 @@ public class MenuSubastas extends AbstractContainerMenu {
 		this.datos = datos;
 		for (int fila = 0; fila < FILAS; fila++) {
 			for (int col = 0; col < COLUMNAS; col++) {
-				addSlot(new Slot(vidriera, fila * COLUMNAS + col, GRILLA_X + col * 18 + 1, GRILLA_Y + fila * 18 + 1) {
+				addSlot(new Slot(vidriera, fila * COLUMNAS + col, GRILLA_X + col * 18, FILAS_Y[fila]) {
 					@Override
 					public boolean mayPlace(ItemStack pila) {
 						return false;
@@ -85,10 +91,10 @@ public class MenuSubastas extends AbstractContainerMenu {
 		});
 		for (int fila = 0; fila < 3; fila++) {
 			for (int col = 0; col < 9; col++) {
-				addSlot(new Slot(inventario, col + fila * 9 + 9, INVENTARIO_X + col * 18, INVENTARIO_Y + fila * 18));
+				addSlot(new Slot(inventario, col + fila * 9 + 9, INVENTARIO_X + col * 18, INVENTARIO_FILAS_Y[fila]));
 			}
 		}
-		for (int col = 0; col < 9; col++) addSlot(new Slot(inventario, col, INVENTARIO_X + col * 18, INVENTARIO_Y + 58));
+		for (int col = 0; col < 9; col++) addSlot(new Slot(inventario, col, INVENTARIO_X + col * 18, BARRA_Y));
 		addDataSlots(datos);
 	}
 

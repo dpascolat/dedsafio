@@ -12,12 +12,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * La casa de subastas (/ah): el marco metálico con luces del Cajero, la grilla de 9×5 con bordes de arcoíris,
+ * La casa de subastas (/ah), con el fondo que dibujó Patricio (textures/gui/subastas.png): la grilla de 9×5,
  * «« página »» abajo, tu inventario y, a la derecha, las pestañas Comprar / Vender / Mis ventas / Recuperar.
  * En Vender: la casilla para poner lo que vendes, el precio y el botón para ponerlo a la venta.
  */
 public class SubastasScreen extends AbstractContainerScreen<MenuSubastas> {
 	private static final String[] PESTANAS = {"Comprar", "Vender", "Mis ventas", "Recuperar"};
+	private static final net.minecraft.resources.ResourceLocation FONDO = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+			com.dedsafio4.Dedsafio4.MOD_ID, "textures/gui/subastas.png");
+	private static final int FONDO_ANCHO = 720, FONDO_ALTO = 984;
 	private final Button[] pestanas = new Button[4];
 	private EditBox precio;
 	private Button ponerALaVenta;
@@ -65,18 +68,21 @@ public class SubastasScreen extends AbstractContainerScreen<MenuSubastas> {
 	@Override
 	public boolean mouseClicked(double mx, double my, int boton) {
 		int y = topPos + MenuSubastas.PAGINAS_Y;
-		if (menu.pestana() != MenuSubastas.VENDER && my >= y && my < y + 16) {
-			int izq = leftPos + MenuSubastas.GRILLA_X, der = izq + MenuSubastas.COLUMNAS * 18;
-			if (mx >= izq && mx < izq + 40 && menu.pagina() > 0) {
+		if (menu.pestana() != MenuSubastas.VENDER && my >= y && my < y + MenuSubastas.PAGINAS_ALTO) {
+			if (dentro(mx, leftPos + MenuSubastas.BOTON_IZQ_X) && menu.pagina() > 0) {
 				minecraft.gameMode.handleInventoryButtonClick(menu.containerId, MenuSubastas.ANTERIOR);
 				return true;
 			}
-			if (mx >= der - 40 && mx < der && menu.pagina() < menu.paginas() - 1) {
+			if (dentro(mx, leftPos + MenuSubastas.BOTON_DER_X) && menu.pagina() < menu.paginas() - 1) {
 				minecraft.gameMode.handleInventoryButtonClick(menu.containerId, MenuSubastas.SIGUIENTE);
 				return true;
 			}
 		}
 		return super.mouseClicked(mx, my, boton);
+	}
+
+	private static boolean dentro(double mx, int x) {
+		return mx >= x && mx < x + MenuSubastas.BOTON_ANCHO;
 	}
 
 	@Override
@@ -89,55 +95,38 @@ public class SubastasScreen extends AbstractContainerScreen<MenuSubastas> {
 	@Override
 	protected void renderBg(GuiGraphics g, float delta, int mouseX, int mouseY) {
 		int l = leftPos, t = topPos;
-		EstiloCajero.marco(g, font, l, t, imageWidth, imageHeight, "Subastas");
-		float tiempo = EstiloCajero.tiempo();
-		int gx = l + MenuSubastas.GRILLA_X, gy = t + MenuSubastas.GRILLA_Y;
-		int anchoGrilla = MenuSubastas.COLUMNAS * 18, altoGrilla = MenuSubastas.FILAS * 18;
-		boolean vender = menu.pestana() == MenuSubastas.VENDER;
-		// La grilla (o, en Vender, la casilla sola).
-		EstiloCajero.bordeArcoiris(g, gx - 2, gy - 2, anchoGrilla + 4, altoGrilla + 4, tiempo, tiempo + 0.9f);
-		g.fill(gx - 1, gy - 1, gx + anchoGrilla + 1, gy + altoGrilla + 1, 0xFF0B0D13);
-		if (vender) {
+		// El fondo dibujado por Patricio (guardado a 4 veces el tamaño, para que se vea nítido).
+		g.blit(FONDO, l, t, imageWidth, imageHeight, 0, 0, FONDO_ANCHO, FONDO_ALTO, FONDO_ANCHO, FONDO_ALTO);
+		g.drawCenteredString(font, "Subastas", l + 92, t + 8, 0xFFFFFFFF);
+		int py = t + MenuSubastas.PAGINAS_Y;
+		if (menu.pestana() == MenuSubastas.VENDER) {
+			// En Vender se tapa la grilla: sólo la casilla para vender, el precio y el botón.
+			float tiempo = EstiloCajero.tiempo();
+			g.fill(l + 11, t + 25, l + 173, t + 123, 0xF2151923);
+			g.drawCenteredString(font, "Pon acá lo que quieres vender", l + 92, t + 31, 0xFFB8C0CC);
 			int vx = l + MenuSubastas.VENTA_X - 1, vy = t + MenuSubastas.VENTA_Y - 1;
-			g.drawCenteredString(font, "Pon acá lo que quieres vender", gx + anchoGrilla / 2, gy + 5, 0xFFB8C0CC);
 			EstiloCajero.bordeArcoiris(g, vx - 2, vy - 2, 22, 22, tiempo, tiempo + 0.5f);
 			g.fill(vx - 1, vy - 1, vx + 19, vy + 19, 0xFF1A1E28);
 			g.fill(vx, vy, vx + 18, vy + 18, 0xFF2A2F3B);
+			apagar(g, l + MenuSubastas.BOTON_IZQ_X, py);
+			apagar(g, l + MenuSubastas.BOTON_DER_X, py);
 		} else {
-			for (int fila = 0; fila < MenuSubastas.FILAS; fila++) {
-				for (int col = 0; col < MenuSubastas.COLUMNAS; col++) {
-					int x = gx + col * 18, y = gy + fila * 18;
-					g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF1C2130);
-					g.fill(x + 1, y + 1, x + 17, y + 2, 0xFF262C3D);
-				}
-			}
-			// Las páginas: «« 1 / N »».
-			int py = t + MenuSubastas.PAGINAS_Y;
-			boton(g, gx, py, 40, "<<<", menu.pagina() > 0, mouseX, mouseY);
-			boton(g, gx + anchoGrilla - 40, py, 40, ">>>", menu.pagina() < menu.paginas() - 1, mouseX, mouseY);
-			g.drawCenteredString(font, (menu.pagina() + 1) + " / " + menu.paginas(), gx + anchoGrilla / 2, py + 4, 0xFFFFFFFF);
+			// Las páginas: los botones ya están dibujados; se apagan si no hay a dónde ir y se iluminan al pasar.
+			boton(g, l + MenuSubastas.BOTON_IZQ_X, py, menu.pagina() > 0, mouseX, mouseY);
+			boton(g, l + MenuSubastas.BOTON_DER_X, py, menu.pagina() < menu.paginas() - 1, mouseX, mouseY);
+			g.drawCenteredString(font, (menu.pagina() + 1) + " / " + menu.paginas(), l + MenuSubastas.PAGINA_TEXTO_X, py + 4, 0xFF2A2F3B);
 		}
-		// El inventario.
-		int ix = l + MenuSubastas.INVENTARIO_X - 1, iy = t + MenuSubastas.INVENTARIO_Y - 1;
-		for (int fila = 0; fila < 4; fila++) {
-			int y = iy + fila * 18 + (fila == 3 ? 4 : 0);
-			for (int col = 0; col < 9; col++) {
-				int x = ix + col * 18;
-				g.fill(x, y, x + 18, y + 18, 0xFF0B0D13);
-				g.fill(x + 1, y + 1, x + 17, y + 17, fila == 3 ? 0xFF2A2F3B : 0xFF1C2130);
-			}
-		}
-		EstiloCajero.bordeArcoiris(g, ix - 1, iy + 3 * 18 + 3, 9 * 18 + 2, 20, tiempo + 0.3f, tiempo + 1.2f);
 	}
 
-	/** Un botón de página: cartelito oscuro con borde de arcoíris (apagado si no hay a dónde ir). */
-	private void boton(GuiGraphics g, int x, int y, int ancho, String texto, boolean activo, int mx, int my) {
-		boolean encima = activo && mx >= x && mx < x + ancho && my >= y && my < y + 16;
-		float tiempo = EstiloCajero.tiempo();
-		if (activo) EstiloCajero.bordeArcoiris(g, x, y, ancho, 16, tiempo, tiempo + 0.4f);
-		else g.fill(x, y, x + ancho, y + 16, 0xFF3A3F4A);
-		g.fill(x + 1, y + 1, x + ancho - 1, y + 15, encima ? 0xFF2C3446 : 0xFF151923);
-		g.drawCenteredString(font, texto, x + ancho / 2, y + 4, activo ? 0xFFFFFFFF : 0xFF5A6070);
+	private void boton(GuiGraphics g, int x, int y, boolean activo, int mx, int my) {
+		if (!activo) apagar(g, x, y);
+		else if (mx >= x && mx < x + MenuSubastas.BOTON_ANCHO && my >= y && my < y + MenuSubastas.PAGINAS_ALTO) {
+			g.fill(x, y, x + MenuSubastas.BOTON_ANCHO, y + MenuSubastas.PAGINAS_ALTO, 0x40FFFFFF);
+		}
+	}
+
+	private static void apagar(GuiGraphics g, int x, int y) {
+		g.fill(x, y, x + MenuSubastas.BOTON_ANCHO, y + MenuSubastas.PAGINAS_ALTO, 0x90000000);
 	}
 
 	@Override
