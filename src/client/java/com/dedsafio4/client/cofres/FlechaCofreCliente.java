@@ -25,13 +25,18 @@ import java.util.List;
 public final class FlechaCofreCliente {
 	private FlechaCofreCliente() {}
 
-	private static final List<BlockPos> COFRES = new ArrayList<>();
+	/** El medio de cada cofre (en los dobles, entre las dos mitades). */
+	private static final List<net.minecraft.world.phys.Vec3> COFRES = new ArrayList<>();
 	private static ResourceKey<Level> dimension;
 
 	public static void registrar() {
 		ClientPlayNetworking.registerGlobalReceiver(CofresRellenables.FlechasPayload.TYPE, (payload, contexto) -> contexto.client().execute(() -> {
 			COFRES.clear();
-			for (long p : payload.cofres()) COFRES.add(BlockPos.of(p));
+			List<Long> l = payload.cofres();
+			for (int i = 0; i + 1 < l.size(); i += 2) {
+				BlockPos a = BlockPos.of(l.get(i)), b = BlockPos.of(l.get(i + 1));
+				COFRES.add(new Vec3((a.getX() + b.getX()) / 2.0 + 0.5, Math.max(a.getY(), b.getY()), (a.getZ() + b.getZ()) / 2.0 + 0.5));
+			}
 			dimension = contexto.client().level != null ? contexto.client().level.dimension() : null;
 		}));
 		WorldRenderEvents.AFTER_TRANSLUCENT.register(FlechaCofreCliente::dibujar);
@@ -44,11 +49,11 @@ public final class FlechaCofreCliente {
 		Vec3 camara = contexto.camera().getPosition();
 		MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
 		VertexConsumer vc = buffers.getBuffer(RenderType.debugQuads());
-		for (BlockPos pos : COFRES) {
-			double x = pos.getX() + 0.5, z = pos.getZ() + 0.5;
+		for (Vec3 pos : COFRES) {
+			double x = pos.x, z = pos.z;
 			// Sube y baja (y late un poco más grande cuando está abajo, "señalando").
 			float onda = Mth.sin(t * 0.15f);
-			double y = pos.getY() + 1.25 + 0.15 * onda;
+			double y = pos.y + 1.25 + 0.15 * onda;
 			float escala = 1f + 0.08f * Math.max(0, -onda);
 			float giro = (float) Math.atan2(camara.x - x, camara.z - z);
 			Matrix4f m = new Matrix4f().translate((float) (x - camara.x), (float) (y - camara.y), (float) (z - camara.z))

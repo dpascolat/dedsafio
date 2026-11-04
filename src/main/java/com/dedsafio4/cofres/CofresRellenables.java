@@ -58,7 +58,8 @@ import java.util.UUID;
  * Cofres que se rellenan solos, con loot individual: "/cofre_rellenar <tiempo>" mirando un cofre (o barril, o
  * cualquier cosa con inventario) guarda lo que tiene adentro como su loot. Desde ahí cada jugador que lo abre ve SU
  * propio cofre (lo que saca uno no le falta a los demás), y cada <tiempo> se le vuelve a llenar con el mismo loot.
- * El cofre de verdad queda vacío (así romperlo o un embudo no da nada). "/cofre_rellenar quitar" lo vuelve normal y le
+ * El cofre de verdad queda vacío (así romperlo o un embudo no da nada). Funciona con los cofres dobles y con los del mod;
+ * al abrir el suyo, la tapa del cofre de verdad se abre con su sonido (y se cierra cuando ya nadie lo mira). "/cofre_rellenar quitar" lo vuelve normal y le
  * devuelve el loot. Arriba del cofre, a los que todavía no lo abrieron desde que se rellenó, les aparece una flecha
  * blanca (la dibuja el cliente: FlechaCofreCliente).
  * El tiempo se escribe como 30s, 5m, 2h, 1d o combinado (1h30m); sólo un número son segundos.
@@ -66,7 +67,7 @@ import java.util.UUID;
 public final class CofresRellenables {
 	private CofresRellenables() {}
 
-	/** Las flechas que tiene que ver el jugador en su dimensión (posiciones de los cofres). */
+	/** Las flechas que tiene que ver el jugador en su dimensión: de a dos posiciones por cofre (las dos mitades, o la misma). */
 	public record FlechasPayload(List<Long> cofres) implements CustomPacketPayload {
 		public static final Type<FlechasPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "flechas_cofres"));
 		public static final StreamCodec<RegistryFriendlyByteBuf, FlechasPayload> CODEC = StreamCodec.composite(
@@ -210,6 +211,7 @@ public final class CofresRellenables {
 				for (Cofre c : d.cofres) {
 					if (c.dimension.equals(jugador.level().dimension()) && c.tieneFlecha(jugador.getUUID(), ahora)) {
 						flechas.add(c.lugares.get(0).asLong());
+						flechas.add(c.lugares.get(c.lugares.size() - 1).asLong());
 					}
 				}
 				if (!flechas.equals(ENVIADO.get(jugador.getUUID()))) {
@@ -220,6 +222,34 @@ public final class CofresRellenables {
 		});
 		net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
 				ENVIADO.remove(handler.player.getUUID()));
+	}
+
+	/** Cuántos jugadores tienen abierto cada cofre (para la tapa y los sonidos). */
+	private static final Map<Cofre, Integer> MIRANDO = new java.util.IdentityHashMap<>();
+
+	/**
+	 * Abre o cierra la tapa del cofre de verdad, con su sonido. Sin usar el contador de Minecraft: ése sólo cuenta a los
+	 * que tienen abierto el inventario del cofre de verdad, y acá cada uno ve el suyo (la tapa se cerraría sola).
+	 */
+	private static void tapa(ServerLevel nivel, Cofre c, boolean abierta) {
+		BlockPos primero = c.lugares.get(0);
+		net.minecraft.world.level.block.Block bloque = nivel.getBlockState(primero).getBlock();
+		for (BlockPos p : c.lugares) {
+			BlockState estado = nivel.getBlockState(p);
+			if (estado.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.OPEN)) {
+				nivel.setBlock(p, estado.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.OPEN, abierta), 3);
+			} else {
+				nivel.blockEvent(p, estado.getBlock(), 1, abierta ? 1 : 0);
+			}
+		}
+		net.minecraft.sounds.SoundEvent sonido;
+		if (bloque instanceof CofreBlock cofre) sonido = abierta ? cofre.sonidoAbrir() : cofre.sonidoCerrar();
+		else if (bloque instanceof net.minecraft.world.level.block.BarrelBlock) sonido = abierta ? net.minecraft.sounds.SoundEvents.BARREL_OPEN : net.minecraft.sounds.SoundEvents.BARREL_CLOSE;
+		else sonido = abierta ? net.minecraft.sounds.SoundEvents.CHEST_OPEN : net.minecraft.sounds.SoundEvents.CHEST_CLOSE;
+		double x = 0, y = 0, z = 0;
+		for (BlockPos p : c.lugares) { x += p.getX() + 0.5; y += p.getY() + 0.5; z += p.getZ() + 0.5; }
+		int n = c.lugares.size();
+		nivel.playSound(null, x / n, y / n, z / n, sonido, net.minecraft.sounds.SoundSource.BLOCKS, 0.5f, nivel.random.nextFloat() * 0.1f + 0.9f);
 	}
 
 	/** Le abre a este jugador su propio cofre (rellenado si ya pasó el tiempo). */
@@ -246,6 +276,23 @@ public final class CofresRellenables {
 				if (!listo[0]) return;   // mientras se llena no se copia (borraría lo que todavía no se puso)
 				for (int i = 0; i < propios.size(); i++) propios.set(i, getItem(i).copy());
 				d.setDirty();
+			}
+
+			@Override
+			public void startOpen(net.minecraft.world.entity.player.Player quien) {
+				int antes = MIRANDO.getOrDefault(c, 0);
+				MIRANDO.put(c, antes + 1);
+				if (antes == 0) tapa(nivel, c, true);
+			}
+
+			@Override
+			public void stopOpen(net.minecraft.world.entity.player.Player quien) {
+				int quedan = MIRANDO.getOrDefault(c, 1) - 1;
+				if (quedan > 0) MIRANDO.put(c, quedan);
+				else {
+					MIRANDO.remove(c);
+					tapa(nivel, c, false);
+				}
 			}
 		};
 		for (int i = 0; i < propios.size() && i < caja.getContainerSize(); i++) caja.setItem(i, propios.get(i).copy());
@@ -287,6 +334,13 @@ public final class CofresRellenables {
 	/** El inventario de ese bloque (el doble entero si es un cofre doble) y sus lugares. */
 	private static Container inventario(ServerLevel nivel, BlockPos pos, List<BlockPos> lugares) {
 		BlockState estado = nivel.getBlockState(pos);
+		if (estado.getBlock() instanceof CofreBlock) {
+			BlockPos principal = CofreBlock.principal(estado, pos);
+			lugares.add(principal);
+			BlockPos otra = principal.relative(CofreBlock.haciaLaOtra(nivel.getBlockState(principal)));
+			if (nivel.getBlockState(otra).getBlock() == estado.getBlock()) lugares.add(otra);
+			return nivel.getBlockEntity(principal) instanceof Container c ? c : null;
+		}
 		lugares.add(pos);
 		if (estado.getBlock() instanceof ChestBlock cofre) {
 			Container doble = ChestBlock.getContainer(cofre, estado, nivel, pos, true);
