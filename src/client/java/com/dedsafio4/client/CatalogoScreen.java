@@ -36,6 +36,10 @@ public class CatalogoScreen extends Screen {
 			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/icono_lupa.png")};
 	/** Cuánto mide cada dibujo de pestaña. */
 	private static final int[][] TAMANO_PESTANA = {{22, 19}, {21, 21}, {20, 22}, {22, 22}};
+	/** El marco redondeado de cada pestaña (32×32, del Diario de NavithLabs) y dónde va el dibujo adentro (en sus píxeles). */
+	private static final net.minecraft.resources.ResourceLocation MARCO_PESTANA =
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/boton.png");
+	private static final int[][] LUGAR_PESTANA = {{5, 7}, {5, 7}, {6, 6}, {5, 6}};
 	/** El marco del diseño (480×270; lo de adentro es transparente). */
 	private static final net.minecraft.resources.ResourceLocation MARCO =
 			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/marco.png");
@@ -427,9 +431,15 @@ public class CatalogoScreen extends Screen {
 			if (DIBUJO_PESTANA[i] != null) {
 				com.mojang.blaze3d.systems.RenderSystem.enableBlend();
 				if (i != elegida) g.setColor(0.6f, 0.6f, 0.6f, 1);
-				int[] t = TAMANO_PESTANA[i];
-				int dw = tab * t[0] / 22, dh = tab * t[1] / 22;
-				g.blit(DIBUJO_PESTANA[i], tx + (tab - dw) / 2, ty + (tab - dh) / 2, dw, dh, 0, 0, t[0], t[1], t[0], t[1]);
+				// El marco y, adentro, el dibujo, que sube y baja de a un píxel (como en el Diario de NavithLabs:
+				// abajo, uno arriba, dos arriba, uno arriba, en cada segundo).
+				g.blit(MARCO_PESTANA, tx, ty, tab, tab, 0, 0, 32, 32, 32, 32);
+				long ms = net.minecraft.Util.getMillis() % 1000L;
+				int sube = ms < 333 ? 0 : ms < 500 ? 1 : ms < 833 ? 2 : 1;
+				int[] t = TAMANO_PESTANA[i], lugar = LUGAR_PESTANA[i];
+				float px = tab / 32f;
+				int dw = Math.round(t[0] * px), dh = Math.round(t[1] * px);
+				g.blit(DIBUJO_PESTANA[i], tx + Math.round(lugar[0] * px), ty + Math.round((lugar[1] - sube) * px), dw, dh, 0, 0, t[0], t[1], t[0], t[1]);
 				g.setColor(1, 1, 1, 1);
 				com.mojang.blaze3d.systems.RenderSystem.disableBlend();
 				continue;
