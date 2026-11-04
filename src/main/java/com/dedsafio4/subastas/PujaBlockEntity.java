@@ -35,10 +35,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** Lo que muestra el Bloque de Puja: qué se puja, cuánto va y lo menos que se puede pujar (se manda a los jugadores). */
+/**
+ * Lo que muestra el Bloque de Puja: qué se puja, quién va ganando, cuánto va, de a cuánto sube y lo menos que se puede
+ * pujar (se manda a los jugadores).
+ */
 public class PujaBlockEntity extends BlockEntity {
 	private ItemStack item = ItemStack.EMPTY;
-	private long actual, siguiente;
+	private long actual, siguiente, incremento;
+	/** El que va ganando ("" si nadie pujó). */
+	private String pujador = "";
 
 	public PujaBlockEntity(BlockPos pos, BlockState estado) {
 		super(ModPuja.ENTIDAD, pos, estado);
@@ -56,15 +61,27 @@ public class PujaBlockEntity extends BlockEntity {
 		return siguiente;
 	}
 
+	public long incremento() {
+		return incremento;
+	}
+
+	public String pujador() {
+		return pujador;
+	}
+
 	static void tick(Level level, BlockPos pos, BlockState estado, PujaBlockEntity bloque) {
 		if (!(level instanceof ServerLevel mundo) || mundo.getGameTime() % 5 != 0) return;
 		Puja.Datos d = Puja.datos(mundo.getServer());
 		ItemStack nuevo = d.activa ? d.item : ItemStack.EMPTY;
-		long nuevoActual = d.activa ? d.actual() : 0, nuevoSiguiente = d.activa ? d.siguiente() : 0;
-		if (!ItemStack.matches(nuevo, bloque.item) || nuevoActual != bloque.actual || nuevoSiguiente != bloque.siguiente) {
+		long nuevoActual = d.activa ? d.actual() : 0, nuevoSiguiente = d.activa ? d.siguiente() : 0, nuevoIncremento = d.activa ? d.minimo : 0;
+		String nuevoPujador = d.activa && !d.ofertas.isEmpty() ? d.ofertas.get(d.ofertas.size() - 1).nombre() : "";
+		if (!ItemStack.matches(nuevo, bloque.item) || nuevoActual != bloque.actual || nuevoSiguiente != bloque.siguiente
+				|| nuevoIncremento != bloque.incremento || !nuevoPujador.equals(bloque.pujador)) {
 			bloque.item = nuevo.copy();
 			bloque.actual = nuevoActual;
 			bloque.siguiente = nuevoSiguiente;
+			bloque.incremento = nuevoIncremento;
+			bloque.pujador = nuevoPujador;
 			bloque.setChanged();
 			mundo.sendBlockUpdated(pos, estado, estado, 3);
 		}
@@ -76,6 +93,8 @@ public class PujaBlockEntity extends BlockEntity {
 		if (!item.isEmpty()) tag.put("item", item.save(registros));
 		tag.putLong("actual", actual);
 		tag.putLong("siguiente", siguiente);
+		tag.putLong("incremento", incremento);
+		tag.putString("pujador", pujador);
 	}
 
 	@Override
@@ -84,6 +103,8 @@ public class PujaBlockEntity extends BlockEntity {
 		item = tag.contains("item") ? ItemStack.parse(registros, tag.getCompound("item")).orElse(ItemStack.EMPTY) : ItemStack.EMPTY;
 		actual = tag.getLong("actual");
 		siguiente = tag.getLong("siguiente");
+		incremento = tag.getLong("incremento");
+		pujador = tag.getString("pujador");
 	}
 
 	@Override
