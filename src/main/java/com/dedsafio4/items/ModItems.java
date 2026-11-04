@@ -574,6 +574,9 @@ public final class ModItems {
 	public static final Item ESPADA_ESPACIO = registrar("espada_espacio",
 			new ArmaduraEspacio.Espada(new Item.Properties().rarity(Rarity.EPIC)));
 
+	/** Recolector de Almas: se llena matando Fantasmas Negros o Amarillos; lleno, recupera tu alma en tu Almita del Limbo. */
+	public static final Item RECOLECTOR_ALMAS = registrar("recolector_almas", new com.dedsafio4.almas.RecolectorAlmasItem(new Item.Properties()));
+
 	/** Bolsa de Ender: abre tu Cofre de Ender desde cualquier lado. */
 	public static final Item BOLSA_ENDER = registrar("bolsa_ender", new BolsaEnderItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
 
@@ -710,6 +713,7 @@ public final class ModItems {
 						entradas.accept(PANTALONES_DIMENSIONALES);
 						entradas.accept(BOTAS_DIMENSIONALES);
 						entradas.accept(ESPADA_ESPACIO);
+						entradas.accept(RECOLECTOR_ALMAS);
 						entradas.accept(ESPADA_LIMBO);
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);

@@ -114,6 +114,8 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.cofres.ModCofres.registrar();
 		com.dedsafio4.cofres.CofresRellenables.registrar();
 		com.dedsafio4.cofres.ItemsQueDesaparecen.registrar();
+		com.dedsafio4.almas.RecolectorAlmasItem.registrar();
+		com.dedsafio4.almas.AlmitasLimbo.registrar();
 		com.dedsafio4.robots.ModRobots.registrar();
 		ModGeneracion.registrar();
 		Portales.registrar();
@@ -182,6 +184,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.subastas.Puja.registrarComandos(dispatcher);
 			com.dedsafio4.cofres.CofresRellenables.registrarComandos(dispatcher);
 			com.dedsafio4.cofres.ItemsQueDesaparecen.registrarComandos(dispatcher);
+			com.dedsafio4.almas.AlmitasLimbo.registrarComandos(dispatcher);
 			com.dedsafio4.cambios.GasToxico.registrarComandos(dispatcher);
 			com.dedsafio4.gancho.Ganchos.registrarComandos(dispatcher);
 			com.dedsafio4.salidalimbo.SalidaLimbo.registrarComandos(dispatcher);
