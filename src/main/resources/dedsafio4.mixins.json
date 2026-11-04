@@ -51,7 +51,8 @@
 		"PerlaFallaMixin",
 		"TridenteLimboMixin",
 		"TridenteItemMixin",
-		"RecetaEnDescripcionMixin"
+		"RecetaEnDescripcionMixin",
+		"ItemDesapareceDescripcionMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
