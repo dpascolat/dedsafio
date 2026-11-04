@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Recolector de Almas: empieza gastado (0 %). Cada Fantasma Negro o Fantasma Amarillo que mata el jugador que lo lleva
- * (en cualquier lugar del inventario) le suma 1 %; los otros fantasmas no cuentan. Lleno (100 %, o sea 100 fantasmas),
+ * en la mano secundaria le suma 1 %; los otros fantasmas no cuentan. Lleno (100 %, o sea 100 fantasmas),
  * con clic derecho sobre tu propia Almita del Limbo (AlmitasLimbo) recuperas tu alma para revivir, y se vuelve a gastar.
  * La carga se guarda en el ítem (custom_data "dedsafio4_carga") y se ve en la barrita y en la descripción.
  */
@@ -70,8 +70,8 @@ public class RecolectorAlmasItem extends Item {
 		texto.add(Component.empty());
 		texto.add(Component.literal("Carga: ").withColor(GRIS).append(Component.literal(carga + "%").withColor(CELESTE)));
 		if (carga < LLENO) {
-			texto.add(Component.literal("Está gastado. Mata Fantasmas Negros").withColor(GRIS));
-			texto.add(Component.literal("o Amarillos para llenarlo (1% cada uno).").withColor(GRIS));
+			texto.add(Component.literal("Está gastado. En la mano secundaria,").withColor(GRIS));
+			texto.add(Component.literal("mata Fantasmas Negros o Amarillos (1% cada uno).").withColor(GRIS));
 		} else {
 			texto.add(Component.literal("¡Lleno! Haz clic derecho en tu Almita").withColor(GRIS));
 			texto.add(Component.literal("del Limbo para recuperar tu alma.").withColor(GRIS));
@@ -82,16 +82,13 @@ public class RecolectorAlmasItem extends Item {
 		ServerLivingEntityEvents.AFTER_DEATH.register((entidad, fuente) -> {
 			if (entidad.getType() != ModEntidades.FANTASMA_NEGRO && entidad.getType() != ModEntidades.FANTASMA_AMARILLO) return;
 			if (!(fuente.getEntity() instanceof ServerPlayer jugador)) return;
-			var inventario = jugador.getInventory();
-			for (int i = 0; i < inventario.getContainerSize(); i++) {
-				ItemStack pila = inventario.getItem(i);
-				if (!pila.is(ModItems.RECOLECTOR_ALMAS) || carga(pila) >= LLENO) continue;
-				int nueva = carga(pila) + 1;
-				ponerCarga(pila, nueva);
-				jugador.displayClientMessage(Component.literal("Recolector de Almas: ").withColor(CELESTE)
-						.append(Component.literal(nueva + "%" + (nueva >= LLENO ? " ¡lleno!" : "")).withColor(0xFFFFFF)), true);
-				return;
-			}
+			// Sólo carga el que está en la mano secundaria.
+			ItemStack pila = jugador.getOffhandItem();
+			if (!pila.is(ModItems.RECOLECTOR_ALMAS) || carga(pila) >= LLENO) return;
+			int nueva = carga(pila) + 1;
+			ponerCarga(pila, nueva);
+			jugador.displayClientMessage(Component.literal("Recolector de Almas: ").withColor(CELESTE)
+					.append(Component.literal(nueva + "%" + (nueva >= LLENO ? " ¡lleno!" : "")).withColor(0xFFFFFF)), true);
 		});
 	}
 }

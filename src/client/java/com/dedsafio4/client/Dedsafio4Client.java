@@ -427,6 +427,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		});
 
 		// El Arco de Huesos Grande se tensa como el arco (sus 3 dibujos al tensar, ver models/item/arco_huesos_grande.json).
+		AnimacionesSodium.registrar();
 		// El Arco Glebanoide se ve tensándose (con la flecha) igual que el arco de Minecraft.
 		ItemProperties.register(ModItems.ARCO_GLEBANOIDE, ResourceLocation.withDefaultNamespace("pull"),
 				(stack, level, entidad, semilla) -> entidad == null || entidad.getUseItem() != stack ? 0
