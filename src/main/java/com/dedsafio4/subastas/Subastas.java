@@ -18,7 +18,8 @@ import java.util.UUID;
 
 /**
  * /ah: la casa de subastas (menú MenuSubastas, pantalla SubastasScreen): pestañas Comprar, Vender, Mis ventas y
- * Recuperar. También se puede vender lo que tienes en la mano con /ah vender <precio>. Al comprar, al comprador le
+ * Recuperar. También se puede vender lo que tienes en la mano con /ah vender <precio>. El precio es por unidad: clic
+ * compra 1, Shift+clic compra todo lo que queda. Cada venta dura DURACION_VENTA (3 días); después vuelve a Recuperar. Al comprar, al comprador le
  * llega un mensaje de la Subasta al Buzón ("Compraste ...") con lo que compró adentro; al vendedor también
  * ("Vendiste ..."), con las Deditas de la venta en mano adentro (aunque no esté conectado). Lo que sacas de la venta queda en Recuperar hasta que lo tomes.
  * Un admin la cierra con /ahah desactivar: a cada jugador le llega en un mensaje todo lo que tenía a la venta y en
@@ -30,6 +31,8 @@ public final class Subastas {
 	/** Cuántas cosas puede tener a la venta cada jugador al mismo tiempo. */
 	public static final int MAXIMO_POR_JUGADOR = 14;
 	public static final long PRECIO_MAXIMO = 1_000_000_000L;
+	/** Cuánto dura una venta (3 días de hora real); después vuelve a Recuperar del vendedor. */
+	public static final long DURACION_VENTA = 3L * 24 * 60 * 60 * 1000;
 
 	public static final net.minecraft.world.inventory.MenuType<MenuSubastas> MENU = net.minecraft.core.Registry.register(
 			net.minecraft.core.registries.BuiltInRegistries.MENU,
@@ -58,6 +61,24 @@ public final class Subastas {
 						menu.venderDesdeCasilla(Math.max(1, Math.min(PRECIO_MAXIMO, payload.precio())));
 					}
 				}));
+	}
+
+	/** Cada 5 segundos: las ventas vencidas vuelven a Recuperar de su vendedor. */
+	public static void registrarVencimientos() {
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+			if (server.getTickCount() % 100 != 0) return;
+			SubastasData data = data(server);
+			long ahora = System.currentTimeMillis();
+			for (SubastasData.Venta v : new java.util.ArrayList<>(data.ventas())) {
+				if (v.vence() > ahora) continue;
+				data.quitar(v);
+				data.guardarParaRecuperar(v.vendedor(), v.item().copy());
+				ServerPlayer vendedor = server.getPlayerList().getPlayer(v.vendedor());
+				if (vendedor != null) vendedor.sendSystemMessage(Component.literal("Se terminó el tiempo de tu venta de ").withStyle(ChatFormatting.YELLOW)
+						.append(v.item().getHoverName().copy().withStyle(ChatFormatting.WHITE))
+						.append(Component.literal(" x" + v.item().getCount() + ": está en Recuperar del /ah.").withStyle(ChatFormatting.YELLOW)));
+			}
+		});
 	}
 
 	static SubastasData data(MinecraftServer server) {
@@ -145,10 +166,10 @@ public final class Subastas {
 			return false;
 		}
 		data.agregar(new SubastasData.Venta(UUID.randomUUID(), jugador.getUUID(), jugador.getGameProfile().getName(), item, precio,
-				jugador.serverLevel().getGameTime()));
+				jugador.serverLevel().getGameTime(), System.currentTimeMillis() + DURACION_VENTA));
 		jugador.sendSystemMessage(Component.literal("Pusiste a la venta ").withStyle(ChatFormatting.GREEN)
 				.append(item.getHoverName().copy().withStyle(ChatFormatting.WHITE))
-				.append(Component.literal(" x" + item.getCount() + " por " + precio + " deditas.").withStyle(ChatFormatting.GREEN)));
+				.append(Component.literal(" x" + item.getCount() + " a " + precio + (item.getCount() > 1 ? " deditas cada uno." : " deditas.")).withStyle(ChatFormatting.GREEN)));
 		jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6f, 1.2f);
 		return true;
 	}
@@ -167,8 +188,8 @@ public final class Subastas {
 		jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.6f, 1f);
 	}
 
-	/** Comprar una venta (o sacarla, si es propia). Devuelve true si cambió algo. */
-	static boolean tocar(ServerPlayer jugador, UUID idVenta) {
+	/** Comprar unidades de una venta (todas = todo lo que queda), o sacarla si es propia. Devuelve true si cambió algo. */
+	static boolean tocar(ServerPlayer jugador, UUID idVenta, boolean todas) {
 		SubastasData data = data(jugador.server);
 		SubastasData.Venta venta = data.buscar(idVenta);
 		if (venta == null) {
@@ -183,27 +204,32 @@ public final class Subastas {
 					.append(venta.item().getHoverName()).append(Component.literal(". Está en Recuperar.").withStyle(ChatFormatting.YELLOW)));
 			return true;
 		}
-		if (!Banco.cobrar(jugador, venta.precio())) {
-			jugador.sendSystemMessage(Component.literal("No te alcanzan las deditas: cuesta " + venta.precio()
+		int cantidad = todas ? venta.item().getCount() : 1;
+		long total = venta.precio() * cantidad;
+		if (!Banco.cobrar(jugador, total)) {
+			jugador.sendSystemMessage(Component.literal("No te alcanzan las deditas: cuesta " + total
 					+ " y tienes " + Banco.saldo(jugador) + ".").withStyle(ChatFormatting.RED));
 			jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 0.8f, 1f);
 			return false;
 		}
-		data.quitar(venta);
+		ItemStack comprado = venta.item().copyWithCount(cantidad);
+		int quedan = venta.item().getCount() - cantidad;
+		if (quedan > 0) data.reemplazar(venta, venta.conQuedan(quedan));
+		else data.quitar(venta);
 		jugador.sendSystemMessage(Component.literal("Compraste ").withStyle(ChatFormatting.GREEN)
-				.append(venta.item().getHoverName().copy().withStyle(ChatFormatting.WHITE))
-				.append(Component.literal(" x" + venta.item().getCount() + " por " + venta.precio() + " deditas. Te llega al Buzón.").withStyle(ChatFormatting.GREEN)));
+				.append(comprado.getHoverName().copy().withStyle(ChatFormatting.WHITE))
+				.append(Component.literal(" x" + cantidad + " por " + total + " deditas. Te llega al Buzón.").withStyle(ChatFormatting.GREEN)));
 		jugador.serverLevel().playSound(null, jugador.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5f, 1.5f);
 		// Los mensajes de la Subasta: al que compró, y al que vendió con sus deditas en mano.
-		String que = venta.item().getHoverName().getString() + " x" + venta.item().getCount();
+		String que = comprado.getHoverName().getString() + " x" + cantidad;
 		com.dedsafio4.correo.Correo.mandar(jugador.server, jugador.getUUID(), REMITENTE, "Compraste " + que,
-				"Compraste " + que + " por " + venta.precio() + " deditas en el /ah (lo vendía " + venta.nombreVendedor() + "). Aquí tienes tu compra.",
-				java.util.List.of(venta.item()));
+				"Compraste " + que + " por " + total + " deditas en el /ah (lo vendía " + venta.nombreVendedor() + "). Aquí tienes tu compra.",
+				java.util.List.of(comprado));
 		java.util.List<ItemStack> deditas = new java.util.ArrayList<>();
-		long sobra = enDeditas(venta.precio(), deditas);
+		long sobra = enDeditas(total, deditas);
 		if (sobra > 0) Banco.sumar(jugador.server, venta.vendedor(), sobra);
 		com.dedsafio4.correo.Correo.mandar(jugador.server, venta.vendedor(), REMITENTE, "Vendiste " + que,
-				jugador.getGameProfile().getName() + " te compró " + que + " por " + venta.precio() + " deditas en el /ah. Aquí tienes tus deditas."
+				jugador.getGameProfile().getName() + " te compró " + que + " por " + total + " deditas en el /ah. Aquí tienes tus deditas."
 						+ (sobra > 0 ? " (" + sobra + " no entraban en el mensaje: van a tu saldo del banco.)" : ""),
 				deditas);
 		return true;

@@ -120,6 +120,7 @@ public class MenuSubastas extends AbstractContainerMenu {
 	/** Llena la grilla según la pestaña y la página (en el servidor). */
 	void armar() {
 		if (!(jugador instanceof ServerPlayer sp)) return;
+		armando = true;
 		vidriera.clearContent();
 		java.util.Arrays.fill(idPorCasillero, null);
 		java.util.Arrays.fill(indicePorCasillero, -1);
@@ -156,20 +157,70 @@ public class MenuSubastas extends AbstractContainerMenu {
 		}
 		datos.set(1, pagina);
 		datos.set(2, paginas);
-		broadcastChanges();
+		super.broadcastChanges();
+		armando = false;
 	}
 
-	/** La venta como se ve: el ítem con el precio, quién lo vende y qué pasa al tocarlo. */
+	/** El ícono de la Dedita (fuente "iconos" del mod). */
+	private static final String ICONO_DEDITA = String.valueOf((char) 0xE002);
+	private static final net.minecraft.resources.ResourceLocation FUENTE_ICONOS =
+			net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "iconos");
+
+	/** Una línea de la descripción: el título en su color y el valor en blanco. */
+	private static Component linea(String titulo, ChatFormatting color, Component valor) {
+		return Component.literal(titulo).withStyle(s -> s.withColor(color).withItalic(false))
+				.append(valor.copy().withStyle(s -> s.withColor(ChatFormatting.WHITE).withItalic(false)));
+	}
+
+	private static Component separador() {
+		return Component.literal("- - - - - - - - - - - - - - - - -").withStyle(s -> s.withColor(ChatFormatting.DARK_GRAY).withItalic(false));
+	}
+
+	/** "2d 19h 15m 52s" (sin las partes en cero). */
+	private static String tiempo(long ms) {
+		long s = Math.max(0, ms / 1000), d = s / 86400, h = s / 3600 % 24, m = s / 60 % 60, seg = s % 60;
+		StringBuilder b = new StringBuilder();
+		if (d > 0) b.append(d).append("d ");
+		if (h > 0) b.append(h).append("h ");
+		if (m > 0) b.append(m).append("m ");
+		b.append(seg).append("s");
+		return b.toString();
+	}
+
+	/**
+	 * La venta como se ve (el diseño de Patricio): vendedor, cuántos quedan, precio por unidad (con la Dedita) y cuánto
+	 * le falta para vencer, entre dos rayitas; abajo, qué pasa al tocarlo.
+	 */
 	private static ItemStack mostrar(SubastasData.Venta v, ServerPlayer quien) {
 		ItemStack muestra = v.item().copy();
 		boolean mia = v.vendedor().equals(quien.getUUID());
+		Component precio = Component.literal(v.precio() + " ").append(Component.literal(ICONO_DEDITA)
+				.withStyle(s -> s.withFont(FUENTE_ICONOS).withColor(ChatFormatting.WHITE)));
 		agregarLineas(muestra, List.of(
 				Component.empty(),
-				Component.literal("Precio: " + v.precio() + " deditas").withStyle(s -> s.withColor(ChatFormatting.GOLD).withItalic(false)),
-				Component.literal("Vende: " + v.nombreVendedor()).withStyle(s -> s.withColor(ChatFormatting.GRAY).withItalic(false)),
-				mia ? Component.literal("Clic para sacarlo de la venta").withStyle(s -> s.withColor(ChatFormatting.YELLOW).withItalic(false))
-						: Component.literal("Clic para comprar").withStyle(s -> s.withColor(ChatFormatting.GREEN).withItalic(false))));
+				separador(),
+				linea("Vendedor: ", ChatFormatting.GOLD, Component.literal(v.nombreVendedor())),
+				linea("Cantidad Disponible: ", ChatFormatting.GREEN, Component.literal(String.valueOf(v.item().getCount()))),
+				linea("Precio por Unidad: ", ChatFormatting.YELLOW, precio),
+				linea("Tiempo Restante: ", ChatFormatting.AQUA, Component.literal(tiempo(v.vence() - System.currentTimeMillis()))),
+				separador(),
+				mia ? Component.literal("Clic para sacarlo de la venta").withStyle(s -> s.withColor(ChatFormatting.GRAY).withItalic(false))
+						: Component.literal(v.item().getCount() > 1 ? "Clic: comprar 1 · Shift+Clic: comprar todo" : "Clic para comprar")
+						.withStyle(s -> s.withColor(ChatFormatting.GRAY).withItalic(false))));
 		return muestra;
+	}
+
+	private int ticksAbierto;
+	private boolean armando;
+
+	/** Cada segundo se vuelve a armar la grilla (así baja el Tiempo Restante y se ven las compras de los demás). */
+	@Override
+	public void broadcastChanges() {
+		if (!armando && jugador instanceof ServerPlayer && ++ticksAbierto % 20 == 0 && (pestana() == COMPRAR || pestana() == MIS_VENTAS)) {
+			armar();
+			return;
+		}
+		super.broadcastChanges();
 	}
 
 	private static void agregarLineas(ItemStack pila, List<Component> extra) {
@@ -201,11 +252,11 @@ public class MenuSubastas extends AbstractContainerMenu {
 	public void clicked(int casillero, int boton, ClickType tipo, Player quien) {
 		if (casillero >= 0 && casillero < POR_PAGINA) {
 			// La grilla es solo para mirar: cada clic es un botón (lo hace el servidor).
-			if (quien instanceof ServerPlayer sp && tipo == ClickType.PICKUP && pestana() != VENDER) {
+			if (quien instanceof ServerPlayer sp && (tipo == ClickType.PICKUP || tipo == ClickType.QUICK_MOVE) && pestana() != VENDER) {
 				if (pestana() == RECUPERAR) {
 					if (indicePorCasillero[casillero] >= 0) Subastas.recuperar(sp, indicePorCasillero[casillero]);
 				} else if (idPorCasillero[casillero] != null) {
-					Subastas.tocar(sp, idPorCasillero[casillero]);
+					Subastas.tocar(sp, idPorCasillero[casillero], tipo == ClickType.QUICK_MOVE);
 				}
 				armar();
 				sendAllDataToRemote();

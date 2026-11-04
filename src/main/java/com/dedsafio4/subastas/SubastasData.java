@@ -15,8 +15,16 @@ import java.util.UUID;
 public class SubastasData extends SavedData {
 	public static final SavedData.Factory<SubastasData> FACTORY = new SavedData.Factory<>(SubastasData::new, SubastasData::cargar, null);
 
-	/** Una venta: qué se vende, quién lo vende y a cuántas deditas. */
-	public record Venta(UUID id, UUID vendedor, String nombreVendedor, ItemStack item, long precio, long cuando) {}
+	/**
+	 * Una venta: qué se vende (y cuántos quedan, en item), quién lo vende, a cuántas deditas cada unidad y cuándo vence
+	 * (hora real, en milisegundos: al vencer vuelve a Recuperar del vendedor).
+	 */
+	public record Venta(UUID id, UUID vendedor, String nombreVendedor, ItemStack item, long precio, long cuando, long vence) {
+		/** La misma venta con menos unidades (después de que alguien compró una parte). */
+		public Venta conQuedan(int quedan) {
+			return new Venta(id, vendedor, nombreVendedor, item.copyWithCount(quedan), precio, cuando, vence);
+		}
+	}
 
 	/** De la más nueva a la más vieja. */
 	private final List<Venta> ventas = new ArrayList<>();
@@ -69,6 +77,13 @@ public class SubastasData extends SavedData {
 		return null;
 	}
 
+	/** Cambia una venta por otra (la misma, con menos unidades). */
+	public void reemplazar(Venta vieja, Venta nueva) {
+		int i = ventas.indexOf(vieja);
+		if (i >= 0) ventas.set(i, nueva);
+		setDirty();
+	}
+
 	public boolean quitar(Venta venta) {
 		boolean estaba = ventas.remove(venta);
 		if (estaba) setDirty();
@@ -106,7 +121,11 @@ public class SubastasData extends SavedData {
 			CompoundTag v = (CompoundTag) t;
 			ItemStack item = ItemStack.parse(registros, v.getCompound("item")).orElse(ItemStack.EMPTY);
 			if (item.isEmpty()) continue;
-			data.ventas.add(new Venta(v.getUUID("id"), v.getUUID("vendedor"), v.getString("nombre"), item, v.getLong("precio"), v.getLong("cuando")));
+			// Las ventas de antes guardaban el precio de todo junto: se pasa a precio por unidad. Y no vencían: les toca ahora.
+			long precio = v.getLong("precio");
+			if (!v.getBoolean("porUnidad") && item.getCount() > 1) precio = Math.max(1, (precio + item.getCount() - 1) / item.getCount());
+			long vence = v.contains("vence") ? v.getLong("vence") : System.currentTimeMillis() + Subastas.DURACION_VENTA;
+			data.ventas.add(new Venta(v.getUUID("id"), v.getUUID("vendedor"), v.getString("nombre"), item, precio, v.getLong("cuando"), vence));
 		}
 		CompoundTag rec = tag.getCompound("recuperar");
 		for (String jugador : rec.getAllKeys()) {
@@ -128,6 +147,8 @@ public class SubastasData extends SavedData {
 			t.put("item", v.item().save(registros));
 			t.putLong("precio", v.precio());
 			t.putLong("cuando", v.cuando());
+			t.putLong("vence", v.vence());
+			t.putBoolean("porUnidad", true);
 			lista.add(t);
 		}
 		tag.put("ventas", lista);

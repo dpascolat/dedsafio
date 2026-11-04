@@ -47,7 +47,7 @@ public class SubastasScreen extends AbstractContainerScreen<MenuSubastas> {
 		precio = new EditBox(font, l + MenuSubastas.GRILLA_X + 2 * 18, t + MenuSubastas.VENTA_Y + 26, 5 * 18, 14, Component.literal("Precio"));
 		precio.setMaxLength(10);
 		precio.setFilter(s -> s.chars().allMatch(Character::isDigit));
-		precio.setHint(Component.literal("precio en deditas").withColor(0xFF5A6070));
+		precio.setHint(Component.literal("precio por unidad").withColor(0xFF5A6070));
 		addRenderableWidget(precio);
 		ponerALaVenta = addRenderableWidget(Button.builder(Component.literal("Poner a la venta"), b -> {
 			if (precio.getValue().isEmpty()) return;

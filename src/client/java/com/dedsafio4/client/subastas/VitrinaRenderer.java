@@ -42,7 +42,7 @@ public class VitrinaRenderer implements BlockEntityRenderer<VitrinaBlockEntity> 
 		Font letra = mc.font;
 		Matrix4f matriz = pose.last().pose();
 		Component nombre = item.getCount() > 1 ? item.getHoverName().copy().append(" x" + item.getCount()) : item.getHoverName();
-		Component precio = Component.literal(vitrina.precio() + " deditas").withStyle(ChatFormatting.GOLD);
+		Component precio = Component.literal(vitrina.precio() + " deditas c/u").withStyle(ChatFormatting.GOLD);
 		int fondo = (int) (mc.options.getBackgroundOpacity(0.25f) * 255f) << 24;
 		letra.drawInBatch(nombre, -letra.width(nombre) / 2f, 0, 0xFFFFFFFF, false, matriz, buffers, Font.DisplayMode.NORMAL, fondo, brillo);
 		letra.drawInBatch(precio, -letra.width(precio) / 2f, 11, 0xFFFFFFFF, false, matriz, buffers, Font.DisplayMode.NORMAL, fondo, brillo);

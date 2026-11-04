@@ -93,6 +93,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.ruleta.EntregaAnimacion.registrar();
 		com.dedsafio4.revivir.Revivir.registrar();
 		com.dedsafio4.subastas.Subastas.registrarRed();
+		com.dedsafio4.subastas.Subastas.registrarVencimientos();
 		com.dedsafio4.correo.Correo.registrar();
 		com.dedsafio4.revivir.Fogata.registrar();
 		com.dedsafio4.bestias.SoarerAparicion.registrar();
