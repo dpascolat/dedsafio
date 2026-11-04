@@ -557,6 +557,22 @@ public final class ModItems {
 	public static final Item BOTAS_NETHERITA_PLANTA = registrar("botas_netherita_planta",
 			new NetheritaPlanta.Pieza(ArmorItem.Type.BOOTS, new Item.Properties()));
 
+	/** La Armadura del Espacio y su espada (ArmaduraEspacio). */
+	public static final Item CASCO_ESPACIO = registrar("casco_espacio",
+			new ArmaduraEspacio.Pieza(ArmorItem.Type.HELMET, new Item.Properties().rarity(Rarity.EPIC)));
+
+	public static final Item PECHERA_ESPACIO = registrar("pechera_espacio",
+			new ArmaduraEspacio.Pieza(ArmorItem.Type.CHESTPLATE, new Item.Properties().rarity(Rarity.EPIC)));
+
+	public static final Item PANTALONES_ESPACIO = registrar("pantalones_espacio",
+			new ArmaduraEspacio.Pieza(ArmorItem.Type.LEGGINGS, new Item.Properties().rarity(Rarity.EPIC)));
+
+	public static final Item BOTAS_ESPACIO = registrar("botas_espacio",
+			new ArmaduraEspacio.Pieza(ArmorItem.Type.BOOTS, new Item.Properties().rarity(Rarity.EPIC)));
+
+	public static final Item ESPADA_ESPACIO = registrar("espada_espacio",
+			new ArmaduraEspacio.Espada(new Item.Properties().rarity(Rarity.EPIC)));
+
 	/** Bolsa de Ender: abre tu Cofre de Ender desde cualquier lado. */
 	public static final Item BOLSA_ENDER = registrar("bolsa_ender", new BolsaEnderItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
 
@@ -688,6 +704,11 @@ public final class ModItems {
 						entradas.accept(CORAZON);
 						entradas.accept(FRUTO_QUIU);
 						entradas.accept(ESPADA_HOJA_QUMARA);
+						entradas.accept(CASCO_ESPACIO);
+						entradas.accept(PECHERA_ESPACIO);
+						entradas.accept(PANTALONES_ESPACIO);
+						entradas.accept(BOTAS_ESPACIO);
+						entradas.accept(ESPADA_ESPACIO);
 						entradas.accept(ESPADA_LIMBO);
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
