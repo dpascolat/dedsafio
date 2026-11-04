@@ -574,6 +574,9 @@ public final class ModItems {
 	public static final Item ESPADA_ESPACIO = registrar("espada_espacio",
 			new ArmaduraEspacio.Espada(new Item.Properties().rarity(Rarity.EPIC)));
 
+	/** Espada Phora: 15 de daño, 1,6 de velocidad (la textura es la lava animada). */
+	public static final Item ESPADA_PHORA = registrar("espada_phora", new EspadaPhoraItem(new Item.Properties().rarity(Rarity.EPIC)));
+
 	/** Recolector de Almas: se llena matando Fantasmas Negros o Amarillos; lleno, recupera tu alma en tu Almita del Limbo. */
 	public static final Item RECOLECTOR_ALMAS = registrar("recolector_almas", new com.dedsafio4.almas.RecolectorAlmasItem(new Item.Properties()));
 
@@ -713,6 +716,7 @@ public final class ModItems {
 						entradas.accept(PANTALONES_DIMENSIONALES);
 						entradas.accept(BOTAS_DIMENSIONALES);
 						entradas.accept(ESPADA_ESPACIO);
+						entradas.accept(ESPADA_PHORA);
 						entradas.accept(RECOLECTOR_ALMAS);
 						entradas.accept(ESPADA_LIMBO);
 						entradas.accept(CORAZON_VIOLETA);
