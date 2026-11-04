@@ -23,18 +23,24 @@ import java.util.List;
 
 /**
  * Las recetas de un ítem en su descripción, chiquitas y con borde de arcoíris (como en las imágenes de Patricio):
- *   - la grilla de 3×3 de la mesa de crafteo;
+ *   - la grilla de 3×3 de la mesa de crafteo (la del Diario de NavithLabs), el "=" y lo que se hace;
  *   - cocinando: lo que se mete → el horno (o ahumador, alto horno, fogata) → el ítem;
  *   - en la mesa de herrería: plantilla, base y agregado → la mesa → el ítem.
  * Si un lugar acepta varios ítems, va mostrando uno por segundo. Sin recetas, no dibuja nada.
  */
 public class RecetaTooltipCliente implements ClientTooltipComponent {
 	private static final int CELDA = 11, BORDE = 2, SEPARACION = 3;
+	/** La grilla de la mesa de crafteo: el dibujo de 24×24 agrandado a 36, el "=" (9×5) y el resultado. */
+	private static final int MESA = 36;
+	private static final net.minecraft.resources.ResourceLocation MINI = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+			"dedsafio4", "textures/gui/diario/receta_mini.png"), IGUAL = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+			"dedsafio4", "textures/gui/diario/receta_igual.png");
 
-	/** Un recuadro: columnas × filas de lugares; cada lugar, los ítems que acepta (null = vacío). */
-	private record Seccion(int columnas, int filas, ItemStack[][] lugares) {
-		int ancho() { return BORDE * 2 + CELDA * columnas; }
-		int alto() { return BORDE * 2 + CELDA * filas; }
+	/** Un recuadro: columnas × filas de lugares; cada lugar, los ítems que acepta (null = vacío). La mesa lleva su resultado. */
+	private record Seccion(int columnas, int filas, ItemStack[][] lugares, ItemStack resultado) {
+		boolean mesa() { return resultado != null; }
+		int ancho() { return mesa() ? MESA + 3 + 9 + 3 + 16 : BORDE * 2 + CELDA * columnas; }
+		int alto() { return mesa() ? MESA : BORDE * 2 + CELDA * filas; }
 	}
 
 	private final List<Seccion> secciones;
@@ -75,7 +81,7 @@ public class RecetaTooltipCliente implements ClientTooltipComponent {
 			ItemStack[][] g = new ItemStack[9][];
 			int ancho = r.value() instanceof ShapedRecipe forma ? forma.getWidth() : 3;
 			for (int i = 0; i < ingredientes.size() && i < 9; i++) g[(i / ancho) * 3 + i % ancho] = de(ingredientes.get(i));
-			out.add(new Seccion(3, 3, g));
+			out.add(new Seccion(3, 3, g, r.value().getResultItem(registros)));
 			break;
 		}
 
@@ -94,7 +100,7 @@ public class RecetaTooltipCliente implements ClientTooltipComponent {
 			}
 			if (entra.isEmpty()) continue;
 			out.add(new Seccion(3, 1, new ItemStack[][]{entra.toArray(ItemStack[]::new),
-					{new ItemStack((Item) h[1])}, {resultado}}));
+					{new ItemStack((Item) h[1])}, {resultado}}, null));
 			break;   // el horno alcanza (el alto horno y el ahumador hacen lo mismo, más rápido)
 		}
 
@@ -102,7 +108,7 @@ public class RecetaTooltipCliente implements ClientTooltipComponent {
 		for (RecipeHolder<SmithingRecipe> r : recetas.getAllRecipesFor(RecipeType.SMITHING)) {
 			if (!(r.value() instanceof SmithingTransformAccessor partes) || !r.value().getResultItem(registros).is(item)) continue;
 			out.add(new Seccion(5, 1, new ItemStack[][]{de(partes.dedsafio4$plantilla()), de(partes.dedsafio4$base()),
-					de(partes.dedsafio4$agregado()), {new ItemStack(Items.SMITHING_TABLE)}, {resultado}}));
+					de(partes.dedsafio4$agregado()), {new ItemStack(Items.SMITHING_TABLE)}, {resultado}}, null));
 			break;
 		}
 		return out;
@@ -129,6 +135,11 @@ public class RecetaTooltipCliente implements ClientTooltipComponent {
 		y += 1;
 		for (Seccion s : secciones) {
 			int w = s.ancho(), h = s.alto();
+			if (s.mesa()) {
+				mesa(g, s, x, y, segundo);
+				y += h + SEPARACION;
+				continue;
+			}
 			g.fill(x, y, x + w, y + h, 0xFF101218);
 			EstiloCajero.bordeArcoiris(g, x, y, w, h, t, t + 0.8f);
 			for (int i = 0; i < s.lugares().length; i++) {
@@ -144,5 +155,22 @@ public class RecetaTooltipCliente implements ClientTooltipComponent {
 			}
 			y += h + SEPARACION;
 		}
+	}
+
+	/** La mesa de crafteo: la grilla del Diario (las casillas empiezan en 2,1 y van cada 7 de sus 24), "=" y el resultado. */
+	private static void mesa(GuiGraphics g, Seccion s, int x, int y, int segundo) {
+		float k = MESA / 24f;
+		g.blit(MINI, x, y, MESA, MESA, 0, 0, 24, 24, 24, 24);
+		for (int i = 0; i < 9; i++) {
+			ItemStack[] opciones = s.lugares()[i];
+			if (opciones == null || opciones.length == 0) continue;
+			g.pose().pushPose();
+			g.pose().translate(x + (2.1f + (i % 3) * 7f) * k, y + (2.1f + (i / 3) * 7f) * k, 0);
+			g.pose().scale(5.8f * k / 16f, 5.8f * k / 16f, 1);
+			g.renderFakeItem(opciones[segundo % opciones.length], 0, 0);
+			g.pose().popPose();
+		}
+		g.blit(IGUAL, x + MESA + 3, y + (MESA - 5) / 2, 9, 5, 0, 0, 9, 5, 9, 5);
+		g.renderFakeItem(s.resultado(), x + MESA + 3 + 9 + 3, y + (MESA - 16) / 2);
 	}
 }

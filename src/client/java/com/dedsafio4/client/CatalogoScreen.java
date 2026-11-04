@@ -569,16 +569,26 @@ public class CatalogoScreen extends Screen {
 		if (bajo != null) tooltipItem = new ItemStack(bajo);
 	}
 
-	// El cuadro del crafteo se dibuja agrandado: estas medidas son las de antes de agrandarlo.
-	private static final int REC_ALTO = 96, REC_GX = 8, REC_GY = 20;
+	// El cuadro del crafteo (la ventana de inspeccionar del Diario de NavithLabs) se dibuja agrandado: estas medidas
+	// son las de antes de agrandarlo, sacadas de su diseño (su ventana mide 1298×798; acá, 130×80).
+	private static final int REC_ANCHO = 130, REC_ALTO = 80;
+	/** Dónde va cada casilla del crafteo (arriba a la izquierda del ítem) y qué tan grande se ve el ítem. */
+	private static final float[] REC_CX = {10.3f, 24.9f, 39.4f}, REC_CY = {27.5f, 42.1f, 56.7f};
+	private static final float REC_ITEM = 12f;
+	private static final net.minecraft.resources.ResourceLocation REC_VENTANA = diario("receta_ventana"), REC_MINI = diario("receta_mini"),
+			REC_IGUAL = diario("receta_igual");
 	private float recEscala = 1;
 	private int recX, recY, recAncho;
+
+	private static net.minecraft.resources.ResourceLocation diario(String nombre) {
+		return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("dedsafio4", "textures/gui/diario/" + nombre + ".png");
+	}
 	/** Los crafteos abiertos antes, al ir tocando ingredientes (click afuera o Esc vuelve al anterior). */
 	private final java.util.ArrayDeque<Item> recetasAnteriores = new java.util.ArrayDeque<>();
 
 	/** Dónde va el cuadro del crafteo y qué tan grande (lo más grande que entre, hasta el doble). */
 	private void medirReceta() {
-		recAncho = Math.max(124, font.width(new ItemStack(recetaDe).getHoverName()) + 14);
+		recAncho = REC_ANCHO;
 		recEscala = Math.min(2f, Math.min((VH - 12f) / REC_ALTO, (VW - 12f) / recAncho));
 		recX = Math.round(VW / 2f - recAncho * recEscala / 2);
 		recY = Math.round(VH / 2f - REC_ALTO * recEscala / 2);
@@ -587,11 +597,12 @@ public class CatalogoScreen extends Screen {
 	/** La casilla del crafteo (0 a 8) que está debajo del mouse, o -1. */
 	private int casillaReceta(double mx, double my) {
 		medirReceta();
-		double lx = (mx - recX) / recEscala - REC_GX, ly = (my - recY) / recEscala - REC_GY;
-		if (lx < 0 || ly < 0) return -1;
-		int fx = (int) (lx / 19), fy = (int) (ly / 19);
-		if (fx > 2 || fy > 2 || lx - fx * 19 >= 18 || ly - fy * 19 >= 18) return -1;
-		return fy * 3 + fx;
+		double lx = (mx - recX) / recEscala, ly = (my - recY) / recEscala;
+		for (int casilla = 0; casilla < 9; casilla++) {
+			float cx = REC_CX[casilla % 3], cy = REC_CY[casilla / 3];
+			if (lx >= cx && lx < cx + REC_ITEM && ly >= cy && ly < cy + REC_ITEM) return casilla;
+		}
+		return -1;
 	}
 
 	/** Lo que se ve en esa casilla del crafteo ahora (si acepta varias cosas, va cambiando cada segundo). */
@@ -606,7 +617,10 @@ public class CatalogoScreen extends Screen {
 		return opciones[(int) (System.currentTimeMillis() / 1000 % opciones.length)];
 	}
 
-	/** El crafteo del ítem tocado: 3×3 con el borde de colores, la flecha y el resultado (agrandado). */
+	/**
+	 * El crafteo del ítem tocado, en la ventana de inspeccionar del Diario de NavithLabs: el nombre arriba, la grilla de
+	 * 3×3 (receta_mini), el "=" y el resultado grande a la derecha (agrandado).
+	 */
 	private void dibujarReceta(GuiGraphics g, int mx, int my) {
 		medirReceta();
 		int w = recAncho, h = REC_ALTO;
@@ -614,36 +628,46 @@ public class CatalogoScreen extends Screen {
 		g.pose().pushPose();
 		g.pose().translate(recX, recY, 400);
 		g.pose().scale(recEscala, recEscala, 1);
-		g.fill(0, 0, w, h, 0xF0141820);
-		bordeArcoiris(g, 0, 0, w, h, 2);
-		g.drawString(font, new ItemStack(recetaDe).getHoverName(), 6, 6, 0xFFFFFFFF, true);
-		int gx = REC_GX, gy = REC_GY;
+		com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+		g.blit(REC_VENTANA, 0, 0, w, h, 0, 0, 71, 43, 71, 43);
+		// El nombre en la franja oscura de arriba (más chico si no entra).
+		Component nombre = new ItemStack(recetaDe).getHoverName();
+		float en = Math.min(1f, (w - 12f) / Math.max(1, font.width(nombre)));
+		g.pose().pushPose();
+		g.pose().translate(w / 2f, 5.5f, 0);
+		g.pose().scale(en, en, 1);
+		g.drawString(font, nombre, -font.width(nombre) / 2, 0, 0xFFFFFFFF, true);
+		g.pose().popPose();
+		g.blit(REC_MINI, 6, 23, 50, 50, 0, 0, 24, 24, 24, 24);
 		for (int casilla = 0; casilla < 9; casilla++) {
-			int sx = gx + casilla % 3 * 19, sy = gy + casilla / 3 * 19;
-			g.fill(sx, sy, sx + 18, sy + 18, 0xFF0E1118);
-			g.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF2A3140);
+			float cx = REC_CX[casilla % 3], cy = REC_CY[casilla / 3];
 			ItemStack ingrediente = ingredienteEn(casilla);
 			if (ingrediente.isEmpty()) continue;
 			if (casilla == bajo) {
-				g.fill(sx + 1, sy + 1, sx + 17, sy + 17, tieneReceta(ingrediente.getItem()) ? 0xFF4A6A8A : 0xFF3A4252);
+				g.fill((int) cx, (int) cy, (int) (cx + REC_ITEM), (int) (cy + REC_ITEM), tieneReceta(ingrediente.getItem()) ? 0x806A9ACA : 0x60FFFFFF);
 				tooltipItem = ingrediente;
 			}
-			g.renderItem(ingrediente, sx + 1, sy + 1);
+			g.pose().pushPose();
+			g.pose().translate(cx, cy, 0);
+			g.pose().scale(REC_ITEM / 16f, REC_ITEM / 16f, 1);
+			g.renderItem(ingrediente, 0, 0);
+			g.pose().popPose();
 		}
-		g.drawString(font, "→", gx + 3 * 19 + 6, gy + 23, 0xFFFFFFFF, true);
-		int rx = gx + 3 * 19 + 20, ry = gy + 18;
-		g.fill(rx, ry, rx + 22, ry + 22, 0xFF0E1118);
-		g.fill(rx + 1, ry + 1, rx + 21, ry + 21, 0xFF2A3140);
+		g.blit(REC_IGUAL, 62, 46, 9, 5, 0, 0, 9, 5, 9, 5);
 		ItemStack resultado = receta.value().getResultItem(minecraft.level.registryAccess());
-		g.renderItem(resultado, rx + 3, ry + 3);
-		g.renderItemDecorations(font, resultado, rx + 3, ry + 3);
+		g.pose().pushPose();
+		g.pose().translate(73, 26, 0);
+		g.pose().scale(44 / 16f, 44 / 16f, 1);
+		g.renderItem(resultado, 0, 0);
+		g.renderItemDecorations(font, resultado, 0, 0);
+		g.pose().popPose();
 		// La ayuda, chiquita abajo.
 		g.pose().pushPose();
-		g.pose().translate(6, h - 10, 0);
-		g.pose().scale(0.5f, 0.5f, 1);
-		g.drawString(font, "Click en un ingrediente: ver su crafteo", 0, 0, 0xFF8FD8FF, false);
-		if (!recetasAnteriores.isEmpty()) g.drawString(font, "Click afuera o Esc: volver", 0, 10, 0xFF8C929C, false);
+		g.pose().translate(6, h - 9, 0);
+		g.pose().scale(0.45f, 0.45f, 1);
+		g.drawString(font, "Click en un ingrediente: ver su crafteo" + (recetasAnteriores.isEmpty() ? "" : " · Click afuera o Esc: volver"), 0, 0, 0xFF3A4258, false);
 		g.pose().popPose();
+		com.mojang.blaze3d.systems.RenderSystem.disableBlend();
 		g.pose().popPose();
 	}
 
