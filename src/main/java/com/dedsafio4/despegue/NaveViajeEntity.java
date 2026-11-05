@@ -90,11 +90,11 @@ public class NaveViajeEntity extends Entity implements GeoEntity {
 	private static final double ALTURA_LLEGADA = 45;
 	private static final int AMARILLO = 0xF0D86A, NARANJA = 0xFFA23C, VIOLETA = 0xC883FF;
 	/** Dónde van los pasajeros dentro de la cabina, corridos a mano (1 píxel = 1/16 de bloque). */
-	private static final double AJUSTE_X = 6 / 16.0 - 0.4, AJUSTE_Y = 12 / 16.0;   // al medio de la cabina
+	private static final double AJUSTE_X = 0, AJUSTE_Y = 2.3;   // al medio de la cabina
 	/** Cuánto más atrás (más abajo, hacia el motor: la nave está parada) va el segundo pasajero. */
 	private static final double ATRAS = 0.8;
 	/** Corridos hacia atrás de la nave (lejos de la ventanita), así la cabeza no se sale del vidrio. */
-	private static final double AJUSTE_Z = 0.35;
+	private static final double AJUSTE_Z = 0;
 
 	private UUID dueno;
 	private String nombreDueno = "";

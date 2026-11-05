@@ -45,7 +45,7 @@ public final class ModDespegue {
 	/** La nave parada: unos 4 bloques de alto (el modelo, de punta a motor). */
 	public static final EntityType<NaveViajeEntity> NAVE_VIAJE = Registry.register(BuiltInRegistries.ENTITY_TYPE,
 			id("nave_viaje"),
-			EntityType.Builder.<NaveViajeEntity>of(NaveViajeEntity::new, MobCategory.MISC).sized(1.6f, 4.2f)
+			EntityType.Builder.<NaveViajeEntity>of(NaveViajeEntity::new, MobCategory.MISC).sized(2.0f, 6.6f)
 					.clientTrackingRange(16).updateInterval(1).build("nave_viaje"));
 
 	private static Block bloque(String nombre, Block bloque) {
