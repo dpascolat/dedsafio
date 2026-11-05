@@ -143,7 +143,7 @@ public final class ModEntidades {
 			EntityType.Builder.of(com.dedsafio4.bestias.ParasitoVoladorEntity::new, MobCategory.MONSTER).sized(0.9f, 0.9f).clientTrackingRange(8));
 	/** Nautilus Óseo Grande: vuela y embiste; la caja de choque abarca el caparazón y los tentáculos que cuelgan. */
 	public static final EntityType<com.dedsafio4.bestias.NautilusOseoGrandeEntity> NAUTILUS_OSEO_GRANDE = registrar("nautilus_oseo_grande",
-			EntityType.Builder.of(com.dedsafio4.bestias.NautilusOseoGrandeEntity::new, MobCategory.MONSTER).sized(2.1f, 3.1f).clientTrackingRange(10));
+			EntityType.Builder.of(com.dedsafio4.bestias.NautilusOseoGrandeEntity::new, MobCategory.MONSTER).sized(2.1f, 2.7f).clientTrackingRange(10));
 
 	/** Cerebro Amarillo: una medusa-cerebro de algo más de un bloque. */
 	public static final EntityType<com.dedsafio4.bestias.CerebroAmarilloEntity> CEREBRO_AMARILLO = registrar("cerebro_amarillo",

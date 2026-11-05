@@ -2,7 +2,14 @@ package com.dedsafio4.client.bestias;
 
 import com.dedsafio4.Dedsafio4;
 import com.dedsafio4.bestias.NautilusOseoGrandeEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
@@ -10,98 +17,202 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * El Nautilus Óseo Grande del diseño (Nautilus Óseo Grande.zip, three.js): el caparazón es una espiral de 46 cámaras
- * de hueso que se achican hacia adentro (con franjas más oscuras y púas), y de la boca salen 15 tentáculos de carne
- * violeta en 3 filas, con la punta de hueso, que cuelgan y ondulan. Mismas medidas que el diseño (1 unidad = 12
- * píxeles), con las puntas de los tentáculos en el piso de la caja de choque y la boca mirando a +X.
+ * El Nautilus Óseo Grande con el modelo de Patricio ("NautilusOseoG" de Blockbench, formato libre): el caparazón con
+ * sus espinas y 6 tentáculos de 2 partes. Cada grupo gira sobre su centro como en Blockbench, y cada cubo dibuja su
+ * pedazo de textura en cada cara. Animaciones del diseño: idle (flota y las puntas de los tentáculos se mecen),
+ * walk (cuando se mueve, los tentáculos se mecen más y el cuerpo se inclina) y death (se cae de costado).
  */
-public class NautilusOseoGrandeRenderer extends CajasRenderer<NautilusOseoGrandeEntity> {
+public class NautilusOseoGrandeRenderer extends EntityRenderer<NautilusOseoGrandeEntity> {
 	private static final ResourceLocation TEXTURA =
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/nautilus_oseo_grande.png");
-	private static final int HUESO = 0, FRANJA = 1, CARNE = 2;
-	private static final float U = 12;
-	/** Para que las puntas de los tentáculos queden en el piso y el bicho centrado (calculado del diseño). */
-	private static final float CORRER_X = 0.265f, CORRER_Y = 2.75f;
+	/** El diseño mide 16×21×27 píxeles; se dibuja al doble para que sea "grande". */
+	private static final float ESCALA = 2f;
+	/** Para centrar el bicho en su caja de choque (el centro del cubo "hitbox" del diseño, ya girado). */
+	private static final float CORRER_Z = -5.5f;
 
-	private final Nodo mob;
-	private final List<Nodo> articulaciones = new ArrayList<>();
-	private final List<float[]> datos = new ArrayList<>();   // {giro base, número de articulación, número de tentáculo}
+	/** Los grupos: padre, centro de giro (3), giro (3), balanceo en idle y en walk (grados en X). */
+	private static final float[][] NODOS = {
+			{-1f, 0f, 10f, 10f, 0f, -180f, 0f, 0f, 0f},  // nauti
+			{0f, 0f, 25f, 20f, 0f, 0f, 0f, 0f, 0f},  // body
+			{1f, 0f, 0f, 20f, 0f, 0f, 0f, 0f, 0f},  // espina
+			{1f, 7f, 3f, 10f, 0f, 0f, -180f, 0f, 0f},  // espina3
+			{1f, -3f, 6f, 20f, 0f, 0f, -90f, 0f, 0f},  // espina2
+			{1f, 0f, 0f, 20f, 0f, 0f, 0f, 0f, 0f},  // group7
+			{0f, 2.4f, 10f, 8f, 0f, 0f, 0f, 0f, -2.5f},  // tentaculo3
+			{6f, 1.4f, 10.5f, 1f, 0f, 0f, 0f, -2.5f, -7.5f},  // group
+			{0f, -2.4f, 9.9f, 8f, 0f, 0f, 60f, 0f, -2.5f},  // tentaculo7
+			{8f, -2.4f, 10.4f, 1f, 0f, 0f, 0f, -2f, -7.5f},  // group8
+			{0f, -3.9f, 6f, 8f, 0f, 0f, 105f, 0f, -2.5f},  // tentaculo8
+			{10f, -3.9f, 6.5f, 1f, 0f, 0f, 0f, -5f, -7.5f},  // group2
+			{0f, 4.1f, 6f, 8f, 0f, 0f, -75f, 0f, -2.5f},  // tentaculo2
+			{12f, 4.1f, 5.5f, 1f, 0f, 0f, 0f, -5f, -7.5f},  // group3
+			{0f, 2f, 2.2f, 8f, 0f, 0f, -125f, 0f, -2.5f},  // tentaculo4
+			{14f, 2f, 2.7f, 1f, 0f, 0f, 0f, -2.5f, -7.5f},  // group4
+			{0f, -2.4f, 2.1f, 8f, 0f, 0f, 172.5f, 0f, -2.5f},  // tentaculo5
+			{16f, -2.4f, 1.6f, 1f, 0f, 0f, 0f, -2.5f, -7.5f},  // group5
+			{0f, 0f, 9f, 10f, 0f, 0f, 0f, 0f, 0f}   // hitbox
+	};
+	/** Los cubos: grupo, desde (3), hasta (3), centro de giro (3), giro (3) y la textura de cada cara (u1, v1, u2, v2). */
+	private static final float[][] CUBOS = {
+			{2f, -10f, 5f, 10f, -9f, 8f, 10f, -10f, 5f, 10f, -90f, 0f, 0f, 2f, 2f, 3f, 5f, 2f, 2f, 2f, 5f, 3f, 2f, 4f, 5f, 3f, 2f, 3f, 5f, 3f, 2f, 2f, 2f, 4f, 2f, 3f, 2f},
+			{2f, -9f, 5f, 11f, -8f, 8f, 11f, -9f, 5f, 11f, -90f, 0f, 0f, 2f, 2f, 3f, 5f, 2f, 2f, 2f, 5f, 3f, 2f, 4f, 5f, 3f, 2f, 3f, 5f, 3f, 2f, 2f, 2f, 4f, 2f, 3f, 2f},
+			{2f, -8f, 4f, 11f, -6f, 7f, 11f, -7f, 5f, 11f, -90f, 0f, 0f, 2f, 2f, 4f, 5f, 2f, 2f, 2f, 5f, 4f, 2f, 6f, 5f, 4f, 2f, 4f, 5f, 4f, 2f, 2f, 2f, 6f, 2f, 4f, 2f},
+			{3f, 4f, 3f, 10f, 5f, 6f, 10f, 4f, 3f, 10f, -90f, 0f, 0f, 2f, 2f, 3f, 5f, 2f, 2f, 2f, 5f, 3f, 2f, 4f, 5f, 3f, 2f, 3f, 5f, 3f, 2f, 2f, 2f, 4f, 2f, 3f, 2f},
+			{3f, 5f, 3f, 11f, 6f, 6f, 11f, 5f, 3f, 11f, -90f, 0f, 0f, 2f, 2f, 3f, 5f, 2f, 2f, 2f, 5f, 3f, 2f, 4f, 5f, 3f, 2f, 3f, 5f, 3f, 2f, 2f, 2f, 4f, 2f, 3f, 2f},
+			{3f, 6f, 2f, 11f, 8f, 5f, 11f, 7f, 3f, 11f, -90f, 0f, 0f, 2f, 2f, 4f, 5f, 2f, 2f, 2f, 5f, 4f, 2f, 6f, 5f, 4f, 2f, 4f, 5f, 4f, 2f, 2f, 2f, 6f, 2f, 4f, 2f},
+			{4f, -13f, 11f, 10f, -12f, 14f, 10f, -13f, 11f, 10f, -90f, 0f, 0f, 2f, 2f, 3f, 5f, 2f, 2f, 2f, 5f, 3f, 2f, 4f, 5f, 3f, 2f, 3f, 5f, 3f, 2f, 2f, 2f, 4f, 2f, 3f, 2f},
+			{4f, -12f, 11f, 11f, -11f, 14f, 11f, -12f, 11f, 11f, -90f, 0f, 0f, 2f, 2f, 3f, 5f, 2f, 2f, 2f, 5f, 3f, 2f, 4f, 5f, 3f, 2f, 3f, 5f, 3f, 2f, 2f, 2f, 4f, 2f, 3f, 2f},
+			{4f, -11f, 10f, 11f, -9f, 13f, 11f, -10f, 11f, 11f, -90f, 0f, 0f, 2f, 2f, 4f, 5f, 2f, 2f, 2f, 5f, 4f, 2f, 6f, 5f, 4f, 2f, 4f, 5f, 4f, 2f, 2f, 2f, 6f, 2f, 4f, 2f},
+			{1f, -6f, 0f, 8f, 6f, 12f, 13f, 0f, 1f, 12f, 0f, 0f, 0f, 5f, 40f, 17f, 52f, 0f, 40f, 5f, 52f, 22f, 40f, 34f, 52f, 17f, 40f, 22f, 52f, 17f, 40f, 5f, 35f, 29f, 35f, 17f, 40f},
+			{1f, -5f, 1f, 13f, 5f, 21f, 28f, 0f, 1f, 20f, 0f, 0f, 0f, 15f, 15f, 25f, 35f, 0f, 15f, 15f, 35f, 40f, 15f, 50f, 35f, 25f, 15f, 40f, 35f, 25f, 15f, 15f, 0f, 35f, 0f, 25f, 15f},
+			{5f, 3f, 21f, 23f, 3f, 22f, 25f, 4f, 21f, 24f, 0f, 0f, 0f, 4f, 2f, 4f, 3f, 2f, 2f, 4f, 3f, 6f, 2f, 6f, 3f, 4f, 2f, 6f, 3f, 4f, 2f, 4f, 0f, 4f, 0f, 4f, 2f},
+			{5f, 3f, 21f, 17f, 3f, 22f, 21f, 4f, 21f, 20f, 0f, 0f, 0f, 4f, 2f, 4f, 3f, 0f, 2f, 4f, 3f, 8f, 2f, 8f, 3f, 4f, 2f, 8f, 3f, 4f, 2f, 4f, -2f, 4f, -2f, 4f, 2f},
+			{5f, 3f, 22f, 17f, 3f, 23f, 20f, 4f, 22f, 20f, 0f, 0f, 0f, 4f, 2f, 4f, 3f, 1f, 2f, 4f, 3f, 7f, 2f, 7f, 3f, 4f, 2f, 7f, 3f, 4f, 2f, 4f, -1f, 4f, -1f, 4f, 2f},
+			{5f, 3f, 22f, 22f, 3f, 23f, 24f, 4f, 22f, 23f, 0f, 0f, 0f, 4f, 2f, 4f, 3f, 2f, 2f, 4f, 3f, 6f, 2f, 6f, 3f, 4f, 2f, 6f, 3f, 4f, 2f, 4f, 0f, 4f, 0f, 4f, 2f},
+			{5f, 3f, 23f, 16f, 3f, 24f, 19f, 4f, 23f, 18f, 0f, 0f, 0f, 4f, 2f, 4f, 3f, 1f, 2f, 4f, 3f, 7f, 2f, 7f, 3f, 4f, 2f, 7f, 3f, 4f, 2f, 4f, -1f, 4f, -1f, 4f, 2f},
+			{6f, 0.4f, 8.5f, 1f, 3.4f, 11.5f, 9f, 1.4f, 8.5f, 7f, 0f, 0f, -15f, 57f, 7f, 60f, 10f, 49f, 7f, 57f, 10f, 68f, 7f, 71f, 10f, 60f, 7f, 68f, 10f, 60f, 7f, 57f, -1f, 63f, -1f, 60f, 7f},
+			{7f, 1.9f, 11f, -7f, 1.9f, 12f, -6f, 1.4f, 8.5f, -8f, 0f, 0f, -15f, 49f, 64f, 49f, 65f, 48f, 64f, 49f, 65f, 50f, 64f, 50f, 65f, 49f, 64f, 50f, 65f, 49f, 64f, 49f, 63f, 49f, 63f, 49f, 64f},
+			{7f, 1.9f, 11f, -9f, 1.9f, 14f, -7f, 1.4f, 8.5f, -8f, 0f, 0f, -15f, 6f, 64f, 6f, 67f, 4f, 64f, 6f, 67f, 8f, 64f, 8f, 67f, 6f, 64f, 8f, 67f, 6f, 64f, 6f, 62f, 6f, 62f, 6f, 64f},
+			{7f, 1.9f, 14f, -8f, 1.9f, 15f, -6f, 1.4f, 8.5f, -8f, 0f, 0f, -15f, 30f, 54f, 30f, 55f, 28f, 54f, 30f, 55f, 32f, 54f, 32f, 55f, 30f, 54f, 32f, 55f, 30f, 54f, 30f, 52f, 30f, 52f, 30f, 54f},
+			{7f, 1.9f, 15f, -7f, 1.9f, 16f, -6f, 1.4f, 8.5f, -8f, 0f, 0f, -15f, 51f, 64f, 51f, 65f, 50f, 64f, 51f, 65f, 52f, 64f, 52f, 65f, 51f, 64f, 52f, 65f, 51f, 64f, 51f, 63f, 51f, 63f, 51f, 64f},
+			{7f, 1.9f, 10f, -8f, 1.9f, 11f, -7f, 1.4f, 8.5f, -8f, 0f, 0f, -15f, 65f, 63f, 65f, 64f, 64f, 63f, 65f, 64f, 66f, 63f, 66f, 64f, 65f, 63f, 66f, 64f, 65f, 63f, 65f, 62f, 65f, 62f, 65f, 63f},
+			{7f, 1.9f, 9f, -7f, 1.9f, 11f, -5f, 1.4f, 8.5f, -6f, 0f, 0f, -15f, 62f, 64f, 62f, 66f, 60f, 64f, 62f, 66f, 64f, 64f, 64f, 66f, 62f, 64f, 64f, 66f, 62f, 64f, 62f, 62f, 62f, 62f, 62f, 64f},
+			{7f, 0.9f, 9f, -5f, 2.9f, 11f, 2f, 1.4f, 8.5f, 0f, 0f, 0f, -15f, 60f, 52f, 62f, 54f, 53f, 52f, 60f, 54f, 69f, 52f, 71f, 54f, 62f, 52f, 69f, 54f, 62f, 52f, 60f, 45f, 64f, 45f, 62f, 52f},
+			{8f, -4.4f, 8.4f, 1f, -1.4f, 11.4f, 9f, -3.4f, 8.4f, 7f, 0f, 0f, -15f, 57f, 7f, 60f, 10f, 49f, 7f, 57f, 10f, 68f, 7f, 71f, 10f, 60f, 7f, 68f, 10f, 60f, 7f, 57f, -1f, 63f, -1f, 60f, 7f},
+			{9f, -2.9f, 10.9f, -7f, -2.9f, 11.9f, -6f, -3.4f, 8.4f, -8f, 0f, 0f, -15f, 49f, 64f, 49f, 65f, 48f, 64f, 49f, 65f, 50f, 64f, 50f, 65f, 49f, 64f, 50f, 65f, 49f, 64f, 49f, 63f, 49f, 63f, 49f, 64f},
+			{9f, -2.9f, 10.9f, -9f, -2.9f, 13.9f, -7f, -3.4f, 8.4f, -8f, 0f, 0f, -15f, 6f, 64f, 6f, 67f, 4f, 64f, 6f, 67f, 8f, 64f, 8f, 67f, 6f, 64f, 8f, 67f, 6f, 64f, 6f, 62f, 6f, 62f, 6f, 64f},
+			{9f, -2.9f, 13.9f, -8f, -2.9f, 14.9f, -6f, -3.4f, 8.4f, -8f, 0f, 0f, -15f, 30f, 54f, 30f, 55f, 28f, 54f, 30f, 55f, 32f, 54f, 32f, 55f, 30f, 54f, 32f, 55f, 30f, 54f, 30f, 52f, 30f, 52f, 30f, 54f},
+			{9f, -2.9f, 14.9f, -7f, -2.9f, 15.9f, -6f, -3.4f, 8.4f, -8f, 0f, 0f, -15f, 51f, 64f, 51f, 65f, 50f, 64f, 51f, 65f, 52f, 64f, 52f, 65f, 51f, 64f, 52f, 65f, 51f, 64f, 51f, 63f, 51f, 63f, 51f, 64f},
+			{9f, -2.9f, 9.9f, -8f, -2.9f, 10.9f, -7f, -3.4f, 8.4f, -8f, 0f, 0f, -15f, 65f, 63f, 65f, 64f, 64f, 63f, 65f, 64f, 66f, 63f, 66f, 64f, 65f, 63f, 66f, 64f, 65f, 63f, 65f, 62f, 65f, 62f, 65f, 63f},
+			{9f, -2.9f, 8.9f, -7f, -2.9f, 10.9f, -5f, -3.4f, 8.4f, -6f, 0f, 0f, -15f, 62f, 64f, 62f, 66f, 60f, 64f, 62f, 66f, 64f, 64f, 64f, 66f, 62f, 64f, 64f, 66f, 62f, 64f, 62f, 62f, 62f, 62f, 62f, 64f},
+			{9f, -3.9f, 8.9f, -5f, -1.9f, 10.9f, 2f, -3.4f, 8.4f, 0f, 0f, 0f, -15f, 60f, 52f, 62f, 54f, 53f, 52f, 60f, 54f, 69f, 52f, 71f, 54f, 62f, 52f, 69f, 54f, 62f, 52f, 60f, 45f, 64f, 45f, 62f, 52f},
+			{10f, -5.9f, 4.5f, 1f, -2.9f, 7.5f, 9f, -4.9f, 4.5f, 7f, 0f, 0f, -15f, 57f, 7f, 60f, 10f, 49f, 7f, 57f, 10f, 68f, 7f, 71f, 10f, 60f, 7f, 68f, 10f, 60f, 7f, 57f, -1f, 63f, -1f, 60f, 7f},
+			{11f, -4.4f, 7f, -7f, -4.4f, 8f, -6f, -4.9f, 4.5f, -8f, 0f, 0f, -15f, 49f, 64f, 49f, 65f, 48f, 64f, 49f, 65f, 50f, 64f, 50f, 65f, 49f, 64f, 50f, 65f, 49f, 64f, 49f, 63f, 49f, 63f, 49f, 64f},
+			{11f, -4.4f, 7f, -9f, -4.4f, 10f, -7f, -4.9f, 4.5f, -8f, 0f, 0f, -15f, 6f, 64f, 6f, 67f, 4f, 64f, 6f, 67f, 8f, 64f, 8f, 67f, 6f, 64f, 8f, 67f, 6f, 64f, 6f, 62f, 6f, 62f, 6f, 64f},
+			{11f, -4.4f, 10f, -8f, -4.4f, 11f, -6f, -4.9f, 4.5f, -8f, 0f, 0f, -15f, 30f, 54f, 30f, 55f, 28f, 54f, 30f, 55f, 32f, 54f, 32f, 55f, 30f, 54f, 32f, 55f, 30f, 54f, 30f, 52f, 30f, 52f, 30f, 54f},
+			{11f, -4.4f, 11f, -7f, -4.4f, 12f, -6f, -4.9f, 4.5f, -8f, 0f, 0f, -15f, 51f, 64f, 51f, 65f, 50f, 64f, 51f, 65f, 52f, 64f, 52f, 65f, 51f, 64f, 52f, 65f, 51f, 64f, 51f, 63f, 51f, 63f, 51f, 64f},
+			{11f, -4.4f, 6f, -8f, -4.4f, 7f, -7f, -4.9f, 4.5f, -8f, 0f, 0f, -15f, 65f, 63f, 65f, 64f, 64f, 63f, 65f, 64f, 66f, 63f, 66f, 64f, 65f, 63f, 66f, 64f, 65f, 63f, 65f, 62f, 65f, 62f, 65f, 63f},
+			{11f, -4.4f, 5f, -7f, -4.4f, 7f, -5f, -4.9f, 4.5f, -6f, 0f, 0f, -15f, 62f, 64f, 62f, 66f, 60f, 64f, 62f, 66f, 64f, 64f, 64f, 66f, 62f, 64f, 64f, 66f, 62f, 64f, 62f, 62f, 62f, 62f, 62f, 64f},
+			{11f, -5.4f, 5f, -5f, -3.4f, 7f, 3f, -4.9f, 4.5f, 0f, 0f, 0f, -15f, 60f, 52f, 62f, 54f, 52f, 52f, 60f, 54f, 70f, 52f, 72f, 54f, 62f, 52f, 70f, 54f, 62f, 52f, 60f, 44f, 64f, 44f, 62f, 52f},
+			{12f, 2.1f, 4.5f, 1f, 5.1f, 7.5f, 9f, 3.1f, 4.5f, 7f, 0f, 0f, -15f, 57f, 7f, 60f, 10f, 49f, 7f, 57f, 10f, 68f, 7f, 71f, 10f, 60f, 7f, 68f, 10f, 60f, 7f, 57f, -1f, 63f, -1f, 60f, 7f},
+			{13f, 3.6f, 7f, -7f, 3.6f, 8f, -6f, 3.1f, 4.5f, -8f, 0f, 0f, -15f, 49f, 64f, 49f, 65f, 48f, 64f, 49f, 65f, 50f, 64f, 50f, 65f, 49f, 64f, 50f, 65f, 49f, 64f, 49f, 63f, 49f, 63f, 49f, 64f},
+			{13f, 3.6f, 7f, -9f, 3.6f, 10f, -7f, 3.1f, 4.5f, -8f, 0f, 0f, -15f, 6f, 64f, 6f, 67f, 4f, 64f, 6f, 67f, 8f, 64f, 8f, 67f, 6f, 64f, 8f, 67f, 6f, 64f, 6f, 62f, 6f, 62f, 6f, 64f},
+			{13f, 3.6f, 10f, -8f, 3.6f, 11f, -6f, 3.1f, 4.5f, -8f, 0f, 0f, -15f, 30f, 54f, 30f, 55f, 28f, 54f, 30f, 55f, 32f, 54f, 32f, 55f, 30f, 54f, 32f, 55f, 30f, 54f, 30f, 52f, 30f, 52f, 30f, 54f},
+			{13f, 3.6f, 11f, -7f, 3.6f, 12f, -6f, 3.1f, 4.5f, -8f, 0f, 0f, -15f, 51f, 64f, 51f, 65f, 50f, 64f, 51f, 65f, 52f, 64f, 52f, 65f, 51f, 64f, 52f, 65f, 51f, 64f, 51f, 63f, 51f, 63f, 51f, 64f},
+			{13f, 3.6f, 6f, -8f, 3.6f, 7f, -7f, 3.1f, 4.5f, -8f, 0f, 0f, -15f, 65f, 63f, 65f, 64f, 64f, 63f, 65f, 64f, 66f, 63f, 66f, 64f, 65f, 63f, 66f, 64f, 65f, 63f, 65f, 62f, 65f, 62f, 65f, 63f},
+			{13f, 3.6f, 5f, -7f, 3.6f, 7f, -5f, 3.1f, 4.5f, -6f, 0f, 0f, -15f, 62f, 64f, 62f, 66f, 60f, 64f, 62f, 66f, 64f, 64f, 64f, 66f, 62f, 64f, 64f, 66f, 62f, 64f, 62f, 62f, 62f, 62f, 62f, 64f},
+			{13f, 2.6f, 5f, -5f, 4.6f, 7f, 2f, 3.1f, 4.5f, 0f, 0f, 0f, -15f, 60f, 52f, 62f, 54f, 53f, 52f, 60f, 54f, 69f, 52f, 71f, 54f, 62f, 52f, 69f, 54f, 62f, 52f, 60f, 45f, 64f, 45f, 62f, 52f},
+			{14f, 0f, 0.7f, 1f, 3f, 3.7f, 9f, 1f, 0.7f, 7f, 0f, 0f, -15f, 57f, 7f, 60f, 10f, 49f, 7f, 57f, 10f, 68f, 7f, 71f, 10f, 60f, 7f, 68f, 10f, 60f, 7f, 57f, -1f, 63f, -1f, 60f, 7f},
+			{15f, 1.5f, 3.2f, -7f, 1.5f, 4.2f, -6f, 1f, 0.7f, -8f, 0f, 0f, -15f, 49f, 64f, 49f, 65f, 48f, 64f, 49f, 65f, 50f, 64f, 50f, 65f, 49f, 64f, 50f, 65f, 49f, 64f, 49f, 63f, 49f, 63f, 49f, 64f},
+			{15f, 1.5f, 3.2f, -9f, 1.5f, 6.2f, -7f, 1f, 0.7f, -8f, 0f, 0f, -15f, 6f, 64f, 6f, 67f, 4f, 64f, 6f, 67f, 8f, 64f, 8f, 67f, 6f, 64f, 8f, 67f, 6f, 64f, 6f, 62f, 6f, 62f, 6f, 64f},
+			{15f, 1.5f, 6.2f, -8f, 1.5f, 7.2f, -6f, 1f, 0.7f, -8f, 0f, 0f, -15f, 30f, 54f, 30f, 55f, 28f, 54f, 30f, 55f, 32f, 54f, 32f, 55f, 30f, 54f, 32f, 55f, 30f, 54f, 30f, 52f, 30f, 52f, 30f, 54f},
+			{15f, 1.5f, 7.2f, -7f, 1.5f, 8.2f, -6f, 1f, 0.7f, -8f, 0f, 0f, -15f, 51f, 64f, 51f, 65f, 50f, 64f, 51f, 65f, 52f, 64f, 52f, 65f, 51f, 64f, 52f, 65f, 51f, 64f, 51f, 63f, 51f, 63f, 51f, 64f},
+			{15f, 1.5f, 2.2f, -8f, 1.5f, 3.2f, -7f, 1f, 0.7f, -8f, 0f, 0f, -15f, 65f, 63f, 65f, 64f, 64f, 63f, 65f, 64f, 66f, 63f, 66f, 64f, 65f, 63f, 66f, 64f, 65f, 63f, 65f, 62f, 65f, 62f, 65f, 63f},
+			{15f, 1.5f, 1.2f, -7f, 1.5f, 3.2f, -5f, 1f, 0.7f, -6f, 0f, 0f, -15f, 62f, 64f, 62f, 66f, 60f, 64f, 62f, 66f, 64f, 64f, 64f, 66f, 62f, 64f, 64f, 66f, 62f, 64f, 62f, 62f, 62f, 62f, 62f, 64f},
+			{15f, 0.5f, 1.2f, -5f, 2.5f, 3.2f, 2f, 1f, 0.7f, 0f, 0f, 0f, -15f, 60f, 52f, 62f, 54f, 53f, 52f, 60f, 54f, 69f, 52f, 71f, 54f, 62f, 52f, 69f, 54f, 62f, 52f, 60f, 45f, 64f, 45f, 62f, 52f},
+			{16f, -4.4f, 0.6f, 1f, -1.4f, 3.6f, 9f, -3.4f, 0.6f, 7f, 0f, 0f, -15f, 57f, 7f, 60f, 10f, 49f, 7f, 57f, 10f, 68f, 7f, 71f, 10f, 60f, 7f, 68f, 10f, 60f, 7f, 57f, -1f, 63f, -1f, 60f, 7f},
+			{17f, -2.9f, 3.1f, -7f, -2.9f, 4.1f, -6f, -3.4f, 0.6f, -8f, 0f, 0f, -15f, 49f, 64f, 49f, 65f, 48f, 64f, 49f, 65f, 50f, 64f, 50f, 65f, 49f, 64f, 50f, 65f, 49f, 64f, 49f, 63f, 49f, 63f, 49f, 64f},
+			{17f, -2.9f, 3.1f, -9f, -2.9f, 6.1f, -7f, -3.4f, 0.6f, -8f, 0f, 0f, -15f, 6f, 64f, 6f, 67f, 4f, 64f, 6f, 67f, 8f, 64f, 8f, 67f, 6f, 64f, 8f, 67f, 6f, 64f, 6f, 62f, 6f, 62f, 6f, 64f},
+			{17f, -2.9f, 6.1f, -8f, -2.9f, 7.1f, -6f, -3.4f, 0.6f, -8f, 0f, 0f, -15f, 30f, 54f, 30f, 55f, 28f, 54f, 30f, 55f, 32f, 54f, 32f, 55f, 30f, 54f, 32f, 55f, 30f, 54f, 30f, 52f, 30f, 52f, 30f, 54f},
+			{17f, -2.9f, 7.1f, -7f, -2.9f, 8.1f, -6f, -3.4f, 0.6f, -8f, 0f, 0f, -15f, 51f, 64f, 51f, 65f, 50f, 64f, 51f, 65f, 52f, 64f, 52f, 65f, 51f, 64f, 52f, 65f, 51f, 64f, 51f, 63f, 51f, 63f, 51f, 64f},
+			{17f, -2.9f, 2.1f, -8f, -2.9f, 3.1f, -7f, -3.4f, 0.6f, -8f, 0f, 0f, -15f, 65f, 63f, 65f, 64f, 64f, 63f, 65f, 64f, 66f, 63f, 66f, 64f, 65f, 63f, 66f, 64f, 65f, 63f, 65f, 62f, 65f, 62f, 65f, 63f},
+			{17f, -2.9f, 1.1f, -7f, -2.9f, 3.1f, -5f, -3.4f, 0.6f, -6f, 0f, 0f, -15f, 62f, 64f, 62f, 66f, 60f, 64f, 62f, 66f, 64f, 64f, 64f, 66f, 62f, 64f, 64f, 66f, 62f, 64f, 62f, 62f, 62f, 62f, 62f, 64f},
+			{17f, -3.9f, 1.1f, -5f, -1.9f, 3.1f, 3f, -3.4f, 0.6f, 0f, 0f, 0f, -15f, 60f, 52f, 62f, 54f, 52f, 52f, 60f, 54f, 70f, 52f, 72f, 54f, 62f, 52f, 70f, 54f, 62f, 52f, 60f, 44f, 64f, 44f, 62f, 52f}
+	};
 
-	public NautilusOseoGrandeRenderer(EntityRendererProvider.Context contexto) {
-		super(contexto, 1.0f, 3);
-		mob = nodo(raiz, CORRER_X * U, CORRER_Y * U, 0);
-		// El caparazón: la espiral.
-		float r0 = 1.4f, k = 0.17f, paso = 0.3f, phi = (float) Math.atan2(-0.98, -0.2);
-		int n = 46;
-		for (int i = 0; i < n; i++) {
-			float t = i * paso, r = r0 * (float) Math.exp(-k * t), a = phi - t;
-			float x = r * Mth.cos(a), y = r * Mth.sin(a);
-			float tx = Mth.sin(a), ty = -Mth.cos(a);
-			float largo = r * paso * 1.3f, alto = r * 0.95f, ancho = r * 0.95f + 0.1f;
-			boolean franja = i < 26 && i % 3 == 1;
-			cajaGirada(mob, franja ? FRANJA : HUESO, largo, alto, ancho, x, y, 0, (float) Math.atan2(ty, tx));
-			if (i < 30 && i % 2 == 0) {
-				float sz = r * 0.22f, nx = Mth.cos(a), ny = Mth.sin(a), fuera = alto / 2 + sz / 2 - 0.01f;
-				cajaGirada(mob, FRANJA, sz, sz, sz * 1.6f, x + nx * fuera, y + ny * fuera, 0, a);
-			}
+	/** Los hijos de cada grupo (grupos y cubos), armados una sola vez. */
+	private static final List<List<Integer>> HIJOS = new ArrayList<>(), CUBOS_DE = new ArrayList<>();
+
+	static {
+		for (int i = 0; i < NODOS.length; i++) {
+			HIJOS.add(new ArrayList<>());
+			CUBOS_DE.add(new ArrayList<>());
 		}
-		cajaGirada(mob, FRANJA, 0.22f, 0.22f, 0.5f, 0, 0, 0, 0.4f);
-
-		// Los tentáculos salen derecho de la boca del caparazón.
-		float a0 = phi, x0 = r0 * Mth.cos(a0), y0 = r0 * Mth.sin(a0);
-		float ox = 0.98f, oy = -0.2f, largoO = Mth.sqrt(ox * ox + oy * oy);
-		ox /= largoO;
-		oy /= largoO;
-		Nodo cuerpo = nodo(mob, (x0 - ox * 0.15f) * U, (y0 - oy * 0.15f) * U, 0);
-		cuerpo.rz = (float) Math.atan2(oy, ox);
-		float[][] filas = {{0.1f, 0.35f, 1.25f, -0.12f, 8}, {0.1f, 0, 0.95f, -0.08f, 9}, {0.05f, -0.35f, 0.6f, -0.05f, 10}};
-		float[] zs = {-0.5f, -0.25f, 0, 0.25f, 0.5f};
-		int ti = 0;
-		for (int ri = 0; ri < filas.length; ri++) {
-			float[] fila = filas[ri];
-			for (int zi = 0; zi < zs.length; zi++) {
-				float z = zs[zi];
-				Nodo padre = nodo(cuerpo, fila[0] * U, fila[1] * U, z * U);
-				padre.rz = fila[2] + (zi % 2 == 1 ? 0.12f : -0.08f);
-				padre.rx = z * 0.5f;
-				float w = 0.3f - ri * 0.02f;
-				int segmentos = (int) fila[4];
-				for (int j = 0; j < segmentos; j++) {
-					float largo = 0.38f - j * 0.015f;
-					caja(padre, j == segmentos - 1 ? FRANJA : CARNE, w * U, largo * U, w * U, 0, -largo / 2 * U, 0);
-					Nodo siguiente = nodo(padre, 0, (-largo + 0.02f) * U, 0);
-					float base = fila[3] * (1 + j * 0.25f) + (zi == 1 ? 0.06f : 0);
-					siguiente.rz = base;
-					articulaciones.add(siguiente);
-					datos.add(new float[]{base, j, ti});
-					padre = siguiente;
-					w *= 0.9f;
-				}
-				ti++;
-			}
-		}
+		for (int i = 0; i < NODOS.length; i++) if (NODOS[i][0] >= 0) HIJOS.get((int) NODOS[i][0]).add(i);
+		for (int i = 0; i < CUBOS.length; i++) CUBOS_DE.get((int) CUBOS[i][0]).add(i);
 	}
 
-	/** Una caja del diseño (en unidades) girada en Z sobre su centro. */
-	private void cajaGirada(Nodo padre, int color, float w, float h, float d, float x, float y, float z, float rz) {
-		Nodo n = nodo(padre, x * U, y * U, z * U);
-		n.rz = rz;
-		caja(n, color, w * U, h * U, d * U, 0, 0, 0);
+	public NautilusOseoGrandeRenderer(EntityRendererProvider.Context contexto) {
+		super(contexto);
+		this.shadowRadius = 1.0f;
 	}
 
 	@Override
-	protected void animar(NautilusOseoGrandeEntity bicho, float parcial) {
+	public void render(NautilusOseoGrandeEntity bicho, float yaw, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
+		pose.pushPose();
+		// Los tentáculos (el frente) quedan para donde mira el bicho.
+		pose.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(parcial, bicho.yBodyRotO, bicho.yBodyRot)));
+		pose.scale(ESCALA / 16f, ESCALA / 16f, ESCALA / 16f);
+		pose.translate(0, 0, CORRER_Z);
 		float t = (bicho.tickCount + parcial) / 20f;
-		boolean embiste = bicho.embistiendo();
-		// Flota subiendo y bajando, y se mece; al embestir se tira para adelante.
-		mob.y = (CORRER_Y + Mth.sin(t * 1.6f) * 0.18f) * U;
-		mob.rz = Mth.sin(t * 1.6f + 0.8f) * 0.05f + (embiste ? -0.35f : 0);
-		float onda = embiste ? 0.2f : 0.07f, rapidez = embiste ? 7f : 2.4f;
-		for (int i = 0; i < articulaciones.size(); i++) {
-			float[] d = datos.get(i);
-			// Embistiendo, los tentáculos se estiran para atrás (se doblan menos) y se sacuden más rápido.
-			float base = embiste ? d[0] * 0.3f + 0.05f : d[0];
-			articulaciones.get(i).rz = base + Mth.sin(t * rapidez - d[1] * 0.6f + d[2] * 0.7f) * onda;
+		// Se mueve (o embiste): animación walk; quieto: idle. Embistiendo va el doble de rápido.
+		boolean camina = bicho.getDeltaMovement().lengthSqr() > 0.0004 || bicho.embistiendo();
+		float tw = bicho.embistiendo() ? t * 2 : t;
+		Animacion a = new Animacion(triangulo(t), triangulo(tw), camina,
+				bicho.deathTime > 0 ? Math.min(1f, (bicho.deathTime + parcial) / 15f) * -30f : 0);
+		VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURA));
+		int overlay = LivingEntityRenderer.getOverlayCoords(bicho, 0);
+		for (int i = 0; i < NODOS.length; i++) if (NODOS[i][0] < 0) grupo(pose, vc, i, a, luz, overlay);
+		pose.popPose();
+		super.render(bicho, yaw, parcial, pose, buffers, luz);
+	}
+
+	private record Animacion(float idle, float walk, boolean camina, float muerte) {}
+
+	/** Sube de 0 a 1 en el primer segundo y baja a 0 en el segundo (las animaciones del diseño duran 2 segundos). */
+	private static float triangulo(float t) {
+		float f = t % 2f;
+		return f < 1 ? f : 2 - f;
+	}
+
+	/** Un grupo: gira sobre su centro (más la animación) y dibuja sus cubos y sus grupos hijos. */
+	private static void grupo(PoseStack pose, VertexConsumer vc, int i, Animacion a, int luz, int overlay) {
+		float[] n = NODOS[i];
+		pose.pushPose();
+		float rx = n[4], ry = n[5], rz = n[6];
+		// Blockbench resta el giro en X de la animación y suma el de Z.
+		rx -= a.camina() ? n[8] * a.walk() : n[7] * a.idle();
+		if (i == 0) {
+			if (a.camina()) rx -= -2.5f;            // walk: el cuerpo inclinado
+			else pose.translate(0, 0.3f * a.idle(), 0); // idle: sube y baja
+			rz += a.muerte();                       // death: se cae de costado
+		}
+		pose.translate(n[1], n[2], n[3]);
+		if (rz != 0) pose.mulPose(Axis.ZP.rotationDegrees(rz));
+		if (ry != 0) pose.mulPose(Axis.YP.rotationDegrees(ry));
+		if (rx != 0) pose.mulPose(Axis.XP.rotationDegrees(rx));
+		pose.translate(-n[1], -n[2], -n[3]);
+		for (int c : CUBOS_DE.get(i)) cubo(pose, vc, CUBOS[c], luz, overlay);
+		for (int h : HIJOS.get(i)) grupo(pose, vc, h, a, luz, overlay);
+		pose.popPose();
+	}
+
+	/** Un cubo: lo gira alrededor de su centro (Z, Y, X como en Blockbench) y dibuja sus 6 caras. */
+	private static void cubo(PoseStack pose, VertexConsumer vc, float[] c, int luz, int overlay) {
+		pose.pushPose();
+		pose.translate(c[7], c[8], c[9]);
+		if (c[12] != 0) pose.mulPose(Axis.ZP.rotationDegrees(c[12]));
+		if (c[11] != 0) pose.mulPose(Axis.YP.rotationDegrees(c[11]));
+		if (c[10] != 0) pose.mulPose(Axis.XP.rotationDegrees(c[10]));
+		pose.translate(-c[7], -c[8], -c[9]);
+		float x0 = c[1], y0 = c[2], z0 = c[3], x1 = c[4], y1 = c[5], z1 = c[6];
+		PoseStack.Pose p = pose.last();
+		cara(vc, p, c, 13, luz, overlay, 0, 0, -1, x1, y1, z0, x0, y1, z0, x0, y0, z0, x1, y0, z0);   // norte
+		cara(vc, p, c, 17, luz, overlay, 1, 0, 0, x1, y1, z1, x1, y1, z0, x1, y0, z0, x1, y0, z1);    // este
+		cara(vc, p, c, 21, luz, overlay, 0, 0, 1, x0, y1, z1, x1, y1, z1, x1, y0, z1, x0, y0, z1);    // sur
+		cara(vc, p, c, 25, luz, overlay, -1, 0, 0, x0, y1, z0, x0, y1, z1, x0, y0, z1, x0, y0, z0);   // oeste
+		cara(vc, p, c, 29, luz, overlay, 0, 1, 0, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);    // arriba
+		cara(vc, p, c, 33, luz, overlay, 0, -1, 0, x0, y0, z1, x1, y0, z1, x1, y0, z0, x0, y0, z0);   // abajo
+		pose.popPose();
+	}
+
+	private static void cara(VertexConsumer vc, PoseStack.Pose p, float[] c, int i, int luz, int overlay, float nx, float ny, float nz,
+							 float... q) {
+		float u1 = c[i] / 128f, v1 = c[i + 1] / 128f, u2 = c[i + 2] / 128f, v2 = c[i + 3] / 128f;
+		float[][] uv = {{u1, v1}, {u2, v1}, {u2, v2}, {u1, v2}};
+		for (int k = 0; k < 4; k++) {
+			vc.addVertex(p, q[k * 3], q[k * 3 + 1], q[k * 3 + 2]).setColor(255, 255, 255, 255).setUv(uv[k][0], uv[k][1])
+					.setOverlay(overlay).setLight(luz).setNormal(p, nx, ny, nz);
 		}
 	}
 
