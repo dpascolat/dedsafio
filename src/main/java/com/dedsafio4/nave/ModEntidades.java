@@ -22,7 +22,7 @@ public final class ModEntidades {
 
 	/** Unos 1,5 bloques de largo y 1 de alto (el modelo se dibuja a su tamaño de Blockbench). */
 	public static final EntityType<NaveEntity> NAVE = registrar("nave",
-			EntityType.Builder.of(NaveEntity::new, MobCategory.MONSTER).sized(1.3f, 1.0f).clientTrackingRange(10));
+			EntityType.Builder.of(NaveEntity::new, MobCategory.MONSTER).sized(0.9f, 0.9f).clientTrackingRange(10));
 
 	/** Nave Veloz (el modelo "Nave 2", dibujado al doble): más o menos 2 bloques de ancho y 1,4 de alto. */
 	public static final EntityType<NaveVelozEntity> NAVE_VELOZ = registrar("nave_veloz",
