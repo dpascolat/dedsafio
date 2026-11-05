@@ -11,6 +11,12 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
  * dibujo, cuadro a cuadro (NaveViajeEntity.altura), así la subida es suave y no a los tirones.
  */
 public class NaveViajeRenderer extends GeoEntityRenderer<NaveViajeEntity> {
+	/**
+	 * La nave estelar se achica para que el motor (30 píxeles de ancho) entre justo entre las barandas del Soporte
+	 * de Nave, y se baja un poco para que quede apoyada sobre la base del soporte (no flotando).
+	 */
+	public static final float ESCALA = 0.75f, BAJAR = 0.06f;
+
 	public NaveViajeRenderer(EntityRendererProvider.Context contexto) {
 		super(contexto, new NaveViajeModelo());
 		this.shadowRadius = 1.0f;
@@ -29,6 +35,8 @@ public class NaveViajeRenderer extends GeoEntityRenderer<NaveViajeEntity> {
 		pose.translate(0, nave.altura(parcial), 0);
 		// GeckoLib sólo gira a los mobs: la nave se gira acá para que mire hacia donde la pusieron.
 		pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-nave.getYRot()));
+		pose.translate(0, -BAJAR, 0);
+		pose.scale(ESCALA, ESCALA, ESCALA);
 		super.render(nave, giro, parcial, pose, buffers, luz);
 		pose.popPose();
 	}
