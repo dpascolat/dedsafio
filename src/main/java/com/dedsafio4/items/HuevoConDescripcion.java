@@ -68,6 +68,13 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("de Quiu.", BLANCO));
 	}
 
+	public static void ojoVolador(List<Component> t) {
+		t.add(parte("Un ojo gigante que flota, te persigue", GRIS));
+		t.add(parte("y te muerde.", GRIS));
+		t.add(parte("Alúmbralo con la Linterna prendida", VIOLETA));
+		t.add(parte("y desaparecerá.", VIOLETA));
+	}
+
 	public static void creeperPastel(List<Component> t) {
 		t.add(parte("Al explotar mancha la pantalla con", GRIS));
 		t.add(parte("pastel por algunos segundos.", GRIS));

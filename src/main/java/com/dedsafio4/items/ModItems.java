@@ -366,6 +366,9 @@ public final class ModItems {
 	public static final Item CEREBRO_ROJO_SPAWN_EGG = registrar("cerebro_rojo_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.CEREBRO_ROJO, 0xE3949A, 0xC4202A, new Item.Properties(),
 					HuevoConDescripcion::cerebroRojo));
+	public static final Item OJO_VOLADOR_SPAWN_EGG = registrar("ojo_volador_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.OJO_VOLADOR, 0xF2EDE4, 0x8E1B1B, new Item.Properties(),
+					HuevoConDescripcion::ojoVolador));
 	public static final Item GARRAPATA_CEREBRAL_SPAWN_EGG = registrar("garrapata_cerebral_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.GARRAPATA_CEREBRAL, 0xE3949A, 0x6B2D8A, new Item.Properties(),
 					HuevoConDescripcion::garrapataCerebral));
@@ -802,6 +805,7 @@ public final class ModItems {
 						entradas.accept(CEREBRO_AMARILLO_SPAWN_EGG);
 						entradas.accept(CEREBRO_ROJO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
+						entradas.accept(OJO_VOLADOR_SPAWN_EGG);
 						entradas.accept(TOTEM_LIMBO);
 						entradas.accept(TOTEM_ESPACIO);
 						entradas.accept(TOTEM_YUNQUE);

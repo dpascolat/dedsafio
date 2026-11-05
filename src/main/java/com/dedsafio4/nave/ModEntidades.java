@@ -153,6 +153,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.CerebroRojoEntity> CEREBRO_ROJO = registrar("cerebro_rojo",
 			EntityType.Builder.of(com.dedsafio4.bestias.CerebroRojoEntity::new, MobCategory.MONSTER).sized(0.9f, 1.2f).clientTrackingRange(8));
 
+	/** Ojo Volador: un ojo gigante que vuela y muerde; desaparece si lo alumbran con la Linterna. */
+	public static final EntityType<com.dedsafio4.bestias.OjoVoladorEntity> OJO_VOLADOR = registrar("ojo_volador",
+			EntityType.Builder.of(com.dedsafio4.bestias.OjoVoladorEntity::new, MobCategory.MONSTER).sized(1.5f, 2.2f).clientTrackingRange(10));
+
 	/** Garrapata Cerebral Pequeña: el mismo cuerpo de medusa-cerebro que el Cerebro Amarillo. */
 	public static final EntityType<com.dedsafio4.bestias.GarrapataCerebralEntity> GARRAPATA_CEREBRAL = registrar("garrapata_cerebral",
 			EntityType.Builder.of(com.dedsafio4.bestias.GarrapataCerebralEntity::new, MobCategory.MONSTER).sized(0.9f, 1.2f).clientTrackingRange(8));
@@ -311,6 +315,7 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(PARASITO_VOLADOR, com.dedsafio4.bestias.ParasitoVoladorEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CEREBRO_AMARILLO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(CEREBRO_ROJO, com.dedsafio4.bestias.CerebroAmarilloEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(OJO_VOLADOR, com.dedsafio4.bestias.OjoVoladorEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(GARRAPATA_CEREBRAL, com.dedsafio4.bestias.GarrapataCerebralEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(FLASHBANG, com.dedsafio4.bestias.FlashbangEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(ALMITA, com.dedsafio4.bestias.AlmitaEntity.crearAtributos());
