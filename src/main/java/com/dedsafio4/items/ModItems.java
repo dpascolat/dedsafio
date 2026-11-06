@@ -583,6 +583,11 @@ public final class ModItems {
 	/** Recolector de Almas: se llena matando Fantasmas Negros o Amarillos; lleno, recupera tu alma en tu Almita del Limbo. */
 	public static final Item RECOLECTOR_ALMAS = registrar("recolector_almas", new com.dedsafio4.almas.RecolectorAlmasItem(new Item.Properties()));
 
+	/** Los 3 ítems de Patricio que todavía no tienen función (los nombres son provisorios hasta que diga qué hacen). */
+	public static final Item HOJA_PLATA = registrar("hoja_plata", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item OJO_CARMESI = registrar("ojo_carmesi", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item ESPADA_CARMESI = registrar("espada_carmesi", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
+
 	/** Bolsa de Ender: abre tu Cofre de Ender desde cualquier lado. */
 	public static final Item BOLSA_ENDER = registrar("bolsa_ender", new BolsaEnderItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
 
@@ -721,6 +726,9 @@ public final class ModItems {
 						entradas.accept(ESPADA_ESPACIO);
 						entradas.accept(ESPADA_PHORA);
 						entradas.accept(RECOLECTOR_ALMAS);
+						entradas.accept(HOJA_PLATA);
+						entradas.accept(OJO_CARMESI);
+						entradas.accept(ESPADA_CARMESI);
 						entradas.accept(ESPADA_LIMBO);
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
