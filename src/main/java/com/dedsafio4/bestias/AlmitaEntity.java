@@ -123,19 +123,23 @@ public class AlmitaEntity extends PathfinderMob {
 		if (!(jugador instanceof ServerPlayer sp)) return net.minecraft.world.InteractionResult.SUCCESS;
 		if (!dueno.equals(sp.getUUID())) {
 			sp.displayClientMessage(Component.literal("Esa no es tu alma.").withStyle(ChatFormatting.RED), true);
+		} else if (com.dedsafio4.almas.AlmitasLimbo.yaRecupero(sp)) {
+			sp.displayClientMessage(Component.literal("Ya recuperaste tu alma una vez: no se puede de nuevo.").withStyle(ChatFormatting.RED), true);
 		} else if (com.dedsafio4.almas.RecolectorAlmasItem.carga(pila) < com.dedsafio4.almas.RecolectorAlmasItem.LLENO) {
 			sp.displayClientMessage(Component.literal("El Recolector está gastado: tiene " + com.dedsafio4.almas.RecolectorAlmasItem.carga(pila)
-					+ "%. Mata Fantasmas Negros o Amarillos.").withStyle(ChatFormatting.RED), true);
+					+ " de 100 almas. Mata Fantasmas Negros o Amarillos.").withStyle(ChatFormatting.RED), true);
 		} else if (com.dedsafio4.almas.Almas.tieneAlma(sp)) {
 			sp.displayClientMessage(Component.literal("Ya tienes tu alma.").withStyle(ChatFormatting.YELLOW), true);
 		} else {
 			com.dedsafio4.almas.Almas.ponerAlma(sp, true);
 			com.dedsafio4.almas.RecolectorAlmasItem.ponerCarga(pila, 0);
+			com.dedsafio4.almas.AlmitasLimbo.recupero(sp);
 			if (level() instanceof net.minecraft.server.level.ServerLevel mundo) {
 				mundo.sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL, getX(), getY() + 0.8, getZ(), 30, 0.4, 0.6, 0.4, 0.05);
 			}
 			level().playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.TOTEM_USE, net.minecraft.sounds.SoundSource.PLAYERS, 0.6f, 1.4f);
 			sp.sendSystemMessage(Component.literal("Recuperaste tu alma: ya puedes revivir.").withStyle(ChatFormatting.AQUA));
+			discard();   // ya no la necesita: sólo se puede recuperar una vez
 		}
 		return net.minecraft.world.InteractionResult.CONSUME;
 	}

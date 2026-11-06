@@ -42,11 +42,14 @@ public final class AlmitasLimbo {
 		BlockPos lugar;
 		/** De quiénes ya hay una Almita en el Limbo. */
 		final Set<UUID> conAlmita = new HashSet<>();
+		/** Los que ya recuperaron su alma con el Recolector: sólo se puede una vez, y ya no tienen Almita. */
+		final Set<UUID> recuperaron = new HashSet<>();
 
 		private static Datos leer(CompoundTag tag, HolderLookup.Provider registros) {
 			Datos d = new Datos();
 			if (tag.contains("lugar")) d.lugar = NbtUtils.readBlockPos(tag, "lugar").orElse(null);
 			for (Tag t : tag.getList("conAlmita", Tag.TAG_INT_ARRAY)) d.conAlmita.add(NbtUtils.loadUUID(t));
+			for (Tag t : tag.getList("recuperaron", Tag.TAG_INT_ARRAY)) d.recuperaron.add(NbtUtils.loadUUID(t));
 			return d;
 		}
 
@@ -56,6 +59,9 @@ public final class AlmitasLimbo {
 			ListTag l = new ListTag();
 			for (UUID u : conAlmita) l.add(NbtUtils.createUUID(u));
 			tag.put("conAlmita", l);
+			ListTag r = new ListTag();
+			for (UUID u : recuperaron) r.add(NbtUtils.createUUID(u));
+			tag.put("recuperaron", r);
 			return tag;
 		}
 	}
@@ -67,6 +73,17 @@ public final class AlmitasLimbo {
 	/** ¿A este jugador le toca Almita? (no a los op ni a los que tienen la marca rolplayer) */
 	public static boolean leToca(ServerPlayer jugador) {
 		return !jugador.getTags().contains(MARCA_ROLPLAYER) && !jugador.server.getPlayerList().isOp(jugador.getGameProfile());
+	}
+
+	/** ¿Ya recuperó su alma una vez? (no puede de nuevo) */
+	public static boolean yaRecupero(ServerPlayer jugador) {
+		return datos(jugador.server).recuperaron.contains(jugador.getUUID());
+	}
+
+	/** Recuperó su alma: no puede volver a hacerlo y su Almita no vuelve a aparecer. */
+	public static void recupero(ServerPlayer jugador) {
+		Datos d = datos(jugador.server);
+		if (d.recuperaron.add(jugador.getUUID())) d.setDirty();
 	}
 
 	/** La Almita de ese jugador se fue para siempre (la mataron con /kill, por ejemplo): vuelve a aparecer. */
@@ -92,7 +109,7 @@ public final class AlmitasLimbo {
 				}
 			}
 			for (ServerPlayer jugador : server.getPlayerList().getPlayers()) {
-				if (d.conAlmita.contains(jugador.getUUID()) || !leToca(jugador)) continue;
+				if (d.conAlmita.contains(jugador.getUUID()) || d.recuperaron.contains(jugador.getUUID()) || !leToca(jugador)) continue;
 				limbo.getChunk(d.lugar);   // que esté cargado para poder ponerla
 				AlmitaEntity almita = ModEntidades.ALMITA.spawn(limbo, d.lugar, MobSpawnType.COMMAND);
 				if (almita == null) continue;
