@@ -21,7 +21,8 @@ public final class AnimacionesSodium {
 	/** Las texturas de ítems del mod que tienen animación (su .png.mcmeta). */
 	private static final List<ResourceLocation> ANIMADAS = List.of(
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "item/espada_phora"),
-			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "item/corazon_glebanoide"));
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "item/corazon_glebanoide"),
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "item/esfera_eterea"));
 
 	private static Object sodium;
 	private static Method marcar;
