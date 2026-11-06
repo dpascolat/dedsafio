@@ -594,6 +594,8 @@ public final class ModItems {
 	public static final Item CENIZAS_ARDIENTES = registrar("cenizas_ardientes", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	/** Esfera Etérea: un orbe celeste con un cristal girando alrededor (textura animada, 8 cuadros). Sin función todavía. */
 	public static final Item ESFERA_ETEREA = registrar("esfera_eterea", new Item(new Item.Properties().rarity(Rarity.EPIC)));
+	/** Polvo Sombrío: un montoncito de polvo gris oscuro. Sin función todavía (nombre provisorio). */
+	public static final Item POLVO_SOMBRIO = registrar("polvo_sombrio", new Item(new Item.Properties()));
 
 	/** La armadura del Limbo (ver ArmaduraLimbo). */
 	public static final Item CASCO_LIMBO = registrar("casco_limbo",
@@ -757,6 +759,7 @@ public final class ModItems {
 						entradas.accept(NUCLEO_VOLCANICO);
 						entradas.accept(CENIZAS_ARDIENTES);
 						entradas.accept(ESFERA_ETEREA);
+						entradas.accept(POLVO_SOMBRIO);
 						entradas.accept(ESPADA_LIMBO);
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
