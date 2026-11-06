@@ -586,6 +586,13 @@ public final class ModItems {
 	/** Los 3 ítems de Patricio que todavía no tienen función (los nombres son provisorios hasta que diga qué hacen). */
 	public static final Item HOJA_PLATA = registrar("hoja_plata", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item OJO_CARMESI = registrar("ojo_carmesi", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	/** 5 ítems más de Patricio, todavía sin función (nombres provisorios). */
+	public static final Item GARRA_MAGMA = registrar("garra_magma", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item FRAGMENTO_AMBAR = registrar("fragmento_ambar", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item CELDA_LAVA = registrar("celda_lava", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item NUCLEO_VOLCANICO = registrar("nucleo_volcanico", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item CENIZAS_ARDIENTES = registrar("cenizas_ardientes", new Item(new Item.Properties().rarity(Rarity.RARE)));
+
 	/** La armadura del Limbo (ver ArmaduraLimbo). */
 	public static final Item CASCO_LIMBO = registrar("casco_limbo",
 			new ArmaduraLimbo.Pieza(ArmorItem.Type.HELMET, 907, 20, new Item.Properties().rarity(Rarity.EPIC)));
@@ -742,6 +749,11 @@ public final class ModItems {
 						entradas.accept(PECHERA_LIMBO);
 						entradas.accept(PANTALONES_LIMBO);
 						entradas.accept(BOTAS_LIMBO);
+						entradas.accept(GARRA_MAGMA);
+						entradas.accept(FRAGMENTO_AMBAR);
+						entradas.accept(CELDA_LAVA);
+						entradas.accept(NUCLEO_VOLCANICO);
+						entradas.accept(CENIZAS_ARDIENTES);
 						entradas.accept(ESPADA_LIMBO);
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
