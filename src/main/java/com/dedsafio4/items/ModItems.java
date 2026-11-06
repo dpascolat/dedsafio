@@ -586,6 +586,15 @@ public final class ModItems {
 	/** Los 3 ítems de Patricio que todavía no tienen función (los nombres son provisorios hasta que diga qué hacen). */
 	public static final Item HOJA_PLATA = registrar("hoja_plata", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item OJO_CARMESI = registrar("ojo_carmesi", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	/** La armadura del Limbo (ver ArmaduraLimbo). */
+	public static final Item CASCO_LIMBO = registrar("casco_limbo",
+			new ArmaduraLimbo.Pieza(ArmorItem.Type.HELMET, 907, 20, new Item.Properties().rarity(Rarity.EPIC)));
+	public static final Item PECHERA_LIMBO = registrar("pechera_limbo",
+			new ArmaduraLimbo.Pieza(ArmorItem.Type.CHESTPLATE, 1092, 40, new Item.Properties().rarity(Rarity.EPIC)));
+	public static final Item PANTALONES_LIMBO = registrar("pantalones_limbo",
+			new ArmaduraLimbo.Pieza(ArmorItem.Type.LEGGINGS, 1055, 32, new Item.Properties().rarity(Rarity.EPIC)));
+	public static final Item BOTAS_LIMBO = registrar("botas_limbo",
+			new ArmaduraLimbo.Pieza(ArmorItem.Type.BOOTS, 981, 20, new Item.Properties().rarity(Rarity.EPIC)));
 	public static final Item ESPADA_CARMESI = registrar("espada_carmesi", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
 
 	/** Bolsa de Ender: abre tu Cofre de Ender desde cualquier lado. */
@@ -729,6 +738,10 @@ public final class ModItems {
 						entradas.accept(HOJA_PLATA);
 						entradas.accept(OJO_CARMESI);
 						entradas.accept(ESPADA_CARMESI);
+						entradas.accept(CASCO_LIMBO);
+						entradas.accept(PECHERA_LIMBO);
+						entradas.accept(PANTALONES_LIMBO);
+						entradas.accept(BOTAS_LIMBO);
 						entradas.accept(ESPADA_LIMBO);
 						entradas.accept(CORAZON_VIOLETA);
 						entradas.accept(CORAZON_DORADO);
