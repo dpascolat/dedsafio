@@ -46,6 +46,17 @@ public abstract class LevelRendererMixin {
 		com.dedsafio4.client.CieloNocheCliente.dibujar(matrizVista);
 	}
 
+	/** Luna Roja: justo después de elegir la textura de la luna, se tiñe de rojo (se deja la transparencia de la lluvia). */
+	@Inject(method = "renderSky", at = @At(value = "INVOKE",
+			target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderTexture(ILnet/minecraft/resources/ResourceLocation;)V",
+			ordinal = 1, shift = At.Shift.AFTER))
+	private void dedsafio4$lunaRoja(CallbackInfo ci) {
+		if (!com.dedsafio4.client.LunaRojaCliente.visible()) return;
+		float[] c = RenderSystem.getShaderColor();
+		RenderSystem.setShaderColor(com.dedsafio4.client.LunaRojaCliente.LUNA_R, com.dedsafio4.client.LunaRojaCliente.LUNA_G,
+				com.dedsafio4.client.LunaRojaCliente.LUNA_B, c[3]);
+	}
+
 	/** Cielo rojo 2: mientras el rojo tapa el cielo, las nubes se esconden. */
 	@Unique
 	private boolean dedsafio4$nubesCambiadas;

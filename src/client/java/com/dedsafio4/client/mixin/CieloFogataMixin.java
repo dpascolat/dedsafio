@@ -8,11 +8,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Durante el ritual de la Fogata el cielo se oscurece y salen las estrellas. */
+/** Durante el ritual de la Fogata el cielo se oscurece y salen las estrellas; con la Luna Roja, de noche, el cielo es rojizo. */
 @Mixin(ClientLevel.class)
 abstract class CieloFogataMixin {
 	@Inject(method = "getSkyColor", at = @At("RETURN"), cancellable = true)
 	private void dedsafio4$oscuro(Vec3 pos, float parcial, CallbackInfoReturnable<Vec3> cir) {
+		if (com.dedsafio4.client.LunaRojaCliente.visible()) cir.setReturnValue(com.dedsafio4.client.LunaRojaCliente.pintar(cir.getReturnValue(), parcial));
 		float oscuro = FogataRitual.a(parcial);
 		if (oscuro > 0) cir.setReturnValue(cir.getReturnValue().scale(1 - oscuro));
 	}

@@ -65,6 +65,14 @@ public abstract class FogRendererMixin {
 			fogBlue = Mth.lerp(noche, fogBlue, 0.05f);
 			RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0f);
 		}
+		// Luna Roja: de noche el horizonte también es rojo oscuro.
+		float lunaRoja = com.dedsafio4.client.LunaRojaCliente.noche(partialTick) * 0.7f;
+		if (lunaRoja > 0f) {
+			fogRed = Mth.lerp(lunaRoja, fogRed, 0.22f);
+			fogGreen = Mth.lerp(lunaRoja, fogGreen, 0.02f);
+			fogBlue = Mth.lerp(lunaRoja, fogBlue, 0.02f);
+			RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0f);
+		}
 		float[] rojo2 = com.dedsafio4.client.cielo2.CieloRojo2.niebla(fogRed, fogGreen, fogBlue);
 		if (rojo2 != null) {
 			fogRed = rojo2[0];
