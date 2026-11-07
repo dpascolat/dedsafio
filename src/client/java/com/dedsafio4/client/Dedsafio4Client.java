@@ -308,7 +308,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.COLOSO_ROSA, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_rosa", true));
 		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.COLOSO_MORADO, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_morado", true));
 		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.COLOSO_ROJO, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_rojo", true));
-		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.CRIATURA_OSCURA, c -> new com.dedsafio4.client.demonios.MallaRenderer(c, "criatura_oscura", "criatura_oscura", 2.5f));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.FAROL, com.dedsafio4.client.demonios.FarolRenderer::new);
+		com.dedsafio4.client.demonios.PuzzleCamaraScreen.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.despegue.ModDespegue.NAVE_VIAJE,
 				com.dedsafio4.client.despegue.NaveViajeRenderer::new);
 		EntityRendererRegistry.register(com.dedsafio4.dactylos.ModDactylos.DACTYLO_BEBE, com.dedsafio4.client.dactylos.DactyloBebeRenderer::new);

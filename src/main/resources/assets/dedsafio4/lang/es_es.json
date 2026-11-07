@@ -424,8 +424,6 @@
 	"death.attack.luz_planta.player": "%1$s miró la luz de la Planta Mordedora",
 	"death.attack.mordida_planta": "%1$s fue mordido por la Planta Mordedora",
 	"death.attack.mordida_planta.player": "%1$s fue mordido por la Planta Mordedora",
-	"entity.dedsafio4.criatura_oscura": "Criatura Oscura",
-	"item.dedsafio4.criatura_oscura_spawn_egg": "Huevo generador de Criatura Oscura",
 	"entity.dedsafio4.recluso_rosa": "Recluso Espectral Rosa",
 	"item.dedsafio4.recluso_rosa_spawn_egg": "Huevo generador de Recluso Espectral Rosa",
 	"entity.dedsafio4.recluso_morado": "Recluso Espectral Morado",
@@ -438,5 +436,7 @@
 	"item.dedsafio4.coloso_morado_spawn_egg": "Huevo generador de Coloso Prisionero Morado",
 	"entity.dedsafio4.coloso_rojo": "Coloso Prisionero Rojo",
 	"item.dedsafio4.coloso_rojo_spawn_egg": "Huevo generador de Coloso Prisionero Rojo",
-	"effect.dedsafio4.sin_salto": "Sin Salto"
+	"effect.dedsafio4.sin_salto": "Sin Salto",
+	"entity.dedsafio4.farol": "Farol",
+	"item.dedsafio4.farol_spawn_egg": "Huevo generador de Farol"
 }

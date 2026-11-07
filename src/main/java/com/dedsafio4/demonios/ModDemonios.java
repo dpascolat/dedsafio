@@ -22,7 +22,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -31,8 +30,9 @@ import java.util.function.Consumer;
 
 /**
  * Los fantasmas encadenados (ver EspectroEntity): los Reclusos Espectrales (chicos, unos 2 bloques) y los Colosos
- * Prisioneros (grandes, unos 5 bloques), en rosa, morado y rojo; el efecto Sin Salto del Morado; y la Criatura Oscura
- * (la de 4 patas, sin función todavía). Cada uno con su huevo.
+ * Prisioneros (grandes, unos 5 bloques), en rosa, morado y rojo; el efecto Sin Salto del Morado; y el Farol (el de 4
+ * patas, que al pegar bloquea la cámara con un puzzle). Cada uno con su huevo. El daño de todos se cambia con
+ * /danomob (ver DanoMob).
  * <p>
  * /boss tamano &lt;tamaño&gt; cambia el tamaño del jefe o mob del mod más cercano (Planta Mordedora, estos y cualquier
  * otro): 1 = normal, 2 = el doble, 0,5 = la mitad (de 0,1 a 16). Usa el atributo de tamaño de Minecraft, así que
@@ -50,10 +50,10 @@ public final class ModDemonios {
 	public static final EntityType<EspectroEntity> COLOSO_ROSA = espectro("coloso_rosa", EspectroEntity.Color.ROSA, true);
 	public static final EntityType<EspectroEntity> COLOSO_MORADO = espectro("coloso_morado", EspectroEntity.Color.MORADO, true);
 	public static final EntityType<EspectroEntity> COLOSO_ROJO = espectro("coloso_rojo", EspectroEntity.Color.ROJO, true);
-	/** La Criatura Oscura (sin función todavía) mide 2,5 bloques. */
-	public static final EntityType<MallaMobEntity> CRIATURA_OSCURA = Registry.register(BuiltInRegistries.ENTITY_TYPE, id("criatura_oscura"),
-			EntityType.Builder.<MallaMobEntity>of((t, l) -> new MallaMobEntity(t, l, false), MobCategory.MISC).sized(2f, 2.5f)
-					.clientTrackingRange(10).build(id("criatura_oscura").toString()));
+	/** El Farol (ver FarolEntity): el modelo mide 3 bloques de alto y unos 2,6 de ancho con las patas. */
+	public static final EntityType<FarolEntity> FAROL = Registry.register(BuiltInRegistries.ENTITY_TYPE, id("farol"),
+			EntityType.Builder.<FarolEntity>of(FarolEntity::new, MobCategory.MONSTER).sized(1.8f, 2.9f)
+					.clientTrackingRange(10).build(id("farol").toString()));
 
 	public static final Item HUEVO_RECLUSO_ROSA = huevo("recluso_rosa", RECLUSO_ROSA, 0xE9A3D6, 0x1E1B2E, ModDemonios::rosa);
 	public static final Item HUEVO_RECLUSO_MORADO = huevo("recluso_morado", RECLUSO_MORADO, 0x9A5BC8, 0x1E1B2E, t -> morado(t, false));
@@ -70,11 +70,11 @@ public final class ModDemonios {
 		rojo(t);
 		noEmpujar(t);
 	});
-	public static final Item HUEVO_CRIATURA_OSCURA = Registry.register(BuiltInRegistries.ITEM, id("criatura_oscura_spawn_egg"),
-			new SpawnEggItem(CRIATURA_OSCURA, 0x2B3138, 0x6E7A86, new Item.Properties()));
+	public static final Item HUEVO_FAROL = Registry.register(BuiltInRegistries.ITEM, id("farol_spawn_egg"),
+			new HuevoConDescripcion(FAROL, 0x2B3138, 0xC8C6F0, new Item.Properties(), ModDemonios::farol));
 
 	public static final List<Item> HUEVOS = List.of(HUEVO_RECLUSO_ROSA, HUEVO_RECLUSO_MORADO, HUEVO_RECLUSO_ROJO,
-			HUEVO_COLOSO_ROSA, HUEVO_COLOSO_MORADO, HUEVO_COLOSO_ROJO, HUEVO_CRIATURA_OSCURA);
+			HUEVO_COLOSO_ROSA, HUEVO_COLOSO_MORADO, HUEVO_COLOSO_ROJO, HUEVO_FAROL);
 
 	/** Sin Salto (lo da el Morado al golpear): la fuerza de salto queda en 0. */
 	public static final Holder<MobEffect> SIN_SALTO = Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, id("sin_salto"), new SinSalto());
@@ -99,7 +99,8 @@ public final class ModDemonios {
 		FabricDefaultAttributeRegistry.register(COLOSO_ROSA, EspectroEntity.atributosColoso(false));
 		FabricDefaultAttributeRegistry.register(COLOSO_MORADO, EspectroEntity.atributosColoso(true));
 		FabricDefaultAttributeRegistry.register(COLOSO_ROJO, EspectroEntity.atributosColoso(false));
-		FabricDefaultAttributeRegistry.register(CRIATURA_OSCURA, MallaMobEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(FAROL, FarolEntity.crearAtributos());
+		PuzzleCamara.registrar();
 	}
 
 	// --- Descripciones de los huevos ---
@@ -126,6 +127,13 @@ public final class ModDemonios {
 		t.add(parte("a cuerpo. Te aplica ", GRIS).append(parte("Lentitud", VIOLETA)).append(parte(".", GRIS)));
 	}
 
+	private static void farol(List<Component> t) {
+		t.add(parte("Criatura que hace daño cuerpo a", GRIS));
+		t.add(parte("cuerpo. Si te golpea, te ", GRIS).append(parte("bloquea la", VIOLETA)));
+		t.add(parte("cámara", VIOLETA).append(parte(" hasta que gires la palanca", GRIS)));
+		t.add(parte("4 veces.", GRIS));
+	}
+
 	private static void noEmpujar(List<Component> t) {
 		t.add(Component.empty());
 		t.add(parte("⚠ Atención: No puedes empujarlo.", AVISO));
@@ -138,6 +146,7 @@ public final class ModDemonios {
 	// --- /boss tamano ---
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
+		DanoMob.registrarComandos(dispatcher);
 		// (Sin ñ: Minecraft no deja escribir la ñ en los nombres de los comandos.)
 		dispatcher.register(Commands.literal("boss").requires(s -> s.hasPermission(2))
 				.then(Commands.literal("tamano").then(Commands.argument("tamano", FloatArgumentType.floatArg(0.1f, 16f))

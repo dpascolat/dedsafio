@@ -122,6 +122,7 @@ public class EspectroEntity extends Monster implements GeoEntity {
 
 	@Override
 	public boolean doHurtTarget(Entity objetivo) {
+		DanoMob.aplicar(this);   // el daño de /danomob
 		boolean pego = super.doHurtTarget(objetivo);
 		if (pego && objetivo instanceof LivingEntity vivo) {
 			switch (color) {
