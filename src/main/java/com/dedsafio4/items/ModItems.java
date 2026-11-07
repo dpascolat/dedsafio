@@ -596,6 +596,9 @@ public final class ModItems {
 	public static final Item ESFERA_ETEREA = registrar("esfera_eterea", new Item(new Item.Properties().rarity(Rarity.EPIC)));
 	/** Polvo Sombrío: un montoncito de polvo gris oscuro. Sin función todavía (nombre provisorio). */
 	public static final Item POLVO_SOMBRIO = registrar("polvo_sombrio", new Item(new Item.Properties()));
+	/** Escopeta Phora y su munición, el Proyectil Phora (ver EscopetaPhoraItem). */
+	public static final Item ESCOPETA_PHORA = registrar("escopeta_phora", new EscopetaPhoraItem(new Item.Properties()));
+	public static final Item PROYECTIL_PHORA = registrar("proyectil_phora", new Item(new Item.Properties().rarity(Rarity.RARE)));
 
 	/** La armadura del Limbo (ver ArmaduraLimbo). */
 	public static final Item CASCO_LIMBO = registrar("casco_limbo",
@@ -745,6 +748,8 @@ public final class ModItems {
 						entradas.accept(BOTAS_DIMENSIONALES);
 						entradas.accept(ESPADA_ESPACIO);
 						entradas.accept(ESPADA_PHORA);
+						entradas.accept(ESCOPETA_PHORA);
+						entradas.accept(PROYECTIL_PHORA);
 						entradas.accept(RECOLECTOR_ALMAS);
 						entradas.accept(HOJA_PLATA);
 						entradas.accept(OJO_CARMESI);
