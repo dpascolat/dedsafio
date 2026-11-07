@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 /**
- * Lo naranja de la Escopeta Phora brilla: después de dibujarla, se dibujan otra vez sólo sus piezas naranjas
- * (el modelo escopeta_phora_brillo) a luz plena, encima de las mismas (así se ven igual de fuertes en la oscuridad).
+ * La Escopeta Phora se dibuja en partes: el cuerpo, lo naranja del cuerpo otra vez a luz plena (así brilla en la
+ * oscuridad), y el tambor con su naranja (va aparte para poder sacarlo y poner otro al recargar).
  */
 @Mixin(ItemRenderer.class)
 abstract class ItemRendererBrilloMixin {
@@ -29,5 +29,16 @@ abstract class ItemRendererBrilloMixin {
 		if (!pila.is(ModItems.ESCOPETA_PHORA)) return;
 		ItemStack brillo = new ItemStack(ModItems.ESCOPETA_PHORA_BRILLO);
 		original.call(brillo, contexto, izquierda, pose, buffers, LightTexture.FULL_BRIGHT, overlay, getModel(brillo, null, null, 0));
+		// El tambor va aparte: en primera persona, al recargar, se saca para abajo y entra uno nuevo.
+		boolean primera = contexto == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || contexto == ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
+		float baja = primera ? com.dedsafio4.client.EscopetaCliente.tamborBaja(pila) : 0f;
+		if (baja > 1.05f) return;   // sin tambor
+		pose.pushPose();
+		pose.translate(0, -baja, 0);
+		ItemStack tambor = new ItemStack(ModItems.ESCOPETA_PHORA_TAMBOR);
+		original.call(tambor, contexto, izquierda, pose, buffers, luz, overlay, getModel(tambor, null, null, 0));
+		ItemStack tamborBrillo = new ItemStack(ModItems.ESCOPETA_PHORA_TAMBOR_BRILLO);
+		original.call(tamborBrillo, contexto, izquierda, pose, buffers, LightTexture.FULL_BRIGHT, overlay, getModel(tamborBrillo, null, null, 0));
+		pose.popPose();
 	}
 }

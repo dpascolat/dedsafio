@@ -33,9 +33,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Escopeta Phora (el modelo "escopeta_minecraft" de Patricio): clic derecho dispara 6 perdigones en abanico
+ * Escopeta Phora (el modelo "escopeta_minecraft" de Patricio): clic izquierdo dispara 6 perdigones en abanico
  * (3 de daño cada uno, 4,5 si dan en la cabeza; no rompe bloques). Un disparo cada 0,4 segundos y 8 en el cargador.
- * Se recarga con Proyectil Phora (uno por bala) en 2,5 segundos: sola al quedarse sin balas, o con Shift + clic derecho.
+ * Clic derecho (mantenido) apunta: la escopeta va al medio y se mira por arriba de ella.
+ * Se recarga con Proyectil Phora (uno por bala) en 2,5 segundos: sola al quedarse sin balas, con la R o con Shift + clic derecho.
  * Las balas y el fin de la recarga se guardan en el ítem (custom_data).
  */
 public class EscopetaPhoraItem extends Item {
@@ -77,7 +78,23 @@ public class EscopetaPhoraItem extends Item {
 		}
 	}
 
+	/** El clic izquierdo (disparar): lo manda el cliente. */
+	public record DispararPayload() implements net.minecraft.network.protocol.common.custom.CustomPacketPayload {
+		public static final Type<DispararPayload> TYPE = new Type<>(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "disparar_arma"));
+		public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, DispararPayload> CODEC =
+				net.minecraft.network.codec.StreamCodec.unit(new DispararPayload());
+
+		@Override
+		public Type<DispararPayload> type() {
+			return TYPE;
+		}
+	}
+
 	public static void registrar() {
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playC2S().register(DispararPayload.TYPE, DispararPayload.CODEC);
+		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(DispararPayload.TYPE, (payload, contexto) -> contexto.server().execute(() -> {
+			if (contexto.player().getMainHandItem().getItem() instanceof EscopetaPhoraItem escopeta) escopeta.intentarDisparar(contexto.player());
+		}));
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playS2C().register(AgujerosPayload.TYPE, AgujerosPayload.CODEC);
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playC2S().register(RecargarPayload.TYPE, RecargarPayload.CODEC);
 		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(RecargarPayload.TYPE, (payload, contexto) -> contexto.server().execute(() -> {
@@ -129,18 +146,31 @@ public class EscopetaPhoraItem extends Item {
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level level, Player jugador, InteractionHand mano) {
 		ItemStack pila = jugador.getItemInHand(mano);
-		if (level.isClientSide) {
-			if (!recargando(pila) && !jugador.isShiftKeyDown() && balas(pila) > 0) disparoCliente = level.getGameTime();
+		// Shift + clic derecho: recarga. Clic derecho solo: apunta mientras lo mantienes.
+		if (jugador.isShiftKeyDown()) {
+			if (!level.isClientSide && jugador instanceof ServerPlayer sp && !recargando(pila)) empezarRecarga(sp, pila);
 			return InteractionResultHolder.consume(pila);
 		}
-		if (!(jugador instanceof ServerPlayer sp)) return InteractionResultHolder.consume(pila);
-		if (recargando(pila)) return InteractionResultHolder.consume(pila);
-		if (jugador.isShiftKeyDown() || balas(pila) == 0) {
-			empezarRecarga(sp, pila);
-			return InteractionResultHolder.consume(pila);
-		}
-		disparar(sp, pila);
+		jugador.startUsingItem(mano);
 		return InteractionResultHolder.consume(pila);
+	}
+
+	@Override
+	public int getUseDuration(ItemStack pila, LivingEntity quien) {
+		return 72000;
+	}
+
+	@Override
+	public net.minecraft.world.item.UseAnim getUseAnimation(ItemStack pila) {
+		return net.minecraft.world.item.UseAnim.NONE;
+	}
+
+	/** Clic izquierdo (lo manda el cliente): dispara; sin balas, recarga. */
+	public void intentarDisparar(ServerPlayer jugador) {
+		ItemStack pila = jugador.getMainHandItem();
+		if (!pila.is(this) || recargando(pila) || jugador.getCooldowns().isOnCooldown(this)) return;
+		if (balas(pila) == 0) empezarRecarga(jugador, pila);
+		else disparar(jugador, pila);
 	}
 
 	/** Cuándo disparó por última vez el jugador de esta pantalla (sólo lo usa el cliente, para la animación). */

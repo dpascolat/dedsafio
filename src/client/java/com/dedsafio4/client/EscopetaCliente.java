@@ -53,6 +53,8 @@ public final class EscopetaCliente {
 	private static final List<Agujero> AGUJEROS = new ArrayList<>();
 	/** Cuándo la agarró (para la animación) y qué tenía antes en la mano. */
 	private static long agarro = -1000;
+	/** Cuánto está apuntando (0 normal, 1 apuntando con el clic derecho), antes y ahora (se mezcla entre ticks). */
+	private static float apuntaAntes, apunta;
 	private static boolean teniaEscopeta;
 	private static int lugarAntes = -1;
 
@@ -78,6 +80,9 @@ public final class EscopetaCliente {
 			boolean tiene = mc.player.getMainHandItem().is(ModItems.ESCOPETA_PHORA);
 			int lugar = mc.player.getInventory().selected;
 			if (tiene && (!teniaEscopeta || lugar != lugarAntes)) agarro = mc.level.getGameTime();
+			apuntaAntes = apunta;
+			boolean apuntando = tiene && mc.player.isUsingItem() && mc.player.getUseItem().is(ModItems.ESCOPETA_PHORA);
+			apunta = Mth.approach(apunta, apuntando ? 1f : 0f, 0.25f);
 			teniaEscopeta = tiene;
 			lugarAntes = lugar;
 			long ahora = mc.level.getGameTime();
@@ -85,6 +90,27 @@ public final class EscopetaCliente {
 		});
 		HudRenderCallback.EVENT.register((g, contador) -> hud(g));
 		WorldRenderEvents.AFTER_TRANSLUCENT.register(EscopetaCliente::dibujarAgujeros);
+	}
+
+	/** Cuánto está apuntando ahora (0 a 1). */
+	public static float apuntando(float parcial) {
+		return Mth.lerp(parcial, apuntaAntes, apunta);
+	}
+
+	/**
+	 * Clic izquierdo con la escopeta en la mano (lo llama MinecraftDispararMixin): dispara en vez de pegar o romper.
+	 * Devuelve true si la tenía (así no pega ni rompe bloques).
+	 */
+	public static boolean clicIzquierdo() {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.player == null || mc.level == null || mc.player.isSpectator()) return false;
+		ItemStack pila = mc.player.getMainHandItem();
+		if (!pila.is(ModItems.ESCOPETA_PHORA)) return false;
+		if (!mc.player.getCooldowns().isOnCooldown(pila.getItem()) && !EscopetaPhoraItem.recargando(pila)) {
+			if (EscopetaPhoraItem.balas(pila) > 0) EscopetaPhoraItem.disparoCliente = mc.level.getGameTime();
+			ClientPlayNetworking.send(new EscopetaPhoraItem.DispararPayload());
+		}
+		return true;
 	}
 
 	/** La R: si tiene la Escopeta Phora en la mano, le pide al servidor que la recargue. */
@@ -106,6 +132,7 @@ public final class EscopetaCliente {
 		if (mc.player == null || mc.level == null || !mc.player.getMainHandItem().is(ModItems.ESCOPETA_PHORA)) return false;
 		if (!mc.options.getCameraType().isFirstPerson() || mc.player.isSpectator()) return false;
 		if (mc.getDebugOverlay().showDebugScreen()) return false;
+		if (apuntando(parcial) > 0.5f) return true;   // apuntando: sin mira, se mira por arriba de la escopeta
 		int cx = g.guiWidth() / 2, cy = g.guiHeight() / 2;
 		float d = (mc.level.getGameTime() + parcial - EscopetaPhoraItem.disparoCliente) / 20f;
 		int abre = d >= 0 && d < 0.4f ? Math.round(4 * (1 - d / 0.4f)) : 0;
@@ -204,22 +231,27 @@ public final class EscopetaCliente {
 		}
 		b = Math.max(b, bombeo(d, 0.15f) * 1.4f);
 
-		// Recarga (2,5 s): la gira para mostrar el tambor, va metiendo los proyectiles (un golpecito cada uno),
-		// la vuelve a poner derecha y bombea.
+		// Recarga (2,5 s): la inclina un poco, se saca el tambor vacío (cae para abajo), entra uno nuevo desde abajo,
+		// hace clic, la vuelve a poner derecha y bombea (el tambor lo mueve tamborBaja, en ItemRendererBrilloMixin).
 		ItemStack pila = mano == InteractionHand.MAIN_HAND ? jugador.getMainHandItem() : jugador.getOffhandItem();
-		long fin = EscopetaPhoraItem.finRecargaDe(pila);
-		if (fin > 0) {
-			float p = Mth.clamp(1f - (fin - ahora) / EscopetaPhoraItem.RECARGA, 0f, 1f);
-			float giro = p < 0.18f ? easeInOutQuad(p / 0.18f) : p > 0.78f ? easeInOutQuad(Mth.clamp((0.92f - p) / 0.14f, 0, 1)) : 1f;
-			rz += s * 0.38f * giro;   // de costado: el tambor mira a la cámara
-			rx += -0.12f * giro;      // la punta un poco para abajo
-			px += -s * 0.04f * giro;
-			py += -0.05f * giro;
-			if (p > 0.22f && p < 0.74f) {
-				float golpe = ((p - 0.22f) / 0.52f * 6f) % 1f;   // 6 golpecitos
-				py += golpe < 0.25f ? 0.025f * (1 - golpe / 0.25f) : 0f;
-			}
-			b = Math.max(b, bombeo(p * 2.5f, 2.15f) * 1.4f);
+		float p = progresoRecarga(pila, parcial);
+		if (p >= 0) {
+			float giro = p < 0.12f ? easeInOutQuad(p / 0.12f) : p > 0.86f ? easeInOutQuad(Mth.clamp((0.97f - p) / 0.11f, 0, 1)) : 1f;
+			rz += s * 0.22f * giro;
+			rx += 0.10f * giro;
+			py += 0.03f * giro;
+			if (p > 0.80f && p < 0.86f) py += 0.02f * (1 - (p - 0.80f) / 0.06f);   // el clic del tambor nuevo
+			b = Math.max(b, bombeo(p * 2.5f, 2.1f) * 1.4f);
+		}
+
+		// Apuntando (clic derecho): al medio, más cerca y derecha, para mirar por arriba del arma.
+		float a = mano == InteractionHand.MAIN_HAND ? apuntando(parcial) : 0f;
+		if (a > 0) {
+			px += -s * APUNTAR[0] * a;
+			py += APUNTAR[1] * a;
+			pz += APUNTAR[2] * a;
+			ry += s * APUNTAR[3] * a;
+			rx += APUNTAR[4] * a;
 		}
 		rx += 0.08f * b;
 		py -= 0.015f * b;
@@ -235,8 +267,29 @@ public final class EscopetaCliente {
 		pose.translate(-cx, -cy, -cz);
 	}
 
+	/** Cuánto se mueve al apuntar: {hacia el centro, arriba, atrás, giro en Y, giro en X}. */
+	public static float[] APUNTAR = {0.60f, 0.22f, 0.10f, -0.15f, 0f};
+
+	/** Qué parte de la recarga va (0 a 1), o -1 si no está recargando. */
+	private static float progresoRecarga(ItemStack pila, float parcial) {
+		Minecraft mc = Minecraft.getInstance();
+		long fin = EscopetaPhoraItem.finRecargaDe(pila);
+		if (fin <= 0 || mc.level == null) return -1;
+		return Mth.clamp(1f - (fin - (mc.level.getGameTime() + parcial)) / EscopetaPhoraItem.RECARGA, 0f, 1f);
+	}
+
+	/** Cuánto baja el tambor (en bloques) en la recarga: se cae el viejo, un rato sin tambor, y sube el nuevo. */
+	public static float tamborBaja(ItemStack pila) {
+		float p = progresoRecarga(pila, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+		if (p < 0.14f) return 0;
+		if (p < 0.38f) return 1.1f * easeInOutQuad((p - 0.14f) / 0.24f);   // se saca el viejo
+		if (p < 0.55f) return 1.1f;                                          // sin tambor
+		if (p < 0.80f) return 1.1f * (1 - easeOutBack((p - 0.55f) / 0.25f) * 0.98f) * 1.0f;   // entra el nuevo
+		return 0;
+	}
+
 	/** Dónde van los dos brazos (corridos desde donde Minecraft pone el brazo vacío): {hacia el centro, arriba, adelante(-)/atrás(+), giro}. */
-	public static float[] BRAZO_DERECHO = {-0.02f, 0.02f, 0.02f, 0f}, BRAZO_IZQUIERDO = {0.72f, 0.28f, -0.2f, 0f};
+	public static float[] BRAZO_DERECHO = {-0.02f, 0.02f, 0.02f, 0f}, BRAZO_IZQUIERDO = {1.3f, 0.08f, -0.1f, 0f};
 
 	/** Las dos manos agarrando la escopeta: la derecha en la empuñadura y la izquierda debajo del guardamanos. */
 	public static void brazos(PoseStack pose, MultiBufferSource buffers, int luz, AbstractClientPlayer jugador) {

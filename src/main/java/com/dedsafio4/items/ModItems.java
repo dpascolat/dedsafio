@@ -601,6 +601,9 @@ public final class ModItems {
 	public static final Item PROYECTIL_PHORA = registrar("proyectil_phora", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	/** Sólo para dibujar: las piezas naranjas de la escopeta, que brillan (no está en el inventario creativo). */
 	public static final Item ESCOPETA_PHORA_BRILLO = registrar("escopeta_phora_brillo", new Item(new Item.Properties()));
+	/** Sólo para dibujar: el tambor de la escopeta (se saca y se pone al recargar) y lo naranja del tambor. */
+	public static final Item ESCOPETA_PHORA_TAMBOR = registrar("escopeta_phora_tambor", new Item(new Item.Properties()));
+	public static final Item ESCOPETA_PHORA_TAMBOR_BRILLO = registrar("escopeta_phora_tambor_brillo", new Item(new Item.Properties()));
 
 	/** La armadura del Limbo (ver ArmaduraLimbo). */
 	public static final Item CASCO_LIMBO = registrar("casco_limbo",
