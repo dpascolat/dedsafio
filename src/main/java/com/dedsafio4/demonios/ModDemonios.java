@@ -21,8 +21,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Los mobs nuevos sin función todavía (nombres provisorios): Demonio Rosa, Demonio con Ojos y Demonio Rojo (el mismo
- * cuerpo con distinto color) y la Criatura Oscura (la de 4 patas). Cada uno con su huevo.
+ * Los mobs nuevos sin función todavía (nombres provisorios): Demonio Rosa, Demonio Morado y Demonio Rojo (el mismo
+ * demonio encadenado hecho de cubos, en tres colores) y la Criatura Oscura (la de 4 patas). Cada uno con su huevo.
  * <p>
  * /boss tamano &lt;tamaño&gt; cambia el tamaño del jefe o mob del mod más cercano (Planta Mordedora, Qumara, estos y
  * cualquier otro): 1 = normal, 2 = el doble, 0,5 = la mitad (de 0,1 a 16). Usa el atributo de tamaño de Minecraft,
@@ -33,19 +33,19 @@ public final class ModDemonios {
 
 	/** Los Demonios miden unos 3 bloques; la Criatura Oscura, 2,5. */
 	public static final EntityType<MallaMobEntity> DEMONIO_ROSA = entidad("demonio_rosa", true, 1.6f, 3f);
-	public static final EntityType<MallaMobEntity> DEMONIO_OJOS = entidad("demonio_ojos", true, 1.6f, 3f);
+	public static final EntityType<MallaMobEntity> DEMONIO_MORADO = entidad("demonio_morado", true, 1.6f, 3f);
 	public static final EntityType<MallaMobEntity> DEMONIO_ROJO = entidad("demonio_rojo", true, 1.6f, 3f);
 	public static final EntityType<MallaMobEntity> CRIATURA_OSCURA = entidad("criatura_oscura", false, 2f, 2.5f);
 
 	public static final Item HUEVO_DEMONIO_ROSA = huevo("demonio_rosa", DEMONIO_ROSA, 0xE9A3D6, 0x1E1B2E);
-	public static final Item HUEVO_DEMONIO_OJOS = huevo("demonio_ojos", DEMONIO_OJOS, 0xB58AD8, 0x1E1B2E);
+	public static final Item HUEVO_DEMONIO_MORADO = huevo("demonio_morado", DEMONIO_MORADO, 0x9A5BC8, 0x1E1B2E);
 	public static final Item HUEVO_DEMONIO_ROJO = huevo("demonio_rojo", DEMONIO_ROJO, 0xC23A32, 0x1E1B2E);
 	public static final Item HUEVO_CRIATURA_OSCURA = huevo("criatura_oscura", CRIATURA_OSCURA, 0x2B3138, 0x6E7A86);
 
 	private static final double BUSCAR = 64;
 
 	public static void registrar() {
-		for (EntityType<MallaMobEntity> t : java.util.List.of(DEMONIO_ROSA, DEMONIO_OJOS, DEMONIO_ROJO, CRIATURA_OSCURA)) {
+		for (EntityType<MallaMobEntity> t : java.util.List.of(DEMONIO_ROSA, DEMONIO_MORADO, DEMONIO_ROJO, CRIATURA_OSCURA)) {
 			FabricDefaultAttributeRegistry.register(t, MallaMobEntity.crearAtributos());
 		}
 	}

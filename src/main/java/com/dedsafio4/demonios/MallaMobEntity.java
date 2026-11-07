@@ -15,8 +15,10 @@ import net.minecraft.world.level.Level;
  * los ponen y miran a los jugadores. Los Demonios flotan (sin gravedad, se mecen arriba y abajo al dibujarlos).
  * Su tamaño se puede cambiar con /boss tamano (o con el atributo minecraft:generic.scale).
  */
-public class MallaMobEntity extends PathfinderMob {
+public class MallaMobEntity extends PathfinderMob implements software.bernie.geckolib.animatable.GeoEntity {
 	private final boolean flota;
+	private final software.bernie.geckolib.animatable.instance.AnimatableInstanceCache cache =
+			software.bernie.geckolib.util.GeckoLibUtil.createInstanceCache(this);
 
 	public MallaMobEntity(EntityType<? extends PathfinderMob> tipo, Level level, boolean flota) {
 		super(tipo, level);
@@ -46,6 +48,16 @@ public class MallaMobEntity extends PathfinderMob {
 	@Override
 	public boolean causeFallDamage(float distancia, float multiplicador, net.minecraft.world.damagesource.DamageSource fuente) {
 		return !flota && super.causeFallDamage(distancia, multiplicador, fuente);
+	}
+
+	/** Los Demonios se dibujan con GeckoLib (modelo de cubos); no tienen animaciones todavía. */
+	@Override
+	public void registerControllers(software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar controladores) {
+	}
+
+	@Override
+	public software.bernie.geckolib.animatable.instance.AnimatableInstanceCache getAnimatableInstanceCache() {
+		return cache;
 	}
 
 	@Override
