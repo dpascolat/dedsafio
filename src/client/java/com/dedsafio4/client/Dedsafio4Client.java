@@ -301,6 +301,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.bulag.BulagCliente.registrar();
 		com.dedsafio4.client.despegue.EspacioCielo.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.bote.ModBote.BOTE, com.dedsafio4.client.bote.BoteRenderer::new);
+		EntityRendererRegistry.register(com.dedsafio4.bossplanta.ModPlantaBoss.PLANTA_BOSS, com.dedsafio4.client.bossplanta.PlantaBossRenderer::new);
 		EntityRendererRegistry.register(com.dedsafio4.despegue.ModDespegue.NAVE_VIAJE,
 				com.dedsafio4.client.despegue.NaveViajeRenderer::new);
 		EntityRendererRegistry.register(com.dedsafio4.dactylos.ModDactylos.DACTYLO_BEBE, com.dedsafio4.client.dactylos.DactyloBebeRenderer::new);

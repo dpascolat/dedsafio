@@ -417,5 +417,10 @@
 	"item.dedsafio4.espada_limbo": "Espada del Limbo",
 	"enchantment.dedsafio4.perdicion_del_limbo": "Perdición del Limbo",
 	"item.dedsafio4.bote": "Long Boat",
-	"entity.dedsafio4.bote": "Long Boat"
+	"entity.dedsafio4.bote": "Long Boat",
+	"entity.dedsafio4.planta_boss": "Biting Plant",
+	"death.attack.luz_planta": "%1$s looked at the Biting Plant's light",
+	"death.attack.luz_planta.player": "%1$s looked at the Biting Plant's light",
+	"death.attack.mordida_planta": "%1$s was bitten by the Biting Plant",
+	"death.attack.mordida_planta.player": "%1$s was bitten by the Biting Plant"
 }

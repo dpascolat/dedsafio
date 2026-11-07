@@ -418,5 +418,10 @@
 	"item.dedsafio4.espada_limbo": "Espada del Limbo",
 	"enchantment.dedsafio4.perdicion_del_limbo": "Perdición del Limbo",
 	"item.dedsafio4.bote": "Bote",
-	"entity.dedsafio4.bote": "Bote"
+	"entity.dedsafio4.bote": "Bote",
+	"entity.dedsafio4.planta_boss": "Planta Mordedora",
+	"death.attack.luz_planta": "%1$s miró la luz de la Planta Mordedora",
+	"death.attack.luz_planta.player": "%1$s miró la luz de la Planta Mordedora",
+	"death.attack.mordida_planta": "%1$s fue mordido por la Planta Mordedora",
+	"death.attack.mordida_planta.player": "%1$s fue mordido por la Planta Mordedora"
 }

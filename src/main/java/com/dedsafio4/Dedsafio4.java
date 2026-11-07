@@ -124,6 +124,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.dimension.Organos.registrar();
 		com.dedsafio4.despegue.ModDespegue.registrar();
 		com.dedsafio4.bote.ModBote.registrar();
+		com.dedsafio4.bossplanta.ModPlantaBoss.registrar();
 		Eburia.registrar();
 		com.dedsafio4.items.Linternas.registrar();
 		com.dedsafio4.items.TotemFrericoItem.registrar();
@@ -184,6 +185,7 @@ public class Dedsafio4 implements ModInitializer {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			BancoComandos.registrar(dispatcher);
 			com.dedsafio4.bote.ModBote.registrarComandos(dispatcher);
+			com.dedsafio4.bossplanta.ModPlantaBoss.registrarComandos(dispatcher);
 			com.dedsafio4.subastas.Subastas.registrar(dispatcher);
 			com.dedsafio4.subastas.Puja.registrarComandos(dispatcher);
 			com.dedsafio4.cofres.CofresRellenables.registrarComandos(dispatcher);
