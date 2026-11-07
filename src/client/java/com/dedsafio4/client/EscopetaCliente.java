@@ -95,6 +95,40 @@ public final class EscopetaCliente {
 		}
 	}
 
+	// ---------------------------------------------------------------- La mira
+
+	/**
+	 * La mira de la escopeta (en lugar de la cruz de Minecraft): un puntito en el centro y 4 rayitas separadas,
+	 * blancas con borde oscuro. Al disparar se abren y vuelven de a poco. Devuelve false si no toca (y queda la normal).
+	 */
+	public static boolean mira(GuiGraphics g, float parcial) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.player == null || mc.level == null || !mc.player.getMainHandItem().is(ModItems.ESCOPETA_PHORA)) return false;
+		if (!mc.options.getCameraType().isFirstPerson() || mc.player.isSpectator()) return false;
+		if (mc.getDebugOverlay().showDebugScreen()) return false;
+		int cx = g.guiWidth() / 2, cy = g.guiHeight() / 2;
+		float d = (mc.level.getGameTime() + parcial - EscopetaPhoraItem.disparoCliente) / 20f;
+		int abre = d >= 0 && d < 0.4f ? Math.round(4 * (1 - d / 0.4f)) : 0;
+		int hueco = 4 + abre, largo = 5;
+		int borde = 0xA0000000, blanco = 0xFFFFFFFF;
+		// Primero el borde (un píxel más grande), después lo blanco.
+		rectangulo(g, cx - 1, cy - 1, 3, 3, borde);
+		rectangulo(g, cx - 1, cy - hueco - largo - 1, 3, largo + 2, borde);
+		rectangulo(g, cx - 1, cy + hueco, 3, largo + 2, borde);
+		rectangulo(g, cx - hueco - largo - 1, cy - 1, largo + 2, 3, borde);
+		rectangulo(g, cx + hueco, cy - 1, largo + 2, 3, borde);
+		rectangulo(g, cx, cy, 1, 1, blanco);
+		rectangulo(g, cx, cy - hueco - largo, 1, largo, blanco);
+		rectangulo(g, cx, cy + hueco + 1, 1, largo, blanco);
+		rectangulo(g, cx - hueco - largo, cy, largo, 1, blanco);
+		rectangulo(g, cx + hueco + 1, cy, largo, 1, blanco);
+		return true;
+	}
+
+	private static void rectangulo(GuiGraphics g, int x, int y, int ancho, int alto, int color) {
+		g.fill(x, y, x + ancho, y + alto, color);
+	}
+
 	// ---------------------------------------------------------------- Al lado de la barra de ítems
 
 	private static void hud(GuiGraphics g) {

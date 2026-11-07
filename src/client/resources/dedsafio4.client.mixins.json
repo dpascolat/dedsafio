@@ -6,6 +6,7 @@
 		"CieloFogataMixin",
 		"ItemInHandEscopetaMixin",
 		"ItemRendererBrilloMixin",
+		"MiraEscopetaMixin",
 		"NieblaFogataMixin",
 		"AbstractTextureAccessor",
 		"BlockEntityVacioMixin",
