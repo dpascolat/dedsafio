@@ -179,7 +179,12 @@ public class PlantaBossEntity extends PathfinderMob {
 
 	/** Dónde está la luz (en el medio del campo, arriba de la planta). */
 	public Vec3 luz() {
-		return position().add(0, ALTO_LUZ, 0);
+		return position().add(0, ALTO_LUZ * getScale(), 0);
+	}
+
+	/** Hasta dónde llega lo rojo: 6 bloques con el tamaño normal, y crece (o se achica) con /boss tamano. */
+	public int zona() {
+		return Math.max(3, Math.round(ZONA * getScale()));
 	}
 
 	private void tickLuz(ServerLevel mundo, List<ServerPlayer> enCampo) {
@@ -219,7 +224,7 @@ public class PlantaBossEntity extends PathfinderMob {
 		if (t == MARCA) {
 			List<ServerPlayer> enRojo = new ArrayList<>();
 			for (ServerPlayer p : enCampo) if (enZona(p)) enRojo.add(p);
-			ServerPlayer presa = masCercano(enRojo, ZONA + 2);
+			ServerPlayer presa = masCercano(enRojo, zona() + 2 + 2 * getScale());
 			mundo.playSound(null, getX(), getY() + 3, getZ(), SoundEvents.EVOKER_FANGS_ATTACK, SoundSource.HOSTILE, 3f, 0.6f);
 			if (presa != null) {
 				entityData.set(AGARRADO, presa.getId());
@@ -267,7 +272,7 @@ public class PlantaBossEntity extends PathfinderMob {
 	/** Si el jugador está parado en lo rojo (alrededor de la planta). */
 	private boolean enZona(ServerPlayer p) {
 		double dx = p.getX() - getX(), dz = p.getZ() - getZ();
-		return dx * dx + dz * dz <= (ZONA + 0.5) * (ZONA + 0.5) && Math.abs(p.getY() - getY()) < 4;
+		return dx * dx + dz * dz <= (zona() + 0.5) * (zona() + 0.5) && Math.abs(p.getY() - getY()) < 4 * Math.max(1, getScale());
 	}
 
 	private DamageSource fuente(ServerLevel mundo, net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> tipo) {
@@ -278,7 +283,7 @@ public class PlantaBossEntity extends PathfinderMob {
 	/** El agarrado va en la boca (delante de la cara, a la altura de la mandíbula). */
 	@Override
 	protected Vec3 getPassengerAttachmentPoint(Entity pasajero, EntityDimensions tamano, float escala) {
-		return new Vec3(0, 2.9, 1.5).yRot(-yBodyRot * Mth.DEG_TO_RAD);
+		return new Vec3(0, 2.9 * escala, 1.5 * escala).yRot(-yBodyRot * Mth.DEG_TO_RAD);
 	}
 
 	@Override
@@ -385,7 +390,7 @@ public class PlantaBossEntity extends PathfinderMob {
 	/** El campo y lo rojo se ven aunque la planta no esté en pantalla. */
 	@Override
 	public AABB getBoundingBoxForCulling() {
-		return getBoundingBox().inflate(ZONA + 2, 6, ZONA + 2);
+		return getBoundingBox().inflate(zona() + 2, 6 * getScale(), zona() + 2);
 	}
 
 	@Override

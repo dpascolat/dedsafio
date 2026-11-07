@@ -756,6 +756,10 @@ public final class ModItems {
 						entradas.accept(ESCOPETA_PHORA);
 						entradas.accept(PROYECTIL_PHORA);
 						entradas.accept(com.dedsafio4.bote.ModBote.BOTE_ITEM);
+						entradas.accept(com.dedsafio4.demonios.ModDemonios.HUEVO_DEMONIO_ROSA);
+						entradas.accept(com.dedsafio4.demonios.ModDemonios.HUEVO_DEMONIO_OJOS);
+						entradas.accept(com.dedsafio4.demonios.ModDemonios.HUEVO_DEMONIO_ROJO);
+						entradas.accept(com.dedsafio4.demonios.ModDemonios.HUEVO_CRIATURA_OSCURA);
 						entradas.accept(RECOLECTOR_ALMAS);
 						entradas.accept(HOJA_PLATA);
 						entradas.accept(OJO_CARMESI);

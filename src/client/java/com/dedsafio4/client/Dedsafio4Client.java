@@ -302,6 +302,10 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.despegue.EspacioCielo.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.bote.ModBote.BOTE, com.dedsafio4.client.bote.BoteRenderer::new);
 		EntityRendererRegistry.register(com.dedsafio4.bossplanta.ModPlantaBoss.PLANTA_BOSS, com.dedsafio4.client.bossplanta.PlantaBossRenderer::new);
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.DEMONIO_ROSA, c -> new com.dedsafio4.client.demonios.MallaRenderer(c, "demonio", "demonio_rosa", 3f));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.DEMONIO_OJOS, c -> new com.dedsafio4.client.demonios.MallaRenderer(c, "demonio", "demonio_ojos", 3f));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.DEMONIO_ROJO, c -> new com.dedsafio4.client.demonios.MallaRenderer(c, "demonio", "demonio_rojo", 3f));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.CRIATURA_OSCURA, c -> new com.dedsafio4.client.demonios.MallaRenderer(c, "criatura_oscura", "criatura_oscura", 2.5f));
 		EntityRendererRegistry.register(com.dedsafio4.despegue.ModDespegue.NAVE_VIAJE,
 				com.dedsafio4.client.despegue.NaveViajeRenderer::new);
 		EntityRendererRegistry.register(com.dedsafio4.dactylos.ModDactylos.DACTYLO_BEBE, com.dedsafio4.client.dactylos.DactyloBebeRenderer::new);

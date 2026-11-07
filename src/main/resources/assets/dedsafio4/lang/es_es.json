@@ -423,5 +423,13 @@
 	"death.attack.luz_planta": "%1$s miró la luz de la Planta Mordedora",
 	"death.attack.luz_planta.player": "%1$s miró la luz de la Planta Mordedora",
 	"death.attack.mordida_planta": "%1$s fue mordido por la Planta Mordedora",
-	"death.attack.mordida_planta.player": "%1$s fue mordido por la Planta Mordedora"
+	"death.attack.mordida_planta.player": "%1$s fue mordido por la Planta Mordedora",
+	"entity.dedsafio4.demonio_rosa": "Demonio Rosa",
+	"item.dedsafio4.demonio_rosa_spawn_egg": "Huevo generador de Demonio Rosa",
+	"entity.dedsafio4.demonio_ojos": "Demonio con Ojos",
+	"item.dedsafio4.demonio_ojos_spawn_egg": "Huevo generador de Demonio con Ojos",
+	"entity.dedsafio4.demonio_rojo": "Demonio Rojo",
+	"item.dedsafio4.demonio_rojo_spawn_egg": "Huevo generador de Demonio Rojo",
+	"entity.dedsafio4.criatura_oscura": "Criatura Oscura",
+	"item.dedsafio4.criatura_oscura_spawn_egg": "Huevo generador de Criatura Oscura"
 }

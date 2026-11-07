@@ -93,7 +93,8 @@ public class PlantaBossRenderer extends EntityRenderer<PlantaBossEntity> {
 		pose.mulPose(Axis.YP.rotationDegrees(Mth.sin(t * 0.22f) * 30f * baile));
 		pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(t * 0.06f) * 2f + Mth.sin(t * 0.45f) * 14f * baile));
 		pose.mulPose(Axis.XP.rotationDegrees(Mth.sin(t * 0.05f + 1f) * 1.5f + Mth.cos(t * 0.3f) * 5f * baile));
-		pose.scale(PlantaBossEntity.ESCALA, PlantaBossEntity.ESCALA, PlantaBossEntity.ESCALA);
+		float escala = PlantaBossEntity.ESCALA * planta.getScale();
+		pose.scale(escala, escala, escala);
 
 		int overlay = OverlayTexture.pack(OverlayTexture.u(0f), OverlayTexture.v(planta.hurtTime > 0 || planta.deathTime > 0));
 		VertexConsumer v = buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURA));
@@ -155,7 +156,7 @@ public class PlantaBossRenderer extends EntityRenderer<PlantaBossEntity> {
 				* Mth.clamp((PlantaBossEntity.FIN_LUZ - ta) / 8f, 0, 1);
 		if (prendida <= 0) return;
 		pose.pushPose();
-		pose.translate(0, PlantaBossEntity.ALTO_LUZ, 0);
+		pose.translate(0, PlantaBossEntity.ALTO_LUZ * planta.getScale(), 0);
 		pose.mulPose(entityRenderDispatcher.cameraOrientation());
 		VertexConsumer v = buffers.getBuffer(RenderType.lightning());
 		Matrix4f m = pose.last().pose();
@@ -163,7 +164,7 @@ public class PlantaBossRenderer extends EntityRenderer<PlantaBossEntity> {
 		// Rayos
 		for (int i = 0; i < 10; i++) {
 			float a = t * 0.03f + i * Mth.TWO_PI / 10f;
-			float largo = (4.5f + Mth.sin(t * 0.4f + i * 1.7f) * 1.2f) * prendida;
+			float largo = planta.getScale() * (4.5f + Mth.sin(t * 0.4f + i * 1.7f) * 1.2f) * prendida;
 			float ancho = 0.18f * prendida;
 			float cx = Mth.cos(a), sy = Mth.sin(a), px = -sy * ancho, py = cx * ancho;
 			int alfa = (int) (90 * prendida);
@@ -175,7 +176,7 @@ public class PlantaBossRenderer extends EntityRenderer<PlantaBossEntity> {
 		// Bolas de luz
 		float[][] capas = {{3.2f, 255, 220, 120, 40}, {2.2f, 255, 240, 170, 70}, {1.3f, 255, 255, 220, 140}, {0.7f, 255, 255, 255, 230}};
 		for (float[] c : capas) {
-			float r = c[0] * prendida * pulso;
+			float r = c[0] * prendida * pulso * planta.getScale();
 			int al = (int) (c[4] * prendida);
 			int cr = (int) c[1], cg = (int) c[2], cb = (int) c[3];
 			for (int i = 0; i < 12; i++) {   // un disco de 12 porciones (centro fuerte, borde transparente)
@@ -193,7 +194,7 @@ public class PlantaBossRenderer extends EntityRenderer<PlantaBossEntity> {
 	private static void zonaRoja(PlantaBossEntity planta, float ta, float parcial, PoseStack pose, MultiBufferSource buffers) {
 		Level mundo = planta.level();
 		double ex = Mth.lerp(parcial, planta.xo, planta.getX()), ey = Mth.lerp(parcial, planta.yo, planta.getY()), ez = Mth.lerp(parcial, planta.zo, planta.getZ());
-		int zona = PlantaBossEntity.ZONA;
+		int zona = planta.zona();
 		BlockPos centro = BlockPos.containing(planta.getX(), planta.getY(), planta.getZ());
 		// Aparece de a poco desde la planta hacia afuera y titila más rápido cuando está por morder.
 		float crece = Mth.clamp(ta / 12f, 0, 1);
