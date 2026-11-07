@@ -175,6 +175,37 @@ public final class EscopetaCliente {
 		pose.translate(-cx, -cy, -cz);
 	}
 
+	/** Dónde van los dos brazos (corridos desde donde Minecraft pone el brazo vacío): {hacia el centro, arriba, adelante(-)/atrás(+), giro}. */
+	public static float[] BRAZO_DERECHO = {-0.02f, 0.02f, 0.02f, 0f}, BRAZO_IZQUIERDO = {0.72f, 0.28f, -0.2f, 0f};
+
+	/** Las dos manos agarrando la escopeta: la derecha en la empuñadura y la izquierda debajo del guardamanos. */
+	public static void brazos(PoseStack pose, MultiBufferSource buffers, int luz, AbstractClientPlayer jugador) {
+		if (jugador.isInvisible()) return;
+		if (!(Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(jugador) instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer r)) return;
+		boolean derechaPrincipal = jugador.getMainArm() == HumanoidArm.RIGHT;
+		brazo(pose, buffers, luz, jugador, r, derechaPrincipal, derechaPrincipal ? BRAZO_DERECHO : BRAZO_IZQUIERDO);
+		brazo(pose, buffers, luz, jugador, r, !derechaPrincipal, derechaPrincipal ? BRAZO_IZQUIERDO : BRAZO_DERECHO);
+	}
+
+	private static void brazo(PoseStack pose, MultiBufferSource buffers, int luz, AbstractClientPlayer jugador,
+							  net.minecraft.client.renderer.entity.player.PlayerRenderer r, boolean derecha, float[] d) {
+		float f = derecha ? 1 : -1;
+		float dx = -f * d[0];   // d[0] > 0: hacia el centro de la pantalla
+		pose.pushPose();
+		// Lo mismo que hace Minecraft para dibujar el brazo con la mano vacía, corrido a donde agarra la escopeta.
+		pose.translate(dx, d[1], d[2]);
+		pose.translate(f * 0.64f, -0.6f, -0.72f);
+		pose.mulPose(Axis.YP.rotationDegrees(f * 45f + f * d[3]));
+		pose.translate(f * -1f, 3.6f, 3.5f);
+		pose.mulPose(Axis.ZP.rotationDegrees(f * 120f));
+		pose.mulPose(Axis.XP.rotationDegrees(200f));
+		pose.mulPose(Axis.YP.rotationDegrees(f * -135f));
+		pose.translate(f * 5.6f, 0f, 0f);
+		if (derecha) r.renderRightHand(pose, buffers, luz, jugador);
+		else r.renderLeftHand(pose, buffers, luz, jugador);
+		pose.popPose();
+	}
+
 	// ---------------------------------------------------------------- Agujeritos de bala
 
 	private static void dibujarAgujeros(WorldRenderContext contexto) {

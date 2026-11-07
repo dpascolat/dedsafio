@@ -28,6 +28,7 @@ abstract class ItemInHandEscopetaMixin {
 		pose.pushPose();
 		EscopetaCliente.animar(pose, jugador, mano, parcial);
 		original.call(jugador, parcial, inclinacion, mano, 0f, pila, 0f, pose, buffers, luz);
+		if (mano == InteractionHand.MAIN_HAND) EscopetaCliente.brazos(pose, buffers, luz, jugador);
 		pose.popPose();
 	}
 }

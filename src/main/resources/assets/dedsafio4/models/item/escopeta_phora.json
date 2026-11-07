@@ -10243,19 +10243,19 @@
 	"display": {
 		"firstperson_righthand": {
 			"rotation": [
-				0,
-				-90,
+				12,
+				-65,
 				0
 			],
 			"translation": [
-				4,
-				1,
-				-3
+				-4,
+				3,
+				0
 			],
 			"scale": [
-				0.55,
-				0.55,
-				0.55
+				0.62,
+				0.62,
+				0.62
 			]
 		},
 		"firstperson_lefthand": {
