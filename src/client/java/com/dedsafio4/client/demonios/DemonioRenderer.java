@@ -34,6 +34,7 @@ public class DemonioRenderer extends GeoEntityRenderer<EspectroEntity> {
 		pose.translate(0, (0.12f + Mth.sin(t * 0.08f) * 0.1f) * escala * mob.getScale(), 0);
 		super.render(mob, giro, parcial, pose, buffers, luz);
 		pose.popPose();
+		if (mob.grande()) BarraVidaArriba.dibujar(mob, entityRenderDispatcher, pose, buffers, luz);   // los Colosos
 	}
 
 	static class Modelo extends GeoModel<EspectroEntity> {
