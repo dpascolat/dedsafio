@@ -45,7 +45,10 @@ public final class TRexControles {
 	public static void registrar() {
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			boolean monta = montaJefe(mc);
-			while (GRITAR.consumeClick()) if (monta) ClientPlayNetworking.send(new ModTRex.AccionPayload(ModTRex.GRITAR));
+			while (GRITAR.consumeClick()) {
+				if (monta) ClientPlayNetworking.send(new ModTRex.AccionPayload(ModTRex.GRITAR));
+				else com.dedsafio4.client.EscopetaCliente.teclaRecargar();   // la R recarga la Escopeta Phora
+			}
 			while (ABRIR_PUERTA.consumeClick()) if (monta) ClientPlayNetworking.send(new ModTRex.AccionPayload(ModTRex.ABRIR_PUERTA));
 			while (BOTON_4.consumeClick()) if (monta && mc.player.getVehicle() instanceof QumaraEntity) {
 				ClientPlayNetworking.send(new ModTRex.AccionPayload(ModTRex.BOTON_4));

@@ -87,6 +87,14 @@ public final class EscopetaCliente {
 		WorldRenderEvents.AFTER_TRANSLUCENT.register(EscopetaCliente::dibujarAgujeros);
 	}
 
+	/** La R: si tiene la Escopeta Phora en la mano, le pide al servidor que la recargue. */
+	public static void teclaRecargar() {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.player != null && mc.player.getMainHandItem().is(ModItems.ESCOPETA_PHORA)) {
+			ClientPlayNetworking.send(new EscopetaPhoraItem.RecargarPayload());
+		}
+	}
+
 	// ---------------------------------------------------------------- Al lado de la barra de ítems
 
 	private static void hud(GuiGraphics g) {
@@ -161,6 +169,24 @@ public final class EscopetaCliente {
 			py += 0.02f * r;
 		}
 		b = Math.max(b, bombeo(d, 0.15f) * 1.4f);
+
+		// Recarga (2,5 s): la gira para mostrar el tambor, va metiendo los proyectiles (un golpecito cada uno),
+		// la vuelve a poner derecha y bombea.
+		ItemStack pila = mano == InteractionHand.MAIN_HAND ? jugador.getMainHandItem() : jugador.getOffhandItem();
+		long fin = EscopetaPhoraItem.finRecargaDe(pila);
+		if (fin > 0) {
+			float p = Mth.clamp(1f - (fin - ahora) / EscopetaPhoraItem.RECARGA, 0f, 1f);
+			float giro = p < 0.18f ? easeInOutQuad(p / 0.18f) : p > 0.78f ? easeInOutQuad(Mth.clamp((0.92f - p) / 0.14f, 0, 1)) : 1f;
+			rz += s * 0.38f * giro;   // de costado: el tambor mira a la cámara
+			rx += -0.12f * giro;      // la punta un poco para abajo
+			px += -s * 0.04f * giro;
+			py += -0.05f * giro;
+			if (p > 0.22f && p < 0.74f) {
+				float golpe = ((p - 0.22f) / 0.52f * 6f) % 1f;   // 6 golpecitos
+				py += golpe < 0.25f ? 0.025f * (1 - golpe / 0.25f) : 0f;
+			}
+			b = Math.max(b, bombeo(p * 2.5f, 2.15f) * 1.4f);
+		}
 		rx += 0.08f * b;
 		py -= 0.015f * b;
 		pz += 0.05f * b;

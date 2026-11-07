@@ -65,8 +65,27 @@ public class EscopetaPhoraItem extends Item {
 		}
 	}
 
+	/** La R (recargar): la manda el cliente. */
+	public record RecargarPayload() implements net.minecraft.network.protocol.common.custom.CustomPacketPayload {
+		public static final Type<RecargarPayload> TYPE = new Type<>(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "recargar_arma"));
+		public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, RecargarPayload> CODEC =
+				net.minecraft.network.codec.StreamCodec.unit(new RecargarPayload());
+
+		@Override
+		public Type<RecargarPayload> type() {
+			return TYPE;
+		}
+	}
+
 	public static void registrar() {
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playS2C().register(AgujerosPayload.TYPE, AgujerosPayload.CODEC);
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playC2S().register(RecargarPayload.TYPE, RecargarPayload.CODEC);
+		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(RecargarPayload.TYPE, (payload, contexto) -> contexto.server().execute(() -> {
+			ServerPlayer jugador = contexto.player();
+			ItemStack pila = jugador.getMainHandItem();
+			if (!(pila.getItem() instanceof EscopetaPhoraItem escopeta) || recargando(pila) || jugador.getCooldowns().isOnCooldown(escopeta)) return;
+			escopeta.empezarRecarga(jugador, pila);
+		}));
 	}
 
 	public EscopetaPhoraItem(Properties propiedades) {
@@ -94,6 +113,11 @@ public class EscopetaPhoraItem extends Item {
 
 	private static void ponerFinRecarga(ItemStack pila, long fin) {
 		CustomData.update(DataComponents.CUSTOM_DATA, pila, t -> t.putLong(FIN_RECARGA, fin));
+	}
+
+	/** Cuándo termina la recarga (en el tiempo del mundo), o 0 si no está recargando. Lo usa el cliente para la animación. */
+	public static long finRecargaDe(ItemStack pila) {
+		return pila.getItem() instanceof EscopetaPhoraItem ? finRecarga(pila) : 0;
 	}
 
 	public static boolean recargando(ItemStack pila) {

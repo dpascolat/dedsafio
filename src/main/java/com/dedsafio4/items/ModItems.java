@@ -599,6 +599,8 @@ public final class ModItems {
 	/** Escopeta Phora y su munición, el Proyectil Phora (ver EscopetaPhoraItem). */
 	public static final Item ESCOPETA_PHORA = registrar("escopeta_phora", new EscopetaPhoraItem(new Item.Properties()));
 	public static final Item PROYECTIL_PHORA = registrar("proyectil_phora", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	/** Sólo para dibujar: las piezas naranjas de la escopeta, que brillan (no está en el inventario creativo). */
+	public static final Item ESCOPETA_PHORA_BRILLO = registrar("escopeta_phora_brillo", new Item(new Item.Properties()));
 
 	/** La armadura del Limbo (ver ArmaduraLimbo). */
 	public static final Item CASCO_LIMBO = registrar("casco_limbo",

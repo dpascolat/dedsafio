@@ -5,6 +5,7 @@
 	"client": [
 		"CieloFogataMixin",
 		"ItemInHandEscopetaMixin",
+		"ItemRendererBrilloMixin",
 		"NieblaFogataMixin",
 		"AbstractTextureAccessor",
 		"BlockEntityVacioMixin",
