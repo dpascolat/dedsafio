@@ -12,15 +12,16 @@ import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
 /**
- * Los fantasmas encadenados (Reclusos Espectrales y Colosos Prisioneros): el demonio hecho de cubos
- * (geo/entity/demonio.geo.json) con la textura de su color, achicado (Recluso) o agrandado (Coloso). Flotan
- * meciéndose arriba y abajo. GeckoLib ya los gira y les aplica el tamaño de /boss tamano.
+ * Los fantasmas encadenados: los Colosos Prisioneros son el demonio hecho de cubos (geo/entity/demonio.geo.json),
+ * agrandado; los Reclusos Espectrales, el fantasma chiquito (geo/entity/recluso.geo.json), achicado. Cada uno con
+ * la textura de su color. Flotan meciéndose arriba y abajo. GeckoLib ya los gira y les aplica el tamaño de
+ * /boss tamano.
  */
 public class DemonioRenderer extends GeoEntityRenderer<EspectroEntity> {
 	private final float escala;
 
 	public DemonioRenderer(EntityRendererProvider.Context contexto, String textura, boolean coloso) {
-		super(contexto, new Modelo(textura));
+		super(contexto, new Modelo(textura, coloso));
 		this.escala = coloso ? ModDemonios.ESCALA_COLOSO : ModDemonios.ESCALA_RECLUSO;
 		withScale(escala);
 		this.shadowRadius = 0.6f * escala;
@@ -36,17 +37,18 @@ public class DemonioRenderer extends GeoEntityRenderer<EspectroEntity> {
 	}
 
 	static class Modelo extends GeoModel<EspectroEntity> {
-		private static final ResourceLocation MODELO = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "geo/entity/demonio.geo.json");
 		private static final ResourceLocation ANIMACIONES = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "animations/entity/demonio.animation.json");
-		private final ResourceLocation textura;
+		private final ResourceLocation modelo, textura;
 
-		Modelo(String textura) {
+		/** Los Colosos usan el demonio grande (demonio.geo.json); los Reclusos, el chiquito (recluso.geo.json). */
+		Modelo(String textura, boolean coloso) {
+			this.modelo = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, coloso ? "geo/entity/demonio.geo.json" : "geo/entity/recluso.geo.json");
 			this.textura = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/" + textura + ".png");
 		}
 
 		@Override
 		public ResourceLocation getModelResource(EspectroEntity mob) {
-			return MODELO;
+			return modelo;
 		}
 
 		@Override
