@@ -46,6 +46,28 @@ public class EscopetaPhoraItem extends Item {
 	private static final double ALCANCE = 24, DISPERSION = 0.035;
 	private static final String BALAS = "dedsafio4_balas", FIN_RECARGA = "dedsafio4_fin_recarga";
 	private static final int BLANCO = 0xFFFFFF, CELESTE = 0x55FFFF, NARANJA = 0xFF5A14, LILA = 0xD58CFF;
+	/** La estela del perdigón: polvo naranja brillante. */
+	private static final net.minecraft.core.particles.DustParticleOptions ESTELA =
+			new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(1f, 0.45f, 0.1f), 0.7f);
+
+	/** Dónde pegaron los perdigones en los bloques (y en qué cara), para que el cliente dibuje los agujeritos. */
+	public record AgujerosPayload(List<org.joml.Vector3f> lugares, List<Integer> caras) implements net.minecraft.network.protocol.common.custom.CustomPacketPayload {
+		public static final Type<AgujerosPayload> TYPE = new Type<>(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "agujeros_bala"));
+		public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, AgujerosPayload> CODEC =
+				net.minecraft.network.codec.StreamCodec.composite(
+						net.minecraft.network.codec.ByteBufCodecs.VECTOR3F.apply(net.minecraft.network.codec.ByteBufCodecs.list()), AgujerosPayload::lugares,
+						net.minecraft.network.codec.ByteBufCodecs.VAR_INT.apply(net.minecraft.network.codec.ByteBufCodecs.list()), AgujerosPayload::caras,
+						AgujerosPayload::new);
+
+		@Override
+		public Type<AgujerosPayload> type() {
+			return TYPE;
+		}
+	}
+
+	public static void registrar() {
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playS2C().register(AgujerosPayload.TYPE, AgujerosPayload.CODEC);
+	}
 
 	public EscopetaPhoraItem(Properties propiedades) {
 		super(propiedades.stacksTo(1).rarity(Rarity.EPIC));
@@ -83,7 +105,11 @@ public class EscopetaPhoraItem extends Item {
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level level, Player jugador, InteractionHand mano) {
 		ItemStack pila = jugador.getItemInHand(mano);
-		if (level.isClientSide || !(jugador instanceof ServerPlayer sp)) return InteractionResultHolder.consume(pila);
+		if (level.isClientSide) {
+			if (!recargando(pila) && !jugador.isShiftKeyDown() && balas(pila) > 0) disparoCliente = level.getGameTime();
+			return InteractionResultHolder.consume(pila);
+		}
+		if (!(jugador instanceof ServerPlayer sp)) return InteractionResultHolder.consume(pila);
 		if (recargando(pila)) return InteractionResultHolder.consume(pila);
 		if (jugador.isShiftKeyDown() || balas(pila) == 0) {
 			empezarRecarga(sp, pila);
@@ -91,6 +117,14 @@ public class EscopetaPhoraItem extends Item {
 		}
 		disparar(sp, pila);
 		return InteractionResultHolder.consume(pila);
+	}
+
+	/** Cuándo disparó por última vez el jugador de esta pantalla (sólo lo usa el cliente, para la animación). */
+	public static volatile long disparoCliente = -1000;
+
+	/** Cuántos Proyectiles Phora tiene en el inventario. */
+	public static int municionTotal(Player jugador) {
+		return jugador.getInventory().countItem(ModItems.PROYECTIL_PHORA);
 	}
 
 	private boolean tieneMunicion(Player jugador) {
@@ -144,14 +178,16 @@ public class EscopetaPhoraItem extends Item {
 		// La boca del cañón: un poco adelante y a la derecha de los ojos.
 		Vec3 costado = mira.cross(new Vec3(0, 1, 0)).normalize();
 		Vec3 boca = ojos.add(mira.scale(0.9)).add(costado.scale(jugador.getMainArm() == net.minecraft.world.entity.HumanoidArm.RIGHT ? 0.3 : -0.3)).add(0, -0.2, 0);
-		mundo.sendParticles(ParticleTypes.FLAME, boca.x, boca.y, boca.z, 8, 0.05, 0.05, 0.05, 0.04);
-		mundo.sendParticles(ParticleTypes.LARGE_SMOKE, boca.x, boca.y, boca.z, 4, 0.05, 0.05, 0.05, 0.02);
+		mundo.sendParticles(ParticleTypes.FLAME, boca.x, boca.y, boca.z, 3, 0.03, 0.03, 0.03, 0.02);
+		mundo.sendParticles(ParticleTypes.SMOKE, boca.x, boca.y, boca.z, 3, 0.03, 0.03, 0.03, 0.01);
 		mundo.playSound(null, jugador.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 0.7f, 1.7f);
 		mundo.playSound(null, jugador.blockPosition(), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.PLAYERS, 1f, 0.6f);
 
 		// Cada perdigón: un rayo con un poco de desvío; se suma el daño por bicho y se aplica una sola vez
 		// (si no, los perdigones del mismo disparo chocarían con la invulnerabilidad de medio segundo).
 		Map<LivingEntity, Float> danios = new HashMap<>();
+		List<org.joml.Vector3f> agujeros = new java.util.ArrayList<>();
+		List<Integer> caras = new java.util.ArrayList<>();
 		var azar = jugador.getRandom();
 		for (int i = 0; i < PERDIGONES; i++) {
 			Vec3 dir = mira.add(azar.nextGaussian() * DISPERSION, azar.nextGaussian() * DISPERSION, azar.nextGaussian() * DISPERSION).normalize();
@@ -166,14 +202,24 @@ public class EscopetaPhoraItem extends Item {
 				boolean cabeza = fin.y >= v.getEyeY() - 0.25;
 				danios.merge(v, cabeza ? DANIO_CABEZA : DANIO, Float::sum);
 				mundo.sendParticles(cabeza ? ParticleTypes.CRIT : ParticleTypes.DAMAGE_INDICATOR, fin.x, fin.y, fin.z, 3, 0.05, 0.05, 0.05, 0.1);
-			} else if (bloque.getType() != HitResult.Type.MISS) {
+			} else if (bloque instanceof net.minecraft.world.phys.BlockHitResult bh && bloque.getType() == HitResult.Type.BLOCK) {
 				mundo.sendParticles(ParticleTypes.SMOKE, fin.x, fin.y, fin.z, 2, 0.02, 0.02, 0.02, 0.01);
+				mundo.sendParticles(new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK, mundo.getBlockState(bh.getBlockPos())),
+						fin.x, fin.y, fin.z, 4, 0.05, 0.05, 0.05, 0.1);
+				agujeros.add(new org.joml.Vector3f((float) fin.x, (float) fin.y, (float) fin.z));
+				caras.add(bh.getDirection().get3DDataValue());
 			}
-			// Una estela de chispas naranjas del cañón al impacto.
+			// El proyectil: una estela naranja del cañón al impacto.
 			double largo = boca.distanceTo(fin);
-			for (double d = 1.0; d < largo; d += 1.5) {
+			for (double d = 0.5; d < largo; d += 0.6) {
 				Vec3 p = boca.add(fin.subtract(boca).scale(d / largo));
-				mundo.sendParticles(ParticleTypes.SMALL_FLAME, p.x, p.y, p.z, 1, 0, 0, 0, 0);
+				mundo.sendParticles(ESTELA, p.x, p.y, p.z, 1, 0, 0, 0, 0);
+			}
+		}
+		if (!agujeros.isEmpty()) {
+			AgujerosPayload aviso = new AgujerosPayload(agujeros, caras);
+			for (ServerPlayer p : mundo.players()) {
+				if (p.distanceToSqr(jugador) < 96 * 96) net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(p, aviso);
 			}
 		}
 		for (Map.Entry<LivingEntity, Float> e : danios.entrySet()) {
@@ -192,20 +238,6 @@ public class EscopetaPhoraItem extends Item {
 		return Component.translatable(getDescriptionId()).withColor(LILA);
 	}
 
-	@Override
-	public boolean isBarVisible(ItemStack pila) {
-		return true;
-	}
-
-	@Override
-	public int getBarWidth(ItemStack pila) {
-		return Math.round(13f * balas(pila) / CARGADOR);
-	}
-
-	@Override
-	public int getBarColor(ItemStack pila) {
-		return NARANJA;
-	}
 
 	private static MutableComponent t(String texto, int color) {
 		return Component.literal(texto).withColor(color);

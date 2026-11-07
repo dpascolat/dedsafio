@@ -114,6 +114,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.cofres.ModCofres.registrar();
 		com.dedsafio4.cofres.CofresRellenables.registrar();
 		com.dedsafio4.cambios.LunaRoja.registrar();
+		com.dedsafio4.items.EscopetaPhoraItem.registrar();
 		com.dedsafio4.cofres.ItemsQueDesaparecen.registrar();
 		com.dedsafio4.almas.RecolectorAlmasItem.registrar();
 		com.dedsafio4.almas.AlmitasLimbo.registrar();

@@ -264,6 +264,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		WorldRenderEvents.LAST.register(MarcasCliente::dibujar);
 		com.dedsafio4.client.cofres.FlechaCofreCliente.registrar();
 		com.dedsafio4.client.LunaRojaCliente.registrar();
+		com.dedsafio4.client.EscopetaCliente.registrar();
 		ClientTickEvents.END_CLIENT_TICK.register(XaeroMarcas::tick);
 		WorldRenderEvents.AFTER_TRANSLUCENT.register(LinternaLuz::dibujarHaces);
 
