@@ -416,5 +416,7 @@
 	"block.dedsafio4.puesto_intercambio": "Puesto de Intercambio",
 	"block.dedsafio4.cuerda": "Cuerda",
 	"item.dedsafio4.espada_limbo": "Espada del Limbo",
-	"enchantment.dedsafio4.perdicion_del_limbo": "Perdición del Limbo"
+	"enchantment.dedsafio4.perdicion_del_limbo": "Perdición del Limbo",
+	"item.dedsafio4.bote": "Bote",
+	"entity.dedsafio4.bote": "Bote"
 }

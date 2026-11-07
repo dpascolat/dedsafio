@@ -755,6 +755,7 @@ public final class ModItems {
 						entradas.accept(ESPADA_PHORA);
 						entradas.accept(ESCOPETA_PHORA);
 						entradas.accept(PROYECTIL_PHORA);
+						entradas.accept(com.dedsafio4.bote.ModBote.BOTE_ITEM);
 						entradas.accept(RECOLECTOR_ALMAS);
 						entradas.accept(HOJA_PLATA);
 						entradas.accept(OJO_CARMESI);
