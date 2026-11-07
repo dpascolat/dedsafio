@@ -302,9 +302,12 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.despegue.EspacioCielo.registrar();
 		EntityRendererRegistry.register(com.dedsafio4.bote.ModBote.BOTE, com.dedsafio4.client.bote.BoteRenderer::new);
 		EntityRendererRegistry.register(com.dedsafio4.bossplanta.ModPlantaBoss.PLANTA_BOSS, com.dedsafio4.client.bossplanta.PlantaBossRenderer::new);
-		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.DEMONIO_ROSA, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_rosa"));
-		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.DEMONIO_MORADO, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_morado"));
-		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.DEMONIO_ROJO, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_rojo"));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.RECLUSO_ROSA, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_rosa", false));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.RECLUSO_MORADO, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_morado", false));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.RECLUSO_ROJO, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_rojo", false));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.COLOSO_ROSA, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_rosa", true));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.COLOSO_MORADO, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_morado", true));
+		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.COLOSO_ROJO, c -> new com.dedsafio4.client.demonios.DemonioRenderer(c, "demonio_rojo", true));
 		EntityRendererRegistry.register(com.dedsafio4.demonios.ModDemonios.CRIATURA_OSCURA, c -> new com.dedsafio4.client.demonios.MallaRenderer(c, "criatura_oscura", "criatura_oscura", 2.5f));
 		EntityRendererRegistry.register(com.dedsafio4.despegue.ModDespegue.NAVE_VIAJE,
 				com.dedsafio4.client.despegue.NaveViajeRenderer::new);

@@ -1,54 +1,141 @@
 package com.dedsafio4.demonios;
 
 import com.dedsafio4.Dedsafio4;
+import com.dedsafio4.items.HuevoConDescripcion;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 /**
- * Los mobs nuevos sin función todavía (nombres provisorios): Demonio Rosa, Demonio Morado y Demonio Rojo (el mismo
- * demonio encadenado hecho de cubos, en tres colores) y la Criatura Oscura (la de 4 patas). Cada uno con su huevo.
+ * Los fantasmas encadenados (ver EspectroEntity): los Reclusos Espectrales (chicos, unos 2 bloques) y los Colosos
+ * Prisioneros (grandes, unos 5 bloques), en rosa, morado y rojo; el efecto Sin Salto del Morado; y la Criatura Oscura
+ * (la de 4 patas, sin función todavía). Cada uno con su huevo.
  * <p>
- * /boss tamano &lt;tamaño&gt; cambia el tamaño del jefe o mob del mod más cercano (Planta Mordedora, Qumara, estos y
- * cualquier otro): 1 = normal, 2 = el doble, 0,5 = la mitad (de 0,1 a 16). Usa el atributo de tamaño de Minecraft,
- * así que también se agranda la caja para pegarle.
+ * /boss tamano &lt;tamaño&gt; cambia el tamaño del jefe o mob del mod más cercano (Planta Mordedora, estos y cualquier
+ * otro): 1 = normal, 2 = el doble, 0,5 = la mitad (de 0,1 a 16). Usa el atributo de tamaño de Minecraft, así que
+ * también se agranda la caja para pegarle.
  */
 public final class ModDemonios {
 	private ModDemonios() {}
 
-	/** Los Demonios miden unos 3 bloques; la Criatura Oscura, 2,5. */
-	public static final EntityType<MallaMobEntity> DEMONIO_ROSA = entidad("demonio_rosa", true, 1.6f, 3f);
-	public static final EntityType<MallaMobEntity> DEMONIO_MORADO = entidad("demonio_morado", true, 1.6f, 3f);
-	public static final EntityType<MallaMobEntity> DEMONIO_ROJO = entidad("demonio_rojo", true, 1.6f, 3f);
-	public static final EntityType<MallaMobEntity> CRIATURA_OSCURA = entidad("criatura_oscura", false, 2f, 2.5f);
+	/** El modelo mide 3 bloques: los Reclusos se dibujan al 65% y los Colosos al 160% (ver DemonioRenderer). */
+	public static final float ESCALA_RECLUSO = 0.65f, ESCALA_COLOSO = 1.6f;
 
-	public static final Item HUEVO_DEMONIO_ROSA = huevo("demonio_rosa", DEMONIO_ROSA, 0xE9A3D6, 0x1E1B2E);
-	public static final Item HUEVO_DEMONIO_MORADO = huevo("demonio_morado", DEMONIO_MORADO, 0x9A5BC8, 0x1E1B2E);
-	public static final Item HUEVO_DEMONIO_ROJO = huevo("demonio_rojo", DEMONIO_ROJO, 0xC23A32, 0x1E1B2E);
-	public static final Item HUEVO_CRIATURA_OSCURA = huevo("criatura_oscura", CRIATURA_OSCURA, 0x2B3138, 0x6E7A86);
+	public static final EntityType<EspectroEntity> RECLUSO_ROSA = espectro("recluso_rosa", EspectroEntity.Color.ROSA, false);
+	public static final EntityType<EspectroEntity> RECLUSO_MORADO = espectro("recluso_morado", EspectroEntity.Color.MORADO, false);
+	public static final EntityType<EspectroEntity> RECLUSO_ROJO = espectro("recluso_rojo", EspectroEntity.Color.ROJO, false);
+	public static final EntityType<EspectroEntity> COLOSO_ROSA = espectro("coloso_rosa", EspectroEntity.Color.ROSA, true);
+	public static final EntityType<EspectroEntity> COLOSO_MORADO = espectro("coloso_morado", EspectroEntity.Color.MORADO, true);
+	public static final EntityType<EspectroEntity> COLOSO_ROJO = espectro("coloso_rojo", EspectroEntity.Color.ROJO, true);
+	/** La Criatura Oscura (sin función todavía) mide 2,5 bloques. */
+	public static final EntityType<MallaMobEntity> CRIATURA_OSCURA = Registry.register(BuiltInRegistries.ENTITY_TYPE, id("criatura_oscura"),
+			EntityType.Builder.<MallaMobEntity>of((t, l) -> new MallaMobEntity(t, l, false), MobCategory.MISC).sized(2f, 2.5f)
+					.clientTrackingRange(10).build(id("criatura_oscura").toString()));
+
+	public static final Item HUEVO_RECLUSO_ROSA = huevo("recluso_rosa", RECLUSO_ROSA, 0xE9A3D6, 0x1E1B2E, ModDemonios::rosa);
+	public static final Item HUEVO_RECLUSO_MORADO = huevo("recluso_morado", RECLUSO_MORADO, 0x9A5BC8, 0x1E1B2E, t -> morado(t, false));
+	public static final Item HUEVO_RECLUSO_ROJO = huevo("recluso_rojo", RECLUSO_ROJO, 0xC23A32, 0x1E1B2E, ModDemonios::rojo);
+	public static final Item HUEVO_COLOSO_ROSA = huevo("coloso_rosa", COLOSO_ROSA, 0xE9A3D6, 0x0E0C18, t -> {
+		rosa(t);
+		noEmpujar(t);
+	});
+	public static final Item HUEVO_COLOSO_MORADO = huevo("coloso_morado", COLOSO_MORADO, 0x9A5BC8, 0x0E0C18, t -> {
+		morado(t, true);
+		noEmpujar(t);
+	});
+	public static final Item HUEVO_COLOSO_ROJO = huevo("coloso_rojo", COLOSO_ROJO, 0xC23A32, 0x0E0C18, t -> {
+		rojo(t);
+		noEmpujar(t);
+	});
+	public static final Item HUEVO_CRIATURA_OSCURA = Registry.register(BuiltInRegistries.ITEM, id("criatura_oscura_spawn_egg"),
+			new SpawnEggItem(CRIATURA_OSCURA, 0x2B3138, 0x6E7A86, new Item.Properties()));
+
+	public static final List<Item> HUEVOS = List.of(HUEVO_RECLUSO_ROSA, HUEVO_RECLUSO_MORADO, HUEVO_RECLUSO_ROJO,
+			HUEVO_COLOSO_ROSA, HUEVO_COLOSO_MORADO, HUEVO_COLOSO_ROJO, HUEVO_CRIATURA_OSCURA);
+
+	/** Sin Salto (lo da el Morado al golpear): la fuerza de salto queda en 0. */
+	public static final Holder<MobEffect> SIN_SALTO = Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, id("sin_salto"), new SinSalto());
+
+	private static final class SinSalto extends MobEffect {
+		SinSalto() {
+			super(MobEffectCategory.HARMFUL, 0x7A3FB0);
+			addAttributeModifier(Attributes.JUMP_STRENGTH, id("sin_salto"), -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+		}
+	}
 
 	private static final double BUSCAR = 64;
 
-	public static void registrar() {
-		for (EntityType<MallaMobEntity> t : java.util.List.of(DEMONIO_ROSA, DEMONIO_MORADO, DEMONIO_ROJO, CRIATURA_OSCURA)) {
-			FabricDefaultAttributeRegistry.register(t, MallaMobEntity.crearAtributos());
-		}
+	public static boolean esColoso(EntityType<?> tipo) {
+		return tipo == COLOSO_ROSA || tipo == COLOSO_MORADO || tipo == COLOSO_ROJO;
 	}
+
+	public static void registrar() {
+		FabricDefaultAttributeRegistry.register(RECLUSO_ROSA, EspectroEntity.atributosRecluso(false));
+		FabricDefaultAttributeRegistry.register(RECLUSO_MORADO, EspectroEntity.atributosRecluso(true));
+		FabricDefaultAttributeRegistry.register(RECLUSO_ROJO, EspectroEntity.atributosRecluso(false));
+		FabricDefaultAttributeRegistry.register(COLOSO_ROSA, EspectroEntity.atributosColoso(false));
+		FabricDefaultAttributeRegistry.register(COLOSO_MORADO, EspectroEntity.atributosColoso(true));
+		FabricDefaultAttributeRegistry.register(COLOSO_ROJO, EspectroEntity.atributosColoso(false));
+		FabricDefaultAttributeRegistry.register(CRIATURA_OSCURA, MallaMobEntity.crearAtributos());
+	}
+
+	// --- Descripciones de los huevos ---
+
+	private static final int GRIS = HuevoConDescripcion.GRIS, VIOLETA = HuevoConDescripcion.VIOLETA, AVISO = 0xF2D24B;
+
+	private static void rosa(List<Component> t) {
+		t.add(parte("Criatura que hace daño cuerpo a", GRIS));
+		t.add(parte("cuerpo. Si está cerca, te aplicará", GRIS));
+		t.add(parte("Hambre LVL. 100", VIOLETA).append(parte(" durante algunos", GRIS)));
+		t.add(parte("segundos.", GRIS));
+	}
+
+	private static void morado(List<Component> t, boolean coloso) {
+		t.add(parte("Criatura que hace daño cuerpo a", GRIS));
+		t.add(parte("cuerpo. Si te golpea, te aplicará", GRIS));
+		t.add(parte("un efecto que ", GRIS).append(parte("no te permitirá", VIOLETA)));
+		t.add(parte("saltar", VIOLETA).append(parte(coloso ? ". Muy lento y con mucha" : ". Puede volar.", GRIS)));
+		if (coloso) t.add(parte("vida.", GRIS));
+	}
+
+	private static void rojo(List<Component> t) {
+		t.add(parte("Criatura que hace daño cuerpo", GRIS));
+		t.add(parte("a cuerpo. Te aplica ", GRIS).append(parte("Lentitud", VIOLETA)).append(parte(".", GRIS)));
+	}
+
+	private static void noEmpujar(List<Component> t) {
+		t.add(Component.empty());
+		t.add(parte("⚠ Atención: No puedes empujarlo.", AVISO));
+	}
+
+	private static MutableComponent parte(String texto, int color) {
+		return HuevoConDescripcion.parte(texto, color);
+	}
+
+	// --- /boss tamano ---
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
 		// (Sin ñ: Minecraft no deja escribir la ñ en los nombres de los comandos.)
@@ -86,15 +173,19 @@ public final class ModDemonios {
 		return 1;
 	}
 
-	private static EntityType<MallaMobEntity> entidad(String nombre, boolean flota, float ancho, float alto) {
-		ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, nombre);
-		return Registry.register(BuiltInRegistries.ENTITY_TYPE, id,
-				EntityType.Builder.<MallaMobEntity>of((t, l) -> new MallaMobEntity(t, l, flota), MobCategory.MISC).sized(ancho, alto)
-						.clientTrackingRange(10).build(id.toString()));
+	private static EntityType<EspectroEntity> espectro(String nombre, EspectroEntity.Color color, boolean grande) {
+		float e = grande ? ESCALA_COLOSO : ESCALA_RECLUSO;
+		return Registry.register(BuiltInRegistries.ENTITY_TYPE, id(nombre),
+				EntityType.Builder.<EspectroEntity>of((t, l) -> new EspectroEntity(t, l, color, grande), MobCategory.MONSTER)
+						.sized(1.5f * e, 3f * e).clientTrackingRange(10).build(id(nombre).toString()));
 	}
 
-	private static Item huevo(String nombre, EntityType<MallaMobEntity> tipo, int fondo, int manchas) {
-		return Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, nombre + "_spawn_egg"),
-				new SpawnEggItem(tipo, fondo, manchas, new Item.Properties()));
+	private static Item huevo(String nombre, EntityType<EspectroEntity> tipo, int fondo, int manchas, Consumer<List<Component>> descripcion) {
+		return Registry.register(BuiltInRegistries.ITEM, id(nombre + "_spawn_egg"),
+				new HuevoConDescripcion(tipo, fondo, manchas, new Item.Properties(), descripcion));
+	}
+
+	private static ResourceLocation id(String nombre) {
+		return ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, nombre);
 	}
 }
