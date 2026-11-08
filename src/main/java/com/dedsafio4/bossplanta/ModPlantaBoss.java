@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
  * <ul>
  * <li>/campo_boss &lt;radio&gt;: arma un campo redondo centrado donde estás parado y pone la planta en el medio.</li>
  * <li>/campo_boss quitar: saca las plantas que haya cerca (hasta 128 bloques).</li>
+ * <li>/campo_boss radio &lt;radio&gt;: agranda o achica el campo de la planta más cercana (sin moverla).</li>
  * <li>/boss 2 gente N: la vida de la planta más cercana pasa a ser N × 500 (se mantiene el porcentaje).</li>
  * </ul>
  */
@@ -49,8 +50,11 @@ public final class ModPlantaBoss {
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
+		DanioJefe.registrarComandos(dispatcher);
 		dispatcher.register(Commands.literal("campo_boss").requires(s -> s.hasPermission(2))
 				.then(Commands.literal("quitar").executes(c -> quitar(c.getSource())))
+				.then(Commands.literal("radio").then(Commands.argument("radio", IntegerArgumentType.integer(8, 100))
+						.executes(c -> cambiarRadio(c.getSource(), IntegerArgumentType.getInteger(c, "radio")))))
 				.then(Commands.argument("radio", IntegerArgumentType.integer(8, 100))
 						.executes(c -> crear(c.getSource(), IntegerArgumentType.getInteger(c, "radio")))));
 		dispatcher.register(Commands.literal("boss").requires(s -> s.hasPermission(2))
@@ -70,6 +74,26 @@ public final class ModPlantaBoss {
 		mundo.addFreshEntity(planta);
 		fuente.sendSuccess(() -> Component.literal("Campo de " + radio + " bloques de radio armado: la Planta Mordedora está en el medio. "
 				+ "Ataca a los que entren al campo.").withColor(0xF0418F), true);
+		return 1;
+	}
+
+	/** /campo_boss radio <radio>: agranda (o achica) el campo de la planta más cercana, sin moverla ni curarla. */
+	private static int cambiarRadio(CommandSourceStack fuente, int radio) {
+		PlantaBossEntity mejor = null;
+		double d = Double.MAX_VALUE;
+		for (PlantaBossEntity p : cercanas(fuente)) {
+			double dd = p.distanceToSqr(fuente.getPosition());
+			if (dd < d) {
+				d = dd;
+				mejor = p;
+			}
+		}
+		if (mejor == null) {
+			fuente.sendFailure(Component.literal("No hay ninguna Planta Mordedora cerca."));
+			return 0;
+		}
+		mejor.cambiarRadio(radio);
+		fuente.sendSuccess(() -> Component.literal("El campo de la Planta Mordedora ahora tiene " + radio + " bloques de radio.").withColor(0xF0418F), true);
 		return 1;
 	}
 

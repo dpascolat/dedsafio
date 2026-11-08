@@ -54,7 +54,6 @@ public class PlantaBossEntity extends PathfinderMob {
 	/** Luz: a los AVISO_LUZ ticks se prende y dura hasta FIN_LUZ. Altura de la luz sobre los pies de la planta. */
 	public static final int AVISO_LUZ = 30, FIN_LUZ = 130, DURA_LUZ = 140;
 	public static final double ALTO_LUZ = 7.5;
-	private static final float DANIO_LUZ = 4f;
 	/** Mordida: lo rojo dura MARCA ticks; después muerde cada ENTRE_MORDIDAS (4 mordidas). */
 	public static final int MARCA = 60, ENTRE_MORDIDAS = 20, MORDIDAS = 4, FIN_SIN_NADIE = MARCA + 20,
 			FIN_MORDIDA = MARCA + ENTRE_MORDIDAS * MORDIDAS + 15;
@@ -113,6 +112,11 @@ public class PlantaBossEntity extends PathfinderMob {
 	public Vec3 centro() {
 		Vector3f c = entityData.get(CENTRO);
 		return new Vec3(c.x, c.y, c.z);
+	}
+
+	/** Cambia sólo el radio del campo (el centro queda donde estaba). */
+	public void cambiarRadio(double radio) {
+		entityData.set(RADIO, (float) radio);
 	}
 
 	/** Arma el campo: centro donde está ahora y el radio dado. */
@@ -192,7 +196,7 @@ public class PlantaBossEntity extends PathfinderMob {
 			if ((t - AVISO_LUZ) % 10 == 0) {
 				for (ServerPlayer p : enCampo) {
 					if (!estaMirando(mundo, p, luz)) continue;
-					p.hurt(fuente(mundo, ModPlantaBoss.DANIO_LUZ), DANIO_LUZ);
+					p.hurt(fuente(mundo, ModPlantaBoss.DANIO_LUZ), DanioJefe.luz(mundo.getServer()));   // /boss 2 daño luz
 				}
 			}
 		}
@@ -248,7 +252,9 @@ public class PlantaBossEntity extends PathfinderMob {
 			mundo.sendParticles(new DustParticleOptions(new Vector3f(0.6f, 0f, 0.1f), 2f), boca.x, boca.y, boca.z, 25, 0.4, 0.5, 0.4, 0);
 			mundo.playSound(null, presa.getX(), presa.getY(), presa.getZ(), SoundEvents.RAVAGER_ATTACK, SoundSource.HOSTILE, 2.5f, 0.7f);
 			// Cada mordida, un cuarto de la vida; la cuarta mata. No mira la armadura (ni la gasta).
-			float danio = mordidasDadas >= MORDIDAS ? Float.MAX_VALUE : presa.getMaxHealth() * 0.25f;
+			// Con "/boss 2 daño mordida <daño>", las 4 sacan ese daño; si no, lo normal.
+			float elegido = DanioJefe.mordida(mundo.getServer());
+			float danio = elegido >= 0 ? elegido : mordidasDadas >= MORDIDAS ? Float.MAX_VALUE : presa.getMaxHealth() * 0.25f;
 			presa.invulnerableTime = 0;
 			presa.hurt(fuente(mundo, ModPlantaBoss.DANIO_MORDIDA), danio);
 			presa.displayClientMessage(Component.literal("Mordida " + mordidasDadas + " de " + MORDIDAS).withStyle(ChatFormatting.DARK_RED), true);
