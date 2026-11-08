@@ -114,6 +114,12 @@ public final class Cambios {
 	 */
 	public static final String ZOMBIFICACION = "zombificacion";
 
+	/**
+	 * corazon_limbo 1: el Corazón del Limbo solo cura una barra de vida (20): ya no devuelve los corazones perdidos
+	 * ni saca los corazones extra (ver CorazonLimboItem).
+	 */
+	public static final String CORAZON_LIMBO = "corazon_limbo";
+
 	/** Tipo de daño propio del mod para la Perla del End: no lo frena la armadura ni sus encantamientos. */
 	public static final ResourceKey<DamageType> DANIO_ENDERPERLA = ResourceKey.create(Registries.DAMAGE_TYPE,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "enderperla"));
@@ -218,7 +224,9 @@ public final class Cambios {
 			new Cambio(MANZANAS, "manzanas", Map.of(
 					1, "La Manzana de Oro y la Manzana Encantada ya no dan el efecto de Absorción.")),
 			new Cambio(ZOMBIFICACION, "zombificacion", Map.of(
-					1, "Reviil liberó la Zombificación. Ahora necesitas Zombificación para seguir vivo: si se te acaba, mueres. Todos reciben 20 minutos, la Píldora da 2 horas y cada Tótem que salta da 5 minutos."))
+					1, "Reviil liberó la Zombificación. Ahora necesitas Zombificación para seguir vivo: si se te acaba, mueres. Todos reciben 20 minutos, la Píldora da 2 horas y cada Tótem que salta da 5 minutos.")),
+			new Cambio(CORAZON_LIMBO, "corazon_limbo", Map.of(
+					1, "Ahora los Corazones del Limbo curan sólo una barra de vida."))
 	);
 
 	public static CambiosData data(MinecraftServer server) {

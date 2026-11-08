@@ -17,6 +17,7 @@ import java.util.List;
  * Corazón del Limbo (el corazón violeta): al consumirlo, la barra de salud vuelve a ser de 10 corazones (20): te
  * devuelve los corazones que te sacaron para siempre el agua del Limbo o el Fantasma Negro, y te saca los corazones
  * extra que tengas (los de comer Corazones). Te deja con la vida llena.
+ * Con "/cambio corazon_limbo 1" solo cura una barra de vida (20 de vida), sin devolver ni sacar corazones.
  */
 public class CorazonLimboItem extends Item {
 	public CorazonLimboItem(Properties propiedades) {
@@ -30,7 +31,13 @@ public class CorazonLimboItem extends Item {
 
 	@Override
 	public ItemStack finishUsingItem(ItemStack pila, Level level, LivingEntity quien) {
-		if (!level.isClientSide && quien instanceof ServerPlayer jugador) {
+		if (!level.isClientSide && quien instanceof ServerPlayer jugador
+				&& com.dedsafio4.cambios.Cambios.nivel(jugador.server, com.dedsafio4.cambios.Cambios.CORAZON_LIMBO) >= 1) {
+			// Con "corazon_limbo 1": solo cura una barra de vida (20), sin devolver ni sacar corazones.
+			jugador.heal(20f);
+			level.playSound(null, jugador.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.PLAYERS, 0.8f, 1.4f);
+			jugador.displayClientMessage(Component.literal("Te curaste una barra de vida.").withColor(0xF0D86A), true);
+		} else if (!level.isClientSide && quien instanceof ServerPlayer jugador) {
 			Limbo.devolverCorazones(jugador);
 			CorazonItem.sacarExtra(jugador);
 			jugador.setHealth(jugador.getMaxHealth());

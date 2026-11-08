@@ -30,15 +30,26 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Ojo Volador (modelo "OjoVolador" de Patricio): un ojo gigante que flota, te persigue y te muerde.
- * Si un jugador le apunta con la Linterna prendida, se va poniendo blanco y al segundo de luz desaparece
- * en una nube de humo (sin soltar nada). También se lo puede matar con armas.
- * No aparece solo: solo con el huevo o con /summon dedsafio4:ojo_volador.
+ * Si te acercas demasiado (AURA bloques) te hace mucho daño. Es invulnerable: solo lo daña la Linterna (si un
+ * jugador le apunta con la Linterna prendida, se va poniendo blanco y al segundo de luz desaparece en una nube de
+ * humo, sin soltar nada). /kill igual lo mata.
+ * Con "/mob ojo_volador" aparece solo en TODO el Limbo (también donde no aparecen otras criaturas): no usa la
+ * aparición normal de Minecraft, lo pone {@link #registrar()} cerca de los jugadores que están en el Limbo.
  */
 public class OjoVoladorEntity extends Monster {
 	/** Un segundo con la luz encima: desaparece. */
 	public static final int TICKS_CON_LUZ = 20;
 	/** Qué tan alumbrado está (0 nada, 1 a punto de desaparecer), para el dibujo. */
 	private static final EntityDataAccessor<Float> LUZ = SynchedEntityData.defineId(OjoVoladorEntity.class, EntityDataSerializers.FLOAT);
+
+	/** A cuántos bloques lastima, cada cuánto (ticks) y cuánto. */
+	public static final double AURA = 3.5;
+	private static final int CADA_GOLPE = 20;
+	private static final float DANIO_AURA = 10f;
+	/** Aparición en el Limbo: cada cuánto se prueba por jugador, la chance, y cuántos ojos como máximo cerca de cada uno. */
+	private static final int CADA_APARICION = 20 * 20;
+	private static final float CHANCE_APARICION = 0.35f;
+	private static final int MAXIMO_CERCA = 2;
 
 	private int conLuz;
 
@@ -96,7 +107,66 @@ public class OjoVoladorEntity extends Monster {
 		conLuz = alumbrado ? conLuz + 1 : Math.max(0, conLuz - 2);
 		entityData.set(LUZ, Math.min(1f, conLuz / (float) TICKS_CON_LUZ));
 		if (alumbrado && conLuz % 4 == 0) mundo.sendParticles(ParticleTypes.SMOKE, getX(), getY(0.5), getZ(), 4, 0.4, 0.5, 0.4, 0.01);
-		if (conLuz >= TICKS_CON_LUZ) desaparecer(mundo);
+		if (conLuz >= TICKS_CON_LUZ) {
+			desaparecer(mundo);
+			return;
+		}
+		// Si te acercas demasiado, mucho daño.
+		if (tickCount % CADA_GOLPE == 0) {
+			for (Player p : mundo.getEntitiesOfClass(Player.class, getBoundingBox().inflate(AURA))) {
+				if (p.isCreative() || p.isSpectator() || !p.isAlive() || distanceTo(p) > AURA) continue;
+				p.hurt(damageSources().mobAttack(this), DANIO_AURA);
+			}
+		}
+	}
+
+	/** Invulnerable: solo la Linterna lo hace desaparecer (y /kill, o el vacío). */
+	@Override
+	public boolean isInvulnerableTo(DamageSource fuente) {
+		return !fuente.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
+	}
+
+	/** No muerde: lastima con el aura (ver tick). */
+	@Override
+	public boolean doHurtTarget(Entity objetivo) {
+		return false;
+	}
+
+	@Override
+	public boolean removeWhenFarAway(double distancia) {
+		return true;
+	}
+
+	/** Lo pone solo cerca de los jugadores que están en el Limbo, si está habilitado con /mob ojo_volador. */
+	public static void registrar() {
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+			if (server.getTickCount() % CADA_APARICION != 0) return;
+			ServerLevel limbo = server.getLevel(com.dedsafio4.dimension.Limbo.DIMENSION);
+			if (limbo == null || limbo.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) return;
+			if (!AnuncioMob.activo(server, com.dedsafio4.nave.ModEntidades.OJO_VOLADOR)) return;
+			for (Player p : limbo.players()) {
+				if (p.isCreative() || p.isSpectator() || !p.isAlive()) continue;
+				if (limbo.random.nextFloat() >= CHANCE_APARICION) continue;
+				if (limbo.getEntitiesOfClass(OjoVoladorEntity.class, p.getBoundingBox().inflate(48)).size() >= MAXIMO_CERCA) continue;
+				aparecerCerca(limbo, p);
+			}
+		});
+	}
+
+	private static void aparecerCerca(ServerLevel limbo, Player p) {
+		var azar = limbo.random;
+		for (int intento = 0; intento < 10; intento++) {
+			double angulo = azar.nextDouble() * Math.PI * 2, distancia = 14 + azar.nextDouble() * 14;
+			double x = p.getX() + Math.cos(angulo) * distancia, z = p.getZ() + Math.sin(angulo) * distancia;
+			double y = p.getY() + 1 + azar.nextInt(5);
+			OjoVoladorEntity ojo = com.dedsafio4.nave.ModEntidades.OJO_VOLADOR.create(limbo);
+			if (ojo == null) return;
+			ojo.moveTo(x, y, z, azar.nextFloat() * 360f, 0f);
+			if (!limbo.noCollision(ojo) || !limbo.isLoaded(ojo.blockPosition())) continue;
+			ojo.finalizeSpawn(limbo, limbo.getCurrentDifficultyAt(ojo.blockPosition()), net.minecraft.world.entity.MobSpawnType.EVENT, null);
+			limbo.addFreshEntity(ojo);
+			return;
+		}
 	}
 
 	private void desaparecer(ServerLevel mundo) {

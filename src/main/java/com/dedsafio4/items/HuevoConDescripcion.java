@@ -69,10 +69,15 @@ public class HuevoConDescripcion extends SpawnEggItem {
 	}
 
 	public static void ojoVolador(List<Component> t) {
-		t.add(parte("Un ojo gigante que flota, te persigue", GRIS));
-		t.add(parte("y te muerde.", GRIS));
+		t.add(parte("Si te acercas demasiado te hará", GRIS));
+		t.add(parte("mucho daño. Es invulnerable y SÓLO", GRIS));
+		t.add(parte("recibirá daño si le apuntas con", GRIS));
+		t.add(parte("una Linterna.", GRIS));
+		t.add(Component.empty());
 		t.add(parte("Alúmbralo con la Linterna prendida", VIOLETA));
 		t.add(parte("y desaparecerá.", VIOLETA));
+		t.add(Component.empty());
+		t.add(parte("🌍 Aparece en: ", APARECE).append(parte("TODO el Limbo.", BLANCO)));
 	}
 
 	public static void creeperPastel(List<Component> t) {
