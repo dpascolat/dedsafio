@@ -22,6 +22,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * El Bote: un bote largo (unos 12 bloques) que anda en el agua como el de Minecraft, pero con lugar para 11. El
  * primero que se sube maneja (con las teclas de caminar, igual que un bote común) y se sienta atrás; los demás se
  * van sentando en los bancos, de atrás para adelante. Todos los botes andan a la velocidad de /bote_velocidad.
+ * Es irrompible (sólo lo rompe alguien en creativo).
  */
 public class BoteEntity extends Boat implements GeoEntity {
 	public static final int LUGARES = 11;
@@ -60,6 +61,16 @@ public class BoteEntity extends Boat implements GeoEntity {
 			movimiento = new Vec3(movimiento.x * v, movimiento.y, movimiento.z * v);
 		}
 		super.move(tipo, movimiento);
+	}
+
+	/**
+	 * Irrompible: no se rompe con golpes, flechas, explosiones ni nada. Sólo lo puede romper alguien en creativo
+	 * (o con /kill).
+	 */
+	@Override
+	public boolean hurt(net.minecraft.world.damagesource.DamageSource fuente, float cantidad) {
+		if (!fuente.isCreativePlayer() && !fuente.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return false;
+		return super.hurt(fuente, cantidad);
 	}
 
 	@Override
