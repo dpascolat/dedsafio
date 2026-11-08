@@ -19,6 +19,7 @@ public abstract class PerlaFallaMixin {
 	private void dedsafio4$falla(HitResult golpe, CallbackInfo ci) {
 		ThrownEnderpearl perla = (ThrownEnderpearl) (Object) this;
 		if (!(perla.level() instanceof ServerLevel mundo)) return;
+		com.dedsafio4.cambios.CambiosCreepers.cayoPerla(mundo, perla.position());   // perla_nuclear: 3% de Creeper Nuclear
 		if (Cambios.nivel(mundo.getServer(), Cambios.PERLAS_FALLAN) < 1 || mundo.getRandom().nextFloat() >= 0.01f) return;
 		ci.cancel();
 		mundo.sendParticles(ParticleTypes.SMOKE, perla.getX(), perla.getY(), perla.getZ(), 12, 0.2, 0.2, 0.2, 0.02);

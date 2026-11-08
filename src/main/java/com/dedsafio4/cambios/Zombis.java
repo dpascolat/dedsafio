@@ -19,6 +19,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
  * - zombi 2: además, todos los zombis llevan una Espada de Hierro con Filo V (que no sueltan).
  * - zombi 3: además, aparecen en el Nether sin importar la luz (ver SpawnPlacementsMixin).
  * Cambio "zombi_pico": aparecen con Pico de Diamante; de noche con "luna_roja", pican y construyen (ver ZombiMinero).
+ * Cambio "zombi_inteligente": los que aparecen de la capa 40 para abajo pican y construyen siempre.
  * Cuentan los zombis, zombis aldeanos, momias y ahogados; no los piglins zombificados.
  */
 public final class Zombis {
@@ -38,6 +39,7 @@ public final class Zombis {
 
 	/** Al aparecer (o al activar el cambio): decide si escala y, en nivel 2, le da la espada. */
 	public static void preparar(Zombie zombi, ServerLevel level) {
+		inteligente(zombi, level);
 		casco(zombi, level);
 		pico(zombi, level);
 		int nivel = Cambios.nivel(level.getServer(), Cambios.ZOMBI);
@@ -72,6 +74,26 @@ public final class Zombis {
 			((com.dedsafio4.mixin.MobAccessor) zombi).dedsafio4$goals().addGoal(1, new ZombiMinero(zombi));
 		}
 		if (Cambios.nivel(level.getServer(), Cambios.ZOMBI_PICO) < 1 || tienePico(zombi)) return;
+		EquipmentSlot mano = zombi.getMainHandItem().isEmpty() ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+		zombi.setItemSlot(mano, new ItemStack(Items.DIAMOND_PICKAXE));
+		zombi.setDropChance(mano, 0f);
+	}
+
+	private static final String INTELIGENTE_DECIDIDO = "dedsafio4_zombi_inteligente_decidido";
+	public static final String INTELIGENTE = "dedsafio4_zombi_inteligente";
+	/** De esta capa para abajo los zombis son inteligentes. */
+	private static final int CAPA_INTELIGENTE = 40;
+
+	/**
+	 * zombi_inteligente 1: el zombi que aparece en el Overworld de la capa 40 para abajo (se decide una vez, al
+	 * aparecer) es inteligente: lleva Pico de Diamante (que no suelta) y pica y pone bloques siempre (ZombiMinero).
+	 */
+	private static void inteligente(Zombie zombi, ServerLevel level) {
+		if (Cambios.nivel(level.getServer(), Cambios.ZOMBI_INTELIGENTE) < 1 || zombi.getTags().contains(INTELIGENTE_DECIDIDO)) return;
+		zombi.addTag(INTELIGENTE_DECIDIDO);
+		if (level.dimension() != net.minecraft.world.level.Level.OVERWORLD || zombi.getBlockY() > CAPA_INTELIGENTE) return;
+		zombi.addTag(INTELIGENTE);
+		if (tienePico(zombi)) return;
 		EquipmentSlot mano = zombi.getMainHandItem().isEmpty() ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
 		zombi.setItemSlot(mano, new ItemStack(Items.DIAMOND_PICKAXE));
 		zombi.setDropChance(mano, 0f);

@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:smithing_transform",
+	"template": {
+		"item": "dedsafio4:plantilla_limbo"
+	},
+	"base": {
+		"item": "dedsafio4:pantalones_glebanoides"
+	},
+	"addition": {
+		"item": "dedsafio4:polvo_alma"
+	},
+	"result": {
+		"id": "dedsafio4:pantalones_limbo",
+		"count": 1
+	}
+}

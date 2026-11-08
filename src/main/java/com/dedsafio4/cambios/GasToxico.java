@@ -24,13 +24,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 
 /**
- * gas_toxico 1: en el Overworld, estar por encima de la capa 150 lastima hasta morir. No lastima adentro de una Nave
+ * gas_toxico 1: en el Overworld, estar por encima de la capa 150 lastima hasta morir (gas_toxico 2: de la capa 130). No lastima adentro de una Nave
  * Biplaza ni en la Montaña, un rectángulo que se marca con /montana <desde> <hasta> (/montana ver, /montana quitar).
+ * También se puede escribir /montaña.
  */
 public final class GasToxico {
 	private GasToxico() {}
 
-	private static final int CAPA = 150;
+	private static final int CAPA = 150, CAPA_NIVEL_2 = 130;
 	/** Dos corazones por segundo: con menos, la vida que recupera un jugador bien comido casi lo compensa. */
 	private static final float DANIO = 4;
 	private static final int CADA = 20;
@@ -79,18 +80,19 @@ public final class GasToxico {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (server.getTickCount() % CADA != 0 || Cambios.nivel(server, Cambios.GAS_TOXICO) < 1) return;
 			ServerLevel mundo = server.overworld();
+			int capa = Cambios.nivel(server, Cambios.GAS_TOXICO) >= 2 ? CAPA_NIVEL_2 : CAPA;
 			for (ServerPlayer jugador : mundo.players()) {
-				if (jugador.isCreative() || jugador.isSpectator() || !jugador.isAlive() || jugador.getY() <= CAPA) continue;
+				if (jugador.isCreative() || jugador.isSpectator() || !jugador.isAlive() || jugador.getY() <= capa) continue;
 				if (jugador.getVehicle() instanceof NaveViajeEntity || enMontana(mundo, jugador.getX(), jugador.getZ())) continue;
 				jugador.hurt(new DamageSource(mundo.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DANIO_GAS)), DANIO);
 				mundo.sendParticles(ParticleTypes.SNEEZE, jugador.getX(), jugador.getY() + 1, jugador.getZ(), 8, 0.5, 0.6, 0.5, 0.01);
-				jugador.displayClientMessage(Component.literal("¡Gas tóxico! Baja de la capa " + CAPA + ".").withStyle(ChatFormatting.GREEN), true);
+				jugador.displayClientMessage(Component.literal("¡Gas tóxico! Baja de la capa " + capa + ".").withStyle(ChatFormatting.GREEN), true);
 			}
 		});
 	}
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		dispatcher.register(Commands.literal("montana").requires(s -> s.hasPermission(2))
+		var montana = dispatcher.register(Commands.literal("montana").requires(s -> s.hasPermission(2))
 				.then(Commands.literal("ver").executes(c -> {
 					Datos d = datos(c.getSource().getServer());
 					c.getSource().sendSuccess(() -> Component.literal(d.hay
@@ -119,5 +121,7 @@ public final class GasToxico {
 									+ " a " + d.maxX + " " + d.maxZ + ". Ahí no llega el gas.").withStyle(ChatFormatting.GREEN), true);
 							return 1;
 						}))));
+		// /montaña (con ñ) hace lo mismo que /montana.
+		dispatcher.register(Commands.literal("montaña").requires(s -> s.hasPermission(2)).redirect(montana));
 	}
 }

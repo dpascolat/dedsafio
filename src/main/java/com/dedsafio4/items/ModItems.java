@@ -369,6 +369,9 @@ public final class ModItems {
 	public static final Item OJO_VOLADOR_SPAWN_EGG = registrar("ojo_volador_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.OJO_VOLADOR, 0xF2EDE4, 0x8E1B1B, new Item.Properties(),
 					HuevoConDescripcion::ojoVolador));
+	public static final Item BOMBA_NEGRA_SPAWN_EGG = registrar("bomba_negra_spawn_egg",
+			new HuevoConDescripcion(ModEntidades.BOMBA_NEGRA, 0x1E1E22, 0x4A6FD8, new Item.Properties(),
+					HuevoConDescripcion::bombaNegra));
 	public static final Item GARRAPATA_CEREBRAL_SPAWN_EGG = registrar("garrapata_cerebral_spawn_egg",
 			new HuevoConDescripcion(ModEntidades.GARRAPATA_CEREBRAL, 0xE3949A, 0x6B2D8A, new Item.Properties(),
 					HuevoConDescripcion::garrapataCerebral));
@@ -412,6 +415,16 @@ public final class ModItems {
 	/** Plantilla de Gleba: en la herrería, con un Corazón Glebanoide, convierte la armadura de netherita con flores en la Glebanoide. */
 	public static final Item PLANTILLA_GLEBA = registrar("plantilla_gleba",
 			new DescritoItem(new Item.Properties().rarity(Rarity.RARE), DescritoItem::plantillaGleba));
+	/** Plantilla de Mejora del Limbo: en la herrería, con Polvo de Alma, convierte la armadura Glebanoide en la del Limbo (solo nombre, sin descripción). */
+	public static final Item PLANTILLA_LIMBO = registrar("plantilla_limbo", new Item(new Item.Properties().rarity(Rarity.RARE)) {
+		@Override
+		public net.minecraft.network.chat.Component getName(ItemStack pila) {
+			return net.minecraft.network.chat.Component.translatable(getDescriptionId()).withStyle(DescritoItem.color(DescritoItem.CELESTE));
+		}
+	});
+	/** Polvo de Alma: con la Plantilla de Mejora del Limbo y una pieza Glebanoide hace la del Limbo. */
+	public static final Item POLVO_ALMA = registrar("polvo_alma",
+			new DescritoItem(new Item.Properties(), DescritoItem::polvoAlma));
 	/** Casco Glebanoide: 4 de armadura, 3 de resistencia y medio corazón extra. */
 	public static final Item CASCO_GLEBANOIDE = registrar("casco_glebanoide",
 			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.HELMET, 907, 16, new Item.Properties().rarity(Rarity.RARE)));
@@ -857,6 +870,7 @@ public final class ModItems {
 						entradas.accept(CEREBRO_ROJO_SPAWN_EGG);
 						entradas.accept(GARRAPATA_CEREBRAL_SPAWN_EGG);
 						entradas.accept(OJO_VOLADOR_SPAWN_EGG);
+						entradas.accept(BOMBA_NEGRA_SPAWN_EGG);
 						entradas.accept(TOTEM_LIMBO);
 						entradas.accept(TOTEM_ESPACIO);
 						entradas.accept(TOTEM_YUNQUE);
@@ -864,6 +878,8 @@ public final class ModItems {
 						entradas.accept(CORAZON_GLEBANOIDE);
 						entradas.accept(TROZO_GLEBA);
 						entradas.accept(PLANTILLA_GLEBA);
+						entradas.accept(PLANTILLA_LIMBO);
+						entradas.accept(POLVO_ALMA);
 						entradas.accept(CASCO_GLEBANOIDE);
 						entradas.accept(PECHERA_GLEBANOIDE);
 						entradas.accept(PANTALONES_GLEBANOIDES);

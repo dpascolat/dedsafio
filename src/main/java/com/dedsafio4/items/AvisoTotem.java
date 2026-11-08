@@ -30,5 +30,6 @@ public final class AvisoTotem {
 				.append(totem.getDescription().copy().withStyle(Style.EMPTY.withColor(TextColor.fromRgb(AMARILLO))));
 		jugador.server.getPlayerList().broadcastSystemMessage(mensaje, false);
 		com.dedsafio4.cambios.Zombificacion.saltoTotem(jugador);   // con el cambio zombificacion, 5 minutos
+		com.dedsafio4.cambios.CambiosCreepers.saltoTotem(jugador);   // con totem_creepers, quizás un Creeper
 	}
 }

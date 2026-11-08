@@ -157,6 +157,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.OjoVoladorEntity> OJO_VOLADOR = registrar("ojo_volador",
 			EntityType.Builder.of(com.dedsafio4.bestias.OjoVoladorEntity::new, MobCategory.MONSTER).sized(1.5f, 2.2f).clientTrackingRange(10));
 
+	/** Bomba Negra: bomba con alas que vuela hacia el jugador y explota con mucho daño (modelo del Dedsafío 3). */
+	public static final EntityType<com.dedsafio4.bombas.BombaNegraEntity> BOMBA_NEGRA = registrar("bomba_negra",
+			EntityType.Builder.of(com.dedsafio4.bombas.BombaNegraEntity::new, MobCategory.MONSTER).sized(1.0f, 1.3f).clientTrackingRange(10));
+
 	/** Garrapata Cerebral Pequeña: el mismo cuerpo de medusa-cerebro que el Cerebro Amarillo. */
 	public static final EntityType<com.dedsafio4.bestias.GarrapataCerebralEntity> GARRAPATA_CEREBRAL = registrar("garrapata_cerebral",
 			EntityType.Builder.of(com.dedsafio4.bestias.GarrapataCerebralEntity::new, MobCategory.MONSTER).sized(0.9f, 1.2f).clientTrackingRange(8));
@@ -303,6 +307,10 @@ public final class ModEntidades {
 		// Aparece sola en la Oscuridad Profunda y en las cuevas, en la oscuridad, sin necesitar suelo (vuela).
 		SpawnPlacements.register(BOMBA_WARDEN, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				BombaWardenEntity::puedeAparecer);
+		// Bomba Negra: de noche en el Overworld y en el Centro de Quiu fuera de las cuevas (solo después de /mob bomba_negra).
+		FabricDefaultAttributeRegistry.register(BOMBA_NEGRA, com.dedsafio4.bombas.BombaNegraEntity.crearAtributos());
+		SpawnPlacements.register(BOMBA_NEGRA, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+				com.dedsafio4.bombas.BombaNegraEntity::puedeAparecer);
 		// Plumosaurio: en el pasto de la jungla del Centro de Quiu.
 		SpawnPlacements.register(WALKER, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 				WalkerEntity::puedeAparecer);

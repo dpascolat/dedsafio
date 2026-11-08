@@ -323,6 +323,224 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean ZOMBI_INMUNE = "zombiinmune".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de /zombificacion <jugador>: sin Zombificación no se muere; con /zombificacion quitar, sí. */
+	private static void tickZombiInmune(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5) revivir(mc);
+		if (t == 0) { comando(mc, "gamemode survival"); comando(mc, "difficulty normal"); comando(mc, "clear @s"); comando(mc, "cambio zombificacion 1"); }
+		if (t == 5) comando(mc, "zombificacion Dev");
+		if (t == 10) comando(mc, "effect clear @s");
+		if (t == 80) { System.out.println("ZI inmune, 3 s sin Zombificacion: vivo=" + mc.player.isAlive() + " vida=" + mc.player.getHealth()); comando(mc, "zombificacion lista"); }
+		if (t == 85) comando(mc, "zombificacion quitar Dev");
+		if (t == 120) { System.out.println("ZI al quitarlo recibe sus 20 minutos: tiene=" + mc.player.hasEffect(com.dedsafio4.items.PildoraItem.PROTECCION_ZOMBIFICACION)); comando(mc, "effect clear @s"); }
+		if (t == 150 || t == 170) { var sv = mc.getSingleplayerServer(); sv.execute(() -> { var j = sv.getPlayerList().getPlayers().get(0);
+			System.out.println("ZI servidor t" + ticks + ": vivo=" + j.isAlive() + " vida=" + j.getHealth() + " efecto=" + j.hasEffect(com.dedsafio4.items.PildoraItem.PROTECCION_ZOMBIFICACION)
+					+ " modo=" + j.gameMode.getGameModeForPlayer() + " invulnerable=" + j.isInvulnerable() + " dificultad=" + j.level().getDifficulty() + " ultimoDanio=" + j.getLastDamageSource()); }); }
+		if (t == 175) { comando(mc, "cambio zombificacion 0"); revivir(mc); }
+		if (t == 185) mc.stop();
+	}
+
+	private static final boolean PLANTILLA_LIMBO = "plantillalimbo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de la Plantilla de Mejora del Limbo: la herrería convierte cada pieza Glebanoide en la del Limbo. */
+	private static void tickPlantillaLimbo(Minecraft mc) {
+		int t = ticks - 20;
+		var server = mc.getSingleplayerServer();
+		if (server == null || mc.player == null) return;
+		if (mc.screen != null && t < 40) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "clear @s");
+			comando(mc, "give @s dedsafio4:plantilla_limbo");
+			comando(mc, "give @s dedsafio4:polvo_alma");
+			comando(mc, "give @s dedsafio4:casco_glebanoide");
+		}
+		if (t == 10) server.execute(() -> {
+			var w = server.overworld();
+			net.minecraft.world.item.Item[][] pares = {
+					{com.dedsafio4.items.ModItems.CASCO_GLEBANOIDE, com.dedsafio4.items.ModItems.CASCO_LIMBO},
+					{com.dedsafio4.items.ModItems.PECHERA_GLEBANOIDE, com.dedsafio4.items.ModItems.PECHERA_LIMBO},
+					{com.dedsafio4.items.ModItems.PANTALONES_GLEBANOIDES, com.dedsafio4.items.ModItems.PANTALONES_LIMBO},
+					{com.dedsafio4.items.ModItems.BOTAS_GLEBANOIDES, com.dedsafio4.items.ModItems.BOTAS_LIMBO}};
+			for (var par : pares) {
+				var entrada = new net.minecraft.world.item.crafting.SmithingRecipeInput(new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.PLANTILLA_LIMBO),
+						new net.minecraft.world.item.ItemStack(par[0]), new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.POLVO_ALMA));
+				var receta = w.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMITHING, entrada, w);
+				String res = receta.map(r -> r.value().assemble(entrada, w.registryAccess()).getItem().toString()).orElse("NINGUNA");
+				System.out.println("PL " + par[0] + " -> " + res + (res.equals(par[1].toString()) ? " OK" : " MAL"));
+			}
+			var plantilla = new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.PLANTILLA_LIMBO);
+			System.out.println("PL nombre plantilla: " + plantilla.getHoverName().getString() + " color=" + plantilla.getHoverName().getStyle().getColor());
+		});
+		if (t == 20) mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+		if (t == 30) captura(mc, "debug_pl1_inventario.png");
+		if (t == 35) mc.stop();
+	}
+
+	private static final boolean RECOGER = "recoger".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	private static void estadoRecoger(Minecraft mc, String que) {
+		var server = mc.getSingleplayerServer();
+		server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			int diamantes = j.getInventory().countItem(net.minecraft.world.item.Items.DIAMOND);
+			int displays = 0, clics = 0;
+			for (var e : server.overworld().getAllEntities()) {
+				if (!e.getTags().contains("dedsafio4_recoger")) continue;
+				if (e instanceof net.minecraft.world.entity.Display.ItemDisplay) displays++;
+				if (e instanceof net.minecraft.world.entity.Interaction) clics++;
+			}
+			System.out.println("REC " + que + ": diamantes=" + diamantes + " itemVisible=" + displays + " lugarClic=" + clics);
+		});
+	}
+
+	private static void clicRecoger(Minecraft mc) {
+		for (var e : mc.level.entitiesForRendering()) {
+			if (e instanceof net.minecraft.world.entity.Interaction i && i.distanceTo(mc.player) < 6) {
+				mc.gameMode.interact(mc.player, i, net.minecraft.world.InteractionHand.MAIN_HAND);
+				return;
+			}
+		}
+		System.out.println("REC no encontre el lugar del clic en el cliente");
+	}
+
+	/** Prueba de /item: aparece, se recoge con clic derecho, desaparece, vuelve, y el límite por jugador. */
+	private static void tickRecoger(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = false;
+		if (t == -5) { revivir(mc); comando(mc, "kill @e[type=!player,distance=..80]"); }
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "time set day");
+			comando(mc, "gamerule doDaylightCycle false");
+			comando(mc, "difficulty peaceful");
+			comando(mc, "forceload add -16 -16 16 16");
+			comando(mc, "fill -6 199 -6 6 199 6 minecraft:stone");
+			comando(mc, "fill -6 200 -6 6 206 6 minecraft:air");
+			comando(mc, "tp @s 0 200 0 0 15");
+			comando(mc, "clear @s");
+			comando(mc, "item replace entity @s weapon.mainhand with minecraft:diamond");
+		}
+		if (t >= 1 && t < 300) { mc.player.setYRot(0f); mc.player.setXRot(15f); mc.player.yRotO = 0f; mc.player.xRotO = 15f; }
+		if (t == 5) comando(mc, "item 0 200 2 2 3 2 5");
+		if (t == 8) comando(mc, "clear @s");
+		if (t == 25) { estadoRecoger(mc, "puesto"); captura(mc, "debug_rec1_puesto.png"); }
+		if (t == 30) clicRecoger(mc);
+		if (t == 36) { estadoRecoger(mc, "despues del clic 1 (3 diamantes, no visible)"); captura(mc, "debug_rec2_recogido.png"); }
+		if (t == 40) clicRecoger(mc);
+		if (t == 46) estadoRecoger(mc, "clic mientras no esta (sigue 3)");
+		if (t == 150) { estadoRecoger(mc, "6 segundos despues (visible otra vez)"); captura(mc, "debug_rec3_volvio.png"); }
+		if (t == 155) clicRecoger(mc);
+		if (t == 161) estadoRecoger(mc, "clic 2 (6 diamantes)");
+		if (t == 280) { estadoRecoger(mc, "volvio otra vez"); clicRecoger(mc); }
+		if (t == 286) { estadoRecoger(mc, "clic 3: ya llego al limite (sigue 6, sigue visible)"); captura(mc, "debug_rec4_limite.png"); }
+		if (t == 290) comando(mc, "item quitar");
+		if (t == 296) estadoRecoger(mc, "despues de /item quitar (nada)");
+		if (t == 300) mc.stop();
+	}
+
+	private static final boolean BOMBA_NEGRA = "bombanegra".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+	private static boolean capturoExplotando;
+
+	private static void revisarAparicion(net.minecraft.server.MinecraftServer server, String cuando) {
+		server.execute(() -> {
+			var w = server.overworld();
+			var tipo = com.dedsafio4.nave.ModEntidades.BOMBA_NEGRA;
+			var cielo = new net.minecraft.core.BlockPos(0, 203, 0);
+			var bajo = new net.minecraft.core.BlockPos(0, 20, 0);
+			System.out.println("BN aparicion " + cuando + ": isNight=" + w.isNight() + " cielo(canSeeSky=" + w.canSeeSky(cielo) + ")="
+					+ com.dedsafio4.bombas.BombaNegraEntity.puedeAparecer(tipo, w, net.minecraft.world.entity.MobSpawnType.NATURAL, cielo, w.random)
+					+ " bajo tierra(canSeeSky=" + w.canSeeSky(bajo) + ")="
+					+ com.dedsafio4.bombas.BombaNegraEntity.puedeAparecer(tipo, w, net.minecraft.world.entity.MobSpawnType.NATURAL, bajo, w.random));
+		});
+	}
+
+	private static com.dedsafio4.bombas.BombaNegraEntity bombaNegra(net.minecraft.server.MinecraftServer server) {
+		for (var e : server.overworld().getAllEntities()) if (e instanceof com.dedsafio4.bombas.BombaNegraEntity b) return b;
+		return null;
+	}
+
+	/** Prueba de la Bomba Negra: modelo de frente/costado/atrás, empuje, explosión, y dónde puede aparecer. */
+	private static void tickBombaNegra(Minecraft mc) {
+		int t = ticks - 20;
+		var server = mc.getSingleplayerServer();
+		if (server == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = true;
+		if (t == -5) { revivir(mc); comando(mc, "kill @e[type=!player,distance=..80]"); }
+		if (t == 0) {
+			comando(mc, "gamemode spectator");
+			comando(mc, "time set day");
+			comando(mc, "gamerule doDaylightCycle false");
+			comando(mc, "gamerule doMobSpawning false");
+			comando(mc, "difficulty normal");
+			comando(mc, "momento revil parar");
+			comando(mc, "forceload add -16 -16 16 16");
+			comando(mc, "fill -10 199 -14 10 199 10 minecraft:stone");
+			comando(mc, "fill -10 200 -14 10 208 10 minecraft:air");
+			comando(mc, "tp @s 0 200.6 -3.5");
+		}
+		if (t == 5) comando(mc, "summon dedsafio4:bomba_negra 0 200 0 {NoAI:1b,Rotation:[180f,0f]}");
+		if (t >= 6 && t < 90) { mc.player.setYRot(0f); mc.player.setXRot(0f); mc.player.yRotO = 0f; mc.player.xRotO = 0f; }
+		if (t == 30) captura(mc, "debug_bn1_frente.png");
+		if (t == 35) comando(mc, "tp @e[type=dedsafio4:bomba_negra,limit=1] 0 200 0 90 0");
+		if (t == 50) captura(mc, "debug_bn2_costado.png");
+		if (t == 55) comando(mc, "tp @e[type=dedsafio4:bomba_negra,limit=1] 0 200 0 0 0");
+		if (t == 70) captura(mc, "debug_bn3_atras.png");
+		if (t == 75) server.execute(() -> {
+			var b = bombaNegra(server);
+			if (b == null) { System.out.println("BN MAL: no hay bomba"); return; }
+			b.knockback(3, 1, 0);
+			b.push(2, 0.5, 2);
+			b.hurt(b.damageSources().generic(), 1f);
+			System.out.println("BN empuje: movimiento=" + b.getDeltaMovement() + " pushable=" + b.isPushable() + " vida=" + b.getHealth());
+		});
+		if (t == 80) comando(mc, "kill @e[type=dedsafio4:bomba_negra]");
+		if (t == 82) { revisarAparicion(server, "dia"); comando(mc, "time set 18000"); }
+		if (t == 84) { revisarAparicion(server, "noche"); comando(mc, "time set 6000"); }
+		if (t == 85) {
+			comando(mc, "setblock 2 200 0 minecraft:oak_planks");
+			comando(mc, "setblock -2 200 0 minecraft:glass");
+			comando(mc, "tp @s 0 200 0");
+			comando(mc, "gamemode survival");
+			comando(mc, "attribute @s minecraft:generic.max_health base set 100");
+			comando(mc, "effect give @s minecraft:instant_health 1 40 true");
+			for (String pieza : new String[]{"head", "chest", "legs", "feet"}) comando(mc, "item replace entity @s armor." + pieza + " with minecraft:air");
+		}
+		if (t >= 86 && t < 260) { mc.player.setYRot(180f); mc.player.setXRot(-5f); mc.player.yRotO = 180f; mc.player.xRotO = -5f; }
+		if (t == 95) { comando(mc, "summon dedsafio4:bomba_negra 0 201.5 -12"); vidaAntes = mc.player.getHealth(); }
+		if (t > 96 && t < 260) {
+			var b = bombaNegra(server);
+			if (b != null && b.explotando() && !capturoExplotando) {
+				capturoExplotando = true;
+				captura(mc, "debug_bn5_explotando.png");
+				System.out.println("BN empezo a explotar t=" + t + " distancia=" + b.distanceTo(server.getPlayerList().getPlayers().get(0)));
+			}
+			if (mc.player.getHealth() != vidaAntes) {
+				System.out.println("BN t=" + t + " vida=" + mc.player.getHealth() + " danio=" + (vidaAntes - mc.player.getHealth()));
+				vidaAntes = mc.player.getHealth();
+			}
+		}
+		if (t == 120) captura(mc, "debug_bn4_viene.png");
+		if (t == 260) {
+			comando(mc, "execute if block 2 200 0 minecraft:oak_planks run say OK: no rompio los bloques");
+			comando(mc, "execute unless block 2 200 0 minecraft:oak_planks run say MAL: rompio los bloques");
+			comando(mc, "execute if entity @e[type=dedsafio4:bomba_negra] run say MAL: la bomba sigue viva");
+			comando(mc, "execute unless entity @e[type=dedsafio4:bomba_negra] run say OK: la bomba desaparecio al explotar");
+		}
+		if (t == 270) mc.stop();
+	}
+
 	private static final boolean BOMBA = "bomba".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba de la Bomba Warden: cómo se ve de frente, de costado y de atrás, y que explota al acercarse. */
@@ -8461,6 +8679,22 @@ public final class DebugCielo {
 		}
 		if (BOMBA) {
 			tickBomba(mc);
+			return;
+		}
+		if (BOMBA_NEGRA) {
+			tickBombaNegra(mc);
+			return;
+		}
+		if (RECOGER) {
+			tickRecoger(mc);
+			return;
+		}
+		if (PLANTILLA_LIMBO) {
+			tickPlantillaLimbo(mc);
+			return;
+		}
+		if (ZOMBI_INMUNE) {
+			tickZombiInmune(mc);
 			return;
 		}
 		if (PERLAS) {

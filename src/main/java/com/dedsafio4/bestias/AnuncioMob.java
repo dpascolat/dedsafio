@@ -78,6 +78,7 @@ public final class AnuncioMob {
 		LUGARES.put("fantasma_blanco", "el Limbo y el Limbito");
 		LUGARES.put("fantasma_rojo", "el Limbo y el Limbito");
 		LUGARES.put("fantasma_negro", "el Limbo y el Limbito");
+		LUGARES.put("bomba_negra", "el Overworld durante la Noche, y en el Centro de Quiu (excepto Cuevas)");
 		LUGARES.put("ojo_volador", "TODO el Limbo, incluso en la Zona en la que antes no aparecían criaturas");
 	}
 

@@ -68,6 +68,14 @@ public class HuevoConDescripcion extends SpawnEggItem {
 		t.add(parte("de Quiu.", BLANCO));
 	}
 
+	public static void bombaNegra(List<Component> t) {
+		t.add(parte("Bomba voladora que hace gran daño", GRIS));
+		t.add(parte("con su explosión. No puedes empujarla.", GRIS));
+		t.add(Component.empty());
+		t.add(parte("🌍 Aparece en: ", APARECE).append(parte("el Overworld de noche", BLANCO)));
+		t.add(parte("y el Centro de Quiu (excepto Cuevas).", BLANCO));
+	}
+
 	public static void ojoVolador(List<Component> t) {
 		t.add(parte("Si te acercas demasiado te hará", GRIS));
 		t.add(parte("mucho daño. Es invulnerable y SÓLO", GRIS));

@@ -143,10 +143,10 @@ public class BombaWardenEntity extends Monster {
 
 	/** Va derecho al objetivo; el estallido lo decide la propia bomba cuando lo tiene cerca. */
 	static class PerseguirYExplotar extends Goal {
-		private final BombaWardenEntity bomba;
+		private final Monster bomba;
 		private int recalcular;
 
-		PerseguirYExplotar(BombaWardenEntity bomba) {
+		PerseguirYExplotar(Monster bomba) {
 			this.bomba = bomba;
 			this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
 		}

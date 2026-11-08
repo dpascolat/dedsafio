@@ -82,6 +82,18 @@ public class CerebroAmarilloEntity extends Monster {
 		targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
 	}
 
+	/** El cambio que le hace sacar el doble (el Rojo usa el suyo). */
+	protected String cambioDoble() {
+		return com.dedsafio4.cambios.Cambios.CEREBRO_AMARILLO;
+	}
+
+	/** cerebro_nuclear 1: al morir, 10% de que aparezca un Creeper Nuclear. */
+	@Override
+	public void die(DamageSource fuente) {
+		super.die(fuente);
+		if (level() instanceof net.minecraft.server.level.ServerLevel mundo) com.dedsafio4.cambios.CambiosCreepers.murioCerebro(mundo, blockPosition());
+	}
+
 	/** ¿Se puede subir a este jugador? (No a los de creativo, ni si ya tiene otro cerebro encima.) */
 	private static boolean sirve(Player jugador) {
 		return jugador.isAlive() && !jugador.isCreative() && !jugador.isSpectator()
@@ -153,16 +165,19 @@ public class CerebroAmarilloEntity extends Monster {
 	 * lo que saca. Al final te mata.
 	 */
 	private void drenar(Player jugador) {
+		// Con su cambio (cerebro_amarillo / cerebro_rojo) saca el doble: un corazón entero cada vez.
+		float saca = level() instanceof net.minecraft.server.level.ServerLevel mundo
+				&& com.dedsafio4.cambios.Cambios.nivel(mundo.getServer(), cambioDoble()) >= 1 ? 2f : 1f;
 		DamageSource fuente = damageSources().indirectMagic(this, this);
 		float absorcion = jugador.getAbsorptionAmount();
 		if (absorcion > 0f) {
-			jugador.setAbsorptionAmount(Math.max(0f, absorcion - 1f));
+			jugador.setAbsorptionAmount(Math.max(0f, absorcion - saca));
 			level().broadcastDamageEvent(jugador, fuente);
 			heal(1f);
 			playSound(SoundEvents.HONEY_DRINK, 0.6f, 0.6f);
 			return;
 		}
-		vidaTope = Math.min(vidaTope, jugador.getHealth()) - 1f;
+		vidaTope = Math.min(vidaTope, jugador.getHealth()) - saca;
 		if (vidaTope > 0f) {
 			jugador.setHealth(vidaTope);
 			level().broadcastDamageEvent(jugador, fuente);

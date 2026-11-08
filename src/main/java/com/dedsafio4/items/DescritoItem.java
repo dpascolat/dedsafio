@@ -274,6 +274,13 @@ public class DescritoItem extends Item {
 		t.add(parte("para hacer la armadura de Gleba.", GRIS));
 	}
 
+	/** Polvo de Alma: se consigue en la Jaula de Hami, en la Cárcel del Limbo. */
+	public static void polvoAlma(List<Component> t) {
+		t.add(parte("Consíguelo en la Jaula donde", 0xBAB7BA));
+		t.add(parte("encerraron a Hami, dentro", 0xBAB7BA));
+		t.add(parte("de la Cárcel del Limbo.", 0xBAB7BA));
+	}
+
 	public static void cueroGlebanoide(List<Component> t) {
 		t.add(parte("Combínalo con otros ingredientes", GRIS));
 		t.add(parte("para conseguir nuevos objetos.", GRIS));

@@ -120,6 +120,23 @@ public final class Cambios {
 	 */
 	public static final String CORAZON_LIMBO = "corazon_limbo";
 
+	/** farol 1: el Farol explota como un Creeper al acercarse, y al morir abre el Puzzle a los que están cerca (ver FarolEntity). */
+	public static final String FAROL = "farol";
+	/** totem_creepers 1: al saltar un tótem, 20% de que aparezca un Creeper de Pasto y 10% un Creeper Raíz de Azalea ahí. */
+	public static final String TOTEM_CREEPERS = "totem_creepers";
+	/** perla_nuclear 1: donde cae una Perla del End, 3% de que aparezca un Creeper Nuclear. */
+	public static final String PERLA_NUCLEAR = "perla_nuclear";
+	/** cerebro_nuclear 1: al morir un Cerebro (Amarillo o Rojo), 10% de que aparezca un Creeper Nuclear. */
+	public static final String CEREBRO_NUCLEAR = "cerebro_nuclear";
+	/** zombi_inteligente 1: los zombis que aparecen en el Overworld de la capa 40 para abajo pican y ponen bloques siempre (ver Zombis). */
+	public static final String ZOMBI_INTELIGENTE = "zombi_inteligente";
+	/** cerebro_amarillo 1: romper una flor amarilla en el Overworld hace salir un Cerebro Amarillo, y sacan el doble. */
+	public static final String CEREBRO_AMARILLO = "cerebro_amarillo";
+	/** cerebro_rojo 1: romper una flor roja en el Overworld hace salir un Cerebro Rojo, y sacan el doble. */
+	public static final String CEREBRO_ROJO = "cerebro_rojo";
+	/** reviil_permanente 1: cada vez que muere un jugador, aparece un Creeper Eléctrico con 1 de vida al lado de cada jugador vivo. */
+	public static final String REVIIL_PERMANENTE = "reviil_permanente";
+
 	/** Tipo de daño propio del mod para la Perla del End: no lo frena la armadura ni sus encantamientos. */
 	public static final ResourceKey<DamageType> DANIO_ENDERPERLA = ResourceKey.create(Registries.DAMAGE_TYPE,
 			ResourceLocation.fromNamespaceAndPath("dedsafio4", "enderperla"));
@@ -186,7 +203,8 @@ public final class Cambios {
 			new Cambio(LIMBO, "limbo", Map.of(
 					1, "El Limbo se acerca. Ahora al romper una cama aparece un Wraith.")),
 			new Cambio(GAS_TOXICO, "gas_toxico", Map.of(
-					1, "Reviil liberó un gas tóxico permanente en la Capa 150 del Overworld. Estar por encima de esa capa causa daño hasta morir. Dentro de una nave no recibes daño, y la Montaña está protegida por Eón.")),
+					1, "Reviil liberó un gas tóxico permanente en la Capa 150 del Overworld. Estar por encima de esa capa causa daño hasta morir. Dentro de una nave no recibes daño, y la Montaña está protegida por Eón.",
+					2, "El Gas invisible enviado por Reviil que sobrepasa la Capa 150 ha alcanzado 20 bloques más. Ahora, si estás en la Capa 130 hacia arriba, recibirás daño hasta morir. Si te encuentras en una Nave estarás seguro.")),
 			new Cambio(ZOMBI_PICO, "zombi_pico", Map.of(
 					1, "Ahora los Zombies aparecen con Pico de Diamante. Durante la Luna Roja pueden picar y construir.")),
 			new Cambio(LUNA_ROJA, "luna_roja", Map.of(
@@ -226,7 +244,23 @@ public final class Cambios {
 			new Cambio(ZOMBIFICACION, "zombificacion", Map.of(
 					1, "Reviil liberó la Zombificación. Ahora necesitas Zombificación para seguir vivo: si se te acaba, mueres. Todos reciben 20 minutos, la Píldora da 2 horas y cada Tótem que salta da 5 minutos.")),
 			new Cambio(CORAZON_LIMBO, "corazon_limbo", Map.of(
-					1, "Ahora los Corazones del Limbo curan sólo una barra de vida."))
+					1, "Ahora los Corazones del Limbo curan sólo una barra de vida.")),
+			new Cambio(FAROL, "farol", Map.of(
+					1, "Ahora el Fantasma Farola explota como un Creeper. Aplica el efecto de Puzzle al morir.")),
+			new Cambio(TOTEM_CREEPERS, "totem_creepers", Map.of(
+					1, "Al popear existe una probabilidad del 20% de spawnear un Creeper de Pasto en tu posición. 10% de spawnear un Creeper de Raíz de Azalea.")),
+			new Cambio(PERLA_NUCLEAR, "perla_nuclear", Map.of(
+					1, "Al aterrizar una Ender Pearl existe una probabilidad del 3% de spawnear un Creeper Nuclear.")),
+			new Cambio(ZOMBI_INTELIGENTE, "zombi_inteligente", Map.of(
+					1, "Los Zombies inteligentes, que pueden romper y poner bloques, aparecen de Capa 40 hacia abajo naturalmente.")),
+			new Cambio(CEREBRO_NUCLEAR, "cerebro_nuclear", Map.of(
+					1, "Al morir cualquier tipo de Cerebro existe una probabilidad del 10% de spawnear un Creeper Nuclear.")),
+			new Cambio(CEREBRO_AMARILLO, "cerebro_amarillo", Map.of(
+					1, "Ahora los Cerebros Amarillos tienen 100% de probabilidad de aparecer en el Overworld al romper flores que contengan el color amarillo: Diente de León, Girasol, Margarita, Anflorcha, Flores Silvestres y Rubiácea. Además, hacen el DOBLE de daño.")),
+			new Cambio(CEREBRO_ROJO, "cerebro_rojo", Map.of(
+					1, "Ahora los Cerebros Rojos tienen 100% de probabilidad de aparecer en el Overworld al romper flores que contengan el color rojo: Amapola, Tulipán Rojo, Rosal, Bayas Dulces, Hongo Rojo y Bloque de Hongo Rojo. Además, hacen el DOBLE de daño.")),
+			new Cambio(REVIIL_PERMANENTE, "reviil_permanente", Map.of(
+					1, "Momento Reviil Permanente: cada vez que un jugador muera hará aparecer un Creeper Eléctrico con 1 de Vida en la posición de CADA jugador vivo."))
 	);
 
 	public static CambiosData data(MinecraftServer server) {

@@ -18,7 +18,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * De noche con luna_roja 1, los zombis con pico te buscan aunque no te vean: pican lo que les tapa el paso, hacen una
- * torre si estás arriba y un puente si hay un pozo. No tocan cofres ni otros bloques con inventario, ni la Montaña.
+ * torre si estás arriba y un puente si hay un pozo. Con zombi_inteligente, los de abajo de la capa 40 lo hacen siempre. No tocan cofres ni otros bloques con inventario, ni la Montaña.
  */
 public class ZombiMinero extends Goal {
 	private static final double ALCANCE = 24;
@@ -38,8 +38,10 @@ public class ZombiMinero extends Goal {
 	}
 
 	private boolean lunaRoja() {
-		return zombi.level() instanceof ServerLevel mundo && mundo.isNight() && Cambios.nivel(mundo.getServer(), Cambios.LUNA_ROJA) >= 1
-				&& Zombis.tienePico(zombi);
+		if (!(zombi.level() instanceof ServerLevel mundo) || !Zombis.tienePico(zombi)) return false;
+		// zombi_inteligente: los de abajo de la capa 40 trabajan siempre, de día o de noche.
+		if (zombi.getTags().contains(Zombis.INTELIGENTE) && Cambios.nivel(mundo.getServer(), Cambios.ZOMBI_INTELIGENTE) >= 1) return true;
+		return mundo.isNight() && Cambios.nivel(mundo.getServer(), Cambios.LUNA_ROJA) >= 1;
 	}
 
 	@Override

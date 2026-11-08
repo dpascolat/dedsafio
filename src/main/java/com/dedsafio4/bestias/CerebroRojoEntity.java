@@ -30,6 +30,11 @@ public class CerebroRojoEntity extends CerebroAmarilloEntity {
 	}
 
 	@Override
+	protected String cambioDoble() {
+		return com.dedsafio4.cambios.Cambios.CEREBRO_ROJO;
+	}
+
+	@Override
 	protected boolean seAplasta() {
 		return false;
 	}

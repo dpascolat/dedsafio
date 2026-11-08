@@ -195,6 +195,8 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.cofres.CofresRellenables.registrarComandos(dispatcher);
 			com.dedsafio4.cofres.ItemsQueDesaparecen.registrarComandos(dispatcher);
 			com.dedsafio4.almas.AlmitasLimbo.registrarComandos(dispatcher);
+			com.dedsafio4.recoger.ItemsRecoger.registrarComandos(dispatcher);
+			com.dedsafio4.cambios.Zombificacion.registrarComandos(dispatcher);
 			com.dedsafio4.cambios.GasToxico.registrarComandos(dispatcher);
 			com.dedsafio4.gancho.Ganchos.registrarComandos(dispatcher);
 			com.dedsafio4.salidalimbo.SalidaLimbo.registrarComandos(dispatcher);
@@ -275,6 +277,7 @@ public class Dedsafio4 implements ModInitializer {
 		CambiosEventos.registrar();
 		com.dedsafio4.cambios.Zombificacion.registrar();
 		com.dedsafio4.bestias.OjoVoladorEntity.registrar();
+		com.dedsafio4.recoger.ItemsRecoger.registrar();
 		Candados.registrar();
 		SinAldeanosViejos.registrar();
 
@@ -321,6 +324,13 @@ public class Dedsafio4 implements ModInitializer {
 						Biomes.SNOWY_SLOPES, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.GROVE, Biomes.SNOWY_BEACH, Biomes.FROZEN_RIVER,
 						Biomes.DESERT),
 				MobCategory.MONSTER, ModEntidades.CREEPER_NUCLEAR, 40, 1, 1);
+		// La Bomba Negra aparece de noche en todo el Overworld y en el Centro de Quiu (sabana y jungla, fuera de las cuevas).
+		BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(),
+				MobCategory.MONSTER, ModEntidades.BOMBA_NEGRA, 10, 1, 1);
+		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(
+						net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, "sabana")),
+						net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, "jungla"))),
+				MobCategory.MONSTER, ModEntidades.BOMBA_NEGRA, 10, 1, 1);
 		// Las Bombas Warden aparecen solas en la Oscuridad Profunda y en las cuevas de todo el Overworld (bajo tierra,
 		// a oscuras: ver BombaWardenEntity.puedeAparecer).
 		BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.DEEP_DARK),

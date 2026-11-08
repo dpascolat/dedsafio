@@ -28,6 +28,8 @@ import java.util.UUID;
  * cambio, cada jugador (los conectados y los que entren después, una sola vez) recibe 20 minutos; la Píldora da 2
  * horas; cuando salta un tótem da 5 minutos (y también al reaparecer, para no morir en seguida otra vez). Al que se le
  * acaba, lo mata pase lo que pase (el golpe no lo frena la armadura ni nada), salvo que tenga un tótem.
+ * /zombificacion <jugadores>: esos jugadores no pueden morir de Zombificación. /zombificacion quitar <jugadores> lo
+ * saca, y /zombificacion lista dice quiénes son. Queda guardado en el mundo (aunque se saque el cambio).
  */
 public final class Zombificacion {
 	private Zombificacion() {}
@@ -43,10 +45,13 @@ public final class Zombificacion {
 	static final class Datos extends SavedData {
 		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
 		final Set<UUID> recibieron = new HashSet<>();
+		/** Los que no pueden morir de Zombificación (/zombificacion <jugador>). */
+		final Set<UUID> inmunes = new HashSet<>();
 
 		private static Datos leer(CompoundTag tag, HolderLookup.Provider registros) {
 			Datos d = new Datos();
 			for (Tag t : tag.getList("recibieron", Tag.TAG_INT_ARRAY)) d.recibieron.add(NbtUtils.loadUUID(t));
+			for (Tag t : tag.getList("inmunes", Tag.TAG_INT_ARRAY)) d.inmunes.add(NbtUtils.loadUUID(t));
 			return d;
 		}
 
@@ -55,6 +60,9 @@ public final class Zombificacion {
 			ListTag l = new ListTag();
 			for (UUID u : recibieron) l.add(NbtUtils.createUUID(u));
 			tag.put("recibieron", l);
+			ListTag i = new ListTag();
+			for (UUID u : inmunes) i.add(NbtUtils.createUUID(u));
+			tag.put("inmunes", i);
 			return tag;
 		}
 	}
@@ -82,6 +90,45 @@ public final class Zombificacion {
 		jugador.addEffect(new MobEffectInstance(PildoraItem.PROTECCION_ZOMBIFICACION, ticks, 0, false, true, true));
 	}
 
+	/** ¿Este jugador no puede morir de Zombificación? */
+	public static boolean inmune(ServerPlayer jugador) {
+		return datos(jugador.server).inmunes.contains(jugador.getUUID());
+	}
+
+	public static void registrarComandos(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+		dispatcher.register(net.minecraft.commands.Commands.literal("zombificacion").requires(s -> s.hasPermission(2))
+				.then(net.minecraft.commands.Commands.literal("lista").executes(c -> {
+					MinecraftServer server = c.getSource().getServer();
+					java.util.List<String> nombres = new java.util.ArrayList<>();
+					for (UUID u : datos(server).inmunes) {
+						ServerPlayer p = server.getPlayerList().getPlayer(u);
+						nombres.add(p != null ? p.getGameProfile().getName()
+								: server.getProfileCache().get(u).map(com.mojang.authlib.GameProfile::getName).orElse(u.toString()));
+					}
+					c.getSource().sendSuccess(() -> Component.literal(nombres.isEmpty() ? "Nadie es inmune a la Zombificación."
+							: "Inmunes a la Zombificación: " + String.join(", ", nombres)).withColor(0xB86BD8), false);
+					return nombres.size();
+				}))
+				.then(net.minecraft.commands.Commands.literal("quitar")
+						.then(net.minecraft.commands.Commands.argument("jugadores", net.minecraft.commands.arguments.EntityArgument.players())
+								.executes(c -> cambiarInmunes(c.getSource(), net.minecraft.commands.arguments.EntityArgument.getPlayers(c, "jugadores"), false))))
+				.then(net.minecraft.commands.Commands.argument("jugadores", net.minecraft.commands.arguments.EntityArgument.players())
+						.executes(c -> cambiarInmunes(c.getSource(), net.minecraft.commands.arguments.EntityArgument.getPlayers(c, "jugadores"), true))));
+	}
+
+	private static int cambiarInmunes(net.minecraft.commands.CommandSourceStack fuente, java.util.Collection<ServerPlayer> jugadores, boolean inmune) {
+		Datos d = datos(fuente.getServer());
+		for (ServerPlayer p : jugadores) {
+			if (inmune) d.inmunes.add(p.getUUID());
+			else d.inmunes.remove(p.getUUID());
+		}
+		d.setDirty();
+		String nombres = String.join(", ", jugadores.stream().map(p -> p.getGameProfile().getName()).toList());
+		fuente.sendSuccess(() -> Component.literal(inmune ? nombres + " ya no puede morir de Zombificación."
+				: nombres + " vuelve a poder morir de Zombificación.").withColor(0xB86BD8), true);
+		return jugadores.size();
+	}
+
 	public static void registrar() {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			if (!activo(server)) {
@@ -103,7 +150,7 @@ public final class Zombificacion {
 			if (server.getTickCount() % 20 != 0) return;
 			Datos d = datos(server);
 			for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-				if (!p.isAlive() || p.isCreative() || p.isSpectator()) continue;
+				if (!p.isAlive() || p.isCreative() || p.isSpectator() || d.inmunes.contains(p.getUUID())) continue;
 				// Los 20 minutos del principio (también a los que entran después, una vez).
 				if (d.recibieron.add(p.getUUID())) {
 					d.setDirty();

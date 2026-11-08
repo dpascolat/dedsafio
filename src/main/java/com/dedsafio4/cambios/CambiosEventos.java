@@ -29,6 +29,7 @@ public final class CambiosEventos {
 
 	public static void registrar() {
 		CambiosDificultad.registrar();
+		CambiosCreepers.registrar();
 		GasToxico.registrar();
 		// aranas 1: todas las arañas (también las de cueva) tienen Velocidad infinita.
 		ServerTickEvents.END_SERVER_TICK.register(server -> {

@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:smithing_transform",
+	"template": {
+		"item": "dedsafio4:plantilla_limbo"
+	},
+	"base": {
+		"item": "dedsafio4:pechera_glebanoide"
+	},
+	"addition": {
+		"item": "dedsafio4:polvo_alma"
+	},
+	"result": {
+		"id": "dedsafio4:pechera_limbo",
+		"count": 1
+	}
+}
