@@ -31,8 +31,8 @@ import java.util.function.Consumer;
 /**
  * Los fantasmas encadenados (ver EspectroEntity): los Reclusos Espectrales (chicos, unos 2 bloques) y los Colosos
  * Prisioneros (grandes, unos 5 bloques), en rosa, morado y rojo; el efecto Sin Salto del Morado; y el Farol (el de 4
- * patas, que al pegar bloquea la cámara con un puzzle). Cada uno con su huevo. El daño de todos se cambia con
- * /danomob (ver DanoMob).
+ * patas, que al pegar bloquea la cámara con un puzzle). Cada uno con su huevo. El daño de cada uno se cambia con
+ * /dañomob &lt;mob&gt; &lt;daño&gt; (ver AjustesMob), como el de los demás mobs.
  * <p>
  * /boss tamano &lt;tamaño&gt; cambia el tamaño del jefe o mob del mod más cercano (Planta Mordedora, estos y cualquier
  * otro): 1 = normal, 2 = el doble, 0,5 = la mitad (de 0,1 a 16). Usa el atributo de tamaño de Minecraft, así que
@@ -146,11 +146,11 @@ public final class ModDemonios {
 	// --- /boss tamano ---
 
 	public static void registrarComandos(CommandDispatcher<CommandSourceStack> dispatcher) {
-		DanoMob.registrarComandos(dispatcher);
-		// (Sin ñ: Minecraft no deja escribir la ñ en los nombres de los comandos.)
-		dispatcher.register(Commands.literal("boss").requires(s -> s.hasPermission(2))
-				.then(Commands.literal("tamano").then(Commands.argument("tamano", FloatArgumentType.floatArg(0.1f, 16f))
-						.executes(c -> tamano(c.getSource(), FloatArgumentType.getFloat(c, "tamano"))))));
+		for (String palabra : new String[]{"tamaño", "tamano"}) {
+			dispatcher.register(Commands.literal("boss").requires(s -> s.hasPermission(2))
+					.then(Commands.literal(palabra).then(Commands.argument("tamano", FloatArgumentType.floatArg(0.1f, 16f))
+							.executes(c -> tamano(c.getSource(), FloatArgumentType.getFloat(c, "tamano"))))));
+		}
 	}
 
 	/** Cambia el tamaño del mob del mod más cercano (sin contar jugadores). */

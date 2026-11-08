@@ -54,7 +54,6 @@ public class FarolEntity extends Monster implements GeoEntity {
 
 	@Override
 	public boolean doHurtTarget(Entity objetivo) {
-		DanoMob.aplicar(this);
 		boolean pego = super.doHurtTarget(objetivo);
 		if (pego && objetivo instanceof ServerPlayer jugador && jugador.isAlive()) PuzzleCamara.abrir(jugador);
 		return pego;
