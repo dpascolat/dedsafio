@@ -21,9 +21,12 @@ public final class PlantaBossBarra {
 	private static final ResourceLocation RETRATO = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/jefe_retrato.png");
 	private static final ResourceLocation MARCO = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/barra_vida_marco.png");
 	private static final ResourceLocation RELLENO = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/gui/barra_vida_relleno.png");
-	private static final int RETRATO_W = 123, RETRATO_H = 174, MARCO_W = 160, MARCO_H = 20, RELLENO_W = 154, RELLENO_H = 7;
-	/** Tamaños en la pantalla: el retrato al 42% y la barra al 140%. */
-	private static final float ESC_RETRATO = 0.42f, ESC_BARRA = 1.4f;
+	private static final int RETRATO_W = 149, RETRATO_H = 186, MARCO_W = 160, MARCO_H = 20, RELLENO_W = 154, RELLENO_H = 7;
+	/** Tamaños en la pantalla: el retrato a la mitad y la barra al 140% (así quedan en la misma proporción que en la
+	 * imagen). La barra empieza BARRA_X y BARRA_Y píxeles (de la pantalla) desde la esquina del retrato, como en la imagen:
+	 * la cabeza del bicho queda encima del comienzo de la barra. */
+	private static final float ESC_RETRATO = 0.5f, ESC_BARRA = 1.4f;
+	private static final int BARRA_X = 60, BARRA_Y = 28;
 
 	/** Lo que se acaba de perder (de 0 a 1) y el tick en que se miró. */
 	private static float antes = -1;
@@ -59,10 +62,9 @@ public final class PlantaBossBarra {
 
 		int rw = Math.round(RETRATO_W * ESC_RETRATO), rh = Math.round(RETRATO_H * ESC_RETRATO);
 		int bw = Math.round(MARCO_W * ESC_BARRA), bh = Math.round(MARCO_H * ESC_BARRA);
-		int solapa = 12;
-		int total = rw - solapa + bw;
+		int total = Math.max(rw, BARRA_X + bw);
 		int x0 = (g.guiWidth() - total) / 2, y0 = 2;
-		int bx = x0 + rw - solapa, by = y0 + rh / 2 - bh / 2 - 2;
+		int bx = x0 + BARRA_X, by = y0 + BARRA_Y;
 
 		RenderSystem.enableBlend();
 		// La barra: primero el relleno (vacío, lo perdido, el violeta), y encima el marco.
