@@ -138,6 +138,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.items.FrutoQuiuItem.registrar();
 		com.dedsafio4.almas.Almas.registrar();
 		com.dedsafio4.items.PildoraItem.registrar();
+		com.dedsafio4.items.ReparaEfectos.registrar();
 		VenenoPrimitivo.registrar();
 		ModPociones.registrar();
 		ModItems.registrar();

@@ -177,6 +177,7 @@ public final class Limbo {
 		if (limbo == null) return;
 		BlockPos spawn = datos(jugador.server).spawn;
 		BlockPos llegada = spawn != null ? spawn : Portales.lugarSeguro(limbo, jugador.blockPosition());
+		com.dedsafio4.items.ReparaEfectos.reparar(jugador);
 		jugador.teleportTo(limbo, llegada.getX() + 0.5, llegada.getY(), llegada.getZ() + 0.5, jugador.getYRot(), jugador.getXRot());
 		limbo.playSound(null, llegada, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.PLAYERS, 0.8f, 0.5f);
 		jugador.sendSystemMessage(Component.literal("Fuiste arrastrado al Limbo.").withColor(0x8A8AA8));
@@ -188,6 +189,7 @@ public final class Limbo {
 		ServerLevel destino = volver ? desde.getServer().overworld() : desde.getServer().getLevel(DIMENSION);
 		if (destino == null) return 0;
 		BlockPos llegada = Portales.lugarSeguro(destino, jugador.blockPosition());
+		com.dedsafio4.items.ReparaEfectos.reparar(jugador);
 		jugador.teleportTo(destino, llegada.getX() + 0.5, llegada.getY(), llegada.getZ() + 0.5, jugador.getYRot(), jugador.getXRot());
 		destino.playSound(null, llegada, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.PLAYERS, 0.6f, 0.5f);
 		jugador.sendSystemMessage(Component.literal(volver

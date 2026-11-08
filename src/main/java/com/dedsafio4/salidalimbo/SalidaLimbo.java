@@ -151,6 +151,7 @@ public final class SalidaLimbo {
 		ServerLevel destino = server.overworld();
 		SIN_CAIDA.put(jugador.getUUID(), server.getTickCount());
 		jugador.fallDistance = 0;
+		com.dedsafio4.items.ReparaEfectos.reparar(jugador);
 		jugador.teleportTo(destino, lugar.getX() + 0.5, lugar.getY(), lugar.getZ() + 0.5, jugador.getYRot(), jugador.getXRot());
 		destino.playSound(null, lugar, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1f, 0.5f);
 	}
