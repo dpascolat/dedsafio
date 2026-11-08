@@ -437,5 +437,6 @@
 	"item.dedsafio4.coloso_rojo_spawn_egg": "Red Prisoner Colossus Spawn Egg",
 	"effect.dedsafio4.sin_salto": "No Jumping",
 	"entity.dedsafio4.farol": "Lantern Walker",
-	"item.dedsafio4.farol_spawn_egg": "Lantern Walker Spawn Egg"
+	"item.dedsafio4.farol_spawn_egg": "Lantern Walker Spawn Egg",
+	"entity.dedsafio4.puerta_rastrillo": "Portcullis"
 }
