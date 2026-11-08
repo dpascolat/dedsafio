@@ -465,6 +465,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		HudRenderCallback.EVENT.register((graphics, tickCounter) -> {
 			com.dedsafio4.client.dactylos.TintaPantalla.dibujar(graphics);
 			com.dedsafio4.client.qumara.QumaraBarra.dibujar(graphics);
+			com.dedsafio4.client.bossplanta.PlantaBossBarra.dibujar(graphics);
 			com.dedsafio4.client.trex.TRexControles.dibujar(graphics);
 			com.dedsafio4.client.qumara.AgarreMinijuego.dibujar(graphics);
 			com.dedsafio4.client.qumara.AtraerCliente.dibujar(graphics);

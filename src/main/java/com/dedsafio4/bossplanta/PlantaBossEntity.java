@@ -8,14 +8,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -43,6 +41,7 @@ import java.util.List;
  *     que siga en lo rojo, lo sube a la boca y lo muerde 4 veces: cada mordida saca un cuarto de la vida y las cuatro
  *     lo matan, sin importar la armadura (y sin gastarla).</li>
  * </ol>
+ * La barra de vida arriba en la pantalla la dibuja el cliente (ver PlantaBossBarra).
  * Vida: 500 por persona (con "/boss 2 gente N" se multiplica por N, como Qumara).
  * Los tiempos de cada ataque se guardan como el tick del mundo en que empezó, así el cliente dibuja lo mismo.
  */
@@ -70,8 +69,6 @@ public class PlantaBossEntity extends PathfinderMob {
 	private static final EntityDataAccessor<Float> RADIO = SynchedEntityData.defineId(PlantaBossEntity.class, EntityDataSerializers.FLOAT);
 	private static final EntityDataAccessor<Vector3f> CENTRO = SynchedEntityData.defineId(PlantaBossEntity.class, EntityDataSerializers.VECTOR3);
 
-	private final ServerBossEvent barra = new ServerBossEvent(Component.translatable("entity.dedsafio4.planta_boss"),
-			BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.NOTCHED_10);
 	private int espera = DESCANSO;
 	private boolean tocaLuz = true;
 	private int mordidasDadas;
@@ -134,7 +131,6 @@ public class PlantaBossEntity extends PathfinderMob {
 		if (centro().lengthSqr() == 0) campo(20);   // puesta con /summon: campo de 20 bloques alrededor
 
 		List<ServerPlayer> enCampo = jugadoresEnCampo(mundo);
-		actualizarBarra(mundo);
 		if (tickCount % 10 == 0) borde(mundo);
 
 		ServerPlayer mira = null;
@@ -339,29 +335,9 @@ public class PlantaBossEntity extends PathfinderMob {
 		}
 	}
 
-	private void actualizarBarra(ServerLevel mundo) {
-		barra.setProgress(getHealth() / getMaxHealth());
-		Vec3 c = centro();
-		double r = radio() + 24;
-		for (ServerPlayer p : mundo.players()) {
-			double dx = p.getX() - c.x, dz = p.getZ() - c.z;
-			boolean cerca = dx * dx + dz * dz <= r * r && Math.abs(p.getY() - c.y) < 48;
-			if (cerca) barra.addPlayer(p);
-			else barra.removePlayer(p);
-		}
-		for (ServerPlayer p : new ArrayList<>(barra.getPlayers())) if (p.level() != mundo || p.isRemoved()) barra.removePlayer(p);
-	}
-
-	@Override
-	public void remove(RemovalReason razon) {
-		barra.removeAllPlayers();
-		super.remove(razon);
-	}
-
 	@Override
 	public void die(DamageSource fuente) {
 		if (level() instanceof ServerLevel mundo) soltar(mundo);
-		barra.removeAllPlayers();
 		super.die(fuente);
 	}
 

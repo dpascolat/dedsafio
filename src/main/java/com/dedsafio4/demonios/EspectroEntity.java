@@ -15,7 +15,6 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
@@ -33,10 +32,10 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * Los fantasmas encadenados (el mismo demonio de cubos en tres colores y dos tamaños). Todos pelean cuerpo a cuerpo:
  * <ul>
  * <li><b>Rosa:</b> si estás cerca te da Hambre nivel 100 por unos segundos.</li>
- * <li><b>Morado:</b> si te golpea, no puedes saltar por unos segundos (efecto Sin Salto). El chico vuela.</li>
+ * <li><b>Morado:</b> si te golpea, no puedes saltar por unos segundos (efecto Sin Salto).</li>
  * <li><b>Rojo:</b> si te golpea, te da Lentitud IV.</li>
  * </ul>
- * Los chicos son los Reclusos Espectrales; los grandes, los Colosos Prisioneros: más vida y daño, y no se los puede
+ * Todos vuelan. Los chicos son los Reclusos Espectrales; los grandes, los Colosos Prisioneros: más vida y daño, y no se los puede
  * empujar (el Morado grande además es muy lento y tiene mucha más vida).
  */
 public class EspectroEntity extends Monster implements GeoEntity {
@@ -69,9 +68,9 @@ public class EspectroEntity extends Monster implements GeoEntity {
 		return grande;
 	}
 
-	/** Sólo el Recluso Espectral Morado (el chico) vuela; los demás caminan flotando un poco sobre el piso. */
+	/** Todos los fantasmas vuelan (los Colosos, más despacio). */
 	public boolean vuela() {
-		return color == Color.MORADO && !grande;
+		return true;
 	}
 
 	public static AttributeSupplier.Builder atributosRecluso(boolean vuela) {
@@ -80,7 +79,7 @@ public class EspectroEntity extends Monster implements GeoEntity {
 				.add(Attributes.ATTACK_DAMAGE, 5)
 				.add(Attributes.MOVEMENT_SPEED, 0.28)
 				.add(Attributes.FOLLOW_RANGE, 32);
-		if (vuela) b.add(Attributes.FLYING_SPEED, 0.75);
+		b.add(Attributes.FLYING_SPEED, vuela ? 0.75 : 0.6);
 		return b;
 	}
 
@@ -91,20 +90,18 @@ public class EspectroEntity extends Monster implements GeoEntity {
 				.add(Attributes.MOVEMENT_SPEED, muyLento ? 0.14 : 0.22)
 				.add(Attributes.ARMOR, 6)
 				.add(Attributes.KNOCKBACK_RESISTANCE, 1)
+				.add(Attributes.FLYING_SPEED, muyLento ? 0.25 : 0.45)
 				.add(Attributes.FOLLOW_RANGE, 32);
 	}
 
 	@Override
 	protected PathNavigation createNavigation(Level level) {
-		// (Se llama antes de que el constructor guarde el color: se mira el tipo.)
-		if (getType() == ModDemonios.RECLUSO_MORADO) {
-			FlyingPathNavigation nav = new FlyingPathNavigation(this, level);
-			nav.setCanOpenDoors(false);
-			nav.setCanFloat(true);
-			nav.setCanPassDoors(true);
-			return nav;
-		}
-		return super.createNavigation(level);
+		// Todos vuelan.
+		FlyingPathNavigation nav = new FlyingPathNavigation(this, level);
+		nav.setCanOpenDoors(false);
+		nav.setCanFloat(true);
+		nav.setCanPassDoors(true);
+		return nav;
 	}
 
 	@Override
@@ -112,8 +109,7 @@ public class EspectroEntity extends Monster implements GeoEntity {
 		// (También se llama antes de guardar el tamaño: se mira el tipo.)
 		goalSelector.addGoal(0, new FloatGoal(this));
 		goalSelector.addGoal(2, new MeleeAttackGoal(this, ModDemonios.esColoso(getType()) ? 1.0 : 1.15, true));
-		if (getType() == ModDemonios.RECLUSO_MORADO) goalSelector.addGoal(5, new WaterAvoidingRandomFlyingGoal(this, 1.0));
-		else goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
+		goalSelector.addGoal(5, new WaterAvoidingRandomFlyingGoal(this, 1.0));
 		goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 16f));
 		goalSelector.addGoal(7, new RandomLookAroundGoal(this));
 		targetSelector.addGoal(1, new HurtByTargetGoal(this));
