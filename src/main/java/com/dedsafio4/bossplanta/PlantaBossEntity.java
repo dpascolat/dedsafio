@@ -32,8 +32,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * La Planta Mordedora (jefe, nombre provisorio): una planta negra y rosa con mandíbula, plantada en el medio de un
- * campo redondo (/campo_boss &lt;radio&gt;). No camina: ataca sola a los que están dentro del campo, alternando:
+ * La Planta Mordedora (jefe, nombre provisorio): una planta negra y rosa con mandíbula, en un campo redondo
+ * (/campo_boss &lt;radio&gt;). Camina hacia el jugador más cercano sin salir del campo, y ataca sola a los que están
+ * dentro, alternando (mientras ataca se queda quieta):
  * <ol>
  * <li><b>Luz:</b> baila y en el medio del campo, arriba de ella, sale una luz. Al que la mira le hace daño
  *     (hay que darse vuelta o taparse detrás de algo).</li>
@@ -80,7 +81,7 @@ public class PlantaBossEntity extends PathfinderMob {
 	public static AttributeSupplier.Builder crearAtributos() {
 		return PathfinderMob.createMobAttributes()
 				.add(Attributes.MAX_HEALTH, VIDA_BASE)
-				.add(Attributes.MOVEMENT_SPEED, 0)
+				.add(Attributes.MOVEMENT_SPEED, 0.25)
 				.add(Attributes.KNOCKBACK_RESISTANCE, 1)
 				.add(Attributes.ARMOR, 6)
 				.add(Attributes.FOLLOW_RANGE, 64);
@@ -130,7 +131,8 @@ public class PlantaBossEntity extends PathfinderMob {
 	@Override
 	public void tick() {
 		super.tick();
-		setDeltaMovement(0, Math.min(0, getDeltaMovement().y), 0);
+		// Mientras ataca se queda quieta (no se desliza).
+		if (ataque() != QUIETO) setDeltaMovement(0, Math.min(0, getDeltaMovement().y), 0);
 		if (!(level() instanceof ServerLevel mundo) || !isAlive()) return;
 		if (centro().lengthSqr() == 0) campo(20);   // puesta con /summon: campo de 20 bloques alrededor
 
@@ -141,7 +143,10 @@ public class PlantaBossEntity extends PathfinderMob {
 		Entity agarrado = agarradoId() >= 0 ? mundo.getEntity(agarradoId()) : null;
 		if (agarrado instanceof ServerPlayer p) mira = p;
 		else mira = masCercano(enCampo, 1e9);
-		if (mira != null) girarHacia(mira.position());
+		// Quieta (sin atacar): camina hacia el más cercano, sin salir del campo. Atacando: se para y lo mira.
+		if (ataque() == QUIETO && agarradoId() < 0) caminar(mira);
+		else getNavigation().stop();
+		if (mira != null && getNavigation().isDone()) girarHacia(mira.position());
 
 		switch (ataque()) {
 			case LUZ -> tickLuz(mundo, enCampo);
@@ -178,8 +183,25 @@ public class PlantaBossEntity extends PathfinderMob {
 	}
 
 	/** Dónde está la luz (en el medio del campo, arriba de la planta). */
+	/** La luz sale en el medio del campo (aunque la planta haya caminado a otro lado), arriba. */
 	public Vec3 luz() {
-		return position().add(0, ALTO_LUZ * getScale(), 0);
+		return centro().add(0, ALTO_LUZ * getScale(), 0);
+	}
+
+	/** Camina hacia el jugador (hasta quedar a unos bloques), pero sin salir del campo; sin nadie, vuelve al medio. */
+	private void caminar(ServerPlayer objetivo) {
+		if (tickCount % 10 != 0) return;
+		Vec3 c = centro();
+		double margen = Math.max(4, radio() - 3 - getBbWidth());
+		Vec3 destino = objetivo != null ? objetivo.position() : c;
+		Vec3 desdeCentro = new Vec3(destino.x - c.x, 0, destino.z - c.z);
+		if (desdeCentro.length() > margen) destino = c.add(desdeCentro.normalize().scale(margen)).add(0, destino.y - c.y, 0);
+		double cerca = objetivo != null ? 3 + getBbWidth() : 1.5;
+		if (distanceToSqr(destino.x, getY(), destino.z) < cerca * cerca) {
+			getNavigation().stop();
+			return;
+		}
+		getNavigation().moveTo(destino.x, destino.y, destino.z, 1.0);
 	}
 
 	/** Hasta dónde llega lo rojo: 6 bloques con el tamaño normal, y crece (o se achica) con /boss tamano. */

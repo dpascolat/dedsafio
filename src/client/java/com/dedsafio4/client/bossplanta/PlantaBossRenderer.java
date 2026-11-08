@@ -93,6 +93,13 @@ public class PlantaBossRenderer extends EntityRenderer<PlantaBossEntity> {
 		pose.mulPose(Axis.YP.rotationDegrees(Mth.sin(t * 0.22f) * 30f * baile));
 		pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(t * 0.06f) * 2f + Mth.sin(t * 0.45f) * 14f * baile));
 		pose.mulPose(Axis.XP.rotationDegrees(Mth.sin(t * 0.05f + 1f) * 1.5f + Mth.cos(t * 0.3f) * 5f * baile));
+		// Caminando: avanza a saltitos sobre la base, balanceándose de un lado al otro e inclinada para adelante.
+		float paso = Math.min(1f, planta.walkAnimation.speed(parcial) * 2.5f), fase = planta.walkAnimation.position(parcial);
+		if (paso > 0.01f) {
+			pose.translate(0, Math.abs(Mth.sin(fase * 0.6f)) * 0.3f * paso, 0);
+			pose.mulPose(Axis.ZP.rotationDegrees(Mth.sin(fase * 0.6f) * 7f * paso));
+			pose.mulPose(Axis.XP.rotationDegrees(6f * paso));
+		}
 		float escala = PlantaBossEntity.ESCALA * planta.getScale();
 		pose.scale(escala, escala, escala);
 
@@ -110,7 +117,10 @@ public class PlantaBossRenderer extends EntityRenderer<PlantaBossEntity> {
 		}
 		pose.popPose();
 
-		if (ataque == PlantaBossEntity.LUZ) luz(planta, ta, t, pose, buffers);
+		if (ataque == PlantaBossEntity.LUZ) {
+			parcialLuz = parcial;
+			luz(planta, ta, t, pose, buffers);
+		}
 		if (ataque == PlantaBossEntity.MORDIDA && ta < PlantaBossEntity.MARCA + 4) zonaRoja(planta, ta, parcial, pose, buffers);
 		super.render(planta, giro, parcial, pose, buffers, luz);
 	}
@@ -151,12 +161,18 @@ public class PlantaBossRenderer extends EntityRenderer<PlantaBossEntity> {
 	}
 
 	/** La luz de arriba: varias capas que brillan (siempre mirando a la cámara) y rayos que giran. */
+	private float parcialLuz;
+
 	private void luz(PlantaBossEntity planta, float ta, float t, PoseStack pose, MultiBufferSource buffers) {
 		float prendida = Mth.clamp((ta - PlantaBossEntity.AVISO_LUZ + 10) / 15f, 0, 1)
 				* Mth.clamp((PlantaBossEntity.FIN_LUZ - ta) / 8f, 0, 1);
 		if (prendida <= 0) return;
 		pose.pushPose();
-		pose.translate(0, PlantaBossEntity.ALTO_LUZ * planta.getScale(), 0);
+		// La luz va en el medio del campo, arriba (no arriba de la planta, que puede haber caminado).
+		net.minecraft.world.phys.Vec3 l = planta.luz();
+		float ex = (float) Mth.lerp(parcialLuz, planta.xo, planta.getX()), ey = (float) Mth.lerp(parcialLuz, planta.yo, planta.getY()),
+				ez = (float) Mth.lerp(parcialLuz, planta.zo, planta.getZ());
+		pose.translate(l.x - ex, l.y - ey, l.z - ez);
 		pose.mulPose(entityRenderDispatcher.cameraOrientation());
 		VertexConsumer v = buffers.getBuffer(RenderType.lightning());
 		Matrix4f m = pose.last().pose();
