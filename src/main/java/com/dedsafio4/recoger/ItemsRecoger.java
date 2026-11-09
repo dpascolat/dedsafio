@@ -50,6 +50,8 @@ public final class ItemsRecoger {
 	private ItemsRecoger() {}
 
 	private static final String MARCA = "dedsafio4_recoger";
+	/** Los que ya se volvieron a poner desde que arrancó el servidor. */
+	private static final java.util.Set<Integer> REPUESTOS = new java.util.HashSet<>();
 
 	static final class Punto {
 		int id;
@@ -129,7 +131,12 @@ public final class ItemsRecoger {
 			if (server.getTickCount() % 20 != 0) return;
 			Datos d = datos(server);
 			for (Punto p : d.puntos) {
-				if (p.reaparece == 0) continue;
+				// Al arrancar el servidor, los que están a la vista se vuelven a poner (así toman el tamaño de clic nuevo).
+				if (p.reaparece == 0) {
+					ServerLevel mundo = server.getLevel(p.dimension);
+					if (mundo != null && mundo.isLoaded(p.pos) && REPUESTOS.add(p.id)) mostrar(mundo, p);
+					continue;
+				}
 				ServerLevel mundo = server.getLevel(p.dimension);
 				if (mundo == null || mundo.getGameTime() < p.reaparece || !mundo.isLoaded(p.pos)) continue;
 				p.reaparece = 0;
@@ -187,7 +194,8 @@ public final class ItemsRecoger {
 				"summon minecraft:item_display %.3f %.3f %.3f {Tags:[\"%s\",\"%s\"],billboard:\"vertical\",item:%s,"
 						+ "transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[%sf,%sf,%sf]}}",
 				x, y, z, MARCA, p.marca(), item, s, s, s));
-		float lado = Math.max(0.5f, s * 0.6f);
+		// El lugar del clic tapa todo el ítem que se ve (un bloque por cada 1 de tamaño), así se llega desde supervivencia.
+		float lado = Math.max(1f, s);
 		comando(mundo, String.format(Locale.ROOT,
 				"summon minecraft:interaction %.3f %.3f %.3f {Tags:[\"%s\",\"%s\"],width:%sf,height:%sf,response:1b}",
 				x, y - lado / 2, z, MARCA, p.marca(), lado, lado));
@@ -240,6 +248,7 @@ public final class ItemsRecoger {
 		p.segundos = IntegerArgumentType.getInteger(c, "segundos");
 		d.puntos.add(p);
 		d.setDirty();
+		REPUESTOS.add(p.id);
 		mostrar(jugador.serverLevel(), p);
 		c.getSource().sendSuccess(() -> Component.literal("Listo: en " + p.pos.toShortString() + " hay " + p.cantidad + " de ")
 				.append(p.item.getHoverName())

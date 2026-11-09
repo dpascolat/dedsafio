@@ -1,0 +1,230 @@
+{
+	"textures": {
+		"0": "dedsafio4:item/brazalete_interdimensional",
+		"particle": "dedsafio4:item/brazalete_interdimensional"
+	},
+	"elements": [
+		{
+			"from": [
+				2.25,
+				5.25,
+				5.25
+			],
+			"to": [
+				13.75,
+				10.75,
+				10.75
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						2.0,
+						2.0,
+						7.0,
+						4.0
+					],
+					"texture": "#0"
+				},
+				"east": {
+					"uv": [
+						0.0,
+						2.0,
+						2.0,
+						4.0
+					],
+					"texture": "#0"
+				},
+				"south": {
+					"uv": [
+						9.0,
+						2.0,
+						14.0,
+						4.0
+					],
+					"texture": "#0"
+				},
+				"west": {
+					"uv": [
+						7.0,
+						2.0,
+						9.0,
+						4.0
+					],
+					"texture": "#0"
+				},
+				"up": {
+					"uv": [
+						7.0,
+						2.0,
+						2.0,
+						0.0
+					],
+					"texture": "#0"
+				},
+				"down": {
+					"uv": [
+						12.0,
+						0.0,
+						7.0,
+						2.0
+					],
+					"texture": "#0"
+				}
+			}
+		},
+		{
+			"from": [
+				7,
+				9,
+				7
+			],
+			"to": [
+				9,
+				11,
+				9
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						1.0,
+						5.0,
+						2.0,
+						6.0
+					],
+					"texture": "#0"
+				},
+				"east": {
+					"uv": [
+						0.0,
+						5.0,
+						1.0,
+						6.0
+					],
+					"texture": "#0"
+				},
+				"south": {
+					"uv": [
+						3.0,
+						5.0,
+						4.0,
+						6.0
+					],
+					"texture": "#0"
+				},
+				"west": {
+					"uv": [
+						2.0,
+						5.0,
+						3.0,
+						6.0
+					],
+					"texture": "#0"
+				},
+				"up": {
+					"uv": [
+						2.0,
+						5.0,
+						1.0,
+						4.0
+					],
+					"texture": "#0"
+				},
+				"down": {
+					"uv": [
+						3.0,
+						4.0,
+						2.0,
+						5.0
+					],
+					"texture": "#0"
+				}
+			}
+		}
+	],
+	"display": {
+		"gui": {
+			"rotation": [
+				25,
+				160,
+				0
+			],
+			"scale": [
+				1.05,
+				1.05,
+				1.05
+			]
+		},
+		"ground": {
+			"translation": [
+				0,
+				2,
+				0
+			],
+			"scale": [
+				0.5,
+				0.5,
+				0.5
+			]
+		},
+		"fixed": {
+			"rotation": [
+				0,
+				90,
+				0
+			],
+			"scale": [
+				0.9,
+				0.9,
+				0.9
+			]
+		},
+		"firstperson_righthand": {
+			"rotation": [
+				0,
+				45,
+				0
+			],
+			"translation": [
+				0,
+				2,
+				0
+			],
+			"scale": [
+				0.6,
+				0.6,
+				0.6
+			]
+		},
+		"firstperson_lefthand": {
+			"rotation": [
+				0,
+				45,
+				0
+			],
+			"translation": [
+				0,
+				2,
+				0
+			],
+			"scale": [
+				0.6,
+				0.6,
+				0.6
+			]
+		},
+		"thirdperson_righthand": {
+			"scale": [
+				0,
+				0,
+				0
+			]
+		},
+		"thirdperson_lefthand": {
+			"scale": [
+				0,
+				0,
+				0
+			]
+		}
+	}
+}

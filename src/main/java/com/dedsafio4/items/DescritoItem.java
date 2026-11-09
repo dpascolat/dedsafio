@@ -274,6 +274,24 @@ public class DescritoItem extends Item {
 		t.add(parte("para hacer la armadura de Gleba.", GRIS));
 	}
 
+	/** Brazalete Interdimensional (el texto de la imagen del usuario). */
+	public static void brazaleteInterdimensional(List<Component> t) {
+		int g = 0xC7C4C7, o = 0xF3AD24, a = 0x49C8E5;
+		t.add(parte("Utilízalo para desplazarte por", g));
+		t.add(parte("el Espacio entre Dimensiones.", g));
+		t.add(Component.empty());
+		t.add(parte("Colócalo en tu ", g).append(parte("Mano Secundaria", o)));
+		t.add(parte("y presiona ", g).append(parte("J", o)).append(parte(" para entrar en", g)));
+		t.add(parte("Modo de Vuelo o salir de él.", g));
+		t.add(Component.empty());
+		t.add(parte("Recárgalo con una ", g).append(parte("Batería de", a)));
+		t.add(parte("Dilitio", a).append(parte(" haciendo ", g)).append(parte("Click Derecho", o)));
+		t.add(parte("mientras estás en la Interfaz.", g));
+		t.add(Component.empty());
+		t.add(parte("⚠ Atención: ", o).append(parte("La ", g)).append(parte("Batería", a)).append(parte(" recargará", g)));
+		t.add(parte("el ", g).append(parte("50% del Combustible", o)).append(parte(".", g)));
+	}
+
 	/** Polvo de Alma: se consigue en la Jaula de Hami, en la Cárcel del Limbo. */
 	public static void polvoAlma(List<Component> t) {
 		t.add(parte("Consíguelo en la Jaula donde", 0xBAB7BA));

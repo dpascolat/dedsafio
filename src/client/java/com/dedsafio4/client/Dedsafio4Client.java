@@ -52,6 +52,9 @@ public class Dedsafio4Client implements ClientModInitializer {
 	/** Se apretó H y se espera la respuesta para abrir la Hermandad. */
 	private static boolean hermandadPedida;
 
+	/** J: Modo de Vuelo del Brazalete Interdimensional (en la Mano Secundaria). */
+	public static final KeyMapping TECLA_BRAZALETE = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+			"key.dedsafio4.brazalete", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, "category.dedsafio4"));
 	public static final KeyMapping TECLA_HERMANDAD = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.dedsafio4.hermandad", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "category.dedsafio4"));
 
@@ -184,6 +187,9 @@ public class Dedsafio4Client implements ClientModInitializer {
 
 		// H → se piden los datos al servidor; la interfaz se abre cuando llegan.
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			while (TECLA_BRAZALETE.consumeClick()) {
+				if (client.screen == null && client.player != null) ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+			}
 			while (TECLA_HERMANDAD.consumeClick()) {
 				if (client.screen == null) {
 					hermandadPedida = true;
@@ -214,6 +220,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 						registro.register(new CapaEstandarteLayer(jugador, contexto.getModelSet()));
 						registro.register(new com.dedsafio4.client.bulag.CraneoLayer(jugador));
 						registro.register(new FlorCascoLayer(jugador));
+						registro.register(new BrazaleteLayer(jugador));
 					}
 				});
 		ClientPlayNetworking.registerGlobalReceiver(HermandadInfoPayload.TYPE, (payload, context) -> {

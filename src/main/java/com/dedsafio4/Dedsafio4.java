@@ -279,6 +279,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.cambios.Zombificacion.registrar();
 		com.dedsafio4.bestias.OjoVoladorEntity.registrar();
 		com.dedsafio4.recoger.ItemsRecoger.registrar();
+		com.dedsafio4.brazalete.Brazalete.registrar();
 		Candados.registrar();
 		SinAldeanosViejos.registrar();
 

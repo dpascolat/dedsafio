@@ -425,6 +425,10 @@ public final class ModItems {
 	/** Polvo de Alma: con la Plantilla de Mejora del Limbo y una pieza Glebanoide hace la del Limbo. */
 	public static final Item POLVO_ALMA = registrar("polvo_alma",
 			new DescritoItem(new Item.Properties(), DescritoItem::polvoAlma));
+	/** Brazalete Interdimensional: ítem 3D; en una mano se ve puesto en la muñeca (BrazaleteLayer). */
+	public static final Item BRAZALETE_INTERDIMENSIONAL = registrar("brazalete_interdimensional",
+			new com.dedsafio4.brazalete.Brazalete.BrazaleteItem(new Item.Properties().durability(com.dedsafio4.brazalete.Brazalete.COMBUSTIBLE)
+					.rarity(Rarity.RARE), DescritoItem::brazaleteInterdimensional));
 	/** Casco Glebanoide: 4 de armadura, 3 de resistencia y medio corazón extra. */
 	public static final Item CASCO_GLEBANOIDE = registrar("casco_glebanoide",
 			new ArmaduraGlebanoide.Pieza(ArmorItem.Type.HELMET, 907, 16, new Item.Properties().rarity(Rarity.RARE)));
@@ -880,6 +884,7 @@ public final class ModItems {
 						entradas.accept(PLANTILLA_GLEBA);
 						entradas.accept(PLANTILLA_LIMBO);
 						entradas.accept(POLVO_ALMA);
+						entradas.accept(BRAZALETE_INTERDIMENSIONAL);
 						entradas.accept(CASCO_GLEBANOIDE);
 						entradas.accept(PECHERA_GLEBANOIDE);
 						entradas.accept(PANTALONES_GLEBANOIDES);

@@ -323,6 +323,112 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean VUELO = "vuelo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	private static void estadoVuelo(Minecraft mc, String que) {
+		var server = mc.getSingleplayerServer();
+		server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var b = j.getOffhandItem();
+			System.out.println("VU " + que + ": modo=" + j.getTags().contains(com.dedsafio4.brazalete.Brazalete.MARCA) + " mayfly=" + j.getAbilities().mayfly
+					+ " volando=" + j.getAbilities().flying + " combustible=" + (b.is(com.dedsafio4.items.ModItems.BRAZALETE_INTERDIMENSIONAL) ? com.dedsafio4.brazalete.Brazalete.combustible(b) : -1)
+					+ " baterias=" + j.getInventory().countItem(com.dedsafio4.items.ModItems.BATERIA_DILITIO) + " caidaLenta=" + j.hasEffect(net.minecraft.world.effect.MobEffects.SLOW_FALLING));
+		});
+	}
+
+	/** Prueba del vuelo del Brazalete: J, gasta volando, recarga con la Batería, se apaga, y sin combustible. */
+	private static void tickVuelo(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		if (t < 40 || t > 60) { if (mc.screen != null) mc.setScreen(null); }
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "effect clear @s");
+			comando(mc, "clear @s");
+			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional[damage=200]");
+			comando(mc, "item replace entity @s hotbar.0 with dedsafio4:bateria_dilitio 2");
+		}
+		if (t == 5) estadoVuelo(mc, "al empezar (100 de 300)");
+		if (t == 8) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 11) comando(mc, "tp @s ~ ~6 ~");
+		if (t == 14) { estadoVuelo(mc, "despues de J"); mc.player.getAbilities().flying = true; mc.player.onUpdateAbilities(); }
+		if (t == 75) estadoVuelo(mc, "3 segundos volando (unos 97)");
+		if (t == 40) mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+		if (t == 44) { var m = mc.player.inventoryMenu; mc.gameMode.handleInventoryMouseClick(m.containerId, 36, 0, net.minecraft.world.inventory.ClickType.PICKUP, mc.player); }
+		if (t == 47) { var m = mc.player.inventoryMenu; mc.gameMode.handleInventoryMouseClick(m.containerId, 45, 1, net.minecraft.world.inventory.ClickType.PICKUP, mc.player); }
+		if (t == 50) { var m = mc.player.inventoryMenu; mc.gameMode.handleInventoryMouseClick(m.containerId, 36, 0, net.minecraft.world.inventory.ClickType.PICKUP, mc.player); }
+		if (t == 55) { estadoVuelo(mc, "despues de recargar con 1 bateria (+150)"); captura(mc, "debug_vu1_recarga.png"); }
+		if (t == 80) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 86) estadoVuelo(mc, "despues de J otra vez (apagado, caida lenta)");
+		if (t == 90) { comando(mc, "effect clear @s"); comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional[damage=298]"); }
+		if (t == 94) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 97) comando(mc, "tp @s ~ ~6 ~");
+		if (t == 100) { mc.player.getAbilities().flying = true; mc.player.onUpdateAbilities(); }
+		if (t == 130) estadoVuelo(mc, "1 segundo despues de quedarse sin combustible");
+		if (t == 160) estadoVuelo(mc, "sin combustible (apagado solo, con caida lenta)");
+		if (t == 165) mc.stop();
+	}
+
+	private static final boolean BRAZALETE = "brazalete".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba del Brazalete Interdimensional: en el inventario (3D) y puesto en las dos muñecas, en tercera persona. */
+	private static void tickBrazalete(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		if (t == 0) {
+			if (mc.screen != null) mc.setScreen(null);
+			comando(mc, "gamemode survival");
+			comando(mc, "time set day");
+			comando(mc, "clear @s");
+			comando(mc, "fill -3 199 -3 3 199 3 minecraft:stone");
+			comando(mc, "fill -3 200 -3 3 204 3 minecraft:air");
+			comando(mc, "tp @s 0.5 200 0.5 0 0");
+			comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:brazalete_interdimensional");
+			comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional");
+		}
+		if (t == 10) { mc.options.hideGui = false; mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player)); }
+		if (t == 25) captura(mc, "debug_br1_inventario.png");
+		if (t == 28) { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }
+		if (t >= 28) { mc.player.setYRot(0f); mc.player.setXRot(15f); mc.player.yRotO = 0f; mc.player.xRotO = 15f; mc.player.yBodyRot = 0f; mc.player.yBodyRotO = 0f; mc.player.yHeadRot = 0f; }
+		if (t == 45) captura(mc, "debug_br2_frente.png");
+		if (t == 48) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+		if (t == 65) captura(mc, "debug_br3_atras.png");
+		if (t == 68) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; }
+		if (t == 85) captura(mc, "debug_br4_primera.png");
+		if (t == 90) mc.stop();
+	}
+
+	private static final boolean CASCO_LIMBO = "cascolimbo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba del casco nuevo de la armadura del Limbo: un soporte con la armadura puesta, de frente, costado y atrás. */
+	private static void tickCascoLimbo(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = true;
+		if (t == 0) {
+			comando(mc, "gamemode spectator");
+			comando(mc, "time set day");
+			comando(mc, "kill @e[type=minecraft:armor_stand]");
+			comando(mc, "fill -3 199 -3 3 199 3 minecraft:stone");
+			comando(mc, "fill -3 200 -3 3 204 3 minecraft:air");
+			comando(mc, "summon minecraft:armor_stand 0.5 200 0.5 {NoGravity:1b,ShowArms:1b,Rotation:[0f,0f],ArmorItems:[{},{},{},{id:\"dedsafio4:casco_limbo\",count:1}]}");
+		}
+		// De frente, a la altura de la cabeza (los ojos del espectador quedan a 1,62 del piso).
+		if (t >= 2 && t < 30) { comando(mc, "tp @s 0.5 200.15 2.3 180 0"); }
+		if (t >= 30 && t < 50) { comando(mc, "tp @s 1.9 200.35 1.9 135 10"); }
+		if (t >= 50 && t < 70) { comando(mc, "tp @s 0.5 200.15 -1.3 0 0"); }
+		if (t == 25) captura(mc, "debug_cl1_frente.png");
+		if (t == 45) captura(mc, "debug_cl2_costado.png");
+		if (t == 65) captura(mc, "debug_cl3_atras.png");
+		if (t == 70) mc.stop();
+	}
+
 	private static final boolean ZOMBI_INMUNE = "zombiinmune".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba de /zombificacion <jugador>: sin Zombificación no se muere; con /zombificacion quitar, sí. */
@@ -400,14 +506,11 @@ public final class DebugCielo {
 		});
 	}
 
+	/** Clic derecho de verdad (como el mouse), mirando el ítem desde donde está parado el jugador. */
 	private static void clicRecoger(Minecraft mc) {
-		for (var e : mc.level.entitiesForRendering()) {
-			if (e instanceof net.minecraft.world.entity.Interaction i && i.distanceTo(mc.player) < 6) {
-				mc.gameMode.interact(mc.player, i, net.minecraft.world.InteractionHand.MAIN_HAND);
-				return;
-			}
-		}
-		System.out.println("REC no encontre el lugar del clic en el cliente");
+		System.out.println("REC mira a: " + (mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult e ? e.getEntity().getType().toShortString()
+				+ " a " + String.format("%.2f", e.getEntity().distanceTo(mc.player)) + " bloques" : String.valueOf(mc.hitResult == null ? null : mc.hitResult.getType())));
+		net.minecraft.client.KeyMapping.click(com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(1));
 	}
 
 	/** Prueba de /item: aparece, se recoge con clic derecho, desaparece, vuelve, y el límite por jugador. */
@@ -426,13 +529,13 @@ public final class DebugCielo {
 			comando(mc, "forceload add -16 -16 16 16");
 			comando(mc, "fill -6 199 -6 6 199 6 minecraft:stone");
 			comando(mc, "fill -6 200 -6 6 206 6 minecraft:air");
-			comando(mc, "tp @s 0 200 0 0 15");
+			comando(mc, "tp @s 0.5 200 -0.3 0 15");
 			comando(mc, "clear @s");
 			comando(mc, "item replace entity @s weapon.mainhand with minecraft:diamond");
 		}
-		if (t >= 1 && t < 300) { mc.player.setYRot(0f); mc.player.setXRot(15f); mc.player.yRotO = 0f; mc.player.xRotO = 15f; }
+		if (t >= 1 && t < 300) { mc.player.setYRot(0f); mc.player.setXRot(25f); mc.player.yRotO = 0f; mc.player.xRotO = 25f; }
 		if (t == 5) comando(mc, "item 0 200 2 2 3 2 5");
-		if (t == 8) comando(mc, "clear @s");
+		if (t == 8) { comando(mc, "clear @s"); comando(mc, "give @s minecraft:stone 1"); }
 		if (t == 25) { estadoRecoger(mc, "puesto"); captura(mc, "debug_rec1_puesto.png"); }
 		if (t == 30) clicRecoger(mc);
 		if (t == 36) { estadoRecoger(mc, "despues del clic 1 (3 diamantes, no visible)"); captura(mc, "debug_rec2_recogido.png"); }
@@ -8695,6 +8798,18 @@ public final class DebugCielo {
 		}
 		if (ZOMBI_INMUNE) {
 			tickZombiInmune(mc);
+			return;
+		}
+		if (CASCO_LIMBO) {
+			tickCascoLimbo(mc);
+			return;
+		}
+		if (BRAZALETE) {
+			tickBrazalete(mc);
+			return;
+		}
+		if (VUELO) {
+			tickVuelo(mc);
 			return;
 		}
 		if (PERLAS) {
