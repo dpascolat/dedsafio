@@ -29,6 +29,8 @@ public class BrazaleteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
 	private static final ResourceLocation TEXTURA =
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/item/brazalete_interdimensional.png");
 	private static final float P = 1 / 16f;
+	/** Qué parte del largo del modelo se usa en la muñeca (el modelo mide 10 píxeles; así queda de unos 5). */
+	private static final float LARGO = 0.45f;
 	/** El modelo de Blockbench (la y da vuelta: en los modelos de Minecraft la y va para abajo). */
 	private static final ModelPart PULSERA;
 
@@ -72,8 +74,9 @@ public class BrazaleteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
 								float centroX, float giroZ) {
 		pose.pushPose();
 		brazo.translateAndRotate(pose);
-		pose.translate(centroX * P, 4.5f * P, 0);
+		pose.translate(centroX * P, 7.6f * P, 0);   // cerca de la mano (el brazo va de -2 a 10)
 		pose.mulPose(Axis.ZP.rotationDegrees(giroZ));
+		pose.scale(LARGO, 1, 1);                    // más corta a lo largo del brazo, como una pulsera
 		pose.translate(3 * P, 2 * P, -1 * P);   // el centro de la banda al origen
 		PULSERA.render(pose, vertices, luz, OverlayTexture.NO_OVERLAY);
 		pose.popPose();
