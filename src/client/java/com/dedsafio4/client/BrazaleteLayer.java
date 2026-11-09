@@ -31,6 +31,8 @@ public class BrazaleteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
 	private static final float P = 1 / 16f;
 	/** Qué tan gruesa: el modelo mide 5,5 píxeles de ancho y el brazo 4; así queda apenas más ancha que el brazo. */
 	private static final float GROSOR = 0.82f;
+	/** Qué parte del largo del modelo (10 píxeles) se usa: así queda de unos 8. */
+	private static final float LARGO = 0.7f;
 	/** El modelo de Blockbench (la y da vuelta: en los modelos de Minecraft la y va para abajo). */
 	private static final ModelPart PULSERA;
 
@@ -74,9 +76,9 @@ public class BrazaleteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
 								float centroX, float giroZ) {
 		pose.pushPose();
 		brazo.translateAndRotate(pose);
-		pose.translate(centroX * P, 4.5f * P, 0);
+		pose.translate(centroX * P, 6.2f * P, 0);   // pegada a la mano (el brazo va de -2 a 10)
 		pose.mulPose(Axis.ZP.rotationDegrees(giroZ));
-		pose.scale(1, GROSOR, GROSOR);              // del largo de siempre, pero más pegada al brazo
+		pose.scale(LARGO, GROSOR, GROSOR);          // un poco más corta y más pegada al brazo
 		pose.translate(3 * P, 2 * P, -1 * P);   // el centro de la banda al origen
 		PULSERA.render(pose, vertices, luz, OverlayTexture.NO_OVERLAY);
 		pose.popPose();
