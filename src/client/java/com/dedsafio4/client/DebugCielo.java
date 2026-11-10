@@ -323,6 +323,62 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean ROJO = "rojo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	private static void estadoRojo(Minecraft mc, String que) {
+		var server = mc.getSingleplayerServer();
+		server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			int totems = j.getStats().getValue(net.minecraft.stats.Stats.ITEM_USED.get(net.minecraft.world.item.Items.TOTEM_OF_UNDYING));
+			System.out.println("RO " + que + ": vivo=" + j.isAlive() + " vida=" + j.getHealth() + " totemsUsados=" + totems
+					+ " velocidadVuelo=" + j.getAbilities().getFlyingSpeed() + " traje=" + com.dedsafio4.brazalete.TrajeEspacial.puesto(j)
+					+ " pos=" + j.blockPosition().toShortString() + " " + j.level().dimension().location().getPath() + " bloqueEnLosPies=" + j.level().getBlockState(j.blockPosition()).getBlock()
+					+ " tick=" + j.level().getGameTime());
+		});
+	}
+
+	/** Prueba del Bloque Rojo (popea cada 20 ticks), de /traje velocidad y de la armadura escondida con el traje. */
+	private static void tickRojo(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "difficulty normal");
+			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "clear @s");
+			comando(mc, "effect clear @s");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5 0 0");
+			comando(mc, "fill -3 199 -3 3 199 3 minecraft:stone");
+			comando(mc, "fill -3 200 -3 3 203 3 minecraft:air");
+			comando(mc, "item replace entity @s weapon.mainhand with minecraft:totem_of_undying");
+			comando(mc, "item replace entity @s weapon.offhand with minecraft:totem_of_undying");
+			comando(mc, "attribute @s minecraft:generic.max_health base set 20");
+			comando(mc, "effect give @s minecraft:instant_health 1 5 true");
+		}
+		if (t == 5) estadoRojo(mc, "antes");
+		if (t == 80) comando(mc, "setblock 0 200 0 dedsafio4:bloque_rojo_mortal");
+		if (t == 84) estadoRojo(mc, "al entrar (1 totem)");
+		if (t == 104) estadoRojo(mc, "20 ticks despues (2 totems)");
+		if (t == 124) estadoRojo(mc, "40 ticks despues (sin totems: muerto)");
+		if (t == 127) { comando(mc, "setblock 0 200 0 minecraft:air"); revivir(mc); }
+		if (t == 165) { revivir(mc); comando(mc, "gamemode survival"); comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -2 99 -2 2 99 2 dedsafio4:roca_espacial"); comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 100 0.5 0 0"); comando(mc, "clear @s");
+			comando(mc, "item replace entity @s armor.chest with minecraft:diamond_chestplate");
+			comando(mc, "item replace entity @s armor.head with dedsafio4:casco_limbo");
+			comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional");
+			comando(mc, "traje velocidad 3"); }
+		if (t == 172) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 180) { estadoRojo(mc, "con traje y velocidad x3 (0.15)"); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }
+		if (t >= 180) { mc.player.setYRot(180f); mc.player.yBodyRot = 180f; mc.player.yBodyRotO = 180f; mc.player.yHeadRot = 180f; mc.player.setXRot(10f); }
+		if (t == 200) captura(mc, "debug_ro1_traje_sin_armadura.png");
+		if (t == 202) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 210) { estadoRojo(mc, "sin traje (vuelve a 0.05)"); comando(mc, "traje velocidad 1"); }
+		if (t == 225) captura(mc, "debug_ro2_armadura_de_vuelta.png");
+		if (t == 230) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; mc.stop(); }
+	}
+
 	private static final boolean ARMADURA_LIMBO = "armaduralimbo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba de la Armadura del Limbo: solo botas, solo pantalones, todo, y en un zombi y un soporte. */
@@ -8957,6 +9013,10 @@ public final class DebugCielo {
 		}
 		if (ARMADURA_LIMBO) {
 			tickArmaduraLimbo(mc);
+			return;
+		}
+		if (ROJO) {
+			tickRojo(mc);
 			return;
 		}
 		if (PERLAS) {

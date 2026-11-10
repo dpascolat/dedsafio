@@ -71,6 +71,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// El montoncito de la CACA necesita transparencia.
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.CACA, RenderType.cutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(com.dedsafio4.dimension.EspacioInterdimensional.PASTO, RenderType.cutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(com.dedsafio4.bloques.BloqueRojo.BLOQUE, RenderType.translucent());
 		EspacioInterdimensionalCielo.registrar();
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.brazalete.TrajeEspacial.Payload.TYPE, (payload, context) -> {
 			if (payload.puesto()) com.dedsafio4.brazalete.TrajeEspacial.PUESTOS_CLIENTE.add(payload.jugador());

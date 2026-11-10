@@ -106,6 +106,11 @@ public final class Brazalete {
 	private static void apagar(ServerPlayer jugador, String mensaje) {
 		jugador.removeTag(MARCA);
 		TrajeEspacial.avisar(jugador.server, jugador.getUUID(), false);
+		// Vuelve a la velocidad de vuelo normal.
+		if (jugador.getAbilities().getFlyingSpeed() != TrajeEspacial.VELOCIDAD_NORMAL) {
+			jugador.getAbilities().setFlyingSpeed(TrajeEspacial.VELOCIDAD_NORMAL);
+			jugador.onUpdateAbilities();
+		}
 		if (!puedeVolarSolo(jugador)) {
 			boolean enElAire = jugador.getAbilities().flying;
 			jugador.getAbilities().mayfly = false;
@@ -128,6 +133,12 @@ public final class Brazalete {
 		// Si algo le sacó el vuelo (por ejemplo, cambió de modo de juego), se lo vuelve a dar.
 		if (!puedeVolarSolo(jugador) && !jugador.getAbilities().mayfly) {
 			jugador.getAbilities().mayfly = true;
+			jugador.onUpdateAbilities();
+		}
+		// La velocidad de todos los trajes (/traje velocidad).
+		float velocidad = TrajeEspacial.velocidadVuelo(jugador.server);
+		if (jugador.getAbilities().getFlyingSpeed() != velocidad) {
+			jugador.getAbilities().setFlyingSpeed(velocidad);
 			jugador.onUpdateAbilities();
 		}
 		if (!jugador.getAbilities().flying || jugador.tickCount % 20 != 0 || jugador.isCreative()) return;

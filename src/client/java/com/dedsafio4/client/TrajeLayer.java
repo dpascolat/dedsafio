@@ -27,26 +27,29 @@ import net.minecraft.resources.ResourceLocation;
 public class TrajeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 	private static final ResourceLocation TEXTURA =
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/traje_espacial.png");
-	private static final ModelPart CASCO, PECHERA, BRAZO_DER, BRAZO_IZQ, PIERNA_DER, PIERNA_IZQ;
+	/** Más finito que en Blockbench (ahí las capas eran +1 y +1,25, y el casco de 10). */
+	private static final CubeDeformation FINO = new CubeDeformation(0.4f), HOMBRERA = new CubeDeformation(0.6f),
+			CASCO = new CubeDeformation(-0.6f);
+	private static final ModelPart CASCO_PARTE, PECHERA, BRAZO_DER, BRAZO_IZQ, PIERNA_DER, PIERNA_IZQ;
 
 	static {
 		MeshDefinition malla = new MeshDefinition();
 		var raiz = malla.getRoot();
-		raiz.addOrReplaceChild("casco", CubeListBuilder.create().texOffs(0, 0).addBox(-5, -9, -5, 10, 10, 10), PartPose.ZERO);
+		raiz.addOrReplaceChild("casco", CubeListBuilder.create().texOffs(0, 0).addBox(-5, -9, -5, 10, 10, 10, CASCO), PartPose.ZERO);
 		raiz.addOrReplaceChild("pechera", CubeListBuilder.create().texOffs(0, 20)
-				.addBox(-4, 0, -2, 8, 12, 4, new CubeDeformation(1f)), PartPose.ZERO);
+				.addBox(-4, 0, -2, 8, 12, 4, FINO), PartPose.ZERO);
 		raiz.addOrReplaceChild("brazo_der", CubeListBuilder.create()
-				.texOffs(24, 20).addBox(-4, -2, -2, 4, 12, 4, new CubeDeformation(1f))
-				.texOffs(40, 0).addBox(-4.5f, -3, -2.5f, 5, 5, 5, new CubeDeformation(1.25f)), PartPose.ZERO);
+				.texOffs(24, 20).addBox(-4, -2, -2, 4, 12, 4, FINO)
+				.texOffs(40, 0).addBox(-4.5f, -3, -2.5f, 5, 5, 5, HOMBRERA), PartPose.ZERO);
 		raiz.addOrReplaceChild("brazo_izq", CubeListBuilder.create()
-				.texOffs(0, 36).addBox(0, -2, -2, 4, 12, 4, new CubeDeformation(1f))
-				.texOffs(40, 10).addBox(-0.5f, -3, -2.5f, 5, 5, 5, new CubeDeformation(1.25f)), PartPose.ZERO);
+				.texOffs(0, 36).addBox(0, -2, -2, 4, 12, 4, FINO)
+				.texOffs(40, 10).addBox(-0.5f, -3, -2.5f, 5, 5, 5, HOMBRERA), PartPose.ZERO);
 		raiz.addOrReplaceChild("pierna_der", CubeListBuilder.create().texOffs(16, 36)
-				.addBox(-2, 0, -2, 4, 12, 4, new CubeDeformation(1f)), PartPose.ZERO);
+				.addBox(-2, 0, -2, 4, 12, 4, FINO), PartPose.ZERO);
 		raiz.addOrReplaceChild("pierna_izq", CubeListBuilder.create().texOffs(32, 36)
-				.addBox(-2, 0, -2, 4, 12, 4, new CubeDeformation(1f)), PartPose.ZERO);
+				.addBox(-2, 0, -2, 4, 12, 4, FINO), PartPose.ZERO);
 		ModelPart todo = LayerDefinition.create(malla, 64, 64).bakeRoot();
-		CASCO = todo.getChild("casco");
+		CASCO_PARTE = todo.getChild("casco");
 		PECHERA = todo.getChild("pechera");
 		BRAZO_DER = todo.getChild("brazo_der");
 		BRAZO_IZQ = todo.getChild("brazo_izq");
@@ -65,7 +68,7 @@ public class TrajeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Ab
 		VertexConsumer v = buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURA));
 		int sombra = LivingEntityRenderer.getOverlayCoords(jugador, 0f);
 		PlayerModel<AbstractClientPlayer> m = getParentModel();
-		pegado(pose, v, luz, sombra, m.head, CASCO);
+		pegado(pose, v, luz, sombra, m.head, CASCO_PARTE);
 		pegado(pose, v, luz, sombra, m.body, PECHERA);
 		pegado(pose, v, luz, sombra, m.rightArm, BRAZO_DER);
 		pegado(pose, v, luz, sombra, m.leftArm, BRAZO_IZQ);

@@ -32,7 +32,7 @@ public class BrazaleteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
 	/** Qué tan gruesa: el modelo mide 5,5 píxeles de ancho y el brazo 4; así queda apenas más ancha que el brazo. */
 	private static final float GROSOR = 0.82f;
 	/** Con el Traje Espacial puesto el brazo es más grueso: la pulsera también, para que se vea encima. */
-	private static final float GROSOR_TRAJE = 1.2f;
+	private static final float GROSOR_TRAJE = 0.95f;
 	/** Qué parte del largo del modelo (10 píxeles) se usa: así queda de unos 8. */
 	private static final float LARGO = 0.7f;
 	/** El modelo de Blockbench (la y da vuelta: en los modelos de Minecraft la y va para abajo). */

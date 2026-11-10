@@ -27,6 +27,56 @@ import java.util.UUID;
 public final class TrajeEspacial {
 	private TrajeEspacial() {}
 
+	/** La velocidad de vuelo normal de Minecraft (la de creativo). */
+	public static final float VELOCIDAD_NORMAL = 0.05f;
+
+	/** Cuántas veces más rápido vuelan todos los trajes (/traje velocidad <veces>), guardado en el mundo. */
+	static final class Datos extends net.minecraft.world.level.saveddata.SavedData {
+		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
+		float veces = 1f;
+
+		private static Datos leer(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			Datos d = new Datos();
+			if (tag.contains("veces")) d.veces = tag.getFloat("veces");
+			return d;
+		}
+
+		@Override
+		public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			tag.putFloat("veces", veces);
+			return tag;
+		}
+	}
+
+	private static Datos datos(MinecraftServer server) {
+		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_traje");
+	}
+
+	public static float velocidadVuelo(MinecraftServer server) {
+		return VELOCIDAD_NORMAL * datos(server).veces;
+	}
+
+	public static void registrarComandos(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+		dispatcher.register(net.minecraft.commands.Commands.literal("traje").requires(s -> s.hasPermission(2))
+				.then(net.minecraft.commands.Commands.literal("velocidad")
+						.executes(c -> {
+							float v = datos(c.getSource().getServer()).veces;
+							c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal("Los trajes vuelan a " + v
+									+ " veces la velocidad normal.").withColor(0x49C8E5), false);
+							return 1;
+						})
+						.then(net.minecraft.commands.Commands.argument("veces", com.mojang.brigadier.arguments.FloatArgumentType.floatArg(0.1f, 20f))
+								.executes(c -> {
+									float v = com.mojang.brigadier.arguments.FloatArgumentType.getFloat(c, "veces");
+									Datos d = datos(c.getSource().getServer());
+									d.veces = v;
+									d.setDirty();
+									c.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal("Listo: todos los trajes vuelan a "
+											+ v + " veces la velocidad normal (1 = normal).").withColor(0x49C8E5), true);
+									return 1;
+								}))));
+	}
+
 	/** Del lado del cliente: los jugadores que tienen el traje puesto (lo que mandó el servidor). */
 	public static final Set<UUID> PUESTOS_CLIENTE = new HashSet<>();
 

@@ -23,16 +23,16 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * La Armadura del Limbo puesta, con el modelo "outer_armor" de Patricio (textures/models/armor/limbo_armadura.png),
- * en jugadores, mobs y soportes de armadura. El casco pone la cabeza (capa de adentro +0,75 y de afuera +1), la
+ * en jugadores, mobs y soportes de armadura. El casco pone la cabeza (capa de adentro +0,3 y de afuera +0,5, más finas que en Blockbench), la
  * pechera el cuerpo (las dos capas) y los brazos, los pantalones la mitad de arriba de las piernas y las botas la
  * mitad de abajo. La armadura normal de Minecraft no se dibuja (HumanoidArmorLimboMixin).
  */
 public class ArmaduraLimboLayer<E extends LivingEntity, M extends HumanoidModel<E>> extends RenderLayer<E, M> {
 	private static final ResourceLocation TEXTURA =
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/models/armor/limbo_armadura.png");
-	private static final CubeDeformation ADENTRO = new CubeDeformation(0.75f), AFUERA = new CubeDeformation(1f);
+	private static final CubeDeformation ADENTRO = new CubeDeformation(0.3f), AFUERA = new CubeDeformation(0.5f);
 	/** Las botas apenas más grandes, para que donde se juntan con los pantalones no titile. */
-	private static final CubeDeformation BOTA_ADENTRO = new CubeDeformation(0.8f), BOTA_AFUERA = new CubeDeformation(1.05f);
+	private static final CubeDeformation BOTA_ADENTRO = new CubeDeformation(0.35f), BOTA_AFUERA = new CubeDeformation(0.55f);
 	private static final ModelPart CABEZA, CUERPO, BRAZO_DER, BRAZO_IZQ, PANTALON_DER, PANTALON_IZQ, BOTA_DER, BOTA_IZQ;
 
 	static {
@@ -87,6 +87,8 @@ public class ArmaduraLimboLayer<E extends LivingEntity, M extends HumanoidModel<
 	public void render(PoseStack pose, MultiBufferSource buffers, int luz, E entidad, float giro, float paso,
 					   float parcial, float edad, float cabeza, float inclinacion) {
 		if (entidad.isInvisible()) return;
+		// Con el Traje Espacial puesto no se ve la armadura.
+		if (entidad instanceof net.minecraft.world.entity.player.Player jugador && com.dedsafio4.brazalete.TrajeEspacial.puesto(jugador)) return;
 		ItemStack[] piezas = {entidad.getItemBySlot(EquipmentSlot.HEAD), entidad.getItemBySlot(EquipmentSlot.CHEST),
 				entidad.getItemBySlot(EquipmentSlot.LEGS), entidad.getItemBySlot(EquipmentSlot.FEET)};
 		boolean alguna = false;

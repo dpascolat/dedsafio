@@ -198,6 +198,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.almas.AlmitasLimbo.registrarComandos(dispatcher);
 			com.dedsafio4.recoger.ItemsRecoger.registrarComandos(dispatcher);
 			com.dedsafio4.cambios.Zombificacion.registrarComandos(dispatcher);
+			com.dedsafio4.brazalete.TrajeEspacial.registrarComandos(dispatcher);
 			com.dedsafio4.cambios.GasToxico.registrarComandos(dispatcher);
 			com.dedsafio4.gancho.Ganchos.registrarComandos(dispatcher);
 			com.dedsafio4.salidalimbo.SalidaLimbo.registrarComandos(dispatcher);
@@ -282,6 +283,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.brazalete.Brazalete.registrar();
 		com.dedsafio4.brazalete.TrajeEspacial.registrar();
 		com.dedsafio4.dimension.EspacioInterdimensional.registrar();
+		com.dedsafio4.bloques.BloqueRojo.registrar();
 		Candados.registrar();
 		SinAldeanosViejos.registrar();
 

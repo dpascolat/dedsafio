@@ -12,15 +12,22 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** La Armadura del Limbo usa su propio modelo (ArmaduraLimboLayer): no se dibuja la normal, en nadie. */
+/**
+ * La Armadura del Limbo usa su propio modelo (ArmaduraLimboLayer): no se dibuja la normal, en nadie. Y con el Traje
+ * Espacial puesto no se ve ninguna armadura (el traje va arriba de todo).
+ */
 @Mixin(HumanoidArmorLayer.class)
 public abstract class HumanoidArmorLimboMixin {
+	private static boolean conTraje(LivingEntity entidad) {
+		return entidad instanceof net.minecraft.world.entity.player.Player jugador && com.dedsafio4.brazalete.TrajeEspacial.puesto(jugador);
+	}
+
 	@Inject(method = "renderArmorPiece(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;"
 			+ "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V",
 			at = @At("HEAD"), cancellable = true)
 	private void dedsafio4$sinArmaduraNormal(PoseStack pose, MultiBufferSource buffers, LivingEntity entidad, EquipmentSlot lugar,
 											 int luz, HumanoidModel<?> modelo, CallbackInfo ci) {
-		if (entidad.getItemBySlot(lugar).getItem() instanceof ArmaduraLimbo.Pieza) ci.cancel();
+		if (entidad.getItemBySlot(lugar).getItem() instanceof ArmaduraLimbo.Pieza || conTraje(entidad)) ci.cancel();
 	}
 
 	/** NeoForge dibuja la armadura con otra versión del método (con 6 números más): también se saltea ahí. */
@@ -30,6 +37,6 @@ public abstract class HumanoidArmorLimboMixin {
 	private void dedsafio4$sinArmaduraNormalNeo(PoseStack pose, MultiBufferSource buffers, LivingEntity entidad, EquipmentSlot lugar,
 												int luz, HumanoidModel<?> modelo, float a, float b, float c, float d, float e, float f,
 												CallbackInfo ci) {
-		if (entidad.getItemBySlot(lugar).getItem() instanceof ArmaduraLimbo.Pieza) ci.cancel();
+		if (entidad.getItemBySlot(lugar).getItem() instanceof ArmaduraLimbo.Pieza || conTraje(entidad)) ci.cancel();
 	}
 }
