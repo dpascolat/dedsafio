@@ -621,7 +621,8 @@ public final class ModItems {
 	/** Fusil de Ráfagas Phora y Francotirador Phora: como la escopeta, con sus números (EscopetaPhoraItem.Arma). */
 	public static final Item FUSIL_PHORA = registrar("fusil_rafagas_phora", new EscopetaPhoraItem(new Item.Properties(), EscopetaPhoraItem.FUSIL));
 	public static final Item FRANCOTIRADOR_PHORA = registrar("francotirador_phora", new EscopetaPhoraItem(new Item.Properties(), EscopetaPhoraItem.FRANCOTIRADOR));
-	public static final Item PROYECTIL_PHORA = registrar("proyectil_phora", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	/** Proyectil Phora: la munición de las armas Phora (nombre celeste, "Muy útil como munición."). */
+	public static final Item PROYECTIL_PHORA = registrar("proyectil_phora", new DescritoItem(new Item.Properties(), DescritoItem::proyectilPhora));
 	/** Sólo para dibujar: las piezas naranjas de la escopeta, que brillan (no está en el inventario creativo). */
 	public static final Item ESCOPETA_PHORA_BRILLO = registrar("escopeta_phora_brillo", new Item(new Item.Properties()));
 	/** Sólo para dibujar: el tambor de la escopeta (se saca y se pone al recargar) y lo naranja del tambor. */

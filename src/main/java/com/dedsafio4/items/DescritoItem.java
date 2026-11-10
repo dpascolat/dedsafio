@@ -274,6 +274,11 @@ public class DescritoItem extends Item {
 		t.add(parte("para hacer la armadura de Gleba.", GRIS));
 	}
 
+	/** Proyectil Phora. */
+	public static void proyectilPhora(List<Component> t) {
+		t.add(parte("Muy útil como munición.", 0xC6C6C6));
+	}
+
 	/** Garra de Magma. */
 	public static void garraMagma(List<Component> t) {
 		t.add(parte("Combina ", 0xC6C6C6).append(parte("Chip Phora", CELESTE)).append(parte(" con", 0xC6C6C6)));

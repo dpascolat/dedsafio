@@ -6,13 +6,13 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 
-/** Dibuja al Aldeano Robot (la textura es blanca: el color va en cada pieza del modelo). */
-public class AldeanoRobotRenderer extends MobRenderer<AldeanoRobotEntity, AldeanoRobotModelo> {
+/** Dibuja al Aldeano Phora con el modelo y la textura de Patricio (pa_aldeano_robot_onixestudio). */
+public class AldeanoRobotRenderer extends MobRenderer<AldeanoRobotEntity, AldeanoPhoraModelo> {
 	private static final ResourceLocation TEXTURA =
-			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/blanco.png");
+			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/aldeano_phora.png");
 
 	public AldeanoRobotRenderer(EntityRendererProvider.Context contexto) {
-		super(contexto, new AldeanoRobotModelo(), 0.4f);
+		super(contexto, new AldeanoPhoraModelo(), 0.4f);
 	}
 
 	@Override

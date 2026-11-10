@@ -323,6 +323,47 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean ROBOT_PHORA = "robotphora".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba del Aldeano Phora nuevo: parado (de frente y de costado), caminando y el robot dormido. */
+	private static void tickRobotPhora(Minecraft mc) {
+		int t = ticks - 20;
+		var server = mc.getSingleplayerServer();
+		if (server == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = true;
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode spectator");
+			comando(mc, "time set day");
+			comando(mc, "kill @e[type=!player,distance=..40]");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -6 99 -6 6 99 6 minecraft:stone");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -6 100 -6 6 106 6 minecraft:air");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run summon dedsafio4:aldeano_robot -1.5 100 0.5 {NoAI:1b,Rotation:[0f,0f],PersistenceRequired:1b}");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run setblock 2 100 0 dedsafio4:robot_dormido[facing=south]");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 101.3 4 180 8");
+		}
+		if (t >= 2 && t < 60) { comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 101.3 4 180 8"); }
+		if (t == 40) captura(mc, "debug_rp1_frente.png");
+		if (t >= 60 && t < 85) comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 4.5 101.3 0.5 90 8");
+		if (t == 80) captura(mc, "debug_rp2_costado.png");
+		if (t == 85) { comando(mc, "execute in dedsafio4:espacio_interdimensional run data merge entity @e[type=dedsafio4:aldeano_robot,limit=1] {NoAI:0b}"); comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 101.3 4 180 8"); }
+		if (t >= 86 && t < 120) server.execute(() -> {
+			for (var e : server.getLevel(com.dedsafio4.dimension.EspacioInterdimensional.DIMENSION).getAllEntities())
+				if (e instanceof com.dedsafio4.robots.AldeanoRobotEntity r) r.getMoveControl().setWantedPosition(-1.5, 100, -5, 0.6);
+		});
+		if (t == 110) captura(mc, "debug_rp3_caminando.png");
+		if (t == 125) { comando(mc, "kill @e[type=dedsafio4:aldeano_robot]");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -1 103 -1 1 103 1 minecraft:stone");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run setblock 0 104 0 dedsafio4:robot_dormido[facing=south]"); }
+		if (t >= 126 && t < 160) comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 104.6 2.6 180 18");
+		if (t == 150) captura(mc, "debug_rp4_dormido.png");
+		if (t >= 152 && t < 170) comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 2.6 104.6 0.5 90 18");
+		if (t == 168) captura(mc, "debug_rp5_dormido_costado.png");
+		if (t == 172) mc.stop();
+	}
+
 	private static final boolean BOLSA_PHORA = "bolsaphora".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba de la Bolsa Phora: se abre con 54 lugares, guarda lo que se pone y lo sigue teniendo al volver a abrirla. */
@@ -9095,6 +9136,10 @@ public final class DebugCielo {
 		}
 		if (BOLSA_PHORA) {
 			tickBolsaPhora(mc);
+			return;
+		}
+		if (ROBOT_PHORA) {
+			tickRobotPhora(mc);
 			return;
 		}
 		if (PERLAS) {
