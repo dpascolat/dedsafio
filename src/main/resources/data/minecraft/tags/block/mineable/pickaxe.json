@@ -26,6 +26,8 @@
 		"dedsafio4:soporte_nave",
 		"dedsafio4:grasa_liquida",
 		"dedsafio4:grasa_coagulada",
-		"dedsafio4:puerta_blindada"
+		"dedsafio4:puerta_blindada",
+		"dedsafio4:roca_espacial",
+		"dedsafio4:roca_espacial_gris"
 	]
 }

@@ -445,5 +445,11 @@
 	"effect.dedsafio4.sin_salto": "Sin Salto",
 	"entity.dedsafio4.farol": "Farol",
 	"item.dedsafio4.farol_spawn_egg": "Huevo generador de Farol",
-	"entity.dedsafio4.puerta_rastrillo": "Puerta Rastrillo"
+	"entity.dedsafio4.puerta_rastrillo": "Puerta Rastrillo",
+	"block.dedsafio4.roca_espacial": "Roca Espacial",
+	"block.dedsafio4.roca_espacial_gris": "Roca Espacial Gris",
+	"block.dedsafio4.pasto_espacial": "Pasto Espacial",
+	"block.dedsafio4.arbol_espacial": "Árbol Espacial",
+	"block.dedsafio4.flor_espacial_rosa": "Flor Espacial Rosa",
+	"block.dedsafio4.flor_espacial_lila": "Flor Espacial Lila"
 }

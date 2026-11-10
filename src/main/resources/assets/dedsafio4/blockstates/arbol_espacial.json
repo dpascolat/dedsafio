@@ -1,0 +1,65 @@
+{
+	"multipart": [
+		{
+			"apply": {
+				"model": "dedsafio4:block/arbol_espacial_centro"
+			}
+		},
+		{
+			"when": {
+				"up": "true"
+			},
+			"apply": {
+				"model": "dedsafio4:block/arbol_espacial_brazo"
+			}
+		},
+		{
+			"when": {
+				"down": "true"
+			},
+			"apply": {
+				"model": "dedsafio4:block/arbol_espacial_brazo",
+				"x": 180
+			}
+		},
+		{
+			"when": {
+				"north": "true"
+			},
+			"apply": {
+				"model": "dedsafio4:block/arbol_espacial_brazo",
+				"x": 90
+			}
+		},
+		{
+			"when": {
+				"east": "true"
+			},
+			"apply": {
+				"model": "dedsafio4:block/arbol_espacial_brazo",
+				"x": 90,
+				"y": 90
+			}
+		},
+		{
+			"when": {
+				"south": "true"
+			},
+			"apply": {
+				"model": "dedsafio4:block/arbol_espacial_brazo",
+				"x": 90,
+				"y": 180
+			}
+		},
+		{
+			"when": {
+				"west": "true"
+			},
+			"apply": {
+				"model": "dedsafio4:block/arbol_espacial_brazo",
+				"x": 90,
+				"y": 270
+			}
+		}
+	]
+}

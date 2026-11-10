@@ -94,6 +94,7 @@ public final class Brazalete {
 			return;
 		}
 		jugador.addTag(MARCA);
+		TrajeEspacial.avisar(jugador.server, jugador.getUUID(), true);
 		if (!puedeVolarSolo(jugador)) {
 			jugador.getAbilities().mayfly = true;
 			jugador.onUpdateAbilities();
@@ -104,6 +105,7 @@ public final class Brazalete {
 
 	private static void apagar(ServerPlayer jugador, String mensaje) {
 		jugador.removeTag(MARCA);
+		TrajeEspacial.avisar(jugador.server, jugador.getUUID(), false);
 		if (!puedeVolarSolo(jugador)) {
 			boolean enElAire = jugador.getAbilities().flying;
 			jugador.getAbilities().mayfly = false;

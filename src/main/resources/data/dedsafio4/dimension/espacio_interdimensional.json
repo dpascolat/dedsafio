@@ -1,0 +1,11 @@
+{
+	"type": "dedsafio4:espacio_interdimensional",
+	"generator": {
+		"type": "minecraft:noise",
+		"settings": "dedsafio4:espacio_interdimensional",
+		"biome_source": {
+			"type": "minecraft:fixed",
+			"biome": "dedsafio4:espacio_interdimensional"
+		}
+	}
+}

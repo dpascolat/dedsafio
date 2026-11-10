@@ -1,0 +1,40 @@
+{
+	"textures": {
+		"t": "dedsafio4:block/arbol_espacial",
+		"particle": "dedsafio4:block/arbol_espacial"
+	},
+	"elements": [
+		{
+			"from": [
+				3,
+				13,
+				3
+			],
+			"to": [
+				13,
+				16,
+				13
+			],
+			"faces": {
+				"north": {
+					"texture": "#t"
+				},
+				"east": {
+					"texture": "#t"
+				},
+				"south": {
+					"texture": "#t"
+				},
+				"west": {
+					"texture": "#t"
+				},
+				"up": {
+					"texture": "#t"
+				},
+				"down": {
+					"texture": "#t"
+				}
+			}
+		}
+	]
+}

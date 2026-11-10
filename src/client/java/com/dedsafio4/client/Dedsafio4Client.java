@@ -70,6 +70,12 @@ public class Dedsafio4Client implements ClientModInitializer {
 		com.dedsafio4.client.menu.MenuPrincipalScreen.registrar();
 		// El montoncito de la CACA necesita transparencia.
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.CACA, RenderType.cutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(com.dedsafio4.dimension.EspacioInterdimensional.PASTO, RenderType.cutout());
+		EspacioInterdimensionalCielo.registrar();
+		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.brazalete.TrajeEspacial.Payload.TYPE, (payload, context) -> {
+			if (payload.puesto()) com.dedsafio4.brazalete.TrajeEspacial.PUESTOS_CLIENTE.add(payload.jugador());
+			else com.dedsafio4.brazalete.TrajeEspacial.PUESTOS_CLIENTE.remove(payload.jugador());
+		});
 		BlockRenderLayerMap.INSTANCE.putBlock(com.dedsafio4.banco.ModCajero.CAJERO, RenderType.cutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.MENSAJERO, RenderType.cutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.PASTO_ROSA, RenderType.cutout());
@@ -220,6 +226,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 						registro.register(new CapaEstandarteLayer(jugador, contexto.getModelSet()));
 						registro.register(new com.dedsafio4.client.bulag.CraneoLayer(jugador));
 						registro.register(new FlorCascoLayer(jugador));
+						registro.register(new TrajeLayer(jugador));
 						registro.register(new BrazaleteLayer(jugador));
 					}
 				});

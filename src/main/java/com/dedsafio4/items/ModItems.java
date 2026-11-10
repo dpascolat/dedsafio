@@ -885,6 +885,10 @@ public final class ModItems {
 						entradas.accept(PLANTILLA_LIMBO);
 						entradas.accept(POLVO_ALMA);
 						entradas.accept(BRAZALETE_INTERDIMENSIONAL);
+						for (var b : new net.minecraft.world.level.block.Block[]{com.dedsafio4.dimension.EspacioInterdimensional.ROCA,
+								com.dedsafio4.dimension.EspacioInterdimensional.ROCA_GRIS, com.dedsafio4.dimension.EspacioInterdimensional.ARBOL,
+								com.dedsafio4.dimension.EspacioInterdimensional.FLOR_ROSA, com.dedsafio4.dimension.EspacioInterdimensional.FLOR_LILA,
+								com.dedsafio4.dimension.EspacioInterdimensional.PASTO}) entradas.accept(b);
 						entradas.accept(CASCO_GLEBANOIDE);
 						entradas.accept(PECHERA_GLEBANOIDE);
 						entradas.accept(PANTALONES_GLEBANOIDES);

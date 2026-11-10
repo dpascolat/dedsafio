@@ -31,6 +31,8 @@ public class BrazaleteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
 	private static final float P = 1 / 16f;
 	/** Qué tan gruesa: el modelo mide 5,5 píxeles de ancho y el brazo 4; así queda apenas más ancha que el brazo. */
 	private static final float GROSOR = 0.82f;
+	/** Con el Traje Espacial puesto el brazo es más grueso: la pulsera también, para que se vea encima. */
+	private static final float GROSOR_TRAJE = 1.2f;
 	/** Qué parte del largo del modelo (10 píxeles) se usa: así queda de unos 8. */
 	private static final float LARGO = 0.7f;
 	/** El modelo de Blockbench (la y da vuelta: en los modelos de Minecraft la y va para abajo). */
@@ -61,11 +63,16 @@ public class BrazaleteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
 			if (esDerecha) derecha = true;
 			else izquierda = true;
 		}
+		boolean traje = com.dedsafio4.brazalete.TrajeEspacial.puesto(jugador);
+		if (traje) derecha = izquierda = true;
 		if (!derecha && !izquierda) return;
 		boolean fino = jugador.getSkin().model() == PlayerSkin.Model.SLIM;
 		var vertices = buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURA));
-		if (derecha) dibujar(pose, vertices, luz, getParentModel().rightArm, fino ? -0.5f : -1f, -90f);
-		if (izquierda) dibujar(pose, vertices, luz, getParentModel().leftArm, fino ? 0.5f : 1f, 90f);
+		float grosor = traje ? GROSOR_TRAJE : GROSOR;
+		// Con el traje, la pulsera va sobre la manga del traje (que está 1 píxel más afuera).
+		float centro = traje ? 2f : (fino ? 0.5f : 1f);
+		if (derecha) dibujar(pose, vertices, luz, getParentModel().rightArm, -centro, -90f, grosor);
+		if (izquierda) dibujar(pose, vertices, luz, getParentModel().leftArm, centro, 90f, grosor);
 	}
 
 	/**
@@ -73,12 +80,12 @@ public class BrazaleteLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
 	 * y la gema mira hacia afuera del cuerpo.
 	 */
 	private static void dibujar(PoseStack pose, com.mojang.blaze3d.vertex.VertexConsumer vertices, int luz, ModelPart brazo,
-								float centroX, float giroZ) {
+								float centroX, float giroZ, float grosor) {
 		pose.pushPose();
 		brazo.translateAndRotate(pose);
 		pose.translate(centroX * P, 6.2f * P, 0);   // pegada a la mano (el brazo va de -2 a 10)
 		pose.mulPose(Axis.ZP.rotationDegrees(giroZ));
-		pose.scale(LARGO, GROSOR, GROSOR);          // un poco más corta y más pegada al brazo
+		pose.scale(LARGO, grosor, grosor);          // un poco más corta y más pegada al brazo
 		pose.translate(3 * P, 2 * P, -1 * P);   // el centro de la banda al origen
 		PULSERA.render(pose, vertices, luz, OverlayTexture.NO_OVERLAY);
 		pose.popPose();

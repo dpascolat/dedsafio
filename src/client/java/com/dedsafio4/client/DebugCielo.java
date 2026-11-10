@@ -323,6 +323,96 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean TRAJE = "traje".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	private static void estadoTraje(Minecraft mc, String que) {
+		var server = mc.getSingleplayerServer();
+		server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			System.out.println("TR " + que + ": traje(servidor)=" + com.dedsafio4.brazalete.TrajeEspacial.puesto(j) + " traje(cliente)=" + com.dedsafio4.brazalete.TrajeEspacial.puesto(mc.player)
+					+ " mayfly=" + j.getAbilities().mayfly + " volando=" + j.getAbilities().flying + " pose(servidor)=" + j.getPose() + " pose(cliente)=" + mc.player.getPose());
+		});
+	}
+
+	/** Prueba del Traje Espacial: con J aparece el traje (con la pulsera), vuela acostado, y con J otra vez se va. */
+	private static void tickTraje(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "effect clear @s");
+			comando(mc, "clear @s");
+			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0 90 0");
+			comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional");
+		}
+		if (t == 15) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 25) { estadoTraje(mc, "despues de J"); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }
+		if (t >= 25 && t < 135) { mc.player.setYRot(0f); mc.player.yBodyRot = 0f; mc.player.yBodyRotO = 0f; mc.player.yHeadRot = 0f; mc.player.setXRot(10f); }
+		if (t == 27) { mc.player.getAbilities().flying = true; mc.player.onUpdateAbilities(); }
+		if (t == 35) { mc.player.getAbilities().flying = false; mc.player.onUpdateAbilities(); comando(mc, "effect give @s minecraft:levitation 1 255 true"); }
+		if (t == 50) captura(mc, "debug_tr1_frente.png");
+		if (t == 52) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+		if (t == 62) captura(mc, "debug_tr0_espalda.png");
+		if (t == 64) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+		if (t == 65) { mc.player.getAbilities().flying = true; mc.player.onUpdateAbilities(); }
+		if (t == 75) estadoTraje(mc, "volando");
+		if (t == 72) captura(mc, "debug_tr2_flotando.png");
+		if (t >= 75 && t < 150) { mc.player.setDeltaMovement(0, 0, 0.45); mc.player.setXRot(0f); }
+		if (t == 120) { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); }
+		if (t == 112) captura(mc, "debug_tr3_volando_frente.png");
+		if (t == 135) { mc.player.setYRot(90f); mc.player.yBodyRot = 90f; mc.player.yBodyRotO = 90f; mc.player.yHeadRot = 90f; }
+		if (t >= 135 && t < 150) mc.player.setDeltaMovement(-0.45, 0, 0);
+		if (t == 132) captura(mc, "debug_tr4_volando_atras.png");
+		if (t == 148) captura(mc, "debug_tr5_volando_costado.png");
+		if (t == 152) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 162) estadoTraje(mc, "despues de J otra vez (sin traje)");
+		if (t == 165) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; mc.stop(); }
+	}
+
+	private static final boolean ESPACIO_INTER = "espaciointer".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba del Espacio Interdimensional: entra, mira el paisaje, el cielo y de cerca los árboles y el pasto. */
+	private static void tickEspacioInter(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = true;
+		if (t == -5) revivir(mc);
+		if (t == 0) { comando(mc, "gamemode spectator"); comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 40 90 40 -135 25"); }
+		if (t == 120) captura(mc, "debug_ei1_paisaje.png");
+		if (t == 125) comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 40 90 40 -135 -40");
+		if (t == 150) captura(mc, "debug_ei2_cielo.png");
+		if (t == 155) mc.getSingleplayerServer().execute(() -> {
+			var w = mc.getSingleplayerServer().getLevel(com.dedsafio4.dimension.EspacioInterdimensional.DIMENSION);
+			int arboles = 0, pasto = 0, gris = 0, oscura = 0;
+			net.minecraft.core.BlockPos cerca = null;
+			for (int x = -40; x <= 40; x++) for (int z = -40; z <= 40; z++) {
+				int y = w.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x, z);
+				for (int dy = -1; dy <= 8; dy++) {
+					var e = w.getBlockState(new net.minecraft.core.BlockPos(x, y - 1 - dy + 8, z));
+					if (e.getBlock() instanceof com.dedsafio4.dimension.EspacioInterdimensional.ArbolBlock) { arboles++; if (cerca == null) cerca = new net.minecraft.core.BlockPos(x, y, z); }
+				}
+				var arriba = w.getBlockState(new net.minecraft.core.BlockPos(x, y - 1, z));
+				if (arriba.is(com.dedsafio4.dimension.EspacioInterdimensional.PASTO)) pasto++;
+				var piso = w.getBlockState(new net.minecraft.core.BlockPos(x, y - 2, z));
+				if (arriba.is(com.dedsafio4.dimension.EspacioInterdimensional.ROCA_GRIS) || piso.is(com.dedsafio4.dimension.EspacioInterdimensional.ROCA_GRIS)) gris++;
+				if (arriba.is(com.dedsafio4.dimension.EspacioInterdimensional.ROCA) || piso.is(com.dedsafio4.dimension.EspacioInterdimensional.ROCA)) oscura++;
+			}
+			System.out.println("EI 80x80 alrededor de 0,0: bloques de arbol=" + arboles + " pasto=" + pasto + " piso gris=" + gris + " piso oscuro=" + oscura + " un arbol en " + cerca);
+			arbolCerca = cerca;
+		});
+		if (t == 160 && arbolCerca != null) comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s " + (arbolCerca.getX() + 6) + " " + (arbolCerca.getY() + 3) + " " + (arbolCerca.getZ() + 6) + " 135 15");
+		if (t == 200) captura(mc, "debug_ei3_arbol.png");
+		if (t == 205) mc.stop();
+	}
+
+	private static net.minecraft.core.BlockPos arbolCerca;
+
 	private static final boolean VUELO = "vuelo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	private static void estadoVuelo(Minecraft mc, String que) {
@@ -8810,6 +8900,14 @@ public final class DebugCielo {
 		}
 		if (VUELO) {
 			tickVuelo(mc);
+			return;
+		}
+		if (ESPACIO_INTER) {
+			tickEspacioInter(mc);
+			return;
+		}
+		if (TRAJE) {
+			tickTraje(mc);
 			return;
 		}
 		if (PERLAS) {

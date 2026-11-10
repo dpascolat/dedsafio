@@ -1,0 +1,50 @@
+{
+	"has_precipitation": false,
+	"temperature": 0.5,
+	"downfall": 0.5,
+	"effects": {
+		"fog_color": 2759232,
+		"sky_color": 0,
+		"water_color": 6967256,
+		"water_fog_color": 1708080,
+		"particle": {
+			"options": {
+				"type": "minecraft:white_ash"
+			},
+			"probability": 0.012
+		},
+		"mood_sound": {
+			"sound": "minecraft:ambient.cave",
+			"tick_delay": 6000,
+			"block_search_extent": 8,
+			"offset": 2.0
+		}
+	},
+	"spawners": {
+		"monster": [],
+		"creature": [],
+		"ambient": [],
+		"axolotls": [],
+		"underground_water_creature": [],
+		"water_creature": [],
+		"water_ambient": [],
+		"misc": []
+	},
+	"spawn_costs": {},
+	"carvers": {},
+	"features": [
+		[],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[],
+		[
+			"dedsafio4:arbol_espacial",
+			"dedsafio4:pasto_espacial"
+		]
+	]
+}
