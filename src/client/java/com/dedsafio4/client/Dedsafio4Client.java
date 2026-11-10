@@ -222,11 +222,14 @@ public class Dedsafio4Client implements ClientModInitializer {
 		// La capa con el estandarte de la Hermandad.
 		net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback.EVENT.register(
 				(tipo, dibujante, registro, contexto) -> {
+					// La Armadura del Limbo con su modelo, en todo lo que tenga cuerpo de persona (jugadores, mobs, soportes).
+					if (dibujante.getModel() instanceof net.minecraft.client.model.HumanoidModel<?>) {
+						registro.register(new ArmaduraLimboLayer(dibujante));
+					}
 					if (dibujante instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer jugador) {
 						registro.register(new CapaEstandarteLayer(jugador, contexto.getModelSet()));
 						registro.register(new com.dedsafio4.client.bulag.CraneoLayer(jugador));
 						registro.register(new FlorCascoLayer(jugador));
-						registro.register(new ArmaduraLimboLayer(jugador));
 						registro.register(new TrajeLayer(jugador));
 						registro.register(new BrazaleteLayer(jugador));
 					}

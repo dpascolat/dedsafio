@@ -325,7 +325,7 @@ public final class DebugCielo {
 
 	private static final boolean ARMADURA_LIMBO = "armaduralimbo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
-	/** Prueba de la Armadura del Limbo con el modelo nuevo: puesta en el jugador, de frente, de costado y de atrás. */
+	/** Prueba de la Armadura del Limbo: solo botas, solo pantalones, todo, y en un zombi y un soporte. */
 	private static void tickArmaduraLimbo(Minecraft mc) {
 		int t = ticks - 20;
 		if (mc.getSingleplayerServer() == null || mc.player == null) return;
@@ -336,21 +336,36 @@ public final class DebugCielo {
 		if (t == 0) {
 			comando(mc, "gamemode creative");
 			comando(mc, "time set day");
+			comando(mc, "difficulty peaceful");
 			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
 			comando(mc, "clear @s");
 			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5 0 0");
-			comando(mc, "fill -3 199 -3 3 199 3 minecraft:stone");
+			comando(mc, "fill -4 199 -3 4 199 5 minecraft:stone");
+			comando(mc, "kill @e[type=!player,distance=..20]");
+			comando(mc, "item replace entity @s armor.feet with dedsafio4:botas_limbo");
+		}
+		if (t >= 5) { mc.player.setYRot(0f); mc.player.yBodyRot = 0f; mc.player.yBodyRotO = 0f; mc.player.yHeadRot = 0f; mc.player.setXRot(10f); }
+		if (t == 5) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+		if (t == 25) captura(mc, "debug_al1_solo_botas.png");
+		if (t == 27) { comando(mc, "item replace entity @s armor.feet with minecraft:air"); comando(mc, "item replace entity @s armor.legs with dedsafio4:pantalones_limbo"); }
+		if (t == 45) captura(mc, "debug_al2_solo_pantalones.png");
+		if (t == 47) {
 			for (String p : new String[]{"head casco", "chest pechera", "legs pantalones", "feet botas"}) {
 				String[] q = p.split(" ");
 				comando(mc, "item replace entity @s armor." + q[0] + " with dedsafio4:" + q[1] + "_limbo");
 			}
 		}
-		if (t >= 5) { mc.player.setYRot(0f); mc.player.yBodyRot = 0f; mc.player.yBodyRotO = 0f; mc.player.yHeadRot = 0f; mc.player.setXRot(10f); }
-		if (t == 5) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
-		if (t == 30) captura(mc, "debug_al1_frente.png");
-		if (t == 32) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
-		if (t == 50) captura(mc, "debug_al2_atras.png");
-		if (t == 55) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; mc.stop(); }
+		if (t == 65) captura(mc, "debug_al3_todo.png");
+		if (t == 67) {
+			String arm = "ArmorItems:[{id:\"dedsafio4:botas_limbo\",count:1},{id:\"dedsafio4:pantalones_limbo\",count:1},{id:\"dedsafio4:pechera_limbo\",count:1},{id:\"dedsafio4:casco_limbo\",count:1}]";
+			comando(mc, "summon minecraft:armor_stand -1.5 200 3.5 {NoGravity:1b,ShowArms:1b,Rotation:[180f,0f]," + arm + "}");
+			comando(mc, "summon minecraft:zombie 2.5 200 3.5 {NoAI:1b,PersistenceRequired:1b,Rotation:[180f,0f]," + arm + "}");
+			comando(mc, "gamemode spectator");
+			comando(mc, "tp @s 0.5 201.2 -1.5 0 10");
+			mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+		}
+		if (t == 90) captura(mc, "debug_al4_soporte_zombi.png");
+		if (t == 95) { comando(mc, "kill @e[type=!player,distance=..20]"); mc.options.hideGui = false; mc.stop(); }
 	}
 
 	private static final boolean TRAJE = "traje".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
