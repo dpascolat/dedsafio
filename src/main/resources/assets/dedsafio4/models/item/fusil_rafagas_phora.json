@@ -1,0 +1,145 @@
+{
+	"parent": "dedsafio4:item/escopeta_phora",
+	"textures": {
+		"0": "dedsafio4:item/escopeta_phora",
+		"particle": "dedsafio4:item/escopeta_phora"
+	},
+	"display": {
+		"firstperson_righthand": {
+			"rotation": [
+				4,
+				-84,
+				0
+			],
+			"translation": [
+				1.5,
+				-0.5,
+				0
+			],
+			"scale": [
+				0.598,
+				0.46,
+				0.46
+			]
+		},
+		"firstperson_lefthand": {
+			"rotation": [
+				4,
+				-96,
+				0
+			],
+			"translation": [
+				-1.5,
+				-0.5,
+				0
+			],
+			"scale": [
+				0.598,
+				0.46,
+				0.46
+			]
+		},
+		"thirdperson_righthand": {
+			"rotation": [
+				0,
+				-90,
+				-90
+			],
+			"translation": [
+				0,
+				3,
+				1
+			],
+			"scale": [
+				0.585,
+				0.45,
+				0.45
+			]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [
+				0,
+				-90,
+				-90
+			],
+			"translation": [
+				0,
+				3,
+				1
+			],
+			"scale": [
+				0.585,
+				0.45,
+				0.45
+			]
+		},
+		"ground": {
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"translation": [
+				0,
+				2,
+				0
+			],
+			"scale": [
+				0.39,
+				0.3,
+				0.3
+			]
+		},
+		"gui": {
+			"rotation": [
+				0,
+				180,
+				0
+			],
+			"translation": [
+				0,
+				-1.5,
+				0
+			],
+			"scale": [
+				0.468,
+				0.36,
+				0.36
+			]
+		},
+		"fixed": {
+			"rotation": [
+				0,
+				180,
+				0
+			],
+			"translation": [
+				0,
+				-1,
+				0
+			],
+			"scale": [
+				0.468,
+				0.36,
+				0.36
+			]
+		},
+		"head": {
+			"rotation": [
+				0,
+				-90,
+				0
+			],
+			"translation": [
+				0,
+				8,
+				0
+			],
+			"scale": [
+				0.65,
+				0.5,
+				0.5
+			]
+		}
+	}
+}

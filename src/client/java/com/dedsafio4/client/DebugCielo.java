@@ -323,6 +323,76 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean BOLSA_PHORA = "bolsaphora".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de la Bolsa Phora: se abre con 54 lugares, guarda lo que se pone y lo sigue teniendo al volver a abrirla. */
+	private static void tickBolsaPhora(Minecraft mc) {
+		int t = ticks - 20;
+		var server = mc.getSingleplayerServer();
+		if (server == null || mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5) revivir(mc);
+		if (t == 0) { if (mc.screen != null) mc.setScreen(null); comando(mc, "gamemode survival"); comando(mc, "clear @s");
+			comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:bolsa_phora"); comando(mc, "item replace entity @s hotbar.1 with minecraft:diamond 5"); }
+		if (t == 10) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t == 20) System.out.println("BO abierta: pantalla=" + (mc.screen == null ? "nada" : mc.screen.getClass().getSimpleName()) + " lugares de la bolsa=" + (mc.player.containerMenu.slots.size() - 36));
+		if (t == 22) { var m = mc.player.containerMenu; int diamante = m.slots.size() - 9 + 1; mc.gameMode.handleInventoryMouseClick(m.containerId, diamante, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, mc.player); }
+		if (t == 30) captura(mc, "debug_bo1_abierta.png");
+		if (t == 32) mc.player.closeContainer();
+		if (t == 40) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t == 50) { var m = mc.player.containerMenu; int n = 0; for (int i = 0; i < m.slots.size() - 36; i++) n += m.slots.get(i).getItem().is(net.minecraft.world.item.Items.DIAMOND) ? m.slots.get(i).getItem().getCount() : 0;
+			System.out.println("BO al volver a abrirla: diamantes adentro=" + n); mc.player.closeContainer(); }
+		if (t == 55) mc.stop();
+	}
+
+	private static final boolean APUNTAR = "apuntar".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de las armas Phora: apuntando con cada una (captura) y el daño del francotirador y del fusil. */
+	private static void tickApuntar(Minecraft mc) {
+		int t = ticks - 20;
+		var server = mc.getSingleplayerServer();
+		if (server == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = false;
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "difficulty normal");
+			comando(mc, "time set day");
+			comando(mc, "clear @s");
+			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "kill @e[type=!player,distance=..40]");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5 180 0");
+			comando(mc, "fill -6 199 -12 6 199 3 minecraft:stone");
+			comando(mc, "fill -6 200 -12 6 206 3 minecraft:air");
+			comando(mc, "fill -3 199 -10 3 205 -10 minecraft:white_concrete");
+			comando(mc, "setblock 0 201 -10 minecraft:red_concrete");
+			comando(mc, "give @s dedsafio4:proyectil_phora 64");
+		}
+		String[] armas = {"escopeta_phora", "fusil_rafagas_phora", "francotirador_phora"};
+		for (int k = 0; k < 3; k++) {
+			int b = 10 + k * 70;
+			if (t == b) comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:" + armas[k] + "[custom_data={dedsafio4_balas:30}]");
+			if (t >= b + 45 && t < b + 65) mc.options.keyUse.setDown(true);
+			if (t == b + 62) captura(mc, "debug_ap_" + armas[k] + ".png");
+			if (t == b + 65) mc.options.keyUse.setDown(false);
+		}
+		if (t >= 5) { mc.player.setYRot(180f); mc.player.setXRot(0f); mc.player.yRotO = 180f; mc.player.xRotO = 0f; }
+		// Daño: un zombi delante, un tiro de francotirador (100) y 3 clics de fusil.
+		if (t == 230) { comando(mc, "summon minecraft:husk 0.5 200 -4.5 {NoAI:1b,PersistenceRequired:1b,Health:500f,attributes:[{id:\"minecraft:generic.max_health\",base:500}]}"); comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:francotirador_phora[custom_data={dedsafio4_balas:5}]"); }
+		if (t == 240) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.items.EscopetaPhoraItem.DispararPayload());
+		if (t == 260) server.execute(() -> { for (var e : server.overworld().getAllEntities()) if (e instanceof net.minecraft.world.entity.monster.Husk h) System.out.println("AR francotirador: vida del zombi=" + h.getHealth() + " de 500"); });
+		if (t == 262) comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:fusil_rafagas_phora[custom_data={dedsafio4_balas:30}]");
+		if (t == 270 || t == 271 || t == 272 || t == 280) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.items.EscopetaPhoraItem.DispararPayload());
+		if (t == 285) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			for (var e : server.overworld().getAllEntities()) if (e instanceof net.minecraft.world.entity.monster.Husk h)
+				System.out.println("AR fusil (clics en t270, 271, 272 y 280): vida del zombi=" + h.getHealth() + " balas=" + com.dedsafio4.items.EscopetaPhoraItem.balas(j.getMainHandItem()));
+		});
+		if (t == 290) { comando(mc, "kill @e[type=minecraft:husk]"); mc.stop(); }
+	}
+
 	private static final boolean ROJO = "rojo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	private static void estadoRojo(Minecraft mc, String que) {
@@ -9017,6 +9087,14 @@ public final class DebugCielo {
 		}
 		if (ROJO) {
 			tickRojo(mc);
+			return;
+		}
+		if (APUNTAR) {
+			tickApuntar(mc);
+			return;
+		}
+		if (BOLSA_PHORA) {
+			tickBolsaPhora(mc);
 			return;
 		}
 		if (PERLAS) {

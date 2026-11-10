@@ -14,6 +14,8 @@ abstract class ZoomEscopetaMixin {
 	private void dedsafio4$zoom(CallbackInfoReturnable<Float> cir) {
 		if ((Object) this != net.minecraft.client.Minecraft.getInstance().player) return;
 		float a = EscopetaCliente.apuntando(1f);
-		if (a > 0) cir.setReturnValue(cir.getReturnValueF() * (1f - 0.18f * a));
+		// Cada arma acerca lo suyo (la escopeta un poco, el francotirador mucho).
+		float zoom = com.dedsafio4.items.EscopetaPhoraItem.armaDe(net.minecraft.client.Minecraft.getInstance().player.getMainHandItem()).zoom();
+		if (a > 0) cir.setReturnValue(cir.getReturnValueF() * (1f - zoom * a));
 	}
 }

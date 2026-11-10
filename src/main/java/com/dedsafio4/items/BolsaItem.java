@@ -24,8 +24,8 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 
 /**
- * Bolsas: la Bolsa Primitiva (3 filas, 27 lugares, como un cofre simple) y la Bolsa Glebanoide (id saco: 4 filas,
- * 36 lugares, 9 más).
+ * Bolsas: la Bolsa Primitiva (3 filas, 27 lugares, como un cofre simple), la Bolsa Glebanoide (id saco: 4 filas,
+ * 36 lugares, 9 más) y la Bolsa Phora (6 filas, 54 lugares, como un cofre doble).
  * Con click derecho se abre; lo que tiene adentro se guarda en la bolsa misma.
  */
 public class BolsaItem extends Item {
@@ -100,7 +100,8 @@ public class BolsaItem extends Item {
 		}
 
 		private Menu(int id, Inventory inventario, ItemStack bolsa, int lugar, int filas, SimpleContainer contenido) {
-			super(filas == 4 ? MenuType.GENERIC_9x4 : MenuType.GENERIC_9x3, id, inventario, contenido, filas);
+			super(filas == 6 ? MenuType.GENERIC_9x6 : filas == 5 ? MenuType.GENERIC_9x5 : filas == 4 ? MenuType.GENERIC_9x4 : MenuType.GENERIC_9x3,
+					id, inventario, contenido, filas);
 			this.bolsa = bolsa;
 			this.lugar = lugar;
 			this.espacios = filas * 9;

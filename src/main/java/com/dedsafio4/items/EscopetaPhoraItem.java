@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Las armas Phora: Escopeta, Fusil de Ráfagas y Francotirador (los números de cada una en Arma; el Fusil y el
+ * Francotirador usan el modelo de la escopeta, más largo y con otros colores).
  * Escopeta Phora (el modelo "escopeta_minecraft" de Patricio): clic izquierdo dispara 6 perdigones en abanico
  * (3 de daño cada uno, 4,5 si dan en la cabeza; no rompe bloques). Un disparo cada 0,4 segundos y 8 en el cargador.
  * Clic derecho (mantenido) apunta: la escopeta va al medio y se mira por arriba de ella.
@@ -40,11 +42,24 @@ import java.util.Map;
  * Las balas y el fin de la recarga se guardan en el ítem (custom_data).
  */
 public class EscopetaPhoraItem extends Item {
-	public static final float DANIO = 3f, DANIO_CABEZA = 4.5f;
-	public static final int CARGADOR = 8, PERDIGONES = 6;
-	/** 0,4 segundos entre disparos y 2,5 segundos de recarga (en ticks). */
-	public static final int ENTRE_DISPAROS = 8, RECARGA = 50;
-	private static final double ALCANCE = 24, DISPERSION = 0.035;
+	/**
+	 * Los números de cada arma Phora (las tres comparten todo lo demás: Proyectil Phora, recarga, apuntar...).
+	 * entreDisparos y recarga van en ticks; zoom es cuánto se acerca la vista al apuntar (0,18 = 18%).
+	 */
+	public record Arma(float danio, float danioCabeza, int cargador, int perdigones, int entreDisparos, int recarga,
+					   double alcance, double dispersion, float zoom, String frecuencia, String tiempoRecarga) {}
+
+	/** Escopeta: 6 perdigones en abanico, 0,4 s entre disparos, 2,5 s de recarga, 8 balas. */
+	public static final Arma ESCOPETA = new Arma(3f, 4.5f, 8, 6, 8, 50, 24, 0.035, 0.18f, "0.40", "2.50");
+	/** Fusil de Ráfagas: una bala por clic, 0,13 s entre disparos (3 ticks), 3 s de recarga, 30 balas. */
+	public static final Arma FUSIL = new Arma(4f, 6f, 30, 1, 3, 60, 64, 0.004, 0.3f, "0.13", "3.00");
+	/** Francotirador: una bala que pega fuerte, 2 s entre disparos, 2,5 s de recarga, 5 balas, mucho zoom. */
+	public static final Arma FRANCOTIRADOR = new Arma(100f, 200f, 5, 1, 40, 50, 160, 0, 0.75f, "2.00", "2.50");
+
+	/** Los de la escopeta (los usaba el resto del mod). */
+	public static final int CARGADOR = 8, RECARGA = 50;
+
+	public final Arma arma;
 	private static final String BALAS = "dedsafio4_balas", FIN_RECARGA = "dedsafio4_fin_recarga";
 	private static final int BLANCO = 0xFFFFFF, CELESTE = 0x55FFFF, NARANJA = 0xFF5A14, LILA = 0xD58CFF;
 	/** La estela del perdigón: polvo naranja brillante. */
@@ -106,7 +121,17 @@ public class EscopetaPhoraItem extends Item {
 	}
 
 	public EscopetaPhoraItem(Properties propiedades) {
+		this(propiedades, ESCOPETA);
+	}
+
+	public EscopetaPhoraItem(Properties propiedades, Arma arma) {
 		super(propiedades.stacksTo(1).rarity(Rarity.EPIC));
+		this.arma = arma;
+	}
+
+	/** Los números del arma de esa pila (o los de la escopeta si no es un arma Phora). */
+	public static Arma armaDe(ItemStack pila) {
+		return pila.getItem() instanceof EscopetaPhoraItem e ? e.arma : ESCOPETA;
 	}
 
 	// ---------------------------------------------------------------- Datos guardados en el ítem
@@ -117,11 +142,12 @@ public class EscopetaPhoraItem extends Item {
 	}
 
 	public static int balas(ItemStack pila) {
-		return Mth.clamp(datos(pila).getInt(BALAS), 0, CARGADOR);
+		return Mth.clamp(datos(pila).getInt(BALAS), 0, armaDe(pila).cargador());
 	}
 
 	private static void ponerBalas(ItemStack pila, int balas) {
-		CustomData.update(DataComponents.CUSTOM_DATA, pila, t -> t.putInt(BALAS, Mth.clamp(balas, 0, CARGADOR)));
+		int maximo = armaDe(pila).cargador();
+		CustomData.update(DataComponents.CUSTOM_DATA, pila, t -> t.putInt(BALAS, Mth.clamp(balas, 0, maximo)));
 	}
 
 	private static long finRecarga(ItemStack pila) {
@@ -186,15 +212,15 @@ public class EscopetaPhoraItem extends Item {
 	}
 
 	private void empezarRecarga(ServerPlayer jugador, ItemStack pila) {
-		if (balas(pila) >= CARGADOR) return;
+		if (balas(pila) >= arma.cargador()) return;
 		if (!tieneMunicion(jugador)) {
 			jugador.displayClientMessage(Component.literal("Sin ").withColor(BLANCO)
 					.append(Component.literal("Proyectil Phora").withColor(CELESTE)).append(Component.literal(" para recargar.").withColor(BLANCO)), true);
 			jugador.level().playSound(null, jugador.blockPosition(), SoundEvents.DISPENSER_FAIL, SoundSource.PLAYERS, 0.6f, 1.4f);
 			return;
 		}
-		ponerFinRecarga(pila, jugador.level().getGameTime() + RECARGA);
-		jugador.getCooldowns().addCooldown(this, RECARGA);
+		ponerFinRecarga(pila, jugador.level().getGameTime() + arma.recarga());
+		jugador.getCooldowns().addCooldown(this, arma.recarga());
 		jugador.level().playSound(null, jugador.blockPosition(), SoundEvents.CROSSBOW_LOADING_START.value(), SoundSource.PLAYERS, 1f, 0.8f);
 	}
 
@@ -204,7 +230,7 @@ public class EscopetaPhoraItem extends Item {
 		if (level.isClientSide || !(duenio instanceof ServerPlayer jugador)) return;
 		long fin = finRecarga(pila);
 		if (fin <= 0 || level.getGameTime() < fin) return;
-		int faltan = CARGADOR - balas(pila);
+		int faltan = arma.cargador() - balas(pila);
 		int cargadas = faltan;
 		if (!jugador.getAbilities().instabuild) {
 			cargadas = 0;
@@ -226,7 +252,7 @@ public class EscopetaPhoraItem extends Item {
 	private void disparar(ServerPlayer jugador, ItemStack pila) {
 		ServerLevel mundo = jugador.serverLevel();
 		ponerBalas(pila, balas(pila) - 1);
-		jugador.getCooldowns().addCooldown(this, ENTRE_DISPAROS);
+		jugador.getCooldowns().addCooldown(this, arma.entreDisparos());
 		Vec3 ojos = jugador.getEyePosition();
 		Vec3 mira = jugador.getLookAngle();
 		// La boca del cañón: un poco adelante y a la derecha de los ojos.
@@ -243,9 +269,10 @@ public class EscopetaPhoraItem extends Item {
 		List<org.joml.Vector3f> agujeros = new java.util.ArrayList<>();
 		List<Integer> caras = new java.util.ArrayList<>();
 		var azar = jugador.getRandom();
-		for (int i = 0; i < PERDIGONES; i++) {
-			Vec3 dir = mira.add(azar.nextGaussian() * DISPERSION, azar.nextGaussian() * DISPERSION, azar.nextGaussian() * DISPERSION).normalize();
-			Vec3 fin = ojos.add(dir.scale(ALCANCE));
+		double desvio = arma.dispersion();
+		for (int i = 0; i < arma.perdigones(); i++) {
+			Vec3 dir = mira.add(azar.nextGaussian() * desvio, azar.nextGaussian() * desvio, azar.nextGaussian() * desvio).normalize();
+			Vec3 fin = ojos.add(dir.scale(arma.alcance()));
 			HitResult bloque = mundo.clip(new ClipContext(ojos, fin, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, jugador));
 			if (bloque.getType() != HitResult.Type.MISS) fin = bloque.getLocation();
 			EntityHitResult golpe = ProjectileUtil.getEntityHitResult(jugador, ojos, fin, jugador.getBoundingBox().expandTowards(fin.subtract(ojos)).inflate(1),
@@ -254,7 +281,7 @@ public class EscopetaPhoraItem extends Item {
 				fin = golpe.getLocation();
 				LivingEntity v = (LivingEntity) golpe.getEntity();
 				boolean cabeza = fin.y >= v.getEyeY() - 0.25;
-				danios.merge(v, cabeza ? DANIO_CABEZA : DANIO, Float::sum);
+				danios.merge(v, cabeza ? arma.danioCabeza() : arma.danio(), Float::sum);
 				mundo.sendParticles(cabeza ? ParticleTypes.CRIT : ParticleTypes.DAMAGE_INDICATOR, fin.x, fin.y, fin.z, 3, 0.05, 0.05, 0.05, 0.1);
 			} else if (bloque instanceof net.minecraft.world.phys.BlockHitResult bh && bloque.getType() == HitResult.Type.BLOCK) {
 				mundo.sendParticles(ParticleTypes.SMOKE, fin.x, fin.y, fin.z, 2, 0.02, 0.02, 0.02, 0.01);
@@ -303,15 +330,15 @@ public class EscopetaPhoraItem extends Item {
 		texto.add(t("Utiliza ", BLANCO).append(t("Proyectil Phora", CELESTE)));
 		texto.add(t("para recargarla.", BLANCO));
 		texto.add(Component.empty());
-		texto.add(t("Daño: 3.00", BLANCO));
-		texto.add(t("Daño a la cabeza: 4.50", BLANCO));
+		texto.add(t(String.format(java.util.Locale.ROOT, "Daño: %.2f", arma.danio()), BLANCO));
+		texto.add(t(String.format(java.util.Locale.ROOT, "Daño a la cabeza: %.2f", arma.danioCabeza()), BLANCO));
 		texto.add(t("Daño a bloques: 0.00", BLANCO));
-		texto.add(t("Frecuencia de disparo: 0.40", BLANCO));
-		texto.add(t("Tiempo de recarga: 2.50", BLANCO));
-		texto.add(t("Tamaño del cargador: " + CARGADOR, BLANCO));
+		texto.add(t("Frecuencia de disparo: " + arma.frecuencia(), BLANCO));
+		texto.add(t("Tiempo de recarga: " + arma.tiempoRecarga(), BLANCO));
+		texto.add(t("Tamaño del cargador: " + arma.cargador(), BLANCO));
 		texto.add(t("Tipo de munición: ", BLANCO).append(t("Proyectil Phora", CELESTE)));
 		texto.add(Component.empty());
-		texto.add(t("Munición: ", BLANCO).append(t(balas(pila) + " / " + CARGADOR, NARANJA))
+		texto.add(t("Munición: ", BLANCO).append(t(balas(pila) + " / " + arma.cargador(), NARANJA))
 				.append(recargando(pila) ? t("  (recargando...)", 0xAAAAAA) : Component.empty()));
 	}
 

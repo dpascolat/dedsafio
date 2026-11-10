@@ -21,13 +21,13 @@ abstract class MinecraftDispararMixin {
 	@Inject(method = "handleKeybinds", at = @At("HEAD"))
 	private void dedsafio4$dispararApuntando(CallbackInfo ci) {
 		Minecraft mc = (Minecraft) (Object) this;
-		if (mc.player == null || !mc.player.isUsingItem() || !mc.player.getUseItem().is(ModItems.ESCOPETA_PHORA)) return;
+		if (mc.player == null || !mc.player.isUsingItem() || !(mc.player.getUseItem().getItem() instanceof com.dedsafio4.items.EscopetaPhoraItem)) return;
 		while (mc.options.keyAttack.consumeClick()) EscopetaCliente.clicIzquierdo();
 	}
 
 	@Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
 	private void dedsafio4$noRomper(boolean apretado, CallbackInfo ci) {
 		Minecraft mc = (Minecraft) (Object) this;
-		if (mc.player != null && mc.player.getMainHandItem().is(ModItems.ESCOPETA_PHORA)) ci.cancel();
+		if (mc.player != null && mc.player.getMainHandItem().getItem() instanceof com.dedsafio4.items.EscopetaPhoraItem) ci.cancel();
 	}
 }

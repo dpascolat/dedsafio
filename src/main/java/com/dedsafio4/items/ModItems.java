@@ -132,6 +132,8 @@ public final class ModItems {
 	public static final Item BOLSA_DE_TELA = registrar("bolsa_de_tela", new BolsaItem(new Item.Properties().stacksTo(1)));
 	/** Bolsa Glebanoide (id saco): como la Bolsa Primitiva pero con 9 lugares más (4 filas, 36). */
 	public static final Item SACO = registrar("saco", new BolsaItem(new Item.Properties().stacksTo(1), 4, "a"));
+	/** Bolsa Phora: 6 filas, 54 lugares. */
+	public static final Item BOLSA_PHORA = registrar("bolsa_phora", new BolsaItem(new Item.Properties().stacksTo(1), 6, "a"));
 	/** Arco Glebanoide: sus flechas rebotan en los enemigos cercanos. */
 	public static final Item ARCO_GLEBANOIDE = registrar("arco_glebanoide", new ArcoGlebanoideItem(new Item.Properties().durability(384)));
 	/** Arco de Huesos Grande: sus flechas traspasan e impactan hasta 3 enemigos. */
@@ -604,7 +606,8 @@ public final class ModItems {
 	public static final Item HOJA_PLATA = registrar("hoja_plata", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item OJO_CARMESI = registrar("ojo_carmesi", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	/** 5 ítems más de Patricio, todavía sin función (nombres provisorios). */
-	public static final Item GARRA_MAGMA = registrar("garra_magma", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	/** Garra de Magma: nombre celeste y la descripción de Patricio (se consigue con Chip Phora y Vial de Energía Phora). */
+	public static final Item GARRA_MAGMA = registrar("garra_magma", new DescritoItem(new Item.Properties(), DescritoItem::garraMagma));
 	public static final Item FRAGMENTO_AMBAR = registrar("fragmento_ambar", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item CELDA_LAVA = registrar("celda_lava", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item NUCLEO_VOLCANICO = registrar("nucleo_volcanico", new Item(new Item.Properties().rarity(Rarity.RARE)));
@@ -615,6 +618,9 @@ public final class ModItems {
 	public static final Item POLVO_SOMBRIO = registrar("polvo_sombrio", new Item(new Item.Properties()));
 	/** Escopeta Phora y su munición, el Proyectil Phora (ver EscopetaPhoraItem). */
 	public static final Item ESCOPETA_PHORA = registrar("escopeta_phora", new EscopetaPhoraItem(new Item.Properties()));
+	/** Fusil de Ráfagas Phora y Francotirador Phora: como la escopeta, con sus números (EscopetaPhoraItem.Arma). */
+	public static final Item FUSIL_PHORA = registrar("fusil_rafagas_phora", new EscopetaPhoraItem(new Item.Properties(), EscopetaPhoraItem.FUSIL));
+	public static final Item FRANCOTIRADOR_PHORA = registrar("francotirador_phora", new EscopetaPhoraItem(new Item.Properties(), EscopetaPhoraItem.FRANCOTIRADOR));
 	public static final Item PROYECTIL_PHORA = registrar("proyectil_phora", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	/** Sólo para dibujar: las piezas naranjas de la escopeta, que brillan (no está en el inventario creativo). */
 	public static final Item ESCOPETA_PHORA_BRILLO = registrar("escopeta_phora_brillo", new Item(new Item.Properties()));
@@ -771,6 +777,8 @@ public final class ModItems {
 						entradas.accept(ESPADA_ESPACIO);
 						entradas.accept(ESPADA_PHORA);
 						entradas.accept(ESCOPETA_PHORA);
+						entradas.accept(FUSIL_PHORA);
+						entradas.accept(FRANCOTIRADOR_PHORA);
 						entradas.accept(PROYECTIL_PHORA);
 						entradas.accept(com.dedsafio4.bote.ModBote.BOTE_ITEM);
 						com.dedsafio4.demonios.ModDemonios.HUEVOS.forEach(entradas::accept);
@@ -824,6 +832,7 @@ public final class ModItems {
 						entradas.accept(com.dedsafio4.bloques.HierroOxidado.ITEM);
 						for (Item bolsa : BolsasDeColores.BOLSAS.values()) entradas.accept(bolsa);
 						entradas.accept(SACO);
+						entradas.accept(BOLSA_PHORA);
 						entradas.accept(ARCO_GLEBANOIDE);
 						entradas.accept(ARCO_HUESOS_GRANDE);
 						entradas.accept(FRUTA_ESPACIO);

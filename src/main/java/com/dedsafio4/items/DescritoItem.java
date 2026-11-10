@@ -274,6 +274,13 @@ public class DescritoItem extends Item {
 		t.add(parte("para hacer la armadura de Gleba.", GRIS));
 	}
 
+	/** Garra de Magma. */
+	public static void garraMagma(List<Component> t) {
+		t.add(parte("Combina ", 0xC6C6C6).append(parte("Chip Phora", CELESTE)).append(parte(" con", 0xC6C6C6)));
+		t.add(parte("Vial de Energía Phora", CELESTE));
+		t.add(parte("para conseguirla.", 0xC6C6C6));
+	}
+
 	/** Brazalete Interdimensional (el texto de la imagen del usuario). */
 	public static void brazaleteInterdimensional(List<Component> t) {
 		int g = 0xC7C4C7, o = 0xF3AD24, a = 0x49C8E5;

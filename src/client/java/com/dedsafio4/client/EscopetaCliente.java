@@ -77,11 +77,11 @@ public final class EscopetaCliente {
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AGUJEROS.clear());
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			if (mc.player == null || mc.level == null) return;
-			boolean tiene = mc.player.getMainHandItem().is(ModItems.ESCOPETA_PHORA);
+			boolean tiene = mc.player.getMainHandItem().getItem() instanceof EscopetaPhoraItem;
 			int lugar = mc.player.getInventory().selected;
 			if (tiene && (!teniaEscopeta || lugar != lugarAntes)) agarro = mc.level.getGameTime();
 			apuntaAntes = apunta;
-			boolean apuntando = tiene && mc.player.isUsingItem() && mc.player.getUseItem().is(ModItems.ESCOPETA_PHORA);
+			boolean apuntando = tiene && mc.player.isUsingItem() && mc.player.getUseItem().getItem() instanceof EscopetaPhoraItem;
 			apunta = Mth.approach(apunta, apuntando ? 1f : 0f, 0.25f);
 			teniaEscopeta = tiene;
 			lugarAntes = lugar;
@@ -105,7 +105,7 @@ public final class EscopetaCliente {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null || mc.level == null || mc.player.isSpectator()) return false;
 		ItemStack pila = mc.player.getMainHandItem();
-		if (!pila.is(ModItems.ESCOPETA_PHORA)) return false;
+		if (!(pila.getItem() instanceof EscopetaPhoraItem)) return false;
 		if (!mc.player.getCooldowns().isOnCooldown(pila.getItem()) && !EscopetaPhoraItem.recargando(pila)) {
 			if (EscopetaPhoraItem.balas(pila) > 0) EscopetaPhoraItem.disparoCliente = mc.level.getGameTime();
 			ClientPlayNetworking.send(new EscopetaPhoraItem.DispararPayload());
@@ -116,7 +116,7 @@ public final class EscopetaCliente {
 	/** La R: si tiene la Escopeta Phora en la mano, le pide al servidor que la recargue. */
 	public static void teclaRecargar() {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.player != null && mc.player.getMainHandItem().is(ModItems.ESCOPETA_PHORA)) {
+		if (mc.player != null && mc.player.getMainHandItem().getItem() instanceof EscopetaPhoraItem) {
 			ClientPlayNetworking.send(new EscopetaPhoraItem.RecargarPayload());
 		}
 	}
@@ -129,7 +129,7 @@ public final class EscopetaCliente {
 	 */
 	public static boolean mira(GuiGraphics g, float parcial) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.player == null || mc.level == null || !mc.player.getMainHandItem().is(ModItems.ESCOPETA_PHORA)) return false;
+		if (mc.player == null || mc.level == null || !(mc.player.getMainHandItem().getItem() instanceof EscopetaPhoraItem)) return false;
 		if (!mc.options.getCameraType().isFirstPerson() || mc.player.isSpectator()) return false;
 		if (mc.getDebugOverlay().showDebugScreen()) return false;
 		if (apuntando(parcial) > 0.5f) return true;   // apuntando: sin mira, se mira por arriba de la escopeta
@@ -162,14 +162,14 @@ public final class EscopetaCliente {
 		Minecraft mc = Minecraft.getInstance();
 		Player p = mc.player;
 		if (p == null || mc.options.hideGui || p.isSpectator()) return;
-		ItemStack escopeta = p.getMainHandItem().is(ModItems.ESCOPETA_PHORA) ? p.getMainHandItem()
-				: p.getOffhandItem().is(ModItems.ESCOPETA_PHORA) ? p.getOffhandItem() : ItemStack.EMPTY;
+		ItemStack escopeta = p.getMainHandItem().getItem() instanceof EscopetaPhoraItem ? p.getMainHandItem()
+				: p.getOffhandItem().getItem() instanceof EscopetaPhoraItem ? p.getOffhandItem() : ItemStack.EMPTY;
 		if (escopeta.isEmpty()) return;
 		int x = g.guiWidth() / 2 + 91 + 8;
 		// Si la mano secundaria tiene algo y se dibuja a la derecha, se corre para no taparla.
 		if (!p.getOffhandItem().isEmpty() && p.getMainArm() == HumanoidArm.LEFT) x += 29;
 		int y = g.guiHeight() - 19;
-		String balas = EscopetaPhoraItem.balas(escopeta) + "/" + EscopetaPhoraItem.CARGADOR;
+		String balas = EscopetaPhoraItem.balas(escopeta) + "/" + EscopetaPhoraItem.armaDe(escopeta).cargador();
 		int color = EscopetaPhoraItem.recargando(escopeta) ? 0xAAAAAA : 0xFFFFFF;
 		g.drawString(mc.font, balas, x, y + 5, color, true);
 		int xi = x + mc.font.width(balas) + 2;
@@ -268,14 +268,14 @@ public final class EscopetaCliente {
 	}
 
 	/** Cuánto se mueve al apuntar: {hacia el centro, arriba, atrás, giro en Y, giro en X}. */
-	public static float[] APUNTAR = {0.60f, 0.22f, 0.10f, -0.15f, 0f};
+	public static float[] APUNTAR = {0.66f, 0.205f, 0.10f, -0.15f, 0f};
 
 	/** Qué parte de la recarga va (0 a 1), o -1 si no está recargando. */
 	private static float progresoRecarga(ItemStack pila, float parcial) {
 		Minecraft mc = Minecraft.getInstance();
 		long fin = EscopetaPhoraItem.finRecargaDe(pila);
 		if (fin <= 0 || mc.level == null) return -1;
-		return Mth.clamp(1f - (fin - (mc.level.getGameTime() + parcial)) / EscopetaPhoraItem.RECARGA, 0f, 1f);
+		return Mth.clamp(1f - (fin - (mc.level.getGameTime() + parcial)) / (float) EscopetaPhoraItem.armaDe(pila).recarga(), 0f, 1f);
 	}
 
 	/** Cuánto baja el tambor (en bloques) en la recarga: se cae el viejo, un rato sin tambor, y sube el nuevo. */
