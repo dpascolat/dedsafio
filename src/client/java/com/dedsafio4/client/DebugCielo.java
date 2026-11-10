@@ -323,6 +323,36 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean ARMADURA_LIMBO = "armaduralimbo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de la Armadura del Limbo con el modelo nuevo: puesta en el jugador, de frente, de costado y de atrás. */
+	private static void tickArmaduraLimbo(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = true;
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative");
+			comando(mc, "time set day");
+			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "clear @s");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5 0 0");
+			comando(mc, "fill -3 199 -3 3 199 3 minecraft:stone");
+			for (String p : new String[]{"head casco", "chest pechera", "legs pantalones", "feet botas"}) {
+				String[] q = p.split(" ");
+				comando(mc, "item replace entity @s armor." + q[0] + " with dedsafio4:" + q[1] + "_limbo");
+			}
+		}
+		if (t >= 5) { mc.player.setYRot(0f); mc.player.yBodyRot = 0f; mc.player.yBodyRotO = 0f; mc.player.yHeadRot = 0f; mc.player.setXRot(10f); }
+		if (t == 5) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+		if (t == 30) captura(mc, "debug_al1_frente.png");
+		if (t == 32) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+		if (t == 50) captura(mc, "debug_al2_atras.png");
+		if (t == 55) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; mc.stop(); }
+	}
+
 	private static final boolean TRAJE = "traje".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	private static void estadoTraje(Minecraft mc, String que) {
@@ -8908,6 +8938,10 @@ public final class DebugCielo {
 		}
 		if (TRAJE) {
 			tickTraje(mc);
+			return;
+		}
+		if (ARMADURA_LIMBO) {
+			tickArmaduraLimbo(mc);
 			return;
 		}
 		if (PERLAS) {

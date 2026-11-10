@@ -226,6 +226,7 @@ public class Dedsafio4Client implements ClientModInitializer {
 						registro.register(new CapaEstandarteLayer(jugador, contexto.getModelSet()));
 						registro.register(new com.dedsafio4.client.bulag.CraneoLayer(jugador));
 						registro.register(new FlorCascoLayer(jugador));
+						registro.register(new ArmaduraLimboLayer(jugador));
 						registro.register(new TrajeLayer(jugador));
 						registro.register(new BrazaleteLayer(jugador));
 					}
