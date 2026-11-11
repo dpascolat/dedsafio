@@ -8,6 +8,7 @@
 		"ThrownEnderpearlNeoMixin"
 	],
 	"client": [
+		"HumanoidArmorLimboNeoMixin",
 		"LevelRendererCieloMixin"
 	],
 	"injectors": {

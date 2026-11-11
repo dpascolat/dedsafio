@@ -2452,6 +2452,48 @@ public final class DebugCielo {
 		return sb.toString().replace("minecraft:", "");
 	}
 
+	private static final boolean MESA_PLANTILLA = "mesaplantilla".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /mesa_de_plantilla: la pantalla guarda la receta y la mesa de herrería la usa (también después de /reload). */
+	private static void tickMesaPlantilla(Minecraft mc) {
+		int t = ticks - 20;
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == 0) { comando(mc, "gamemode survival"); comando(mc, "clear @s"); }
+		if (t == 5) comando(mc, "mesa_de_plantilla");
+		if (t == 15) captura(mc, "debug_mesaplantilla.png");
+		if (t == 20) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var menu = j.containerMenu;
+			Dedsafio4ClientDebug.info("menu=" + menu.getClass().getSimpleName() + " vidrio1=" + menu.getSlot(1).getItem().getHoverName().getString());
+			menu.getSlot(10).set(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PAPER));
+			menu.getSlot(12).set(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_CHESTPLATE));
+			menu.getSlot(14).set(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD));
+			menu.getSlot(16).set(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_CHESTPLATE));
+			j.closeContainer();
+		});
+		if (t == 30) server.execute(() -> probarHerreria(server, "despues de guardar"));
+		if (t == 35) comando(mc, "reload");
+		if (t == 90) server.execute(() -> probarHerreria(server, "despues de /reload"));
+		if (t == 95) comando(mc, "mesa_de_plantilla lista");
+		if (t == 100) comando(mc, "mesa_de_plantilla borrar 1");
+		if (t == 110) server.execute(() -> probarHerreria(server, "despues de borrar"));
+		if (t == 115) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			int n = 0;
+			for (var it : j.getInventory().items) n += it.getCount();
+			Dedsafio4ClientDebug.info("cosas devueltas al inventario: " + n);
+		});
+		if (t == 120) mc.stop();
+	}
+
+	private static void probarHerreria(net.minecraft.server.MinecraftServer server, String cuando) {
+		var entrada = new net.minecraft.world.item.crafting.SmithingRecipeInput(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PAPER),
+				new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_CHESTPLATE), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD));
+		var r = server.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMITHING, entrada, server.overworld());
+		Dedsafio4ClientDebug.info("herreria " + cuando + ": " + r.map(h -> h.id() + " -> " + h.value().assemble(entrada, server.registryAccess()).getHoverName().getString()).orElse("sin receta"));
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -9061,6 +9103,10 @@ public final class DebugCielo {
 		}
 		if (PANTOME) {
 			tickPantome(mc);
+			return;
+		}
+		if (MESA_PLANTILLA) {
+			tickMesaPlantilla(mc);
 			return;
 		}
 		if (ROBOT) {

@@ -65,6 +65,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.puertas.PuertasHueso.registrar();
 		com.dedsafio4.bestias.MutacionArana.registrar();
 		com.dedsafio4.bestias.MutacionFantasma.registrar();
+		com.dedsafio4.herreria.MesaDePlantilla.registrar();
 		com.dedsafio4.bestias.RanaGiganteEntity.registrar();
 		com.dedsafio4.bestias.CreeperPapelEntity.registrar();
 		com.dedsafio4.bestias.SlotsBloqueados.registrar();
@@ -209,6 +210,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.dimension.CerdosQuiu.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.MutacionArana.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.MutacionFantasma.registrarComandos(dispatcher);
+			com.dedsafio4.herreria.MesaDePlantilla.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.RanaGiganteEntity.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.SlotsBloqueados.registrarComandos(dispatcher);
 			com.dedsafio4.bestias.ZombisNuevos.registrarComandos(dispatcher);
