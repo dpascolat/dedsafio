@@ -405,11 +405,14 @@ public final class ModItems {
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaGris));
 	public static final Item GEMA_DORADA = registrar("gema_dorada",
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaDorada));
-	/** Las 5 gemas de Patricio (texturas animadas que brillan). Sin función todavía. */
-	public static final Item GEMA_ROSA = registrar("gema_rosa", new Item(new Item.Properties().rarity(Rarity.RARE)));
-	public static final Item GEMA_AZUL = registrar("gema_azul", new Item(new Item.Properties().rarity(Rarity.RARE)));
-	public static final Item GEMA_AMARILLA = registrar("gema_amarilla", new Item(new Item.Properties().rarity(Rarity.RARE)));
-	public static final Item GEMA_VERDE = registrar("gema_verde", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	/**
+	 * Las gemas de Patricio (texturas animadas que brillan). Sin función todavía. Las de color son los Cristales de
+	 * Magia (de la Ruleta); la naranja todavía no tiene nombre.
+	 */
+	public static final Item GEMA_ROSA = registrar("gema_rosa", new CristalMagiaItem(new Item.Properties(), 0xFF4FD8));
+	public static final Item GEMA_AZUL = registrar("gema_azul", new CristalMagiaItem(new Item.Properties(), 0x4F9BFF));
+	public static final Item GEMA_AMARILLA = registrar("gema_amarilla", new CristalMagiaItem(new Item.Properties(), 0xFFC21F));
+	public static final Item GEMA_VERDE = registrar("gema_verde", new CristalMagiaItem(new Item.Properties(), 0x6BFF6B));
 	public static final Item GEMA_NARANJA = registrar("gema_naranja", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	/** Espada Glebanoide: 11 de daño, ya encantada con Perdición de Gleba (33% más contra las criaturas de Gleba). */
 	public static final Item ESPADA_GLEBANOIDE = registrar("espada_glebanoide", new EspadaGlebanoideItem(new Item.Properties().rarity(Rarity.RARE)));
