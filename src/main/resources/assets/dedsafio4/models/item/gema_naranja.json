@@ -1,6 +1,6 @@
 {
 	"parent": "minecraft:item/generated",
 	"textures": {
-		"layer0": "dedsafio4:item/fragmento_ambar"
+		"layer0": "dedsafio4:item/gema_naranja"
 	}
 }

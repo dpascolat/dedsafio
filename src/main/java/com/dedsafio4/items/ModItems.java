@@ -405,6 +405,12 @@ public final class ModItems {
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaGris));
 	public static final Item GEMA_DORADA = registrar("gema_dorada",
 			new DescritoItem(new Item.Properties().rarity(Rarity.UNCOMMON), DescritoItem::gemaDorada));
+	/** Las 5 gemas de Patricio (texturas animadas que brillan). Sin función todavía. */
+	public static final Item GEMA_ROSA = registrar("gema_rosa", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item GEMA_AZUL = registrar("gema_azul", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item GEMA_AMARILLA = registrar("gema_amarilla", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item GEMA_VERDE = registrar("gema_verde", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	public static final Item GEMA_NARANJA = registrar("gema_naranja", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	/** Espada Glebanoide: 11 de daño, ya encantada con Perdición de Gleba (33% más contra las criaturas de Gleba). */
 	public static final Item ESPADA_GLEBANOIDE = registrar("espada_glebanoide", new EspadaGlebanoideItem(new Item.Properties().rarity(Rarity.RARE)));
 	/** Espada del Limbo: de netherite, encantada con Perdición del Limbo (33% más de daño a las criaturas del Limbo). */
@@ -608,7 +614,6 @@ public final class ModItems {
 	/** 5 ítems más de Patricio, todavía sin función (nombres provisorios). */
 	/** Garra de Magma: nombre celeste y la descripción de Patricio (se consigue con Chip Phora y Vial de Energía Phora). */
 	public static final Item GARRA_MAGMA = registrar("garra_magma", new DescritoItem(new Item.Properties(), DescritoItem::garraMagma));
-	public static final Item FRAGMENTO_AMBAR = registrar("fragmento_ambar", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item CELDA_LAVA = registrar("celda_lava", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item NUCLEO_VOLCANICO = registrar("nucleo_volcanico", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item CENIZAS_ARDIENTES = registrar("cenizas_ardientes", new Item(new Item.Properties().rarity(Rarity.RARE)));
@@ -792,7 +797,6 @@ public final class ModItems {
 						entradas.accept(PANTALONES_LIMBO);
 						entradas.accept(BOTAS_LIMBO);
 						entradas.accept(GARRA_MAGMA);
-						entradas.accept(FRAGMENTO_AMBAR);
 						entradas.accept(CELDA_LAVA);
 						entradas.accept(NUCLEO_VOLCANICO);
 						entradas.accept(CENIZAS_ARDIENTES);
@@ -909,6 +913,11 @@ public final class ModItems {
 						entradas.accept(GEMA_BLANCA);
 						entradas.accept(GEMA_GRIS);
 						entradas.accept(GEMA_DORADA);
+						entradas.accept(GEMA_ROSA);
+						entradas.accept(GEMA_AZUL);
+						entradas.accept(GEMA_AMARILLA);
+						entradas.accept(GEMA_VERDE);
+						entradas.accept(GEMA_NARANJA);
 						entradas.accept(FLASHBANG_SPAWN_EGG);
 						entradas.accept(ALMITA_SPAWN_EGG);
 						entradas.accept(WRAITH_SPAWN_EGG);
