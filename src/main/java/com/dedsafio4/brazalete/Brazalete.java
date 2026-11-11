@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Brazalete Interdimensional: en la Mano Secundaria, con J se entra o se sale del Modo de Vuelo (como el vuelo de
+ * Brazalete Interdimensional: solo en el Espacio (ver enElEspacio). En la Mano Secundaria, con J se entra o se sale
+ * del Modo de Vuelo (como el vuelo de
  * creativo). El combustible es la barra de durabilidad: lleno alcanza para 5 minutos volando; solo se gasta mientras
  * se está volando de verdad. Si se acaba en el aire, Caída Lenta para no matarse. La Batería de Dilitio (cursor +
  * Click Derecho sobre el Brazalete en el inventario) recarga el 50%; es la misma que recarga la Linterna.
@@ -54,7 +55,33 @@ public final class Brazalete {
 		}
 	}
 
+	/** ¿Se puede volar acá? Solo en el Espacio: el Espacio Interdimensional y el Espacio de la nave. */
+	public static boolean enElEspacio(Player jugador) {
+		var d = jugador.level().dimension();
+		return d == com.dedsafio4.dimension.EspacioInterdimensional.DIMENSION || d == com.dedsafio4.despegue.ModDespegue.ESPACIO;
+	}
+
 	public static void registrar() {
+		// Batería en una mano y Brazalete en la otra + Click Derecho: recarga (como la Linterna).
+		net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((jugador, mundo, mano) -> {
+			ItemStack enMano = jugador.getItemInHand(mano);
+			ItemStack otra = jugador.getItemInHand(mano == net.minecraft.world.InteractionHand.MAIN_HAND
+					? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND);
+			ItemStack brazalete = enMano.is(ModItems.BRAZALETE_INTERDIMENSIONAL) && otra.is(ModItems.BATERIA_DILITIO) ? enMano
+					: enMano.is(ModItems.BATERIA_DILITIO) && otra.is(ModItems.BRAZALETE_INTERDIMENSIONAL) ? otra : null;
+			if (brazalete == null) return net.minecraft.world.InteractionResultHolder.pass(enMano);
+			ItemStack bateria = brazalete == enMano ? otra : enMano;
+			if (!mundo.isClientSide) {
+				if (combustible(brazalete) >= COMBUSTIBLE) {
+					jugador.displayClientMessage(Component.literal("El Brazalete ya tiene el combustible lleno.").withColor(DORADO), true);
+				} else {
+					recargar(brazalete, bateria, jugador);
+					jugador.displayClientMessage(Component.literal("Brazalete recargado: " + Math.round(100f * combustible(brazalete) / COMBUSTIBLE)
+							+ "% de combustible.").withColor(CELESTE), true);
+				}
+			}
+			return net.minecraft.world.InteractionResultHolder.success(enMano);
+		});
 		PayloadTypeRegistry.playC2S().register(TeclaPayload.TYPE, TeclaPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(TeclaPayload.TYPE, (payload, contexto) -> {
 			ServerPlayer jugador = contexto.player();
@@ -84,6 +111,10 @@ public final class Brazalete {
 			return;
 		}
 		ItemStack brazalete = jugador.getOffhandItem();
+		if (brazalete.is(ModItems.BRAZALETE_INTERDIMENSIONAL) && !enElEspacio(jugador)) {
+			jugador.displayClientMessage(Component.literal("El Brazalete solo funciona en el Espacio.").withStyle(ChatFormatting.RED), true);
+			return;
+		}
 		if (!brazalete.is(ModItems.BRAZALETE_INTERDIMENSIONAL)) {
 			jugador.displayClientMessage(Component.literal("Coloca el Brazalete Interdimensional en tu Mano Secundaria.").withColor(DORADO), true);
 			return;
@@ -128,6 +159,10 @@ public final class Brazalete {
 		ItemStack brazalete = jugador.getOffhandItem();
 		if (!jugador.isAlive() || !brazalete.is(ModItems.BRAZALETE_INTERDIMENSIONAL)) {
 			apagar(jugador, "Saliste del Modo de Vuelo (el Brazalete no está en tu Mano Secundaria).");
+			return;
+		}
+		if (!enElEspacio(jugador)) {
+			apagar(jugador, "Saliste del Modo de Vuelo (el Brazalete solo funciona en el Espacio).");
 			return;
 		}
 		// Si algo le sacó el vuelo (por ejemplo, cambió de modo de juego), se lo vuelve a dar.

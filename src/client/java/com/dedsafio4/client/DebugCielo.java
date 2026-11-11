@@ -323,6 +323,31 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean BRAZALETE_ESPACIO = "brazaleteespacio".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba: el Brazalete no vuela en el Overworld, sí en el Espacio, y se recarga con la Batería en la otra mano. */
+	private static void tickBrazaleteEspacio(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5) revivir(mc);
+		if (t == 0) { comando(mc, "gamemode survival"); comando(mc, "clear @s"); comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5");
+			comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional[damage=250]");
+			comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:bateria_dilitio 2"); }
+		if (t == 10) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 16) estadoVuelo(mc, "J en el Overworld (no vuela)");
+		if (t == 20) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t == 26) estadoVuelo(mc, "Click derecho con la Bateria (50 -> 200, 1 bateria)");
+		if (t == 30) comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 100 0.5");
+		if (t == 45) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 51) estadoVuelo(mc, "J en el Espacio (vuela)");
+		if (t == 55) comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5");
+		if (t == 70) estadoVuelo(mc, "volvio al Overworld (se apaga)");
+		if (t == 75) mc.stop();
+	}
+
 	private static final boolean ROBOT_PHORA = "robotphora".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba del Aldeano Phora nuevo: parado (de frente y de costado), caminando y el robot dormido. */
@@ -9140,6 +9165,10 @@ public final class DebugCielo {
 		}
 		if (ROBOT_PHORA) {
 			tickRobotPhora(mc);
+			return;
+		}
+		if (BRAZALETE_ESPACIO) {
+			tickBrazaleteEspacio(mc);
 			return;
 		}
 		if (PERLAS) {
