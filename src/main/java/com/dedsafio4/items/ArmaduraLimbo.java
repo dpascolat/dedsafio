@@ -34,7 +34,8 @@ import java.util.Map;
  *   Pechera    10 de armadura, 2 de resistencia, 1092 de durabilidad, reducción base ~40%
  *   Pantalones  8 de armadura, 2 de resistencia, 1055 de durabilidad, reducción base ~32%
  *   Botas       5 de armadura, 2 de resistencia, 981 de durabilidad, reducción base ~20%
- * Cada pieza puesta saca un 12,5% del daño que hacen las Criaturas del Limbo (tag dedsafio4:criaturas_limbo).
+ * Cada pieza puesta (también las Cedrónidas, la mejora) saca un 12,5% del daño que hacen las Criaturas del Limbo
+ * (tag dedsafio4:criaturas_limbo).
  * Con el set completo (las 4 piezas) se recibe la mitad del daño dentro del Limbo y de sus criaturas.
  * Las texturas puestas en el cuerpo (textures/models/armor/limbo_layer_1 y _2) son las de hierro pintadas con los
  * colores de los íconos.
@@ -105,12 +106,12 @@ public final class ArmaduraLimbo {
 	/** El daño que recibe con las piezas del Limbo puestas (lo llama LivingEntityAjustesMixin al principio de hurt). */
 	public static float reducir(LivingEntity quien, DamageSource fuente, float danio) {
 		if (quien.level().isClientSide || danio <= 0) return danio;
-		int n = piezas(quien);
-		if (n == 0) return danio;
+		int n = piezas(quien), cedronidas = ArmaduraCedronida.piezas(quien);
+		if (n + cedronidas == 0) return danio;
 		boolean deCriatura = esCriatura(fuente.getEntity()) || esCriatura(fuente.getDirectEntity());
 		boolean enLimbo = quien.level().dimension() == Limbo.DIMENSION;
 		if (n == 4 && (enLimbo || deCriatura)) return danio * (1 - CON_SET);
-		if (deCriatura) return danio * (1 - POR_PIEZA * n);
+		if (deCriatura) return danio * (1 - POR_PIEZA * (n + cedronidas));
 		return danio;
 	}
 

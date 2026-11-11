@@ -588,6 +588,22 @@ public final class ModItems {
 	public static final Item BOTAS_NETHERITA_PLANTA = registrar("botas_netherita_planta",
 			new NetheritaPlanta.Pieza(ArmorItem.Type.BOOTS, new Item.Properties()));
 
+	/** Armadura Cedrónida (la mejora de la del Limbo, ver ArmaduraCedronida) y su Plantilla de Mejora. */
+	public static final Item CASCO_CEDRONIDA = registrar("casco_cedronida",
+			new ArmaduraCedronida.Pieza(ArmorItem.Type.HELMET, 907, new Item.Properties().rarity(Rarity.EPIC)));
+	public static final Item PECHERA_CEDRONIDA = registrar("pechera_cedronida",
+			new ArmaduraCedronida.Pieza(ArmorItem.Type.CHESTPLATE, 1092, new Item.Properties().rarity(Rarity.EPIC)));
+	public static final Item PANTALONES_CEDRONIDA = registrar("pantalones_cedronida",
+			new ArmaduraCedronida.Pieza(ArmorItem.Type.LEGGINGS, 1055, new Item.Properties().rarity(Rarity.EPIC)));
+	public static final Item BOTAS_CEDRONIDA = registrar("botas_cedronida",
+			new ArmaduraCedronida.Pieza(ArmorItem.Type.BOOTS, 981, new Item.Properties().rarity(Rarity.EPIC)));
+	public static final Item PLANTILLA_CEDRONIDA = registrar("plantilla_cedronida", new Item(new Item.Properties().rarity(Rarity.EPIC)) {
+		@Override
+		public net.minecraft.network.chat.Component getName(ItemStack pila) {
+			return net.minecraft.network.chat.Component.translatable(getDescriptionId()).withColor(ArmaduraCedronida.ROSA);
+		}
+	});
+
 	/** Las piezas del Conjunto Interdimensional y la Espada del Espacio (ArmaduraEspacio). */
 	/** Las piezas Dimensionales: no se ponen; son para armar el Conjunto Interdimensional. */
 	public static final Item CASCO_DIMENSIONAL = registrar("casco_dimensional",
@@ -767,6 +783,11 @@ public final class ModItems {
 						entradas.accept(PECHERA_NETHERITA_PLANTA);
 						entradas.accept(PANTALONES_NETHERITA_PLANTA);
 						entradas.accept(BOTAS_NETHERITA_PLANTA);
+						entradas.accept(CASCO_CEDRONIDA);
+						entradas.accept(PECHERA_CEDRONIDA);
+						entradas.accept(PANTALONES_CEDRONIDA);
+						entradas.accept(BOTAS_CEDRONIDA);
+						entradas.accept(PLANTILLA_CEDRONIDA);
 						entradas.accept(SIGNO_INTERROGACION);
 						entradas.accept(PELO_GLEBANOIDE);
 						entradas.accept(CAPARAZON);

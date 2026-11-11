@@ -2494,6 +2494,47 @@ public final class DebugCielo {
 		Dedsafio4ClientDebug.info("herreria " + cuando + ": " + r.map(h -> h.id() + " -> " + h.value().assemble(entrada, server.registryAccess()).getHoverName().getString()).orElse("sin receta"));
 	}
 
+	private static final boolean CEDRONIDA = "cedronida".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Armadura Cedrónida: set completo = efectos sin fin y vida extra; sacando una pieza se van los efectos. */
+	private static void tickCedronida(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "time set 6000");
+			comando(mc, "effect clear @s");
+			comando(mc, "clear @s");
+			comando(mc, "fill -8 199 -16 8 199 8 minecraft:grass_block");
+			comando(mc, "fill -8 200 -16 8 210 8 minecraft:air");
+			comando(mc, "tp @s 0.5 200 0.5 0 0");
+			for (String p : new String[]{"head casco", "chest pechera", "legs pantalones", "feet botas"}) {
+				String[] q = p.split(" ");
+				comando(mc, "item replace entity @s armor." + q[0] + " with dedsafio4:" + q[1] + "_cedronida");
+			}
+			mc.options.fov().set(40);
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+		}
+		if (t == 8) mc.gui.getChat().clearMessages(false);
+		if (t > 0 && t < 40) mirar(mc, 0, 20);
+		if (t == 40) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			Dedsafio4ClientDebug.info("set: vidaMax=" + j.getMaxHealth() + " armadura=" + j.getArmorValue() + " efectos="
+					+ j.getActiveEffects().stream().map(e -> e.getEffect().getRegisteredName() + "/" + e.getAmplifier() + (e.isInfiniteDuration() ? "∞" : "")).toList());
+		});
+		if (t == 42) captura(mc, "debug_cedronida.png");
+		if (t == 45) comando(mc, "item replace entity @s armor.head with minecraft:air");
+		if (t == 75) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			Dedsafio4ClientDebug.info("sin casco: vidaMax=" + j.getMaxHealth() + " efectos=" + j.getActiveEffects().stream().map(e -> e.getEffect().getRegisteredName()).toList());
+		});
+		if (t == 78) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.fov().set(70); }
+		if (t == 80) mc.stop();
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -9107,6 +9148,10 @@ public final class DebugCielo {
 		}
 		if (MESA_PLANTILLA) {
 			tickMesaPlantilla(mc);
+			return;
+		}
+		if (CEDRONIDA) {
+			tickCedronida(mc);
 			return;
 		}
 		if (ROBOT) {
