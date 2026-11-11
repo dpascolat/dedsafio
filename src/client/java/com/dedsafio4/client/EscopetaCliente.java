@@ -132,6 +132,10 @@ public final class EscopetaCliente {
 		if (mc.player == null || mc.level == null || !(mc.player.getMainHandItem().getItem() instanceof EscopetaPhoraItem)) return false;
 		if (!mc.options.getCameraType().isFirstPerson() || mc.player.isSpectator()) return false;
 		if (mc.getDebugOverlay().showDebugScreen()) return false;
+		if (miraTelescopica(parcial)) {
+			telescopica(g);
+			return true;
+		}
 		if (apuntando(parcial) > 0.5f) return true;   // apuntando: sin mira, se mira por arriba de la escopeta
 		int cx = g.guiWidth() / 2, cy = g.guiHeight() / 2;
 		float d = (mc.level.getGameTime() + parcial - EscopetaPhoraItem.disparoCliente) / 20f;
@@ -150,6 +154,56 @@ public final class EscopetaCliente {
 		rectangulo(g, cx - hueco - largo, cy, largo, 1, blanco);
 		rectangulo(g, cx + hueco + 1, cy, largo, 1, blanco);
 		return true;
+	}
+
+	/** Si está mirando por la mira del Francotirador (apuntando con él, en primera persona): entonces no se ve el arma. */
+	public static boolean miraTelescopica(float parcial) {
+		Minecraft mc = Minecraft.getInstance();
+		return mc.player != null && mc.options.getCameraType().isFirstPerson() && apuntando(parcial) > 0.8f
+				&& EscopetaPhoraItem.armaDe(mc.player.getMainHandItem()) == EscopetaPhoraItem.FRANCOTIRADOR;
+	}
+
+	/**
+	 * La mira telescópica del Francotirador: todo negro menos un círculo en el medio, la cruz (líneas negras finas) y,
+	 * abajo, la escalera de la caída de la bala (una línea ancha y después rayitas cada vez más cortas, unidas por
+	 * escalones a los costados).
+	 */
+	private static void telescopica(GuiGraphics g) {
+		int w = g.guiWidth(), h = g.guiHeight(), cx = w / 2, cy = h / 2;
+		float r = h * 0.45f;
+		int negro = 0xFF000000;
+		// Afuera del círculo, negro (fila por fila: queda pixelado, como una mira de verdad en Minecraft).
+		for (int y = 0; y < h; y++) {
+			float dy = y + 0.5f - cy;
+			if (Math.abs(dy) >= r) {
+				g.fill(0, y, w, y + 1, negro);
+				continue;
+			}
+			int dx = Math.round((float) Math.sqrt(r * r - dy * dy));
+			g.fill(0, y, cx - dx, y + 1, negro);
+			g.fill(cx + dx, y, w, y + 1, negro);
+		}
+		int ri = Math.round(r);
+		// La cruz.
+		g.fill(cx, cy - ri, cx + 1, cy + ri, negro);
+		g.fill(cx - ri, cy, cx + ri, cy + 1, negro);
+		// La escalera de la caída: la primera línea ancha y las demás cada vez más cortas, con escalones a los costados.
+		int yAncha = cy + Math.round(r * 0.32f), mitadAncha = Math.round(r * 0.94f);
+		g.fill(cx - mitadAncha, yAncha, cx + mitadAncha, yAncha + 1, negro);
+		int yAntes = -1, mitadAntes = 0;
+		for (int i = 0; i < 6; i++) {
+			int y = cy + Math.round(r * (0.42f + 0.095f * i)), mitad = Math.round(r * (0.5f - 0.045f * i));
+			g.fill(cx - mitad, y, cx + mitad, y + 1, negro);
+			if (yAntes >= 0) {
+				// El escalón: de la punta de la línea de arriba baja hasta esta y entra hasta su punta.
+				g.fill(cx - mitadAntes, yAntes, cx - mitadAntes + 1, y + 1, negro);
+				g.fill(cx + mitadAntes - 1, yAntes, cx + mitadAntes, y + 1, negro);
+				g.fill(cx - mitadAntes, y, cx - mitad + 1, y + 1, negro);
+				g.fill(cx + mitad - 1, y, cx + mitadAntes, y + 1, negro);
+			}
+			yAntes = y;
+			mitadAntes = mitad;
+		}
 	}
 
 	private static void rectangulo(GuiGraphics g, int x, int y, int ancho, int alto, int color) {

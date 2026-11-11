@@ -25,6 +25,7 @@ abstract class ItemInHandEscopetaMixin {
 			original.call(jugador, parcial, inclinacion, mano, golpe, pila, agarre, pose, buffers, luz);
 			return;
 		}
+		if (EscopetaCliente.miraTelescopica(parcial)) return;   // mirando por la mira del Francotirador no se ve el arma
 		pose.pushPose();
 		EscopetaCliente.animar(pose, jugador, mano, parcial);
 		original.call(jugador, parcial, inclinacion, mano, 0f, pila, 0f, pose, buffers, luz);

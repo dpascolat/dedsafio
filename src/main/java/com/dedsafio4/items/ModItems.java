@@ -635,7 +635,8 @@ public final class ModItems {
 	public static final Item GARRA_MAGMA = registrar("garra_magma", new DescritoItem(new Item.Properties(), DescritoItem::garraMagma));
 	public static final Item CELDA_LAVA = registrar("celda_lava", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	public static final Item NUCLEO_VOLCANICO = registrar("nucleo_volcanico", new Item(new Item.Properties().rarity(Rarity.RARE)));
-	public static final Item CENIZAS_ARDIENTES = registrar("cenizas_ardientes", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	/** Garra Phora (antes "Cenizas Ardientes": el nombre interno quedó igual para no perder las que ya hay). */
+	public static final Item CENIZAS_ARDIENTES = registrar("cenizas_ardientes", new DescritoItem(new Item.Properties(), DescritoItem::garraPhora));
 	/** Esfera Etérea: un orbe celeste con un cristal girando alrededor (textura animada, 8 cuadros). Sin función todavía. */
 	public static final Item ESFERA_ETEREA = registrar("esfera_eterea", new Item(new Item.Properties().rarity(Rarity.EPIC)));
 	/** Polvo Sombrío: un montoncito de polvo gris oscuro. Sin función todavía (nombre provisorio). */

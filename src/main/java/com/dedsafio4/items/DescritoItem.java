@@ -280,6 +280,12 @@ public class DescritoItem extends Item {
 	}
 
 	/** Garra de Magma. */
+	/** Garra Phora. */
+	public static void garraPhora(List<Component> t) {
+		t.add(parte("Elemento Phora muy útil", 0xC6C6C6));
+		t.add(parte("para crear Armas.", 0xC6C6C6));
+	}
+
 	public static void garraMagma(List<Component> t) {
 		t.add(parte("Combina ", 0xC6C6C6).append(parte("Chip Phora", CELESTE)).append(parte(" con", 0xC6C6C6)));
 		t.add(parte("Vial de Energía Phora", CELESTE));
