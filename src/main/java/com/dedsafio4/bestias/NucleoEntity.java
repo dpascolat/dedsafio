@@ -1,5 +1,6 @@
 package com.dedsafio4.bestias;
 
+import com.dedsafio4.nave.RayoEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -202,21 +203,18 @@ public class NucleoEntity extends Monster {
 		return position().add(0, ALTO / 2 * getScale(), 0);
 	}
 
-	/** Le pega a quien le pegó (si está vivo, en el mismo mundo y dentro del radio), con un rayo rojo. */
+	/** Le dispara a quien le pegó (si está vivo, en el mismo mundo y dentro del radio) un rayo rojo como los de la nave. */
 	private void devolverGolpe(ServerLevel mundo, float radio) {
 		if (enojadoCon == null || !(mundo.getEntity(enojadoCon) instanceof LivingEntity victima) || !victima.isAlive()) return;
 		if (victima instanceof Player p && (p.isCreative() || p.isSpectator())) return;
 		Vec3 centro = centro(), destino = victima.position().add(0, victima.getBbHeight() / 2, 0);
 		if (centro.distanceTo(destino) > radio) return;
-		Vec3 paso = destino.subtract(centro);
-		int puntos = (int) (paso.length() * 3);
-		DustParticleOptions rojo = new DustParticleOptions(new Vector3f(1f, 0.15f, 0.05f), 1.6f);
-		for (int i = 0; i <= puntos; i++) {
-			Vec3 p = centro.add(paso.scale(i / (double) Math.max(1, puntos)));
-			mundo.sendParticles(rojo, p.x, p.y, p.z, 1, 0, 0, 0, 0);
-		}
-		victima.hurt(mundo.damageSources().mobAttack(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE));
-		mundo.playSound(null, victima.getX(), victima.getY(), victima.getZ(), SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.HOSTILE, 1.5f, 0.8f);
+		// Sale del ojo, un poco hacia adelante para no nacer dentro del cuerpo.
+		Vec3 origen = centro.add(destino.subtract(centro).normalize().scale(2.2 * getScale()));
+		RayoEntity rayo = new RayoEntity(mundo, this, origen).rojo((float) getAttributeValue(Attributes.ATTACK_DAMAGE));
+		rayo.shoot(destino.x - origen.x, destino.y - origen.y, destino.z - origen.z, 2.2f, 0.5f);
+		mundo.addFreshEntity(rayo);
+		mundo.playSound(null, origen.x, origen.y, origen.z, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.HOSTILE, 2f, 0.9f + random.nextFloat() * 0.2f);
 	}
 
 	private void explotar(ServerLevel mundo, Vec3 centro, float radio) {

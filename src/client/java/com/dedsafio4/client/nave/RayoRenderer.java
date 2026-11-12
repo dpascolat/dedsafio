@@ -13,13 +13,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 
-/** Rayo celeste brillante: 5x5 píxeles de sección y 1 bloque de largo, orientado como una flecha. */
+/** Rayo celeste brillante (rojo si es del Núcleo): 5x5 píxeles de sección y 1 bloque de largo, orientado como una flecha. */
 public class RayoRenderer extends EntityRenderer<RayoEntity> {
 	private static final ResourceLocation TEXTURA =
 			ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/blanco.png");
 	private static final float MEDIO_LADO = 2.5f / 16f, MEDIO_LARGO = 0.5f;
 	/** Celeste por fuera y un núcleo más claro. */
 	private static final float[] CELESTE = {0.35f, 0.85f, 1f, 0.85f}, NUCLEO = {0.85f, 0.98f, 1f, 1f};
+	/** Los del Núcleo: rojo por fuera y un centro naranja claro. */
+	private static final float[] ROJO = {0.95f, 0.05f, 0.03f, 0.9f}, CENTRO_ROJO = {1f, 0.45f, 0.3f, 1f};
 
 	public RayoRenderer(EntityRendererProvider.Context contexto) {
 		super(contexto);
@@ -30,10 +32,12 @@ public class RayoRenderer extends EntityRenderer<RayoEntity> {
 		pose.pushPose();
 		pose.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partialTick, rayo.yRotO, rayo.getYRot()) - 90f));
 		pose.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(partialTick, rayo.xRotO, rayo.getXRot())));
-		VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
+		boolean rojo = rayo.esRojo();
+		// El celeste brilla sumando luz; el rojo, sumado al cielo, quedaba rosa pálido: va pintado normal.
+		VertexConsumer vc = buffers.getBuffer(rojo ? RenderType.debugQuads() : RenderType.lightning());
 		Matrix4f m = pose.last().pose();
-		caja(vc, m, MEDIO_LARGO, MEDIO_LADO, CELESTE);
-		caja(vc, m, MEDIO_LARGO * 0.95f, MEDIO_LADO * 0.45f, NUCLEO);
+		caja(vc, m, MEDIO_LARGO, MEDIO_LADO, rojo ? ROJO : CELESTE);
+		caja(vc, m, MEDIO_LARGO * 0.95f, MEDIO_LADO * 0.45f, rojo ? CENTRO_ROJO : NUCLEO);
 		pose.popPose();
 		super.render(rayo, yaw, partialTick, pose, buffers, luz);
 	}

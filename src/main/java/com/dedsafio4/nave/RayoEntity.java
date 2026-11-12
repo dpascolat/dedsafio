@@ -1,5 +1,8 @@
 package com.dedsafio4.nave;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -15,6 +18,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Rayo celeste de la nave: 5x5 píxeles de sección y 1 bloque de largo (el largo es solo visual;
  * el choque se calcula con la punta). Va recto, sin gravedad, y hace 1 de daño.
+ * <p>El Núcleo dispara los mismos rayos pero rojos y con su daño ({@link #rojo}).
  */
 public class RayoEntity extends Projectile {
 	public static final float DANIO = 1f;
@@ -22,7 +26,10 @@ public class RayoEntity extends Projectile {
 	private static final double EMPUJE = 0.25;
 	/** Ticks hasta desaparecer si no choca con nada (3 segundos). */
 	private static final int VIDA_MAXIMA = 60;
+	private static final EntityDataAccessor<Boolean> ROJO = SynchedEntityData.defineId(RayoEntity.class, EntityDataSerializers.BOOLEAN);
 	private int vida;
+	/** Daño de este rayo; los de la nave lo ajustan según la dificultad, los rojos no (los ajusta el juego como a cualquier mob). */
+	private float danio = DANIO;
 
 	public RayoEntity(EntityType<? extends RayoEntity> tipo, Level level) {
 		super(tipo, level);
@@ -37,6 +44,30 @@ public class RayoEntity extends Projectile {
 
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder builder) {
+		builder.define(ROJO, false);
+	}
+
+	/** Lo vuelve un rayo rojo del Núcleo, que hace este daño. */
+	public RayoEntity rojo(float danio) {
+		this.entityData.set(ROJO, true);
+		this.danio = danio;
+		return this;
+	}
+
+	public boolean esRojo() {
+		return this.entityData.get(ROJO);
+	}
+
+	@Override
+	protected void addAdditionalSaveData(CompoundTag tag) {
+		super.addAdditionalSaveData(tag);
+		if (esRojo()) tag.putFloat("DanioRojo", danio);
+	}
+
+	@Override
+	protected void readAdditionalSaveData(CompoundTag tag) {
+		super.readAdditionalSaveData(tag);
+		if (tag.contains("DanioRojo")) rojo(tag.getFloat("DanioRojo"));
 	}
 
 	@Override
@@ -55,9 +86,10 @@ public class RayoEntity extends Projectile {
 		this.setPos(this.getX() + movimiento.x, this.getY() + movimiento.y, this.getZ() + movimiento.z);
 	}
 
-	/** No les pega a otras naves (así no se matan entre ellas). */
+	/** No les pega a otras naves (así no se matan entre ellas), ni los rojos al Núcleo. */
 	@Override
 	protected boolean canHitEntity(Entity entidad) {
+		if (esRojo()) return super.canHitEntity(entidad) && !(entidad instanceof com.dedsafio4.bestias.NucleoEntity);
 		return super.canHitEntity(entidad) && !(entidad instanceof NaveEntity);
 	}
 
@@ -71,7 +103,7 @@ public class RayoEntity extends Projectile {
 		// la mitad de los rayos no harían daño.
 		golpeado.invulnerableTime = 0;
 		Vec3 antes = golpeado.getDeltaMovement();
-		golpeado.hurt(this.damageSources().mobProjectile(this, duenio), NaveEntity.danioExacto(this.level(), golpeado, DANIO));
+		golpeado.hurt(this.damageSources().mobProjectile(this, duenio), esRojo() ? danio : NaveEntity.danioExacto(this.level(), golpeado, danio));
 		// Como pega tan seguido, el empuje normal de cada golpe te mandaba volando: queda solo una parte.
 		Vec3 empuje = golpeado.getDeltaMovement().subtract(antes);
 		golpeado.setDeltaMovement(antes.add(empuje.scale(EMPUJE)));

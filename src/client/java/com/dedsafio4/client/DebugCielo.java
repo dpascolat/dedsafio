@@ -1845,8 +1845,15 @@ public final class DebugCielo {
 						+ " pos=" + j.position() + " vel=" + j.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED));
 			}
 		});
+		if (t >= 40 && t <= 90) server.execute(() -> {
+			for (var r : server.overworld().getEntitiesOfClass(com.dedsafio4.nave.RayoEntity.class, new net.minecraft.world.phys.AABB(-40, 180, -40, 40, 230, 40)))
+				Dedsafio4ClientDebug.info("rayo t" + (ticks - 20) + " rojo=" + r.esRojo() + " pos=" + r.position() + " vel=" + r.getDeltaMovement());
+		});
 		// Intenta caminar para atrás mientras está atrapado.
 		if (t == 95) mc.options.keyDown.setDown(true);
+		if (t == 64) { mc.player.setYRot(125); mc.player.setXRot(0); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); }
+		if (t >= 69 && t <= 72) captura(mc, "debug_nucleo_rayo" + t + ".png");
+		if (t == 74) { mc.player.setYRot(180); mc.player.setXRot(-8); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }
 		if (t == 50) captura(mc, "debug_nucleo2_cargando.png");
 		if (t == 90) captura(mc, "debug_nucleo3_explota.png");
 		if (t == 100) captura(mc, "debug_nucleo4_supernova.png");
