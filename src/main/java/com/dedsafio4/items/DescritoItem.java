@@ -280,6 +280,15 @@ public class DescritoItem extends Item {
 	}
 
 	/** Garra de Magma. */
+	/** Vial de Energía Phora. */
+	public static void vialEnergiaPhora(List<Component> t) {
+		t.add(parte("Combínalo con otros ingredientes", 0xC6C6C6));
+		t.add(parte("para conseguir nuevos objetos.", 0xC6C6C6));
+		t.add(Component.empty());
+		t.add(parte("Consíguelo en los Cubos Phora", 0xC6C6C6));
+		t.add(parte("del Espacio entre Dimensiones.", 0xC6C6C6));
+	}
+
 	/** Garra Phora. */
 	public static void garraPhora(List<Component> t) {
 		t.add(parte("Elemento Phora muy útil", 0xC6C6C6));

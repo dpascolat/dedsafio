@@ -633,7 +633,8 @@ public final class ModItems {
 	/** 5 ítems más de Patricio, todavía sin función (nombres provisorios). */
 	/** Garra de Magma: nombre celeste y la descripción de Patricio (se consigue con Chip Phora y Vial de Energía Phora). */
 	public static final Item GARRA_MAGMA = registrar("garra_magma", new DescritoItem(new Item.Properties(), DescritoItem::garraMagma));
-	public static final Item CELDA_LAVA = registrar("celda_lava", new Item(new Item.Properties().rarity(Rarity.RARE)));
+	/** Vial de Energía Phora: nombre celeste y la descripción de Patricio (reemplaza a la Celda de Lava). */
+	public static final Item VIAL_ENERGIA_PHORA = registrar("vial_energia_phora", new DescritoItem(new Item.Properties(), DescritoItem::vialEnergiaPhora));
 	public static final Item NUCLEO_VOLCANICO = registrar("nucleo_volcanico", new Item(new Item.Properties().rarity(Rarity.RARE)));
 	/** Garra Phora (antes "Cenizas Ardientes": el nombre interno quedó igual para no perder las que ya hay). */
 	public static final Item CENIZAS_ARDIENTES = registrar("cenizas_ardientes", new DescritoItem(new Item.Properties(), DescritoItem::garraPhora));
@@ -822,7 +823,7 @@ public final class ModItems {
 						entradas.accept(PANTALONES_LIMBO);
 						entradas.accept(BOTAS_LIMBO);
 						entradas.accept(GARRA_MAGMA);
-						entradas.accept(CELDA_LAVA);
+						entradas.accept(VIAL_ENERGIA_PHORA);
 						entradas.accept(NUCLEO_VOLCANICO);
 						entradas.accept(CENIZAS_ARDIENTES);
 						entradas.accept(ESFERA_ETEREA);
