@@ -91,21 +91,22 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 		cargar();
 		int estado = nucleo.estado();
 		float t = nucleo.tiempo() + (estado == NucleoEntity.QUIETO ? 0 : parcial);
-		float carga = estado == NucleoEntity.CARGANDO ? Mth.clamp(t / NucleoEntity.CARGA, 0, 1) : 0;
+		float carga = estado == NucleoEntity.CARGANDO ? Mth.clamp(t / NucleoEntity.CARGA, 0, 1)
+				: estado == NucleoEntity.ESCAPEN ? Mth.clamp(t / NucleoEntity.ESCAPE, 0, 1) : 0;
 		float escala = nucleo.getScale();
 
 		pose.pushPose();
-		// Muriendo: se encoge hasta desaparecer dentro de la supernova.
+		// Muerto: en la supernova final se encoge hasta desaparecer.
 		boolean dibujarCuerpo = true;
-		if (nucleo.deathTime > 0) {
-			float m = 1 - Math.min(1f, (nucleo.deathTime + parcial) / 15f);
+		if (nucleo.deathTime > 0 && estado == NucleoEntity.SUPERNOVA) {
+			float m = 1 - Math.min(1f, t / 15f);
 			dibujarCuerpo = m > 0.01f;
 			pose.translate(0, NucleoEntity.ALTO / 2 * (1 - m), 0);
 			pose.scale(m, m, m);
 		}
 		// Cargando: tiembla cada vez más.
 		if (carga > 0) {
-			float fuerza = 0.06f * carga;
+			float fuerza = (estado == NucleoEntity.ESCAPEN ? 0.25f : 0.06f) * carga;
 			pose.translate((Math.random() - 0.5) * fuerza, (Math.random() - 0.5) * fuerza, (Math.random() - 0.5) * fuerza);
 		}
 		pose.mulPose(Axis.YP.rotationDegrees(-nucleo.getYRot()));
@@ -117,7 +118,7 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 		int brillo = estado == NucleoEntity.QUIETO ? luz
 				: estado == NucleoEntity.SUPERNOVA ? LightTexture.FULL_BRIGHT
 				: LightTexture.pack(Math.max(LightTexture.block(luz), (int) (15 * carga)), Math.max(LightTexture.sky(luz), (int) (15 * carga)));
-		int overlay = OverlayTexture.pack(OverlayTexture.u(0f), OverlayTexture.v(nucleo.hurtTime > 0 || nucleo.deathTime > 0));
+		int overlay = OverlayTexture.pack(OverlayTexture.u(0f), OverlayTexture.v(nucleo.hurtTime > 0));
 		if (dibujarCuerpo) dibujar(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(BLANCO)), brillo, overlay);
 		pose.popPose();
 
@@ -125,7 +126,12 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 		pose.pushPose();
 		pose.translate(0, NucleoEntity.ALTO / 2 * escala, 0);
 		VertexConsumer v = buffers.getBuffer(RenderType.lightning());
-		if (estado == NucleoEntity.CARGANDO) {
+		if (estado == NucleoEntity.ESCAPEN) {
+			// El borde del radio, para saber hasta dónde hay que escapar: rojo, late cada vez más rápido.
+			float late = 0.5f + 0.5f * Mth.sin(t * (0.15f + 0.5f * carga));
+			esfera(v, pose.last().pose(), nucleo.radio(), 255, 40, 20, (int) (25 + 35 * late));
+		}
+		if (estado == NucleoEntity.CARGANDO || estado == NucleoEntity.ESCAPEN) {
 			float pulso = 1 + Mth.sin(t * (0.3f + carga)) * 0.12f;
 			esfera(v, pose.last().pose(), (0.4f + 1.8f * carga) * pulso * escala, 255, 210, 90, (int) (60 + 120 * carga));
 			esfera(v, pose.last().pose(), (0.2f + 0.9f * carga) * pulso * escala, 255, 255, 230, (int) (90 + 150 * carga));
@@ -195,7 +201,7 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 
 	@Override
 	public boolean shouldRender(NucleoEntity nucleo, Frustum frustum, double x, double y, double z) {
-		if (nucleo.estado() == NucleoEntity.SUPERNOVA) return true;
+		if (nucleo.estado() == NucleoEntity.SUPERNOVA || nucleo.estado() == NucleoEntity.ESCAPEN) return true;
 		// El modelo es más ancho que la caja de choque (las alas): se agranda la caja para no cortarlo en el borde.
 		return frustum.isVisible(nucleo.getBoundingBox().inflate(4 * nucleo.getScale()));
 	}

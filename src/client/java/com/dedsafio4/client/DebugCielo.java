@@ -1804,7 +1804,7 @@ public final class DebugCielo {
 
 	private static final boolean NUCLEO_MUERTE = "nucleomuerte".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
-	/** El Núcleo al morir explota como supernova (solo se ve, no atrapa). */
+	/** Al matar al Núcleo hay 10 s para escapar: primero escapa (no queda atrapado), después se queda (muere). */
 	private static void tickNucleoMuerte(Minecraft mc) {
 		int t = ticks - 20;
 		if (mc.screen != null && !(mc.screen instanceof net.minecraft.client.gui.screens.DeathScreen)) mc.setScreen(null);
@@ -1813,30 +1813,38 @@ public final class DebugCielo {
 		if (t == -5 || t == -3) revivir(mc);
 		if (t == 0) {
 			comando(mc, "gamemode survival");
+			comando(mc, "difficulty normal");
 			comando(mc, "time set 6000");
 			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 14.5 180 -8");
 			comando(mc, "kill @e[type=dedsafio4:nucleo]");
 		}
-		if (t == 3) {
-			comando(mc, "fill -30 199 -30 30 199 30 minecraft:grass_block");
-			comando(mc, "fill -30 200 -30 30 215 30 minecraft:air");
+		if (t == 3 || t == 340) {
+			comando(mc, "fill -30 199 -40 30 199 40 minecraft:grass_block");
 			comando(mc, "tp @s 0.5 200 14.5 180 -8");
 			comando(mc, "summon dedsafio4:nucleo 0.5 200 -6.5 {Rotation:[0f,0f]}");
 			comando(mc, "radios nucleo 25");
+			comando(mc, "dañomob nucleo 15");
+			comando(mc, "item replace entity @s weapon.offhand with minecraft:totem_of_undying");
+			comando(mc, "item replace entity @s weapon.mainhand with minecraft:totem_of_undying");
 		}
-		if (t == 20) captura(mc, "debug_nmuerte1_antes.png");
-		if (t == 25) comando(mc, "kill @e[type=dedsafio4:nucleo]");
-		if (t >= 25 && t <= 140 && t % 10 == 0) server.execute(() -> {
+		if (t == 8 || t == 342) mc.gui.getChat().clearMessages(false);
+		if (t == 25 || t == 345) comando(mc, "kill @e[type=dedsafio4:nucleo]");
+		// Primera vez: escapa.
+		if (t == 100) comando(mc, "tp @s 0.5 200 34 180 -5");
+		if (t >= 25 && t <= 640 && t % 10 == 0) server.execute(() -> {
 			var j = server.getPlayerList().getPlayers().get(0);
 			var lista = server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.NucleoEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30));
+			int totems = (j.getOffhandItem().is(net.minecraft.world.item.Items.TOTEM_OF_UNDYING) ? 1 : 0) + (j.getMainHandItem().is(net.minecraft.world.item.Items.TOTEM_OF_UNDYING) ? 1 : 0);
 			Dedsafio4ClientDebug.info("nmuerte t" + (ticks - 20) + " nucleos=" + lista.size()
-					+ (lista.isEmpty() ? "" : " estado=" + lista.get(0).estado() + " tiempo=" + lista.get(0).tiempo() + " deathTime=" + lista.get(0).deathTime)
-					+ " atrapado=" + com.dedsafio4.bestias.NucleoEntity.atrapado(j) + " vida=" + j.getHealth());
+					+ (lista.isEmpty() ? "" : " estado=" + lista.get(0).estado() + " tiempo=" + lista.get(0).tiempo())
+					+ " atrapado=" + com.dedsafio4.bestias.NucleoEntity.atrapado(j) + " vida=" + j.getHealth() + " vivo=" + j.isAlive() + " totems=" + totems);
 		});
-		if (t == 30) captura(mc, "debug_nmuerte2.png");
-		if (t == 40) captura(mc, "debug_nmuerte3.png");
-		if (t == 70) captura(mc, "debug_nmuerte4.png");
-		if (t == 150) mc.stop();
+		if (t == 60) captura(mc, "debug_nmuerte1_cuenta.png");
+		if (t == 150) captura(mc, "debug_nmuerte2_afuera.png");
+		if (t == 232) captura(mc, "debug_nmuerte3_explota_afuera.png");
+		if (t == 480) captura(mc, "debug_nmuerte4_adentro.png");
+		if (t == 552) captura(mc, "debug_nmuerte5_atrapado.png");
+		if (t == 650) mc.stop();
 	}
 
 	private static final boolean ROLPLAYER = "rolplayer".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));

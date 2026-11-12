@@ -2,6 +2,8 @@ package com.dedsafio4.bestias;
 
 import com.dedsafio4.nave.RayoEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -38,6 +40,8 @@ import java.util.UUID;
  * que estén dentro del radio (al explotar o durante los 5 segundos que dura) quedan quietos, sin poder moverse ni
  * saltar, y el Núcleo les pega cada medio segundo (sin importar la armadura): les va rompiendo los tótems hasta que
  * se mueren. Después se calma, hasta que le vuelvan a pegar.
+ * <p>Cuando lo matan, empieza una cuenta de 10 segundos para escapar del radio (se ve el borde y a los que están adentro
+ * les avisa cuánto falta). Al terminar explota como supernova: los que no escaparon quedan atrapados hasta morirse.
  * <ul>
  * <li>/dañomob nucleo &lt;daño&gt;: lo que saca cada golpe (20 = 10 corazones).</li>
  * <li>/vidamob nucleo &lt;vida&gt;: su vida (300).</li>
@@ -48,7 +52,11 @@ public class NucleoEntity extends Monster {
 	private static final EntityDataAccessor<Integer> ESTADO = SynchedEntityData.defineId(NucleoEntity.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Integer> TIEMPO = SynchedEntityData.defineId(NucleoEntity.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Float> RADIO = SynchedEntityData.defineId(NucleoEntity.class, EntityDataSerializers.FLOAT);
-	public static final int QUIETO = 0, CARGANDO = 1, SUPERNOVA = 2;
+	public static final int QUIETO = 0, CARGANDO = 1, SUPERNOVA = 2, ESCAPEN = 3;
+	/** Los segundos (en ticks) que tienen para escapar después de matarlo. */
+	public static final int ESCAPE = 200;
+	/** Después de la supernova de la muerte, cuánto más se queda como mucho (60 s) pegándoles a los atrapados. */
+	private static final int MAXIMO_ATRAPADOS = 1200;
 	/** Cuánto carga (3 segundos) y cuánto dura la supernova atrapando gente (5 segundos). */
 	public static final int CARGA = 60, DURACION = 100;
 	public static final float RADIO_NORMAL = 20;
@@ -171,9 +179,9 @@ public class NucleoEntity extends Monster {
 		float radio = r == null ? RADIO_NORMAL : r.floatValue();
 		if (radio() != radio) entityData.set(RADIO, radio);
 
-		// Muerto: la supernova de la muerte sigue creciendo, pero ya no dispara ni atrapa a nadie.
+		// Muerto: cuenta para escapar y después la supernova final.
 		if (isDeadOrDying()) {
-			if (estado() == SUPERNOVA && tiempo() < DURACION) entityData.set(TIEMPO, tiempo() + 1);
+			tickMuerto(mundo, radio);
 			return;
 		}
 
@@ -228,18 +236,88 @@ public class NucleoEntity extends Monster {
 		atrapar(mundo, centro, radio);
 	}
 
-	/** Al morir explota como supernova: la misma capa hasta el radio, pero solo se ve (no atrapa a nadie). */
+	/** Se guarda en qué está (así, si el servidor se apaga en medio de la cuenta, sigue donde estaba). */
+	@Override
+	public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+		super.addAdditionalSaveData(tag);
+		tag.putInt("Estado", estado());
+		tag.putInt("Tiempo", tiempo());
+	}
+
+	@Override
+	public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+		super.readAdditionalSaveData(tag);
+		entityData.set(ESTADO, tag.getInt("Estado"));
+		entityData.set(TIEMPO, tag.getInt("Tiempo"));
+	}
+
+	// ------------------------------------------------------------------------------- Muerte
+
+	/** Al morir no desaparece: empieza la cuenta para escapar. */
 	@Override
 	public void die(DamageSource fuente) {
 		super.die(fuente);
-		if (level() instanceof ServerLevel mundo) efectosSupernova(mundo, centro(), radio());
+		if (!(level() instanceof ServerLevel mundo)) return;
+		enojadoCon = null;
+		cambiar(ESCAPEN);
+		Vec3 c = centro();
+		mundo.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 8f, 0.5f);
+		mundo.playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE, 8f, 0.5f);
+		for (ServerPlayer p : mundo.players()) {
+			if (p.position().distanceTo(c) <= radio() + 32) {
+				p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(5, 40, 10));
+				p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(
+						Component.literal("¡ESCAPA!").withStyle(ChatFormatting.RED, ChatFormatting.BOLD)));
+				p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(
+						Component.literal("El Núcleo va a explotar: sal del radio").withStyle(ChatFormatting.GOLD)));
+			}
+		}
 	}
 
-	/** Se queda (encogido) mientras dura la supernova de la muerte, y después desaparece. */
+	private void tickMuerto(ServerLevel mundo, float radio) {
+		// Por si murió sin pasar por die() (por ejemplo, un mundo guardado de antes): empieza la cuenta.
+		if (estado() == QUIETO || estado() == CARGANDO) cambiar(ESCAPEN);
+		int t = tiempo() + 1;
+		entityData.set(TIEMPO, t);
+		Vec3 centro = centro();
+		if (estado() == ESCAPEN) {
+			int quedan = (ESCAPE - t + 19) / 20;
+			// Junta energía cada vez más rápido.
+			for (int i = 0; i < 4 + t / 20; i++) {
+				Vec3 desde = centro.add((random.nextDouble() - 0.5) * 10, (random.nextDouble() - 0.5) * 10, (random.nextDouble() - 0.5) * 10);
+				Vec3 hacia = centro.subtract(desde).scale(0.12);
+				mundo.sendParticles(ParticleTypes.FLAME, desde.x, desde.y, desde.z, 0, hacia.x, hacia.y, hacia.z, 1);
+			}
+			if (t % 20 == 0) mundo.playSound(null, centro.x, centro.y, centro.z, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.HOSTILE, 6f, 0.6f + t / (float) ESCAPE);
+			// A los que están cerca: cuánto falta y si están adentro o afuera.
+			if (t % 5 == 0) {
+				for (ServerPlayer p : mundo.players()) {
+					double d = p.position().add(0, p.getBbHeight() / 2, 0).distanceTo(centro);
+					if (d > radio + 32 || p.isSpectator()) continue;
+					Component aviso = d <= radio
+							? Component.literal("¡Escapa! Explota en " + quedan + " s · faltan " + (int) Math.ceil(radio - d) + " bloques").withStyle(ChatFormatting.RED, ChatFormatting.BOLD)
+							: Component.literal("A salvo · explota en " + quedan + " s").withStyle(ChatFormatting.GREEN);
+					p.displayClientMessage(aviso, true);
+				}
+			}
+			if (t >= ESCAPE) {
+				efectosSupernova(mundo, centro, radio);
+				atrapar(mundo, centro, radio);
+			}
+		} else if (estado() == SUPERNOVA && t <= DURACION) {
+			// Mientras dura la explosión, el que entre también queda atrapado.
+			atrapar(mundo, centro, radio);
+		}
+	}
+
+	/** Se queda hasta que explota y mientras tenga atrapados (como mucho 60 s más); después desaparece. */
 	@Override
 	protected void tickDeath() {
 		++deathTime;
-		if (deathTime >= DURACION && !level().isClientSide() && !isRemoved()) {
+		if (level().isClientSide() || isRemoved()) return;
+		boolean termino = estado() == SUPERNOVA && tiempo() >= DURACION;
+		boolean tieneAtrapados = ATRAPADOS.values().stream().anyMatch(a -> a.nucleo().equals(getUUID()));
+		if (termino && (!tieneAtrapados || tiempo() >= MAXIMO_ATRAPADOS)) {
 			level().broadcastEntityEvent(this, (byte) 60);
 			remove(RemovalReason.KILLED);
 		}
@@ -284,7 +362,8 @@ public class NucleoEntity extends Monster {
 			}
 			ServerLevel mundo = p.serverLevel();
 			Entity nucleo = mundo.dimension() == a.mundo() ? mundo.getEntity(a.nucleo()) : null;
-			if (!p.isAlive() || p.isCreative() || p.isSpectator() || !(nucleo instanceof NucleoEntity n) || !n.isAlive()) {
+			// (Un Núcleo muerto sigue atrapando hasta que desaparece: es la supernova final.)
+			if (!p.isAlive() || p.isCreative() || p.isSpectator() || !(nucleo instanceof NucleoEntity n) || n.isRemoved()) {
 				ATRAPADOS.remove(p.getUUID());
 				soltar(p);
 				continue;
