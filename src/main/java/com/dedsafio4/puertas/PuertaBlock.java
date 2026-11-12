@@ -40,15 +40,15 @@ import java.util.function.Supplier;
  *
  * Es de 5x5 bloques (GRANDE; las que se pusieron antes, sin eso, siguen siendo de 3x3). PARTE = fila * lado + columna
  * (fila 0 la del bloque principal, columna 0 a la izquierda mirando el frente). El del medio de la fila 0 es el
- * principal: tiene la entidad que dibuja toda la puerta. BOCA_ABAJO: puesta desde un techo (o desde la mitad de arriba
- * de una pared) cuelga para abajo desde el principal y se dibuja dada vuelta.
+ * principal: tiene la entidad que dibuja toda la puerta. TECHO: puesta desde un techo (clic en la cara de abajo de un
+ * bloque) queda acostada, como una compuerta: las filas van hacia el frente y el principal es el bloque del medio.
  */
 public class PuertaBlock extends BaseEntityBlock {
 	public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 	public static final IntegerProperty PARTE = IntegerProperty.create("parte", 0, 24);
 	public static final BooleanProperty ABIERTA = BooleanProperty.create("abierta");
 	public static final BooleanProperty GRANDE = BooleanProperty.create("grande");
-	public static final BooleanProperty BOCA_ABAJO = BooleanProperty.create("boca_abajo");
+	public static final BooleanProperty TECHO = BooleanProperty.create("techo");
 
 	private final Supplier<Item> llave;
 	/** Nombre de la llave para el aviso ("Necesitas la ..."). */
@@ -59,7 +59,7 @@ public class PuertaBlock extends BaseEntityBlock {
 		this.llave = llave;
 		this.nombreLlave = nombreLlave;
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PARTE, 1).setValue(ABIERTA, false)
-				.setValue(GRANDE, false).setValue(BOCA_ABAJO, false));
+				.setValue(GRANDE, false).setValue(TECHO, false));
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class PuertaBlock extends BaseEntityBlock {
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(FACING, PARTE, ABIERTA, GRANDE, BOCA_ABAJO);
+		builder.add(FACING, PARTE, ABIERTA, GRANDE, TECHO);
 	}
 
 	// --- Las partes (9 o 25) ---
@@ -79,9 +79,10 @@ public class PuertaBlock extends BaseEntityBlock {
 		return estado.getValue(GRANDE) ? 5 : 3;
 	}
 
-	/** La parte del bloque principal: el del medio de la fila 0. */
+	/** La parte del bloque principal: el del medio de la fila 0 (en el techo, el del medio de todo). */
 	public static int principalParte(BlockState estado) {
-		return lado(estado) / 2;
+		int n = lado(estado);
+		return estado.getValue(TECHO) ? (n / 2) * n + n / 2 : n / 2;
 	}
 
 	/** Hacia dónde está la "derecha" de la puerta (mirandola de frente es la izquierda de quien mira). */
@@ -92,13 +93,13 @@ public class PuertaBlock extends BaseEntityBlock {
 	private static BlockPos posParte(BlockPos principal, BlockState estado, int parte) {
 		int n = lado(estado), col = parte % n, fila = parte / n;
 		BlockPos p = principal.relative(derecha(estado.getValue(FACING)), col - n / 2);
-		return estado.getValue(BOCA_ABAJO) ? p.below(fila) : p.above(fila);
+		return estado.getValue(TECHO) ? p.relative(estado.getValue(FACING), fila - n / 2) : p.above(fila);
 	}
 
 	public static BlockPos principal(BlockPos pos, BlockState estado) {
 		int n = lado(estado), parte = estado.getValue(PARTE), col = parte % n, fila = parte / n;
 		BlockPos p = pos.relative(derecha(estado.getValue(FACING)), n / 2 - col);
-		return estado.getValue(BOCA_ABAJO) ? p.above(fila) : p.below(fila);
+		return estado.getValue(TECHO) ? p.relative(estado.getValue(FACING), n / 2 - fila) : p.below(fila);
 	}
 
 	@Override
@@ -106,11 +107,9 @@ public class PuertaBlock extends BaseEntityBlock {
 		Direction frente = contexto.getHorizontalDirection().getOpposite();
 		BlockPos pos = contexto.getClickedPos();
 		Level level = contexto.getLevel();
-		// Boca abajo: puesta en un techo, o en la mitad de arriba de una pared.
-		Direction cara = contexto.getClickedFace();
-		boolean bocaAbajo = cara == Direction.DOWN
-				|| cara != Direction.UP && contexto.getClickLocation().y - pos.getY() > 0.5;
-		BlockState estado = defaultBlockState().setValue(FACING, frente).setValue(GRANDE, true).setValue(BOCA_ABAJO, bocaAbajo);
+		// Puesta en un techo (la cara de abajo de un bloque): acostada, como compuerta.
+		boolean techo = contexto.getClickedFace() == Direction.DOWN;
+		BlockState estado = defaultBlockState().setValue(FACING, frente).setValue(GRANDE, true).setValue(TECHO, techo);
 		estado = estado.setValue(PARTE, principalParte(estado));
 		int n = lado(estado);
 		for (int parte = 0; parte < n * n; parte++) {
@@ -140,7 +139,7 @@ public class PuertaBlock extends BaseEntityBlock {
 				if (p.equals(pos)) continue;
 				BlockState otro = level.getBlockState(p);
 				if (otro.is(this) && otro.getValue(PARTE) == parte && otro.getValue(FACING) == estado.getValue(FACING)
-						&& otro.getValue(GRANDE) == estado.getValue(GRANDE) && otro.getValue(BOCA_ABAJO) == estado.getValue(BOCA_ABAJO)) {
+						&& otro.getValue(GRANDE) == estado.getValue(GRANDE) && otro.getValue(TECHO) == estado.getValue(TECHO)) {
 					level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
 				}
 			}
@@ -179,7 +178,7 @@ public class PuertaBlock extends BaseEntityBlock {
 			BlockState otro = level.getBlockState(p);
 			if (otro.is(this)) level.setBlock(p, otro.setValue(ABIERTA, true), 3);
 		}
-		BlockPos centro = estado.getValue(BOCA_ABAJO) ? principal.below(n / 2) : principal.above(n / 2);
+		BlockPos centro = estado.getValue(TECHO) ? principal : principal.above(n / 2);
 		level.playSound(null, centro, SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 1f, 0.6f);
 		level.playSound(null, centro, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.7f, 0.7f);
 	}
@@ -195,19 +194,39 @@ public class PuertaBlock extends BaseEntityBlock {
 		return der.getAxis() == Direction.Axis.X ? Block.box(a, ly0, z0, b, ly1, z1) : Block.box(z0, ly0, a, z1, ly1, b);
 	}
 
+	/**
+	 * Una caja de la puerta acostada (pegada arriba del bloque, de 12,25 a 15,75 píxeles de alto): lx a lo ancho (como
+	 * en caja) y lf hacia el frente, en píxeles.
+	 */
+	private static VoxelShape cajaTecho(Direction frente, double lx0, double lf0, double lx1, double lf1) {
+		double y0 = 12.25, y1 = 15.75;
+		Direction der = derecha(frente);
+		double a = der.getAxisDirection() == Direction.AxisDirection.POSITIVE ? lx0 : 16 - lx1;
+		double b = der.getAxisDirection() == Direction.AxisDirection.POSITIVE ? lx1 : 16 - lx0;
+		double c = frente.getAxisDirection() == Direction.AxisDirection.POSITIVE ? lf0 : 16 - lf1;
+		double d = frente.getAxisDirection() == Direction.AxisDirection.POSITIVE ? lf1 : 16 - lf0;
+		return der.getAxis() == Direction.Axis.X ? Block.box(a, y0, c, b, y1, d) : Block.box(c, y0, a, d, y1, b);
+	}
+
 	@Override
 	protected VoxelShape getShape(BlockState estado, BlockGetter nivel, BlockPos pos, CollisionContext contexto) {
 		Direction frente = estado.getValue(FACING);
-		if (!estado.getValue(ABIERTA)) return caja(frente, 0, 0, 16, 16);
+		boolean techo = estado.getValue(TECHO);
+		if (!estado.getValue(ABIERTA)) return techo ? cajaTecho(frente, 0, 0, 16, 16) : caja(frente, 0, 0, 16, 16);
 		// Abierta: solo queda el marco de los bordes.
 		int n = lado(estado), parte = estado.getValue(PARTE), col = parte % n, fila = parte / n;
-		boolean abajo = estado.getValue(BOCA_ABAJO) ? fila == n - 1 : fila == 0;
-		boolean arriba = estado.getValue(BOCA_ABAJO) ? fila == 0 : fila == n - 1;
 		VoxelShape forma = Shapes.empty();
+		if (techo) {
+			if (col == 0) forma = Shapes.or(forma, cajaTecho(frente, 0, 0, 2, 16));
+			if (col == n - 1) forma = Shapes.or(forma, cajaTecho(frente, 14, 0, 16, 16));
+			if (fila == 0) forma = Shapes.or(forma, cajaTecho(frente, 0, 0, 16, 2));
+			if (fila == n - 1) forma = Shapes.or(forma, cajaTecho(frente, 0, 14, 16, 16));
+			return forma;
+		}
 		if (col == 0) forma = Shapes.or(forma, caja(frente, 0, 0, 2, 16));
 		if (col == n - 1) forma = Shapes.or(forma, caja(frente, 14, 0, 16, 16));
-		if (abajo) forma = Shapes.or(forma, caja(frente, 0, 0, 16, 2));
-		if (arriba) forma = Shapes.or(forma, caja(frente, 0, 14, 16, 16));
+		if (fila == 0) forma = Shapes.or(forma, caja(frente, 0, 0, 16, 2));
+		if (fila == n - 1) forma = Shapes.or(forma, caja(frente, 0, 14, 16, 16));
 		return forma;
 	}
 

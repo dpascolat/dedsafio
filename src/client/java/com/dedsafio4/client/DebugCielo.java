@@ -2614,44 +2614,42 @@ public final class DebugCielo {
 			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 4.5 180 0");
 			comando(mc, "fill -12 199 -6 12 199 16 minecraft:stone");
 			comando(mc, "fill -12 200 -6 12 215 16 minecraft:air");
-			comando(mc, "fill 3 213 -2 12 213 2 minecraft:stone");
+			comando(mc, "fill 3 213 -4 12 213 4 minecraft:stone");
 			comando(mc, "clear @s");
 		}
 		if (t == 10) comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:puerta_rosa");
 		if (t == 14) mc.gameMode.useItemOn(mc.player, mano, new net.minecraft.world.phys.BlockHitResult(
 				new net.minecraft.world.phys.Vec3(-3.5, 200, 0.5), net.minecraft.core.Direction.UP, new net.minecraft.core.BlockPos(-4, 199, 0), false));
 		if (t == 18) comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:puerta_verde");
-		if (t == 22) { comando(mc, "fill 6 208 2 9 208 4 minecraft:stone"); comando(mc, "tp @s 7.5 209 2.5 180 0"); }
+		if (t == 22) { comando(mc, "fill 6 208 5 9 208 7 minecraft:stone"); comando(mc, "tp @s 7.5 209 5.5 180 -40"); }
 		if (t == 26) mc.gameMode.useItemOn(mc.player, mano, new net.minecraft.world.phys.BlockHitResult(
 				new net.minecraft.world.phys.Vec3(7.5, 213, 0.5), net.minecraft.core.Direction.DOWN, new net.minecraft.core.BlockPos(7, 213, 0), false));
 		if (t == 32) {
 			int rosa = 0, verde = 0;
-			for (int x = -12; x <= 12; x++) for (int y = 199; y <= 215; y++) {
-				var b = mc.level.getBlockState(new net.minecraft.core.BlockPos(x, y, 0));
+			for (int x = -12; x <= 12; x++) for (int y = 199; y <= 215; y++) for (int z = -6; z <= 6; z++) {
+				var b = mc.level.getBlockState(new net.minecraft.core.BlockPos(x, y, z));
 				if (b.is(com.dedsafio4.puertas.ModPuertas.PUERTA_ROSA)) rosa++;
 				if (b.is(com.dedsafio4.puertas.ModPuertas.PUERTA_VERDE)) verde++;
 			}
-			var arribaVerde = mc.level.getBlockState(new net.minecraft.core.BlockPos(7, 212, 0));
-			Dedsafio4ClientDebug.info("puerta rosa: " + rosa + " bloques, verde: " + verde + " bloques; verde junto al techo="
-					+ arribaVerde.getBlock() + (arribaVerde.getBlock() instanceof com.dedsafio4.puertas.PuertaBlock
-					? " boca_abajo=" + arribaVerde.getValue(com.dedsafio4.puertas.PuertaBlock.BOCA_ABAJO) : ""));
-			comando(mc, "tp @s 2 206 14 180 15");
+			var centro = mc.level.getBlockState(new net.minecraft.core.BlockPos(7, 212, 0));
+			int fila212 = 0;
+			for (int x = 3; x <= 11; x++) for (int z = -4; z <= 4; z++)
+				if (mc.level.getBlockState(new net.minecraft.core.BlockPos(x, 212, z)).is(com.dedsafio4.puertas.ModPuertas.PUERTA_VERDE)) fila212++;
+			Dedsafio4ClientDebug.info("puerta rosa: " + rosa + " bloques, verde: " + verde + " bloques (" + fila212 + " acostados en y=212); centro="
+					+ centro.getBlock() + (centro.getBlock() instanceof com.dedsafio4.puertas.PuertaBlock
+					? " techo=" + centro.getValue(com.dedsafio4.puertas.PuertaBlock.TECHO) : ""));
+			comando(mc, "fill 6 208 5 9 208 7 minecraft:air");
+			comando(mc, "tp @s 7.5 200 6 180 -55");
 		}
 		if (t == 40) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
-		if (t == 50) captura(mc, "debug_puerta5_cerradas.png");
-		if (t == 52) { comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:tarjeta_puerta_rosa"); comando(mc, "tp @s -3.5 200 4.5 180 0"); }
+		if (t == 50) captura(mc, "debug_puerta5_techo_cerrada.png");
+		if (t == 52) { comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:tarjeta_puerta_verde"); comando(mc, "tp @s 7.5 209 1.5 180 -80"); }
 		if (t == 56) mc.gameMode.useItemOn(mc.player, mano, new net.minecraft.world.phys.BlockHitResult(
-				new net.minecraft.world.phys.Vec3(-3.5, 201.5, 0.6), net.minecraft.core.Direction.SOUTH, new net.minecraft.core.BlockPos(-4, 201, 0), false));
-		if (t == 58) {
-			var b = mc.level.getBlockState(new net.minecraft.core.BlockPos(-4, 201, 0));
-			Dedsafio4ClientDebug.info("rosa tras la tarjeta: " + b + " tarjetas=" + mc.player.getInventory().countItem(com.dedsafio4.items.ModItems.TARJETA_PUERTA_ROSA));
-		}
-		if (t == 60) comando(mc, "tp @s 2 206 14 180 15");
-		if (t == 70) comando(mc, "tp @s 7.5 205 9 180 -20");
-		if (t == 80) captura(mc, "debug_puerta5_verde.png");
-		if (t == 82) comando(mc, "tp @s 2 206 14 180 15");
-		if (t == 90) captura(mc, "debug_puerta5_abierta.png");
-		if (t == 92) { comando(mc, "fill -12 199 -6 12 215 5 minecraft:air"); mc.options.hideGui = false; }
+				new net.minecraft.world.phys.Vec3(7.5, 212.8, 0.5), net.minecraft.core.Direction.DOWN, new net.minecraft.core.BlockPos(7, 212, 0), false));
+		if (t == 58) Dedsafio4ClientDebug.info("verde tras la tarjeta: " + mc.level.getBlockState(new net.minecraft.core.BlockPos(7, 212, 0)));
+		if (t == 60) comando(mc, "tp @s 7.5 200 6 180 -55");
+		if (t == 90) captura(mc, "debug_puerta5_techo_abierta.png");
+		if (t == 92) { comando(mc, "fill -12 199 -6 12 215 8 minecraft:air"); mc.options.hideGui = false; }
 		if (t == 96) mc.stop();
 	}
 

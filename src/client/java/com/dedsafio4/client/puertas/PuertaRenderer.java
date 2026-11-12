@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * Dibuja la puerta entera desde su bloque principal: el marco fijo y el panel partido al medio. Al abrirse, la mitad
  * de arriba sube y la de abajo baja, escondiéndose en el marco (1,2 s, con aceleración suave). Las luces van en una
  * capa aparte a pleno brillo. El dibujo es el del diseño de 3x3 estirado al tamaño de la puerta (5x5, o 3x3 las de
- * antes); boca abajo se dibuja dada vuelta, colgando del bloque principal.
+ * antes); la del techo se dibuja acostada, centrada en el bloque principal y pegada arriba.
  *
  * Medidas en bloques, como en el diseño: x de -W/2 a W/2, y de 0 a H, z = grosor (+z es el frente).
  */
@@ -54,12 +54,13 @@ public class PuertaRenderer implements BlockEntityRenderer<PuertaBlockEntity> {
 		float o = suave(puerta.apertura(parcial)) * (S - MARCO);
 
 		pose.pushPose();
-		pose.translate(0.5, 0, 0.5);
+		boolean techo = estado.getValue(PuertaBlock.TECHO);
+		pose.translate(0.5, techo ? 0.875 : 0, 0.5);
 		pose.mulPose(Axis.YP.rotationDegrees(-estado.getValue(PuertaBlock.FACING).toYRot()));
-		// Boca abajo: cuelga del bloque principal, dada vuelta.
-		if (estado.getValue(PuertaBlock.BOCA_ABAJO)) {
-			pose.translate(0, 1, 0);
-			pose.mulPose(Axis.ZP.rotationDegrees(180));
+		// En el techo: acostada (lo que era "arriba" va hacia el frente), centrada en el bloque principal.
+		if (techo) {
+			pose.mulPose(Axis.XP.rotationDegrees(90));
+			pose.translate(0, -H / 2, 0);
 		}
 		PoseStack.Pose p = pose.last();
 
