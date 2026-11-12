@@ -2519,7 +2519,7 @@ public final class DebugCielo {
 			mc.options.fov().set(40);
 			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
 		}
-		if (t == 8) mc.gui.getChat().clearMessages(false);
+		if (t == 8) { mc.gui.getChat().clearMessages(false); mc.options.hideGui = true; }
 		if (t > 0 && t < 40) mirar(mc, 0, 20);
 		if (t == 40) server.execute(() -> {
 			var j = server.getPlayerList().getPlayers().get(0);
@@ -2532,7 +2532,7 @@ public final class DebugCielo {
 			var j = server.getPlayerList().getPlayers().get(0);
 			Dedsafio4ClientDebug.info("sin casco: vidaMax=" + j.getMaxHealth() + " efectos=" + j.getActiveEffects().stream().map(e -> e.getEffect().getRegisteredName()).toList());
 		});
-		if (t == 78) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.fov().set(70); }
+		if (t == 78) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.fov().set(70); mc.options.hideGui = false; }
 		if (t == 80) mc.stop();
 	}
 
