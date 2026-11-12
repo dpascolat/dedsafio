@@ -210,7 +210,8 @@ public class CerebroAmarilloEntity extends Monster {
 		int n = 0;
 		for (net.minecraft.world.item.Item totem : new net.minecraft.world.item.Item[]{net.minecraft.world.item.Items.TOTEM_OF_UNDYING,
 				com.dedsafio4.items.ModItems.TOTEM_IDOLO, com.dedsafio4.items.ModItems.TOTEM_FRERICO, com.dedsafio4.items.ModItems.TOTEM_GLEBANOIDE,
-				com.dedsafio4.items.ModItems.TOTEM_LIMBO, com.dedsafio4.items.ModItems.TOTEM_ESPACIO, com.dedsafio4.items.ModItems.TOTEM_YUNQUE}) {
+				com.dedsafio4.items.ModItems.TOTEM_LIMBO, com.dedsafio4.items.ModItems.TOTEM_ESPACIO, com.dedsafio4.items.ModItems.TOTEM_YUNQUE,
+				com.dedsafio4.items.ModItems.TOTEM_MONTANA}) {
 			n += sp.getStats().getValue(net.minecraft.stats.Stats.ITEM_USED.get(totem));
 		}
 		return n;

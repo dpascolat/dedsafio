@@ -10,7 +10,8 @@ public final class TotemManos {
 	private TotemManos() {}
 
 	private static boolean esDelMod(ItemStack pila) {
-		return pila.is(ModItems.TOTEM_FRERICO) || pila.is(ModItems.TOTEM_GLEBANOIDE) || pila.is(ModItems.TOTEM_YUNQUE) || pila.is(ModItems.TOTEM_LIMBO);
+		return pila.is(ModItems.TOTEM_FRERICO) || pila.is(ModItems.TOTEM_GLEBANOIDE) || pila.is(ModItems.TOTEM_YUNQUE) || pila.is(ModItems.TOTEM_LIMBO)
+				|| pila.is(ModItems.TOTEM_MONTANA);
 	}
 
 	private static boolean esTotem(ItemStack pila) {

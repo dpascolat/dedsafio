@@ -44,7 +44,8 @@ public class TotemIdoloItem extends Item {
 			// Si tiene un tótem en la mano, se usa ése (el de Minecraft, el de Gólem o el Glebanoide).
 			for (InteractionHand mano : InteractionHand.values()) {
 				ItemStack otra = jugador.getItemInHand(mano);
-				if (otra.is(Items.TOTEM_OF_UNDYING) || otra.is(ModItems.TOTEM_FRERICO) || otra.is(ModItems.TOTEM_GLEBANOIDE)) return true;
+				if (otra.is(Items.TOTEM_OF_UNDYING) || otra.is(ModItems.TOTEM_FRERICO) || otra.is(ModItems.TOTEM_GLEBANOIDE)
+						|| otra.is(ModItems.TOTEM_MONTANA)) return true;
 			}
 			var inventario = jugador.getInventory();
 			for (int i = 0; i < inventario.getContainerSize(); i++) {

@@ -22,7 +22,7 @@ public abstract class ClientPacketListenerMixin {
 		for (InteractionHand mano : InteractionHand.values()) {
 			ItemStack pila = jugador.getItemInHand(mano);
 			if (pila.is(ModItems.TOTEM_FRERICO) || pila.is(ModItems.TOTEM_GLEBANOIDE) || pila.is(ModItems.TOTEM_LIMBO)
-					|| pila.is(ModItems.TOTEM_YUNQUE)) {
+					|| pila.is(ModItems.TOTEM_YUNQUE) || pila.is(ModItems.TOTEM_MONTANA)) {
 				cir.setReturnValue(pila.copy());
 				return;
 			}

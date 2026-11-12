@@ -2570,6 +2570,34 @@ public final class DebugCielo {
 		if (t == 240) mc.stop();
 	}
 
+	private static final boolean TOTEM_MONTANA = "totemmontana".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Tótem Montaña: salva al morir y da Resistencia V por 2 segundos. */
+	private static void tickTotemMontana(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5");
+			comando(mc, "gamemode survival");
+			comando(mc, "clear @s");
+			comando(mc, "effect clear @s");
+			comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:totem_montana");
+		}
+		if (t == 80) comando(mc, "damage @s 100 minecraft:generic");
+		if (t == 82) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			var r = j.getEffect(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE);
+			Dedsafio4ClientDebug.info("vivo=" + j.isAlive() + " vida=" + j.getHealth() + " totem=" + j.getMainHandItem().getCount()
+					+ " resistencia=" + (r == null ? "no" : "nivel " + (r.getAmplifier() + 1) + " " + r.getDuration() + " ticks"));
+		});
+		if (t == 85) comando(mc, "damage @s 100 minecraft:generic");
+		if (t == 87) server.execute(() -> Dedsafio4ClientDebug.info("golpe con resistencia: vivo=" + server.getPlayerList().getPlayers().get(0).isAlive()));
+		if (t == 95) mc.stop();
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -9191,6 +9219,10 @@ public final class DebugCielo {
 		}
 		if (AIRE_ESPACIO) {
 			tickAireEspacio(mc);
+			return;
+		}
+		if (TOTEM_MONTANA) {
+			tickTotemMontana(mc);
 			return;
 		}
 		if (ROBOT) {
