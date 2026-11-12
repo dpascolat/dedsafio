@@ -505,6 +505,8 @@ public final class ModItems {
 			new SpawnEggItem(ModEntidades.RANA_GIGANTE, 0x5A5A5A, 0x3A5A4A, new Item.Properties()));
 	public static final Item TRICERATOPS_SPAWN_EGG = registrar("triceratops_spawn_egg",
 			new SpawnEggItem(ModEntidades.TRICERATOPS, 0x7A5A3A, 0xD9C08A, new Item.Properties()));
+	public static final Item NUCLEO_SPAWN_EGG = registrar("nucleo_spawn_egg",
+			new SpawnEggItem(ModEntidades.NUCLEO, 0x8E2121, 0xF6D03D, new Item.Properties()));
 	public static final Item TREMORSAURIO_SPAWN_EGG = registrar("tremorsaurio_spawn_egg",
 			new SpawnEggItem(ModEntidades.TREMORSAURIO, 0x5B6B3A, 0xC98A4B, new Item.Properties()));
 	public static final Item ZOMBIE_COMUN_SPAWN_EGG = registrar("zombie_comun_spawn_egg",
@@ -890,6 +892,7 @@ public final class ModItems {
 						entradas.accept(WALKER_SPAWN_EGG);
 						entradas.accept(RANA_GIGANTE_SPAWN_EGG);
 						entradas.accept(TRICERATOPS_SPAWN_EGG);
+						entradas.accept(NUCLEO_SPAWN_EGG);
 						entradas.accept(TREMORSAURIO_SPAWN_EGG);
 						entradas.accept(CREEPER_PAPEL_SPAWN_EGG);
 						entradas.accept(ZOMBIE_COMUN_SPAWN_EGG);

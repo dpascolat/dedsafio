@@ -39,12 +39,13 @@ import java.util.Map;
  *   /velocidad <mob> <velocidad>   la velocidad (0,25 es la de un zombi; 0,3 la de un esqueleto). En los que vuelan
  *                                  (fantasmas, naves, phantoms, abejas...) cambia lo rápido que van por el aire: se
  *                                  multiplica su vuelo por velocidad nueva / velocidad de siempre.
+ *   /radios <mob> <bloques>        qué tan lejos llega su ataque de área (por ahora, la supernova del Núcleo).
  * Con "normal" en lugar del número vuelve a ser como era.
  */
 public final class AjustesMob {
 	private AjustesMob() {}
 
-	private static final String DANO = "dano", VIDA = "vida", VELOCIDAD = "velocidad";
+	private static final String DANO = "dano", VIDA = "vida", VELOCIDAD = "velocidad", RADIO = "radio";
 	/** Etiqueta que se le pone al mob con la vida de /vidamob que ya recibió ("d4vida:100.0"). */
 	private static final String MARCA_VIDA = "d4vida:";
 
@@ -83,6 +84,11 @@ public final class AjustesMob {
 	/** El daño que se le puso a ese mob con /dañomob (o null si no se cambió). */
 	public static Double danoDe(MinecraftServer server, EntityType<?> tipo) {
 		return datos(server).valor(DANO, tipo);
+	}
+
+	/** El radio que se le puso a ese mob con /radios (o null si no se cambió). */
+	public static Double radioDe(MinecraftServer server, EntityType<?> tipo) {
+		return datos(server).valor(RADIO, tipo);
 	}
 
 	private static Datos datos(MinecraftServer server) {
@@ -186,6 +192,8 @@ public final class AjustesMob {
 		for (String nombre : new String[]{"dañomob", "danomob"}) registrarUno(dispatcher, nombre, DANO);
 		registrarUno(dispatcher, "vidamob", VIDA);
 		registrarUno(dispatcher, "velocidad", VELOCIDAD);
+		registrarUno(dispatcher, "radios", RADIO);
+		registrarUno(dispatcher, "radio", RADIO);
 	}
 
 	private static void registrarUno(CommandDispatcher<CommandSourceStack> dispatcher, String comando, String que) {
@@ -224,6 +232,7 @@ public final class AjustesMob {
 		for (ServerLevel mundo : server.getAllLevels()) {
 			for (Entity e : mundo.getAllEntities()) {
 				if (e.getType() != tipo || !(e instanceof LivingEntity vivo)) continue;
+				if (que.equals(RADIO)) { cuantos++; continue; }
 				if (valor == null) volverANormal(vivo, que);
 				aplicar(vivo, d, que.equals(VIDA));
 				cuantos++;
@@ -231,8 +240,9 @@ public final class AjustesMob {
 		}
 		String nombreMob = tipo.getDescription().getString();
 		String texto = valor == null
-				? (que.equals(DANO) ? "El daño" : que.equals(VIDA) ? "La vida" : "La velocidad") + " de " + nombreMob + " vuelve a ser la normal."
-				: (que.equals(DANO) ? "Daño" : que.equals(VIDA) ? "Vida" : "Velocidad") + " de " + nombreMob + ": " + valor
+				? (que.equals(DANO) ? "El daño" : que.equals(VIDA) ? "La vida" : que.equals(RADIO) ? "El radio" : "La velocidad") + " de " + nombreMob + " vuelve a ser la normal."
+				: (que.equals(DANO) ? "Daño" : que.equals(VIDA) ? "Vida" : que.equals(RADIO) ? "Radio" : "Velocidad") + " de " + nombreMob + ": " + valor
+						+ (que.equals(RADIO) ? " bloques" : "")
 						+ (que.equals(DANO) && (Creeper.class.isAssignableFrom(tipo.getBaseClass()) || tipo == com.dedsafio4.nave.ModEntidades.BOMBA_WARDEN) ? " (la explosión)"
 						: que.equals(DANO) && tipo.is(net.minecraft.tags.EntityTypeTags.SKELETONS)
 								? " (el golpe y cada flecha)" : "") + ".";

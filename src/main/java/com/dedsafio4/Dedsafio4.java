@@ -166,6 +166,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.catalogo.Catalogo.registrar();
 		com.dedsafio4.catalogo.LibroMobs.registrar();
 		com.dedsafio4.bestias.AjustesMob.registrar();
+		com.dedsafio4.bestias.NucleoEntity.registrar();
 		com.dedsafio4.bestias.DropsMob.registrar();
 		com.dedsafio4.catalogo.Misiones.registrar();
 		com.dedsafio4.catalogo.DeditasMision.registrar();

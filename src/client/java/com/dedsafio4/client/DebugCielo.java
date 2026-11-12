@@ -1802,6 +1802,60 @@ public final class DebugCielo {
 		if (t == 112) mc.stop();
 	}
 
+	private static final boolean NUCLEO = "nucleo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** El Núcleo: se ve el modelo, al pegarle carga y explota; el jugador queda quieto y pierde los tótems hasta morir. */
+	private static void tickNucleo(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null && !(mc.screen instanceof net.minecraft.client.gui.screens.DeathScreen)) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "difficulty normal");
+			comando(mc, "time set 6000");
+			comando(mc, "effect clear @s");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 14.5 180 -8");
+			comando(mc, "kill @e[type=dedsafio4:nucleo]");
+		}
+		if (t == 3) {
+			comando(mc, "fill -30 199 -30 30 199 30 minecraft:grass_block");
+			comando(mc, "fill -30 200 -30 30 215 30 minecraft:air");
+			comando(mc, "tp @s 0.5 200 14.5 180 -8");
+			comando(mc, "summon dedsafio4:nucleo 0.5 200 -6.5 {Rotation:[0f,0f]}");
+		}
+		if (t == 5) { comando(mc, "radios nucleo 25"); comando(mc, "dañomob nucleo 15"); comando(mc, "vidamob nucleo 400"); }
+		if (t == 6) { comando(mc, "item replace entity @s weapon.offhand with minecraft:totem_of_undying"); comando(mc, "item replace entity @s weapon.mainhand with minecraft:totem_of_undying"); }
+		if (t == 8) { mc.gui.getChat().clearMessages(false); }
+		if (t == 20) captura(mc, "debug_nucleo1_quieto.png");
+		if (t == 25) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.NucleoEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30))) {
+				Dedsafio4ClientDebug.info("nucleo vida=" + e.getHealth() + "/" + e.getMaxHealth() + " daño=" + e.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE));
+				e.hurt(server.overworld().damageSources().playerAttack(j), 1);
+			}
+		});
+		if (t >= 25 && t <= 180 && t % 5 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			for (var e : server.overworld().getEntitiesOfClass(com.dedsafio4.bestias.NucleoEntity.class, new net.minecraft.world.phys.AABB(-30, 190, -40, 30, 220, 30))) {
+				int totems = (j.getOffhandItem().is(net.minecraft.world.item.Items.TOTEM_OF_UNDYING) ? 1 : 0) + (j.getMainHandItem().is(net.minecraft.world.item.Items.TOTEM_OF_UNDYING) ? 1 : 0);
+				Dedsafio4ClientDebug.info("nucleo t" + (ticks - 20) + " estado=" + e.estado() + " tiempo=" + e.tiempo() + " radio=" + e.radio()
+						+ " jugador vida=" + j.getHealth() + " vivo=" + j.isAlive() + " totems=" + totems + " atrapado=" + com.dedsafio4.bestias.NucleoEntity.atrapado(j)
+						+ " pos=" + j.position() + " vel=" + j.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED));
+			}
+		});
+		// Intenta caminar para atrás mientras está atrapado.
+		if (t == 95) mc.options.keyDown.setDown(true);
+		if (t == 50) captura(mc, "debug_nucleo2_cargando.png");
+		if (t == 90) captura(mc, "debug_nucleo3_explota.png");
+		if (t == 100) captura(mc, "debug_nucleo4_supernova.png");
+		if (t == 110) { mc.options.keyDown.setDown(false); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); }
+		if (t == 112) captura(mc, "debug_nucleo5_tercera.png");
+		if (t == 185) { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); comando(mc, "kill @e[type=dedsafio4:nucleo]"); }
+		if (t == 190) mc.stop();
+	}
+
 	private static final boolean TRICERATOPS = "triceratops".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** El Triceratops: se ve bien, carga 2 segundos, embiste rompiendo una pared y empuja al jugador sin dañarlo. */
@@ -9234,6 +9288,10 @@ public final class DebugCielo {
 		}
 		if (HURON) {
 			tickHuron(mc);
+			return;
+		}
+		if (NUCLEO) {
+			tickNucleo(mc);
 			return;
 		}
 		if (TRICERATOPS) {
