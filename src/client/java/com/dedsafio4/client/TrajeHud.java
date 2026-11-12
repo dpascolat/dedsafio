@@ -202,16 +202,17 @@ public final class TrajeHud {
 			ItemStack pila = p.getInventory().items.get(i);
 			if (!pila.isEmpty()) {
 				g.renderItem(p, pila, x + 1, y + 1, i);
-				g.renderItemDecorations(f, pila, x + 1, y + 1);
+				if (!pila.is(ModItems.BRAZALETE_INTERDIMENSIONAL)) g.renderItemDecorations(f, pila, x + 1, y + 1);
 			}
 		}
+		// (Al Brazalete no se le dibuja la barrita de carga: la batería ya se ve en el círculo de la izquierda.)
 		// La segunda mano, a la izquierda (separada).
 		ItemStack segunda = p.getOffhandItem();
 		if (!segunda.isEmpty()) {
 			int x = x0 - lado - 10;
 			casilla(g, x, y, lado, false);
 			g.renderItem(p, segunda, x + 1, y + 1, 9);
-			g.renderItemDecorations(f, segunda, x + 1, y + 1);
+			if (!segunda.is(ModItems.BRAZALETE_INTERDIMENSIONAL)) g.renderItemDecorations(f, segunda, x + 1, y + 1);
 		}
 	}
 
