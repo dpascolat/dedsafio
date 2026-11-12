@@ -3,6 +3,7 @@
 	"package": "com.dedsafio4.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"GuiTrajeMixin",
 		"CieloFogataMixin",
 		"HumanoidArmorLimboMixin",
 		"PlayerModelVueloMixin",

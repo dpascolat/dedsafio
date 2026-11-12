@@ -2653,6 +2653,38 @@ public final class DebugCielo {
 		if (t == 96) mc.stop();
 	}
 
+	private static final boolean VISOR = "visor".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** El visor del Traje Espacial: en el Espacio, Brazalete en la segunda mano, J y a volar. */
+	private static void tickVisor(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -6 99 -6 6 99 6 minecraft:stone");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 100 0.5 30 10");
+			comando(mc, "gamemode survival");
+			comando(mc, "clear @s");
+			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional[damage=110]");
+			comando(mc, "item replace entity @s hotbar.0 with dedsafio4:francotirador_phora");
+			comando(mc, "item replace entity @s hotbar.1 with minecraft:golden_apple 61");
+			comando(mc, "item replace entity @s hotbar.2 with dedsafio4:bateria_dilitio 5");
+			comando(mc, "item replace entity @s hotbar.3 with minecraft:cooked_beef 28");
+			comando(mc, "xp set @s 34 levels");
+			comando(mc, "effect give @s minecraft:hunger 3 50");
+		}
+		if (t == 20) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 26) { mc.player.getAbilities().flying = true; mc.player.onUpdateAbilities(); }
+		if (t >= 26 && t < 60) mc.options.keyUp.setDown(true);
+		if (t == 50) { mc.gui.getChat().clearMessages(false); }
+		if (t == 58) captura(mc, "debug_visor.png");
+		if (t == 60) { mc.options.keyUp.setDown(false); net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload()); }
+		if (t == 68) captura(mc, "debug_visor_apagado.png");
+		if (t == 70) mc.stop();
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -9282,6 +9314,10 @@ public final class DebugCielo {
 		}
 		if (PUERTA5) {
 			tickPuerta5(mc);
+			return;
+		}
+		if (VISOR) {
+			tickVisor(mc);
 			return;
 		}
 		if (ROBOT) {

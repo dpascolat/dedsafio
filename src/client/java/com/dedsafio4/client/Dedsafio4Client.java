@@ -281,6 +281,8 @@ public class Dedsafio4Client implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(MarcasPayload.TYPE, (payload, context) ->
 				MarcasCliente.actualizar(payload));
 		WorldRenderEvents.LAST.register(MarcasCliente::dibujar);
+		// El visor del Traje Espacial (la J del Brazalete).
+		HudRenderCallback.EVENT.register(TrajeHud::dibujar);
 		com.dedsafio4.client.cofres.FlechaCofreCliente.registrar();
 		com.dedsafio4.client.LunaRojaCliente.registrar();
 		com.dedsafio4.client.EscopetaCliente.registrar();

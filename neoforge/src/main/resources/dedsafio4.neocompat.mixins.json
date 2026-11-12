@@ -8,6 +8,7 @@
 		"ThrownEnderpearlNeoMixin"
 	],
 	"client": [
+		"GuiTrajeNeoMixin",
 		"HumanoidArmorLimboNeoMixin",
 		"LevelRendererCieloMixin"
 	],
