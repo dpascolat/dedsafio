@@ -95,9 +95,11 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 		float escala = nucleo.getScale();
 
 		pose.pushPose();
-		// Muriendo: se achica.
+		// Muriendo: se encoge hasta desaparecer dentro de la supernova.
+		boolean dibujarCuerpo = true;
 		if (nucleo.deathTime > 0) {
-			float m = 1 - Math.min(1f, (nucleo.deathTime + parcial) / 20f) * 0.8f;
+			float m = 1 - Math.min(1f, (nucleo.deathTime + parcial) / 15f);
+			dibujarCuerpo = m > 0.01f;
 			pose.translate(0, NucleoEntity.ALTO / 2 * (1 - m), 0);
 			pose.scale(m, m, m);
 		}
@@ -116,7 +118,7 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 				: estado == NucleoEntity.SUPERNOVA ? LightTexture.FULL_BRIGHT
 				: LightTexture.pack(Math.max(LightTexture.block(luz), (int) (15 * carga)), Math.max(LightTexture.sky(luz), (int) (15 * carga)));
 		int overlay = OverlayTexture.pack(OverlayTexture.u(0f), OverlayTexture.v(nucleo.hurtTime > 0 || nucleo.deathTime > 0));
-		dibujar(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(BLANCO)), brillo, overlay);
+		if (dibujarCuerpo) dibujar(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(BLANCO)), brillo, overlay);
 		pose.popPose();
 
 		// La luz del medio y la supernova.

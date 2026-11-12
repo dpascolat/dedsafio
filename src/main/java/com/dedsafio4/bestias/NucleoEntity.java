@@ -171,6 +171,12 @@ public class NucleoEntity extends Monster {
 		float radio = r == null ? RADIO_NORMAL : r.floatValue();
 		if (radio() != radio) entityData.set(RADIO, radio);
 
+		// Muerto: la supernova de la muerte sigue creciendo, pero ya no dispara ni atrapa a nadie.
+		if (isDeadOrDying()) {
+			if (estado() == SUPERNOVA && tiempo() < DURACION) entityData.set(TIEMPO, tiempo() + 1);
+			return;
+		}
+
 		int estado = estado();
 		if (estado == QUIETO) return;
 		int t = tiempo() + 1;
@@ -218,6 +224,28 @@ public class NucleoEntity extends Monster {
 	}
 
 	private void explotar(ServerLevel mundo, Vec3 centro, float radio) {
+		efectosSupernova(mundo, centro, radio);
+		atrapar(mundo, centro, radio);
+	}
+
+	/** Al morir explota como supernova: la misma capa hasta el radio, pero solo se ve (no atrapa a nadie). */
+	@Override
+	public void die(DamageSource fuente) {
+		super.die(fuente);
+		if (level() instanceof ServerLevel mundo) efectosSupernova(mundo, centro(), radio());
+	}
+
+	/** Se queda (encogido) mientras dura la supernova de la muerte, y después desaparece. */
+	@Override
+	protected void tickDeath() {
+		++deathTime;
+		if (deathTime >= DURACION && !level().isClientSide() && !isRemoved()) {
+			level().broadcastEntityEvent(this, (byte) 60);
+			remove(RemovalReason.KILLED);
+		}
+	}
+
+	private void efectosSupernova(ServerLevel mundo, Vec3 centro, float radio) {
 		cambiar(SUPERNOVA);
 		mundo.playSound(null, centro.x, centro.y, centro.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 8f, 0.5f);
 		mundo.playSound(null, centro.x, centro.y, centro.z, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.HOSTILE, 8f, 0.6f);
@@ -229,7 +257,6 @@ public class NucleoEntity extends Monster {
 			double a = i * Math.PI * 2 / 120;
 			mundo.sendParticles(ParticleTypes.FLAME, centro.x, centro.y, centro.z, 0, Math.cos(a), 0.05, Math.sin(a), radio / 18.0);
 		}
-		atrapar(mundo, centro, radio);
 	}
 
 	/** Los jugadores dentro del radio quedan atrapados (si no lo estaban ya). */
