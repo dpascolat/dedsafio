@@ -51,8 +51,8 @@ public class EscopetaPhoraItem extends Item {
 
 	/** Escopeta: 6 perdigones en abanico, 0,4 s entre disparos, 2,5 s de recarga, 8 balas. */
 	public static final Arma ESCOPETA = new Arma(3f, 4.5f, 8, 6, 8, 50, 24, 0.035, 0.18f, "0.40", "2.50");
-	/** Fusil de Ráfagas: una bala por clic, 0,13 s entre disparos (3 ticks), 3 s de recarga, 30 balas. */
-	public static final Arma FUSIL = new Arma(4f, 6f, 30, 1, 3, 60, 64, 0.004, 0.3f, "0.13", "3.00");
+	/** Fusil de Ráfagas: una bala por clic, 0,10 s entre disparos (2 ticks), 3 s de recarga, 30 balas, poco retroceso. */
+	public static final Arma FUSIL = new Arma(4f, 6f, 30, 1, 2, 60, 64, 0.004, 0.3f, "0.10", "3.00");
 	/** Francotirador: una bala que pega fuerte, 2 s entre disparos, 2,5 s de recarga, 5 balas, mucho zoom. */
 	public static final Arma FRANCOTIRADOR = new Arma(100f, 200f, 5, 1, 40, 50, 160, 0, 0.75f, "2.00", "2.50");
 
@@ -62,9 +62,24 @@ public class EscopetaPhoraItem extends Item {
 	public final Arma arma;
 	private static final String BALAS = "dedsafio4_balas", FIN_RECARGA = "dedsafio4_fin_recarga";
 	private static final int BLANCO = 0xFFFFFF, CELESTE = 0x55FFFF, NARANJA = 0xFF5A14, LILA = 0xD58CFF;
-	/** La estela del perdigón: polvo naranja brillante. */
-	private static final net.minecraft.core.particles.DustParticleOptions ESTELA =
-			new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(1f, 0.45f, 0.1f), 0.7f);
+
+	/**
+	 * Los disparos (cada bala o perdigón: de dónde sale y dónde pega), para que el cliente dibuje el rayo naranja que vuela
+	 * (como el de la nave, 6 veces más chico).
+	 */
+	public record BalasPayload(List<org.joml.Vector3f> desde, List<org.joml.Vector3f> hasta) implements net.minecraft.network.protocol.common.custom.CustomPacketPayload {
+		public static final Type<BalasPayload> TYPE = new Type<>(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "balas_phora"));
+		public static final net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, BalasPayload> CODEC =
+				net.minecraft.network.codec.StreamCodec.composite(
+						net.minecraft.network.codec.ByteBufCodecs.VECTOR3F.apply(net.minecraft.network.codec.ByteBufCodecs.list()), BalasPayload::desde,
+						net.minecraft.network.codec.ByteBufCodecs.VECTOR3F.apply(net.minecraft.network.codec.ByteBufCodecs.list()), BalasPayload::hasta,
+						BalasPayload::new);
+
+		@Override
+		public Type<BalasPayload> type() {
+			return TYPE;
+		}
+	}
 
 	/** Dónde pegaron los perdigones en los bloques (y en qué cara), para que el cliente dibuje los agujeritos. */
 	public record AgujerosPayload(List<org.joml.Vector3f> lugares, List<Integer> caras) implements net.minecraft.network.protocol.common.custom.CustomPacketPayload {
@@ -111,6 +126,7 @@ public class EscopetaPhoraItem extends Item {
 			if (contexto.player().getMainHandItem().getItem() instanceof EscopetaPhoraItem escopeta) escopeta.intentarDisparar(contexto.player());
 		}));
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playS2C().register(AgujerosPayload.TYPE, AgujerosPayload.CODEC);
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playS2C().register(BalasPayload.TYPE, BalasPayload.CODEC);
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.playC2S().register(RecargarPayload.TYPE, RecargarPayload.CODEC);
 		net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(RecargarPayload.TYPE, (payload, contexto) -> contexto.server().execute(() -> {
 			ServerPlayer jugador = contexto.player();
@@ -268,6 +284,7 @@ public class EscopetaPhoraItem extends Item {
 		Map<LivingEntity, Float> danios = new HashMap<>();
 		List<org.joml.Vector3f> agujeros = new java.util.ArrayList<>();
 		List<Integer> caras = new java.util.ArrayList<>();
+		List<org.joml.Vector3f> desde = new java.util.ArrayList<>(), hasta = new java.util.ArrayList<>();
 		var azar = jugador.getRandom();
 		double desvio = arma.dispersion();
 		for (int i = 0; i < arma.perdigones(); i++) {
@@ -290,12 +307,13 @@ public class EscopetaPhoraItem extends Item {
 				agujeros.add(new org.joml.Vector3f((float) fin.x, (float) fin.y, (float) fin.z));
 				caras.add(bh.getDirection().get3DDataValue());
 			}
-			// El proyectil: una estela naranja del cañón al impacto.
-			double largo = boca.distanceTo(fin);
-			for (double d = 0.5; d < largo; d += 0.6) {
-				Vec3 p = boca.add(fin.subtract(boca).scale(d / largo));
-				mundo.sendParticles(ESTELA, p.x, p.y, p.z, 1, 0, 0, 0, 0);
-			}
+			// El proyectil: un rayo naranja del cañón al impacto (lo dibuja el cliente).
+			desde.add(new org.joml.Vector3f((float) boca.x, (float) boca.y, (float) boca.z));
+			hasta.add(new org.joml.Vector3f((float) fin.x, (float) fin.y, (float) fin.z));
+		}
+		BalasPayload balas = new BalasPayload(desde, hasta);
+		for (ServerPlayer p : mundo.players()) {
+			if (p.distanceToSqr(jugador) < 128 * 128) net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(p, balas);
 		}
 		if (!agujeros.isEmpty()) {
 			AgujerosPayload aviso = new AgujerosPayload(agujeros, caras);
@@ -307,8 +325,9 @@ public class EscopetaPhoraItem extends Item {
 			e.getKey().invulnerableTime = 0;
 			e.getKey().hurt(mundo.damageSources().playerAttack(jugador), e.getValue());
 		}
-		// Retroceso: empuja un poco para atrás.
-		jugador.push(-mira.x * 0.25, 0.02, -mira.z * 0.25);
+		// Retroceso: empuja un poco para atrás (el fusil casi nada).
+		double empuje = arma == FUSIL ? 0.05 : 0.25;
+		jugador.push(-mira.x * empuje, 0.02 * empuje / 0.25, -mira.z * empuje);
 		jugador.hurtMarked = true;
 	}
 

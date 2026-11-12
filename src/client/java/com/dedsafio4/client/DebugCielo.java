@@ -448,6 +448,7 @@ public final class DebugCielo {
 		// Daño: un zombi delante, un tiro de francotirador (100) y 3 clics de fusil.
 		if (t == 230) { comando(mc, "summon minecraft:husk 0.5 200 -4.5 {NoAI:1b,PersistenceRequired:1b,Health:500f,attributes:[{id:\"minecraft:generic.max_health\",base:500}]}"); comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:francotirador_phora[custom_data={dedsafio4_balas:5}]"); }
 		if (t == 240) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.items.EscopetaPhoraItem.DispararPayload());
+		if (t == 241 || t == 271) captura(mc, "debug_bala_" + t + ".png");
 		if (t == 260) server.execute(() -> { for (var e : server.overworld().getAllEntities()) if (e instanceof net.minecraft.world.entity.monster.Husk h) System.out.println("AR francotirador: vida del zombi=" + h.getHealth() + " de 500"); });
 		if (t == 262) comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:fusil_rafagas_phora[custom_data={dedsafio4_balas:30}]");
 		if (t == 270 || t == 271 || t == 272 || t == 280) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.items.EscopetaPhoraItem.DispararPayload());

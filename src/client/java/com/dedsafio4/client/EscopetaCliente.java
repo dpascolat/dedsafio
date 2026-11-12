@@ -63,7 +63,26 @@ public final class EscopetaCliente {
 		return AGUJEROS.size();
 	}
 
+	/** Una bala que vuela: de dónde sale, dónde pega y cuándo salió (en ticks del mundo). */
+	private record Bala(Vec3 desde, Vec3 hasta, long salio) {}
+
+	private static final java.util.List<Bala> BALAS = new java.util.ArrayList<>();
+	/** Lo que avanza la bala por tick (en bloques), y su tamaño: el rayo de la nave 6 veces más chico, en naranja. */
+	private static final double VELOCIDAD_BALA = 8;
+	private static final float MEDIO_LARGO_BALA = 0.5f / 6, MEDIO_LADO_BALA = 2.5f / 16f / 6;
+	private static final float[] NARANJA_BALA = {1f, 0.45f, 0.08f, 0.9f}, NUCLEO_BALA = {1f, 0.85f, 0.55f, 1f};
+
 	public static void registrar() {
+		ClientPlayNetworking.registerGlobalReceiver(EscopetaPhoraItem.BalasPayload.TYPE, (payload, contexto) -> contexto.client().execute(() -> {
+			Minecraft mc = Minecraft.getInstance();
+			if (mc.level == null) return;
+			for (int i = 0; i < payload.desde().size() && i < payload.hasta().size(); i++) {
+				Vector3f a = payload.desde().get(i), b = payload.hasta().get(i);
+				BALAS.add(new Bala(new Vec3(a.x(), a.y(), a.z()), new Vec3(b.x(), b.y(), b.z()), mc.level.getGameTime()));
+			}
+			while (BALAS.size() > 200) BALAS.remove(0);
+		}));
+		WorldRenderEvents.AFTER_TRANSLUCENT.register(EscopetaCliente::dibujarBalas);
 		ClientPlayNetworking.registerGlobalReceiver(EscopetaPhoraItem.AgujerosPayload.TYPE, (payload, contexto) -> contexto.client().execute(() -> {
 			Minecraft mc = Minecraft.getInstance();
 			if (mc.level == null) return;
@@ -74,7 +93,10 @@ public final class EscopetaCliente {
 			}
 			while (AGUJEROS.size() > MAX_AGUJEROS) AGUJEROS.remove(0);
 		}));
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AGUJEROS.clear());
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+			AGUJEROS.clear();
+			BALAS.clear();
+		});
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			if (mc.player == null || mc.level == null) return;
 			boolean tiene = mc.player.getMainHandItem().getItem() instanceof EscopetaPhoraItem;
@@ -119,6 +141,35 @@ public final class EscopetaCliente {
 		if (mc.player != null && mc.player.getMainHandItem().getItem() instanceof EscopetaPhoraItem) {
 			ClientPlayNetworking.send(new EscopetaPhoraItem.RecargarPayload());
 		}
+	}
+
+	/** Las balas que van volando: un rayo naranja chiquito que va del cañón al impacto y desaparece al llegar. */
+	private static void dibujarBalas(WorldRenderContext contexto) {
+		Minecraft mc = Minecraft.getInstance();
+		if (BALAS.isEmpty() || mc.level == null) return;
+		float ahora = mc.level.getGameTime() + contexto.tickCounter().getGameTimeDeltaPartialTick(false);
+		Vec3 camara = contexto.camera().getPosition();
+		MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+		VertexConsumer vc = buffers.getBuffer(net.minecraft.client.renderer.RenderType.lightning());
+		for (var it = BALAS.iterator(); it.hasNext(); ) {
+			Bala b = it.next();
+			Vec3 recorrido = b.hasta().subtract(b.desde());
+			double largo = recorrido.length(), avanzo = (ahora - b.salio()) * VELOCIDAD_BALA;
+			if (largo < 1.0E-3 || avanzo > largo + VELOCIDAD_BALA) {
+				it.remove();
+				continue;
+			}
+			Vec3 dir = recorrido.scale(1 / largo);
+			Vec3 punta = b.desde().add(dir.scale(Math.min(avanzo, largo))).subtract(dir.scale(MEDIO_LARGO_BALA)).subtract(camara);
+			PoseStack pose = new PoseStack();
+			pose.translate(punta.x, punta.y, punta.z);
+			pose.mulPose(com.mojang.math.Axis.YP.rotation((float) -Math.atan2(dir.z, dir.x)));
+			pose.mulPose(com.mojang.math.Axis.ZP.rotation((float) Math.asin(Mth.clamp(dir.y, -1, 1))));
+			org.joml.Matrix4f m = pose.last().pose();
+			com.dedsafio4.client.nave.RayoRenderer.caja(vc, m, MEDIO_LARGO_BALA, MEDIO_LADO_BALA, NARANJA_BALA);
+			com.dedsafio4.client.nave.RayoRenderer.caja(vc, m, MEDIO_LARGO_BALA * 0.95f, MEDIO_LADO_BALA * 0.45f, NUCLEO_BALA);
+		}
+		buffers.endBatch(net.minecraft.client.renderer.RenderType.lightning());
 	}
 
 	// ---------------------------------------------------------------- La mira
@@ -277,13 +328,16 @@ public final class EscopetaCliente {
 
 		// Disparo: retroceso (se levanta y viene para atrás) y después bombea.
 		float d = mano == InteractionHand.MAIN_HAND ? (ahora - EscopetaPhoraItem.disparoCliente) / 20f : 10f;
+		// El fusil casi no salta y no bombea (dispara rápido).
+		boolean fusil = EscopetaPhoraItem.armaDe(mano == InteractionHand.MAIN_HAND ? jugador.getMainHandItem() : jugador.getOffhandItem())
+				== EscopetaPhoraItem.FUSIL;
 		if (d >= 0 && d < 0.12f) {
-			float r = 1 - d / 0.12f;
+			float r = (1 - d / 0.12f) * (fusil ? 0.25f : 1f);
 			rx += 0.30f * r;
 			pz += 0.12f * r;
 			py += 0.02f * r;
 		}
-		b = Math.max(b, bombeo(d, 0.15f) * 1.4f);
+		if (!fusil) b = Math.max(b, bombeo(d, 0.15f) * 1.4f);
 
 		// Recarga (2,5 s): la inclina un poco, se saca el tambor vacío (cae para abajo), entra uno nuevo desde abajo,
 		// hace clic, la vuelve a poner derecha y bombea (el tambor lo mueve tamborBaja, en ItemRendererBrilloMixin).

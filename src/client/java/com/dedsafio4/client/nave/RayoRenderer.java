@@ -38,8 +38,8 @@ public class RayoRenderer extends EntityRenderer<RayoEntity> {
 		super.render(rayo, yaw, partialTick, pose, buffers, luz);
 	}
 
-	/** Caja a lo largo del eje X (el largo del rayo). */
-	private static void caja(VertexConsumer vc, Matrix4f m, float x, float s, float[] c) {
+	/** Caja a lo largo del eje X (el largo del rayo). La usan también las balas de las armas Phora. */
+	public static void caja(VertexConsumer vc, Matrix4f m, float x, float s, float[] c) {
 		float[][] caras = {
 				{-x, -s, -s, x, -s, -s, x, s, -s, -x, s, -s},
 				{-x, -s, s, -x, s, s, x, s, s, x, -s, s},
