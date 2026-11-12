@@ -1802,6 +1802,22 @@ public final class DebugCielo {
 		if (t == 112) mc.stop();
 	}
 
+	private static final boolean ROLPLAYER = "rolplayer".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /rolplayer_1: el nombre y lo que escribe salen en verde claro. */
+	private static void tickRolplayer(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		if (t == 0) { comando(mc, "colorsito normal " + mc.player.getGameProfile().getName()); mc.gui.getChat().clearMessages(false); }
+		if (t == 5) mc.player.connection.sendChat("Hola, sin rolplayer");
+		if (t == 15) comando(mc, "rolplayer_1 " + mc.player.getGameProfile().getName());
+		if (t == 25) mc.player.connection.sendChat("Hola, ahora soy rolplayer 1");
+		if (t == 35) { mc.setScreen(new net.minecraft.client.gui.screens.ChatScreen("")); }
+		if (t == 45) captura(mc, "debug_rolplayer.png");
+		if (t == 50) { mc.setScreen(null); comando(mc, "colorsito normal " + mc.player.getGameProfile().getName()); }
+		if (t == 60) mc.stop();
+	}
+
 	private static final boolean NUCLEO = "nucleo".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** El Núcleo: se ve el modelo, al pegarle carga y explota; el jugador queda quieto y pierde los tótems hasta morir. */
@@ -9295,6 +9311,10 @@ public final class DebugCielo {
 		}
 		if (HURON) {
 			tickHuron(mc);
+			return;
+		}
+		if (ROLPLAYER) {
+			tickRolplayer(mc);
 			return;
 		}
 		if (NUCLEO) {

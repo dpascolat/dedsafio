@@ -29,6 +29,7 @@ public abstract class ChatTypeBoundMixin {
 		if (!propio) return;
 		int color = com.dedsafio4.chat.ColoresChat.colorCliente(name().getString());
 		Component nombre = name().copy().withStyle(s -> s.withColor(color));
-		cir.setReturnValue(Component.translatable("chat.type.dedsafio4", nombre, mensaje));
+		cir.setReturnValue(Component.translatable("chat.type.dedsafio4", nombre,
+				com.dedsafio4.chat.ColoresChat.mensajeCliente(name().getString(), mensaje)));
 	}
 }
