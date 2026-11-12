@@ -65,7 +65,7 @@ public class EscopetaPhoraItem extends Item {
 
 	/**
 	 * Los disparos (cada bala o perdigón: de dónde sale y dónde pega), para que el cliente dibuje el rayo naranja que vuela
-	 * (como el de la nave, 6 veces más chico).
+	 * (como el de la nave, 4 veces más chico).
 	 */
 	public record BalasPayload(List<org.joml.Vector3f> desde, List<org.joml.Vector3f> hasta) implements net.minecraft.network.protocol.common.custom.CustomPacketPayload {
 		public static final Type<BalasPayload> TYPE = new Type<>(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.dedsafio4.Dedsafio4.MOD_ID, "balas_phora"));

@@ -21,7 +21,7 @@ import net.minecraft.world.level.material.PushReaction;
 import java.util.List;
 import java.util.function.Supplier;
 
-/** Las puertas de 3x3 con llave: la Rosa y la Verde, cada una con su Tarjeta de Acceso Phora. */
+/** Las puertas de 5x5 con llave: la Rosa y la Verde, cada una con su Tarjeta de Acceso Phora. */
 public final class ModPuertas {
 	private ModPuertas() {}
 
@@ -65,7 +65,7 @@ public final class ModPuertas {
 		return Registry.register(BuiltInRegistries.ITEM, id(nombre), new BlockItem(bloque, new Item.Properties()) {
 			@Override
 			public void appendHoverText(ItemStack pila, TooltipContext contexto, List<Component> texto, TooltipFlag bandera) {
-				texto.add(Component.literal("Puerta de 3x3. Se abre usando la").withColor(0xC6CFD6));
+				texto.add(Component.literal("Puerta de 5x5. Se abre usando la").withColor(0xC6CFD6));
 				texto.add(Component.literal(nombreLlave).withColor(color)
 						.append(Component.literal(" (la llave se gasta).").withColor(0xC6CFD6)));
 			}

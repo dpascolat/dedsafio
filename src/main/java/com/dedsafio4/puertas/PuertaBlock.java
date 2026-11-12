@@ -35,18 +35,20 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import java.util.function.Supplier;
 
 /**
- * Puerta de 3x3 bloques que se abre con una llave: al usar la llave sobre la puerta cerrada, la llave
- * se gasta y la puerta se abre (la mitad de arriba sube y la de abajo baja, dentro del marco) y queda
- * abierta. No se puede romper en supervivencia.
+ * Puerta que se abre con una llave: al usar la llave sobre la puerta cerrada, la llave se gasta y la puerta se abre
+ * (la mitad de arriba sube y la de abajo baja, dentro del marco) y queda abierta. No se puede romper en supervivencia.
  *
- * Son 9 bloques; PARTE = fila * 3 + columna (fila 0 abajo, columna 0 a la izquierda mirando el frente).
- * El del medio de abajo (parte 1) es el principal: tiene la entidad que dibuja toda la puerta.
+ * Es de 5x5 bloques (GRANDE; las que se pusieron antes, sin eso, siguen siendo de 3x3). PARTE = fila * lado + columna
+ * (fila 0 la del bloque principal, columna 0 a la izquierda mirando el frente). El del medio de la fila 0 es el
+ * principal: tiene la entidad que dibuja toda la puerta. BOCA_ABAJO: puesta desde un techo (o desde la mitad de arriba
+ * de una pared) cuelga para abajo desde el principal y se dibuja dada vuelta.
  */
 public class PuertaBlock extends BaseEntityBlock {
 	public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-	public static final IntegerProperty PARTE = IntegerProperty.create("parte", 0, 8);
+	public static final IntegerProperty PARTE = IntegerProperty.create("parte", 0, 24);
 	public static final BooleanProperty ABIERTA = BooleanProperty.create("abierta");
-	public static final int PRINCIPAL = 1;
+	public static final BooleanProperty GRANDE = BooleanProperty.create("grande");
+	public static final BooleanProperty BOCA_ABAJO = BooleanProperty.create("boca_abajo");
 
 	private final Supplier<Item> llave;
 	/** Nombre de la llave para el aviso ("Necesitas la ..."). */
@@ -56,7 +58,8 @@ public class PuertaBlock extends BaseEntityBlock {
 		super(propiedades);
 		this.llave = llave;
 		this.nombreLlave = nombreLlave;
-		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PARTE, PRINCIPAL).setValue(ABIERTA, false));
+		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PARTE, 1).setValue(ABIERTA, false)
+				.setValue(GRANDE, false).setValue(BOCA_ABAJO, false));
 	}
 
 	@Override
@@ -66,24 +69,36 @@ public class PuertaBlock extends BaseEntityBlock {
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(FACING, PARTE, ABIERTA);
+		builder.add(FACING, PARTE, ABIERTA, GRANDE, BOCA_ABAJO);
 	}
 
-	// --- Las 9 partes ---
+	// --- Las partes (9 o 25) ---
+
+	/** Cuántos bloques de lado tiene: 5, o 3 las de antes. */
+	public static int lado(BlockState estado) {
+		return estado.getValue(GRANDE) ? 5 : 3;
+	}
+
+	/** La parte del bloque principal: el del medio de la fila 0. */
+	public static int principalParte(BlockState estado) {
+		return lado(estado) / 2;
+	}
 
 	/** Hacia dónde está la "derecha" de la puerta (mirandola de frente es la izquierda de quien mira). */
 	private static Direction derecha(Direction frente) {
 		return frente.getCounterClockWise();
 	}
 
-	private static BlockPos posParte(BlockPos principal, Direction frente, int parte) {
-		int col = parte % 3, fila = parte / 3;
-		return principal.relative(derecha(frente), col - 1).above(fila);
+	private static BlockPos posParte(BlockPos principal, BlockState estado, int parte) {
+		int n = lado(estado), col = parte % n, fila = parte / n;
+		BlockPos p = principal.relative(derecha(estado.getValue(FACING)), col - n / 2);
+		return estado.getValue(BOCA_ABAJO) ? p.below(fila) : p.above(fila);
 	}
 
 	public static BlockPos principal(BlockPos pos, BlockState estado) {
-		int parte = estado.getValue(PARTE), col = parte % 3, fila = parte / 3;
-		return pos.relative(derecha(estado.getValue(FACING)), 1 - col).below(fila);
+		int n = lado(estado), parte = estado.getValue(PARTE), col = parte % n, fila = parte / n;
+		BlockPos p = pos.relative(derecha(estado.getValue(FACING)), n / 2 - col);
+		return estado.getValue(BOCA_ABAJO) ? p.above(fila) : p.below(fila);
 	}
 
 	@Override
@@ -91,18 +106,26 @@ public class PuertaBlock extends BaseEntityBlock {
 		Direction frente = contexto.getHorizontalDirection().getOpposite();
 		BlockPos pos = contexto.getClickedPos();
 		Level level = contexto.getLevel();
-		for (int parte = 0; parte < 9; parte++) {
-			BlockPos p = posParte(pos, frente, parte);
+		// Boca abajo: puesta en un techo, o en la mitad de arriba de una pared.
+		Direction cara = contexto.getClickedFace();
+		boolean bocaAbajo = cara == Direction.DOWN
+				|| cara != Direction.UP && contexto.getClickLocation().y - pos.getY() > 0.5;
+		BlockState estado = defaultBlockState().setValue(FACING, frente).setValue(GRANDE, true).setValue(BOCA_ABAJO, bocaAbajo);
+		estado = estado.setValue(PARTE, principalParte(estado));
+		int n = lado(estado);
+		for (int parte = 0; parte < n * n; parte++) {
+			BlockPos p = posParte(pos, estado, parte);
 			if (!level.isInWorldBounds(p) || !level.getBlockState(p).canBeReplaced(contexto)) return null;
 		}
-		return defaultBlockState().setValue(FACING, frente).setValue(PARTE, PRINCIPAL);
+		return estado;
 	}
 
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState estado, LivingEntity quien, ItemStack pila) {
-		for (int parte = 0; parte < 9; parte++) {
-			if (parte == PRINCIPAL) continue;
-			level.setBlock(posParte(pos, estado.getValue(FACING), parte), estado.setValue(PARTE, parte), 3);
+		int n = lado(estado);
+		for (int parte = 0; parte < n * n; parte++) {
+			if (parte == principalParte(estado)) continue;
+			level.setBlock(posParte(pos, estado, parte), estado.setValue(PARTE, parte), 3);
 		}
 	}
 
@@ -111,11 +134,13 @@ public class PuertaBlock extends BaseEntityBlock {
 	protected void onRemove(BlockState estado, Level level, BlockPos pos, BlockState nuevo, boolean movido) {
 		if (!nuevo.is(this)) {
 			BlockPos principal = principal(pos, estado);
-			for (int parte = 0; parte < 9; parte++) {
-				BlockPos p = posParte(principal, estado.getValue(FACING), parte);
+			int n = lado(estado);
+			for (int parte = 0; parte < n * n; parte++) {
+				BlockPos p = posParte(principal, estado, parte);
 				if (p.equals(pos)) continue;
 				BlockState otro = level.getBlockState(p);
-				if (otro.is(this) && otro.getValue(PARTE) == parte && otro.getValue(FACING) == estado.getValue(FACING)) {
+				if (otro.is(this) && otro.getValue(PARTE) == parte && otro.getValue(FACING) == estado.getValue(FACING)
+						&& otro.getValue(GRANDE) == estado.getValue(GRANDE) && otro.getValue(BOCA_ABAJO) == estado.getValue(BOCA_ABAJO)) {
 					level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
 				}
 			}
@@ -148,13 +173,13 @@ public class PuertaBlock extends BaseEntityBlock {
 
 	private void abrir(Level level, BlockPos pos, BlockState estado) {
 		BlockPos principal = principal(pos, estado);
-		Direction frente = estado.getValue(FACING);
-		for (int parte = 0; parte < 9; parte++) {
-			BlockPos p = posParte(principal, frente, parte);
+		int n = lado(estado);
+		for (int parte = 0; parte < n * n; parte++) {
+			BlockPos p = posParte(principal, estado, parte);
 			BlockState otro = level.getBlockState(p);
 			if (otro.is(this)) level.setBlock(p, otro.setValue(ABIERTA, true), 3);
 		}
-		BlockPos centro = principal.above();
+		BlockPos centro = estado.getValue(BOCA_ABAJO) ? principal.below(n / 2) : principal.above(n / 2);
 		level.playSound(null, centro, SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 1f, 0.6f);
 		level.playSound(null, centro, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.7f, 0.7f);
 	}
@@ -175,12 +200,14 @@ public class PuertaBlock extends BaseEntityBlock {
 		Direction frente = estado.getValue(FACING);
 		if (!estado.getValue(ABIERTA)) return caja(frente, 0, 0, 16, 16);
 		// Abierta: solo queda el marco de los bordes.
-		int parte = estado.getValue(PARTE), col = parte % 3, fila = parte / 3;
+		int n = lado(estado), parte = estado.getValue(PARTE), col = parte % n, fila = parte / n;
+		boolean abajo = estado.getValue(BOCA_ABAJO) ? fila == n - 1 : fila == 0;
+		boolean arriba = estado.getValue(BOCA_ABAJO) ? fila == 0 : fila == n - 1;
 		VoxelShape forma = Shapes.empty();
 		if (col == 0) forma = Shapes.or(forma, caja(frente, 0, 0, 2, 16));
-		if (col == 2) forma = Shapes.or(forma, caja(frente, 14, 0, 16, 16));
-		if (fila == 0) forma = Shapes.or(forma, caja(frente, 0, 0, 16, 2));
-		if (fila == 2) forma = Shapes.or(forma, caja(frente, 0, 14, 16, 16));
+		if (col == n - 1) forma = Shapes.or(forma, caja(frente, 14, 0, 16, 16));
+		if (abajo) forma = Shapes.or(forma, caja(frente, 0, 0, 16, 2));
+		if (arriba) forma = Shapes.or(forma, caja(frente, 0, 14, 16, 16));
 		return forma;
 	}
 
@@ -193,6 +220,6 @@ public class PuertaBlock extends BaseEntityBlock {
 
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState estado) {
-		return estado.getValue(PARTE) == PRINCIPAL ? new PuertaBlockEntity(pos, estado) : null;
+		return estado.getValue(PARTE) == principalParte(estado) ? new PuertaBlockEntity(pos, estado) : null;
 	}
 }

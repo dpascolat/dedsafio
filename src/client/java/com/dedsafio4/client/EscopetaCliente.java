@@ -67,9 +67,9 @@ public final class EscopetaCliente {
 	private record Bala(Vec3 desde, Vec3 hasta, long salio) {}
 
 	private static final java.util.List<Bala> BALAS = new java.util.ArrayList<>();
-	/** Lo que avanza la bala por tick (en bloques), y su tamaño: el rayo de la nave 6 veces más chico, en naranja. */
+	/** Lo que avanza la bala por tick (en bloques), y su tamaño: el rayo de la nave 4 veces más chico, en naranja. */
 	private static final double VELOCIDAD_BALA = 8;
-	private static final float MEDIO_LARGO_BALA = 0.5f / 6, MEDIO_LADO_BALA = 2.5f / 16f / 6;
+	private static final float MEDIO_LARGO_BALA = 0.5f / 4, MEDIO_LADO_BALA = 2.5f / 16f / 4;
 	private static final float[] NARANJA_BALA = {1f, 0.45f, 0.08f, 0.9f}, NUCLEO_BALA = {1f, 0.85f, 0.55f, 1f};
 
 	public static void registrar() {

@@ -16,16 +16,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Dibuja la puerta de 3x3 entera desde su bloque principal: el marco fijo y el panel partido al medio.
- * Al abrirse, la mitad de arriba sube y la de abajo baja, escondiéndose en el marco (1,2 s, con
- * aceleración suave). Las luces van en una capa aparte a pleno brillo.
+ * Dibuja la puerta entera desde su bloque principal: el marco fijo y el panel partido al medio. Al abrirse, la mitad
+ * de arriba sube y la de abajo baja, escondiéndose en el marco (1,2 s, con aceleración suave). Las luces van en una
+ * capa aparte a pleno brillo. El dibujo es el del diseño de 3x3 estirado al tamaño de la puerta (5x5, o 3x3 las de
+ * antes); boca abajo se dibuja dada vuelta, colgando del bloque principal.
  *
- * Medidas en bloques, como en el diseño: x de -1,5 a 1,5, y de 0 a 3, z = grosor (+z es el frente).
+ * Medidas en bloques, como en el diseño: x de -W/2 a W/2, y de 0 a H, z = grosor (+z es el frente).
  */
 public class PuertaRenderer implements BlockEntityRenderer<PuertaBlockEntity> {
-	private static final float W = 3, H = 3, S = H / 2, MARCO = 0.12f, RECORRIDO = S - MARCO;
+	/** El tamaño de la puerta que se está dibujando (lo pone render) y lo que mide la mitad. */
+	private static float W = 3, H = 3, S = H / 2;
+	private static final float MARCO = 0.12f;
 	private static final float Z_MARCO = 0.11f, Z_PANEL = 0.08f, Z_LUZ = 0.083f;
-	private static final float TEX = 128f, PX = 32f;
+	/** La textura es de 128 de ancho y el dibujo de la puerta ocupa 96 (3 bloques de 32): se estira a lo que mida. */
+	private static final float TEX = 128f, DIBUJO = 96f;
 
 	private static final ResourceLocation ROSA = textura("puerta_rosa"), ROSA_LUCES = textura("puerta_rosa_luces");
 	private static final ResourceLocation VERDE = textura("puerta_verde"), VERDE_LUCES = textura("puerta_verde_luces");
@@ -45,11 +49,18 @@ public class PuertaRenderer implements BlockEntityRenderer<PuertaBlockEntity> {
 	public void render(PuertaBlockEntity puerta, float parcial, PoseStack pose, MultiBufferSource buffers, int luz, int overlay) {
 		BlockState estado = puerta.getBlockState();
 		boolean verde = estado.is(ModPuertas.PUERTA_VERDE);
-		float o = suave(puerta.apertura(parcial)) * RECORRIDO;
+		W = H = PuertaBlock.lado(estado);
+		S = H / 2;
+		float o = suave(puerta.apertura(parcial)) * (S - MARCO);
 
 		pose.pushPose();
 		pose.translate(0.5, 0, 0.5);
 		pose.mulPose(Axis.YP.rotationDegrees(-estado.getValue(PuertaBlock.FACING).toYRot()));
+		// Boca abajo: cuelga del bloque principal, dada vuelta.
+		if (estado.getValue(PuertaBlock.BOCA_ABAJO)) {
+			pose.translate(0, 1, 0);
+			pose.mulPose(Axis.ZP.rotationDegrees(180));
+		}
 		PoseStack.Pose p = pose.last();
 
 		VertexConsumer vc = buffers.getBuffer(RenderType.entityCutout(verde ? VERDE : ROSA));
@@ -80,11 +91,11 @@ public class PuertaRenderer implements BlockEntityRenderer<PuertaBlockEntity> {
 	}
 
 	private static float u(float x) {
-		return (x + W / 2) * PX / TEX;
+		return (x + W / 2) / W * DIBUJO / TEX;
 	}
 
 	private static float v(float y) {
-		return (H - y) * PX / TEX;
+		return (H - y) / H * DIBUJO / TEX;
 	}
 
 	/**
