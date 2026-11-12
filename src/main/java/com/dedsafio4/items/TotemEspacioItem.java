@@ -16,21 +16,20 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 /**
- * Tótem del Espacio entre Dimensiones: sólo sirve en esa dimensión (dedsafio4:espacio_entre_dimensiones, se agrega más
- * adelante) y salta desde cualquier lugar del inventario. Ahí es el único tótem que funciona: los demás (el de Minecraft,
- * el de Gólem, el Glebanoide, el de Eón, el Limbo) no hacen nada (ver LivingEntityTotemEspacioMixin). Afuera no sirve.
+ * Tótem del Espacio: sólo sirve en el Espacio (el Espacio Interdimensional y el de la nave, donde anda el Brazalete) y
+ * salta desde cualquier lugar del inventario. Ahí es el único tótem que funciona: los demás (el de Minecraft, el de
+ * Gólem, el Glebanoide, el de Eón, el Limbo) no hacen nada (ver LivingEntityTotemEspacioMixin). Afuera no sirve.
  */
 public class TotemEspacioItem extends Item {
-	public static final ResourceKey<Level> DIMENSION = ResourceKey.create(Registries.DIMENSION,
-			ResourceLocation.fromNamespaceAndPath("dedsafio4", "espacio_entre_dimensiones"));
 
 	public TotemEspacioItem(Properties propiedades) {
 		super(propiedades.stacksTo(1));
 	}
 
-	/** ¿Está en el Espacio entre Dimensiones? */
+	/** ¿Está en el Espacio (el Interdimensional o el de la nave)? */
 	public static boolean enEspacio(Entity entidad) {
-		return entidad.level().dimension().equals(DIMENSION);
+		ResourceKey<Level> d = entidad.level().dimension();
+		return d == com.dedsafio4.dimension.EspacioInterdimensional.DIMENSION || d == com.dedsafio4.despegue.ModDespegue.ESPACIO;
 	}
 
 	@Override

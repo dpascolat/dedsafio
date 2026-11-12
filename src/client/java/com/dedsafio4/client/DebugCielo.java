@@ -2535,6 +2535,41 @@ public final class DebugCielo {
 		if (t == 80) mc.stop();
 	}
 
+	private static final boolean AIRE_ESPACIO = "aireespacio".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** En el Espacio: sin traje se ahoga (5x más rápido, daño x10); salva el Tótem del Espacio, no el normal; con traje respira. */
+	private static void tickAireEspacio(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		var server = mc.getSingleplayerServer();
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamerule keepInventory true");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -4 99 -4 4 99 4 minecraft:stone");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -4 100 -4 4 104 4 minecraft:air");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 100 0.5");
+			comando(mc, "gamemode survival");
+			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "clear @s");
+			comando(mc, "effect clear @s");
+			comando(mc, "item replace entity @s weapon.offhand with minecraft:totem_of_undying");
+			comando(mc, "item replace entity @s inventory.5 with dedsafio4:totem_espacio");
+		}
+		if (t > 0 && t <= 160 && t % 10 == 0) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			Dedsafio4ClientDebug.info("sin traje t" + (ticks - 20) + ": aire=" + j.getAirSupply() + " vida=" + j.getHealth()
+					+ " totemNormal=" + j.getOffhandItem().getCount() + " totemEspacio=" + j.getInventory().countItem(com.dedsafio4.items.ModItems.TOTEM_ESPACIO));
+		});
+		if (t == 165) { comando(mc, "effect clear @s"); comando(mc, "tag @s add dedsafio4_brazalete_vuelo"); comando(mc, "effect give @s minecraft:instant_health 1 5"); }
+		if (t == 230) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			Dedsafio4ClientDebug.info("con traje: aire=" + j.getAirSupply() + " vida=" + j.getHealth());
+		});
+		if (t == 235) { comando(mc, "tag @s remove dedsafio4_brazalete_vuelo"); comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5"); }
+		if (t == 240) mc.stop();
+	}
+
 	/** Revive al jugador si quedó muerto (el comando /respawn no existe en Minecraft). */
 	private static void revivir(Minecraft mc) {
 		if (mc.player != null && !mc.player.isAlive()) mc.player.respawn();
@@ -9152,6 +9187,10 @@ public final class DebugCielo {
 		}
 		if (CEDRONIDA) {
 			tickCedronida(mc);
+			return;
+		}
+		if (AIRE_ESPACIO) {
+			tickAireEspacio(mc);
 			return;
 		}
 		if (ROBOT) {

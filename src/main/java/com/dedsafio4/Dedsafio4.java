@@ -67,6 +67,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.bestias.MutacionFantasma.registrar();
 		com.dedsafio4.herreria.MesaDePlantilla.registrar();
 		com.dedsafio4.items.ArmaduraCedronida.registrar();
+		com.dedsafio4.brazalete.RespiracionEspacio.registrar();
 		com.dedsafio4.bestias.RanaGiganteEntity.registrar();
 		com.dedsafio4.bestias.CreeperPapelEntity.registrar();
 		com.dedsafio4.bestias.SlotsBloqueados.registrar();
