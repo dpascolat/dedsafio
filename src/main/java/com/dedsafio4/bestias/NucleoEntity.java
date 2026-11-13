@@ -35,11 +35,11 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Núcleo: no se mueve nunca. Si alguien le pega, se enoja: le devuelve golpes a quien le pegó (cada segundo, desde
- * donde esté, si está dentro del radio) mientras carga 3 segundos, y explota como una supernova. Todos los jugadores
- * que estén dentro del radio (al explotar o durante los 5 segundos que dura) quedan quietos, sin poder moverse ni
- * saltar, y el Núcleo les pega cada medio segundo (sin importar la armadura): les va rompiendo los tótems hasta que
- * se mueren. Después se calma, hasta que le vuelvan a pegar.
+ * Núcleo: no se mueve nunca. Si alguien le pega, se enoja y le dispara rayos rojos (como los de la nave) cada segundo,
+ * mientras esté vivo y dentro del radio.
+ * <p>La supernova es al morir: los jugadores que estén dentro del radio cuando explota (o mientras dura) quedan quietos,
+ * sin poder moverse ni saltar, y el Núcleo les pega cada medio segundo (sin importar la armadura): les va rompiendo los
+ * tótems hasta que se mueren.
  * <p>Cuando lo matan, empieza una cuenta (10 segundos, o lo que diga /tiempito) para escapar del radio: se ve el borde
  * y a todos los que están cerca les aparece un contador rojo grande en la pantalla. Al terminar explota como supernova: los que no escaparon quedan atrapados hasta morirse.
  * <ul>
@@ -76,6 +76,8 @@ public class NucleoEntity extends Monster {
 	private static final Map<UUID, Atrapado> ATRAPADOS = new HashMap<>();
 
 	private UUID enojadoCon;
+	/** Ticks hasta el próximo rayo a quien le pegó. */
+	private int proximoDisparo;
 
 	public NucleoEntity(EntityType<? extends NucleoEntity> tipo, Level level) {
 		super(tipo, level);
@@ -164,12 +166,12 @@ public class NucleoEntity extends Monster {
 	public boolean hurt(DamageSource fuente, float danio) {
 		boolean pego = super.hurt(fuente, danio);
 		if (pego && !level().isClientSide && fuente.getEntity() instanceof LivingEntity atacante && atacante != this && isAlive()) {
-			enojadoCon = atacante.getUUID();
-			if (estado() == QUIETO) {
-				cambiar(CARGANDO);
-				level().playSound(null, getX(), getY() + ALTO / 2, getZ(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 4f, 0.5f);
+			// Se enoja con el último que le pegó y le dispara enseguida (y después cada segundo).
+			if (!atacante.getUUID().equals(enojadoCon)) {
 				level().playSound(null, getX(), getY() + ALTO / 2, getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 4f, 0.6f);
+				proximoDisparo = Math.min(proximoDisparo, 5);
 			}
+			enojadoCon = atacante.getUUID();
 		}
 		return pego;
 	}
@@ -190,7 +192,14 @@ public class NucleoEntity extends Monster {
 		}
 
 		int estado = estado();
-		if (estado == QUIETO) return;
+		if (estado == QUIETO) {
+			// Enojado: le dispara a quien le pegó cada segundo.
+			if (enojadoCon != null && --proximoDisparo <= 0) {
+				proximoDisparo = CADA_DEVOLUCION;
+				devolverGolpe(mundo, radio);
+			}
+			return;
+		}
 		int t = tiempo() + 1;
 		entityData.set(TIEMPO, t);
 		Vec3 centro = centro();
@@ -223,7 +232,12 @@ public class NucleoEntity extends Monster {
 
 	/** Le dispara a quien le pegó (si está vivo, en el mismo mundo y dentro del radio) un rayo rojo como los de la nave. */
 	private void devolverGolpe(ServerLevel mundo, float radio) {
-		if (enojadoCon == null || !(mundo.getEntity(enojadoCon) instanceof LivingEntity victima) || !victima.isAlive()) return;
+		if (enojadoCon == null) return;
+		// Si el que le pegó se murió o ya no está en este mundo, se calma.
+		if (!(mundo.getEntity(enojadoCon) instanceof LivingEntity victima) || !victima.isAlive()) {
+			enojadoCon = null;
+			return;
+		}
 		if (victima instanceof Player p && (p.isCreative() || p.isSpectator())) return;
 		Vec3 centro = centro(), destino = victima.position().add(0, victima.getBbHeight() / 2, 0);
 		if (centro.distanceTo(destino) > radio) return;

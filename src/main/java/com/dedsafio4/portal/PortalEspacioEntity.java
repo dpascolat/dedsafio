@@ -140,6 +140,12 @@ public class PortalEspacioEntity extends Entity {
 		return true;
 	}
 
+	/** Las flechas, los rayos, etc. lo atraviesan (solo se le puede pegar con la mano, para sacarlo). */
+	@Override
+	public boolean canBeHitByProjectile() {
+		return false;
+	}
+
 	@Override
 	public boolean isPushable() {
 		return false;
