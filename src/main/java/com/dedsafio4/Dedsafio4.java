@@ -232,6 +232,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.despegue.ZonaGleba.registrarComandos(dispatcher);
 			com.dedsafio4.brazalete.ZonaEspacio.registrarComandos(dispatcher);
 			com.dedsafio4.portal.DestinoPortal.registrarComandos(dispatcher);
+			com.dedsafio4.bestias.Tiempito.registrarComandos(dispatcher);
 			com.dedsafio4.dimension.GlebaNueva.registrarComandos(dispatcher);
 			AdminComandos.registrar(dispatcher);
 			AyudaComando.registrar(dispatcher);

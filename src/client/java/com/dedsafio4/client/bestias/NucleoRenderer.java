@@ -92,7 +92,7 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 		int estado = nucleo.estado();
 		float t = nucleo.tiempo() + (estado == NucleoEntity.QUIETO ? 0 : parcial);
 		float carga = estado == NucleoEntity.CARGANDO ? Mth.clamp(t / NucleoEntity.CARGA, 0, 1)
-				: estado == NucleoEntity.ESCAPEN ? Mth.clamp(t / NucleoEntity.ESCAPE, 0, 1) : 0;
+				: estado == NucleoEntity.ESCAPEN ? Mth.clamp(t / nucleo.cuenta(), 0, 1) : 0;
 		float escala = nucleo.getScale();
 
 		pose.pushPose();

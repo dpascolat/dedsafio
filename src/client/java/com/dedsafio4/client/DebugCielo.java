@@ -1824,6 +1824,7 @@ public final class DebugCielo {
 			comando(mc, "summon dedsafio4:nucleo 0.5 200 -6.5 {Rotation:[0f,0f]}");
 			comando(mc, "radios nucleo 25");
 			comando(mc, "dañomob nucleo 15");
+			comando(mc, "tiempito 5");
 			comando(mc, "item replace entity @s weapon.offhand with minecraft:totem_of_undying");
 			comando(mc, "item replace entity @s weapon.mainhand with minecraft:totem_of_undying");
 		}
@@ -1839,7 +1840,8 @@ public final class DebugCielo {
 					+ (lista.isEmpty() ? "" : " estado=" + lista.get(0).estado() + " tiempo=" + lista.get(0).tiempo())
 					+ " atrapado=" + com.dedsafio4.bestias.NucleoEntity.atrapado(j) + " vida=" + j.getHealth() + " vivo=" + j.isAlive() + " totems=" + totems);
 		});
-		if (t == 60) captura(mc, "debug_nmuerte1_cuenta.png");
+		if (t == 32 || t == 60) captura(mc, "debug_nmuerte1_cuenta" + t + ".png");
+		if (t == 640) comando(mc, "tiempito normal");
 		if (t == 150) captura(mc, "debug_nmuerte2_afuera.png");
 		if (t == 232) captura(mc, "debug_nmuerte3_explota_afuera.png");
 		if (t == 480) captura(mc, "debug_nmuerte4_adentro.png");

@@ -40,20 +40,23 @@ import java.util.UUID;
  * que estén dentro del radio (al explotar o durante los 5 segundos que dura) quedan quietos, sin poder moverse ni
  * saltar, y el Núcleo les pega cada medio segundo (sin importar la armadura): les va rompiendo los tótems hasta que
  * se mueren. Después se calma, hasta que le vuelvan a pegar.
- * <p>Cuando lo matan, empieza una cuenta de 10 segundos para escapar del radio (se ve el borde y a los que están adentro
- * les avisa cuánto falta). Al terminar explota como supernova: los que no escaparon quedan atrapados hasta morirse.
+ * <p>Cuando lo matan, empieza una cuenta (10 segundos, o lo que diga /tiempito) para escapar del radio: se ve el borde
+ * y a todos los que están cerca les aparece un contador rojo grande en la pantalla. Al terminar explota como supernova: los que no escaparon quedan atrapados hasta morirse.
  * <ul>
  * <li>/dañomob nucleo &lt;daño&gt;: lo que saca cada golpe (20 = 10 corazones).</li>
  * <li>/vidamob nucleo &lt;vida&gt;: su vida (300).</li>
  * <li>/radios nucleo &lt;bloques&gt;: qué tan lejos llega la supernova (20 bloques).</li>
+ * <li>/tiempito &lt;segundos&gt;: cuánto tarda en explotar después de matarlo (10 s).</li>
  * </ul>
  */
 public class NucleoEntity extends Monster {
 	private static final EntityDataAccessor<Integer> ESTADO = SynchedEntityData.defineId(NucleoEntity.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Integer> TIEMPO = SynchedEntityData.defineId(NucleoEntity.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Float> RADIO = SynchedEntityData.defineId(NucleoEntity.class, EntityDataSerializers.FLOAT);
+	/** Cuánto dura la cuenta para escapar de este Núcleo (ticks): lo que decía /tiempito cuando murió. */
+	private static final EntityDataAccessor<Integer> CUENTA = SynchedEntityData.defineId(NucleoEntity.class, EntityDataSerializers.INT);
 	public static final int QUIETO = 0, CARGANDO = 1, SUPERNOVA = 2, ESCAPEN = 3;
-	/** Los segundos (en ticks) que tienen para escapar después de matarlo. */
+	/** Los segundos (en ticks) que tienen para escapar después de matarlo, si no se cambió con /tiempito. */
 	public static final int ESCAPE = 200;
 	/** Después de la supernova de la muerte, cuánto más se queda como mucho (60 s) pegándoles a los atrapados. */
 	private static final int MAXIMO_ATRAPADOS = 1200;
@@ -96,6 +99,7 @@ public class NucleoEntity extends Monster {
 		constructor.define(ESTADO, QUIETO);
 		constructor.define(TIEMPO, 0);
 		constructor.define(RADIO, RADIO_NORMAL);
+		constructor.define(CUENTA, ESCAPE);
 	}
 
 	public int estado() {
@@ -242,6 +246,7 @@ public class NucleoEntity extends Monster {
 		super.addAdditionalSaveData(tag);
 		tag.putInt("Estado", estado());
 		tag.putInt("Tiempo", tiempo());
+		tag.putInt("Cuenta", cuenta());
 	}
 
 	@Override
@@ -249,6 +254,7 @@ public class NucleoEntity extends Monster {
 		super.readAdditionalSaveData(tag);
 		entityData.set(ESTADO, tag.getInt("Estado"));
 		entityData.set(TIEMPO, tag.getInt("Tiempo"));
+		if (tag.contains("Cuenta")) entityData.set(CUENTA, Math.max(20, tag.getInt("Cuenta")));
 	}
 
 	// ------------------------------------------------------------------------------- Muerte
@@ -259,18 +265,34 @@ public class NucleoEntity extends Monster {
 		super.die(fuente);
 		if (!(level() instanceof ServerLevel mundo)) return;
 		enojadoCon = null;
+		entityData.set(CUENTA, Tiempito.ticks(mundo.getServer()));
 		cambiar(ESCAPEN);
 		Vec3 c = centro();
 		mundo.playSound(null, c.x, c.y, c.z, SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 8f, 0.5f);
 		mundo.playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE, 8f, 0.5f);
+		contador(mundo, c, radio(), cuenta());
+	}
+
+	/** Cuánto dura la cuenta para escapar (ticks). */
+	public int cuenta() {
+		return entityData.get(CUENTA);
+	}
+
+	/**
+	 * El contador rojo grande en el medio de la pantalla de todos los que están cerca, con los segundos que faltan; abajo
+	 * dice si están adentro del radio (¡escapa!) o afuera (a salvo).
+	 */
+	private void contador(ServerLevel mundo, Vec3 centro, float radio, int faltanTicks) {
+		int segundos = (faltanTicks + 19) / 20;
 		for (ServerPlayer p : mundo.players()) {
-			if (p.position().distanceTo(c) <= radio() + 32) {
-				p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(5, 40, 10));
-				p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(
-						Component.literal("¡ESCAPA!").withStyle(ChatFormatting.RED, ChatFormatting.BOLD)));
-				p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(
-						Component.literal("El Núcleo va a explotar: sal del radio").withStyle(ChatFormatting.GOLD)));
-			}
+			double d = p.position().add(0, p.getBbHeight() / 2, 0).distanceTo(centro);
+			if (d > radio + 32 || p.isSpectator()) continue;
+			p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(0, 30, 6));
+			p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(
+					Component.literal(String.valueOf(segundos)).withStyle(ChatFormatting.RED, ChatFormatting.BOLD)));
+			p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(d <= radio
+					? Component.literal("¡Escapa del radio del Núcleo!").withStyle(ChatFormatting.RED)
+					: Component.literal("A salvo").withStyle(ChatFormatting.GREEN)));
 		}
 	}
 
@@ -280,15 +302,18 @@ public class NucleoEntity extends Monster {
 		int t = tiempo() + 1;
 		entityData.set(TIEMPO, t);
 		Vec3 centro = centro();
+		int total = cuenta();
 		if (estado() == ESCAPEN) {
-			int quedan = (ESCAPE - t + 19) / 20;
+			int quedan = (total - t + 19) / 20;
 			// Junta energía cada vez más rápido.
 			for (int i = 0; i < 4 + t / 20; i++) {
 				Vec3 desde = centro.add((random.nextDouble() - 0.5) * 10, (random.nextDouble() - 0.5) * 10, (random.nextDouble() - 0.5) * 10);
 				Vec3 hacia = centro.subtract(desde).scale(0.12);
 				mundo.sendParticles(ParticleTypes.FLAME, desde.x, desde.y, desde.z, 0, hacia.x, hacia.y, hacia.z, 1);
 			}
-			if (t % 20 == 0) mundo.playSound(null, centro.x, centro.y, centro.z, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.HOSTILE, 6f, 0.6f + t / (float) ESCAPE);
+			if (t % 20 == 0) mundo.playSound(null, centro.x, centro.y, centro.z, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.HOSTILE, 6f, 0.6f + t / (float) total);
+			// El contador rojo: cambia cada segundo.
+			if ((total - t) % 20 == 0 && t < total) contador(mundo, centro, radio, total - t);
 			// A los que están cerca: cuánto falta y si están adentro o afuera.
 			if (t % 5 == 0) {
 				for (ServerPlayer p : mundo.players()) {
@@ -300,7 +325,7 @@ public class NucleoEntity extends Monster {
 					p.displayClientMessage(aviso, true);
 				}
 			}
-			if (t >= ESCAPE) {
+			if (t >= total) {
 				efectosSupernova(mundo, centro, radio);
 				atrapar(mundo, centro, radio);
 			}
