@@ -2776,6 +2776,40 @@ public final class DebugCielo {
 	}
 
 	private static final boolean VISOR = "visor".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+	private static final boolean TRAJE_ANIM = "trajeanim".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** /spawn_de_espacio (adentro no te ahogas sin traje) y la animación del traje poniéndose con la J. */
+	private static void tickTrajeAnim(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5 || t == -3) revivir(mc);
+		String yo = mc.player.getGameProfile().getName();
+		if (t == 0) {
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -6 99 -6 30 99 6 minecraft:stone");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run tp @s 0.5 100 0.5 180 0");
+			comando(mc, "gamemode survival");
+			comando(mc, "difficulty normal");
+			comando(mc, "clear @s");
+			comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional[damage=110]");
+		}
+		if (t == 3) comando(mc, "execute in dedsafio4:espacio_interdimensional run spawn_de_espacio -6 99 -6 6 99 6");
+		if (t == 60) comando(mc, "tp @s 20.5 100 0.5");
+		if (t == 84) comando(mc, "tp @s 0.5 100 0.5 180 0");
+		if (t >= 10 && t <= 88 && t % 6 == 0) Dedsafio4ClientDebug.info("trajeanim t" + t + " aire=" + mc.player.getAirSupply() + " vida=" + mc.player.getHealth() + " x=" + mc.player.getX());
+		if (t == 90) { mc.gui.getChat().clearMessages(false); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }
+		if (t == 95) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 97 || t == 100 || t == 103 || t == 106 || t == 109 || t == 116) captura(mc, "debug_trajeanim_" + t + ".png");
+		if (t == 130) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 132) captura(mc, "debug_trajeanim_saca.png");
+		if (t == 150) mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+		if (t == 155) net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new com.dedsafio4.brazalete.Brazalete.TeclaPayload());
+		if (t == 158 || t == 162 || t == 166 || t == 175) captura(mc, "debug_trajevisor_" + t + ".png");
+		if (t == 180) { comando(mc, "spawn_de_espacio ver"); comando(mc, "spawn_de_espacio quitar"); }
+		if (t == 185) mc.stop();
+	}
+
 
 	/** El visor del Traje Espacial: en el Espacio, Brazalete en la segunda mano, J y a volar. */
 	private static void tickVisor(Minecraft mc) {
@@ -9356,6 +9390,10 @@ public final class DebugCielo {
 		}
 		if (HURON) {
 			tickHuron(mc);
+			return;
+		}
+		if (TRAJE_ANIM) {
+			tickTrajeAnim(mc);
 			return;
 		}
 		if (NUCLEO_MUERTE) {

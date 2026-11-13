@@ -74,8 +74,10 @@ public class Dedsafio4Client implements ClientModInitializer {
 		BlockRenderLayerMap.INSTANCE.putBlock(com.dedsafio4.bloques.BloqueRojo.BLOQUE, RenderType.translucent());
 		EspacioInterdimensionalCielo.registrar();
 		ClientPlayNetworking.registerGlobalReceiver(com.dedsafio4.brazalete.TrajeEspacial.Payload.TYPE, (payload, context) -> {
-			if (payload.puesto()) com.dedsafio4.brazalete.TrajeEspacial.PUESTOS_CLIENTE.add(payload.jugador());
-			else com.dedsafio4.brazalete.TrajeEspacial.PUESTOS_CLIENTE.remove(payload.jugador());
+			boolean cambio = payload.puesto() ? com.dedsafio4.brazalete.TrajeEspacial.PUESTOS_CLIENTE.add(payload.jugador())
+					: com.dedsafio4.brazalete.TrajeEspacial.PUESTOS_CLIENTE.remove(payload.jugador());
+			// Se pone o se saca: la animación del traje armándose (o desarmándose).
+			if (cambio) TrajeAnimacion.empezar(payload.jugador(), payload.puesto());
 		});
 		BlockRenderLayerMap.INSTANCE.putBlock(com.dedsafio4.banco.ModCajero.CAJERO, RenderType.cutout());
 		BlockRenderLayerMap.INSTANCE.putBlock(ModBloques.MENSAJERO, RenderType.cutout());

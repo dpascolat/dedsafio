@@ -11,7 +11,8 @@ import java.util.UUID;
 /**
  * En el Espacio (el Interdimensional y el de la nave) no hay aire: sin el Traje Espacial puesto (la J del Brazalete) se
  * pierde la respiración como bajo el agua con /cambio respiracion 1 (5 veces más rápido) y, sin aire, el daño por
- * ahogarse es 10 veces más. Con el traje se respira normal. Yendo en la nave (montado en algo) tampoco pasa nada.
+ * ahogarse es 10 veces más. Con el traje se respira normal. Yendo en la nave (montado en algo) tampoco pasa nada, ni
+ * adentro del spawn del Espacio (/spawn_de_espacio, ver ZonaEspacio).
  */
 public final class RespiracionEspacio {
 	private RespiracionEspacio() {}
@@ -46,6 +47,6 @@ public final class RespiracionEspacio {
 	/** ¿Se está quedando sin aire? En el Espacio, sin el traje, sin ir montado y sin estar en creativo. */
 	private static boolean sinAire(ServerPlayer jugador) {
 		return Brazalete.enElEspacio(jugador) && !TrajeEspacial.puesto(jugador) && !jugador.isPassenger()
-				&& !jugador.isCreative() && !jugador.isSpectator() && jugador.isAlive();
+				&& !jugador.isCreative() && !jugador.isSpectator() && jugador.isAlive() && !ZonaEspacio.dentro(jugador);
 	}
 }

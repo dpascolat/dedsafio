@@ -23,6 +23,7 @@ import net.minecraft.resources.ResourceLocation;
  * El Traje Espacial puesto (Modo de Vuelo del Brazalete): el modelo "outer_armor_astronauta" de Patricio, cada caja
  * pegada a la parte del cuerpo que le toca (casco a la cabeza, hombreras a los brazos...), así se mueve con el jugador.
  * Las medidas salen del .bbmodel (Blockbench: x al revés, y para arriba desde los pies), pasadas a cada parte.
+ * Al apretar J las piezas llegan volando y se encajan solas (ver TrajeAnimacion); al sacarlo se van volando.
  */
 public class TrajeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 	private static final ResourceLocation TEXTURA =
@@ -64,21 +65,41 @@ public class TrajeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Ab
 	@Override
 	public void render(PoseStack pose, MultiBufferSource buffers, int luz, AbstractClientPlayer jugador, float giro, float paso,
 					   float parcial, float edad, float cabeza, float inclinacion) {
-		if (jugador.isInvisible() || !TrajeEspacial.puesto(jugador)) return;
+		if (jugador.isInvisible()) return;
+		float a = TrajeAnimacion.avance(jugador.getUUID());
+		if (TrajeEspacial.puesto(jugador)) {
+			if (a < 0) a = 1;
+		} else if (a < 0 || !TrajeAnimacion.sacando(jugador.getUUID())) {
+			return;
+		}
 		VertexConsumer v = buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURA));
 		int sombra = LivingEntityRenderer.getOverlayCoords(jugador, 0f);
 		PlayerModel<AbstractClientPlayer> m = getParentModel();
-		pegado(pose, v, luz, sombra, m.head, CASCO_PARTE);
-		pegado(pose, v, luz, sombra, m.body, PECHERA);
-		pegado(pose, v, luz, sombra, m.rightArm, BRAZO_DER);
-		pegado(pose, v, luz, sombra, m.leftArm, BRAZO_IZQ);
-		pegado(pose, v, luz, sombra, m.rightLeg, PIERNA_DER);
-		pegado(pose, v, luz, sombra, m.leftLeg, PIERNA_IZQ);
+		// Cuánto llegó cada pieza: primero las piernas, después la pechera, los brazos y al final el casco.
+		float piernas = TrajeAnimacion.pieza(a, 0f, 0.35f), pecho = TrajeAnimacion.pieza(a, 0.2f, 0.55f),
+				brazos = TrajeAnimacion.pieza(a, 0.35f, 0.75f), casco = TrajeAnimacion.pieza(a, 0.6f, 1f);
+		// Cada una viene de su lado (en píxeles del modelo; y para abajo, -z adelante, -x a la derecha del jugador).
+		pegado(pose, v, luz, sombra, m.head, CASCO_PARTE, casco, 0, -18, 0, true);
+		pegado(pose, v, luz, sombra, m.body, PECHERA, pecho, 0, 0, -14, false);
+		pegado(pose, v, luz, sombra, m.rightArm, BRAZO_DER, brazos, -14, -2, 0, false);
+		pegado(pose, v, luz, sombra, m.leftArm, BRAZO_IZQ, brazos, 14, -2, 0, false);
+		pegado(pose, v, luz, sombra, m.rightLeg, PIERNA_DER, piernas, -3, 14, 0, false);
+		pegado(pose, v, luz, sombra, m.leftLeg, PIERNA_IZQ, piernas, 3, 14, 0, false);
 	}
 
-	private static void pegado(PoseStack pose, VertexConsumer v, int luz, int sombra, ModelPart parte, ModelPart caja) {
+	/** Una pieza pegada a su parte del cuerpo; si todavía no llegó (llego &lt; 1), viene desde (dx, dy, dz), chiquita. */
+	private static void pegado(PoseStack pose, VertexConsumer v, int luz, int sombra, ModelPart parte, ModelPart caja,
+							   float llego, float dx, float dy, float dz, boolean gira) {
+		if (llego <= 0.001f) return;
 		pose.pushPose();
 		parte.translateAndRotate(pose);
+		if (llego < 1) {
+			float falta = 1 - llego;
+			pose.translate(dx * falta / 16f, dy * falta / 16f, dz * falta / 16f);
+			if (gira) pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(falta * 360f));
+			float s = 0.4f + 0.6f * llego;
+			pose.scale(s, s, s);
+		}
 		caja.render(pose, v, luz, sombra);
 		pose.popPose();
 	}

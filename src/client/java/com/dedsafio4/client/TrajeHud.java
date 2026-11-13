@@ -31,11 +31,52 @@ public final class TrajeHud {
 	}
 
 	public static void dibujar(GuiGraphics g, DeltaTracker tiempo) {
-		if (!activo()) return;
 		Minecraft mc = Minecraft.getInstance();
+		if (mc.player == null || mc.options.hideGui) return;
+		int w = g.guiWidth(), h = g.guiHeight();
+		// Al apretar J el visor baja sobre la pantalla (y al sacarlo sube); el visor aparece por arriba del borde.
+		float a = TrajeAnimacion.avance(mc.player.getUUID());
+		if (!activo()) {
+			if (a >= 0) visorBajando(g, w, h, a);
+			return;
+		}
+		if (a >= 0) {
+			int borde = Math.round(h * TrajeAnimacion.pieza(a, 0f, 0.75f));
+			if (borde > 0) {
+				g.enableScissor(0, 0, w, borde);
+				visor(g, tiempo, mc, w, h);
+				g.disableScissor();
+			}
+			visorBajando(g, w, h, a);
+			return;
+		}
+		visor(g, tiempo, mc, w, h);
+	}
+
+	/** El vidrio del casco bajando (avance de 0 a 1): un tinte celeste con una línea brillante en el borde. */
+	private static void visorBajando(GuiGraphics g, int w, int h, float a) {
+		float e = TrajeAnimacion.pieza(a, 0f, 0.75f);
+		int borde = Math.round(h * e);
+		// El tinte se va apagando al final, cuando el visor ya está abajo.
+		float tinte = a > 0.75f ? 1 - (a - 0.75f) / 0.25f : 1f;
+		int alfa = (int) (70 * tinte);
+		if (borde > 0) g.fill(0, 0, w, borde, alfa << 24 | 0x49C8E5);
+		if (e < 0.999f) {
+			g.fill(0, borde - 6, w, borde, 0x3049C8E5);
+			g.fill(0, borde - 2, w, borde, 0xC049C8E5);
+			g.fill(0, borde, w, borde + 1, 0xFFE8F4F8);
+		}
+		// Unas marcas a los costados, como el marco del casco.
+		int marco = (int) (160 * tinte);
+		if (marco > 0 && borde > 0) {
+			g.fill(0, 0, 3, borde, marco << 24 | 0x49C8E5);
+			g.fill(w - 3, 0, w, borde, marco << 24 | 0x49C8E5);
+		}
+	}
+
+	private static void visor(GuiGraphics g, DeltaTracker tiempo, Minecraft mc, int w, int h) {
 		Player p = mc.player;
 		Font f = mc.font;
-		int w = g.guiWidth(), h = g.guiHeight();
 		float parcial = tiempo.getGameTimeDeltaPartialTick(false);
 		brujula(g, f, w, Mth.lerp(parcial, p.yRotO, p.getYRot()));
 		bateria(g, f, p, h);
