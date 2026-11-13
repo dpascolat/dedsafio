@@ -15,6 +15,8 @@
 	"category.dedsafio4": "Dedsafío 4",
 	"itemGroup.dedsafio4": "Dedsafío 4",
 	"chat.type.dedsafio4": "%s: %s",
+	"item.dedsafio4.portal_espacio": "Space Portal",
+	"entity.dedsafio4.portal_espacio": "Space Portal",
 	"effect.dedsafio4.rojizo": "Rojizo",
 	"item.minecraft.potion.effect.rojizo": "Poción Rojizo",
 	"item.minecraft.splash_potion.effect.rojizo": "Poción arrojadiza Rojizo",

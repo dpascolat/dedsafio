@@ -801,6 +801,7 @@ public final class ModItems {
 						entradas.accept(CEREBRO_GLEBANOIDE);
 						entradas.accept(BOLSA_ENDER);
 						entradas.accept(com.dedsafio4.marcos.ModMarcos.MARCO_GRANDE_ITEM);
+						entradas.accept(com.dedsafio4.portal.ModPortal.PORTAL_ESPACIO_ITEM);
 						entradas.accept(CHIP_PHORA);
 						entradas.accept(HUEVO_EBURIA);
 						entradas.accept(ARANDANO_NOCTURNO);

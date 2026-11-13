@@ -2777,6 +2777,45 @@ public final class DebugCielo {
 
 	private static final boolean VISOR = "visor".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 	private static final boolean TRAJE_ANIM = "trajeanim".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+	private static final boolean PORTAL_ESPACIO = "portalespacio".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** El Portal del Espacio: cómo se ve y que al entrar lleva a /spawn_del_espacio2. */
+	private static void tickPortalEspacio(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5 || t == -3) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival");
+			comando(mc, "time set 6000");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 16.5 180 0");
+			comando(mc, "execute in minecraft:overworld positioned 0 200 0 run kill @e[type=dedsafio4:portal_espacio,distance=..40]");
+		}
+		if (t == 3) {
+			comando(mc, "fill -10 199 -10 10 199 20 minecraft:stone_bricks");
+			comando(mc, "fill -10 200 -10 10 215 20 minecraft:air");
+			comando(mc, "tp @s 0.5 200 16.5 180 0");
+			comando(mc, "summon dedsafio4:portal_espacio 0.5 200 8.5 {Rotation:[0f,0f]}");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run fill -6 99 -6 6 99 6 minecraft:stone");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run spawn_del_espacio2 0.5 100 0.5");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional positioned 0 100 0 run kill @e[type=dedsafio4:portal_espacio,distance=..30]");
+			comando(mc, "execute in dedsafio4:espacio_interdimensional run summon dedsafio4:portal_espacio 0.5 100 -4.5 {Rotation:[0f,0f]}");
+		}
+		if (t == 10) mc.gui.getChat().clearMessages(false);
+		if (t == 25) captura(mc, "debug_portal1_frente.png");
+		if (t == 28) comando(mc, "tp @s 6.5 200 13.5 140 0");
+		if (t == 34) captura(mc, "debug_portal2_costado.png");
+		if (t == 38) { comando(mc, "spawn_del_espacio2 ver"); }
+		// Camina hacia el portal.
+		if (t == 40) comando(mc, "tp @s 0.5 200 11.5 180 0");
+		if (t >= 42 && t < 70) mc.options.keyUp.setDown(true);
+		if (t == 70) mc.options.keyUp.setDown(false);
+		if (t >= 40 && t <= 90 && t % 5 == 0) Dedsafio4ClientDebug.info("portal t" + t + " mundo=" + mc.player.level().dimension().location() + " pos=" + mc.player.position());
+		if (t == 85) { mc.player.setYRot(180); mc.player.setXRot(0); }
+		if (t == 95) { mc.gui.getChat().clearMessages(false); captura(mc, "debug_portal3_espacio.png"); }
+		if (t == 100) mc.stop();
+	}
+
 
 	/** /spawn_de_espacio (adentro no te ahogas sin traje) y la animación del traje poniéndose con la J. */
 	private static void tickTrajeAnim(Minecraft mc) {
@@ -9390,6 +9429,10 @@ public final class DebugCielo {
 		}
 		if (HURON) {
 			tickHuron(mc);
+			return;
+		}
+		if (PORTAL_ESPACIO) {
+			tickPortalEspacio(mc);
 			return;
 		}
 		if (TRAJE_ANIM) {

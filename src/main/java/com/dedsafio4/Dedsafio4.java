@@ -76,6 +76,7 @@ public class Dedsafio4 implements ModInitializer {
 		com.dedsafio4.boveda.ModBoveda.registrar();
 		com.dedsafio4.meteoritos.ModMeteoritos.registrar();
 		com.dedsafio4.marcos.ModMarcos.registrar();
+		com.dedsafio4.portal.ModPortal.registrar();
 		com.dedsafio4.casino.ModCasino.registrar();
 		com.dedsafio4.cinematica.Cinematica.registrar();
 		com.dedsafio4.disfraz.Disfraces.registrar();
@@ -230,6 +231,7 @@ public class Dedsafio4 implements ModInitializer {
 			com.dedsafio4.qumara.PuntosBichos.registrarComandos(dispatcher);
 			com.dedsafio4.despegue.ZonaGleba.registrarComandos(dispatcher);
 			com.dedsafio4.brazalete.ZonaEspacio.registrarComandos(dispatcher);
+			com.dedsafio4.portal.DestinoPortal.registrarComandos(dispatcher);
 			com.dedsafio4.dimension.GlebaNueva.registrarComandos(dispatcher);
 			AdminComandos.registrar(dispatcher);
 			AyudaComando.registrar(dispatcher);
