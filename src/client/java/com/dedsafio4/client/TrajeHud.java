@@ -34,43 +34,48 @@ public final class TrajeHud {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null || mc.options.hideGui) return;
 		int w = g.guiWidth(), h = g.guiHeight();
-		// Al apretar J el visor baja sobre la pantalla (y al sacarlo sube); el visor aparece por arriba del borde.
+		// Al apretar J el visor se genera de abajo para arriba (como el traje), y al sacarlo se borra de arriba para abajo:
+		// se ve por debajo de una línea de luz que sube.
 		float a = TrajeAnimacion.avance(mc.player.getUUID());
 		if (!activo()) {
-			if (a >= 0) visorBajando(g, w, h, a);
+			if (a >= 0) visorSubiendo(g, w, h, a);
 			return;
 		}
 		if (a >= 0) {
-			int borde = Math.round(h * TrajeAnimacion.pieza(a, 0f, 0.75f));
-			if (borde > 0) {
-				g.enableScissor(0, 0, w, borde);
+			int borde = bordeVisor(h, a);
+			if (borde < h) {
+				g.enableScissor(0, borde, w, h);
 				visor(g, tiempo, mc, w, h);
 				g.disableScissor();
 			}
-			visorBajando(g, w, h, a);
+			visorSubiendo(g, w, h, a);
 			return;
 		}
 		visor(g, tiempo, mc, w, h);
 	}
 
-	/** El vidrio del casco bajando (avance de 0 a 1): un tinte celeste con una línea brillante en el borde. */
-	private static void visorBajando(GuiGraphics g, int w, int h, float a) {
-		float e = TrajeAnimacion.pieza(a, 0f, 0.75f);
-		int borde = Math.round(h * e);
-		// El tinte se va apagando al final, cuando el visor ya está abajo.
-		float tinte = a > 0.75f ? 1 - (a - 0.75f) / 0.25f : 1f;
+	/** Dónde está la línea del visor (de abajo de la pantalla hasta arriba). */
+	private static int bordeVisor(int h, float a) {
+		return h - Math.round(h * TrajeAnimacion.pieza(a, 0f, 0.8f));
+	}
+
+	/** El vidrio del casco generándose (avance de 0 a 1): un tinte celeste por debajo de una línea brillante que sube. */
+	private static void visorSubiendo(GuiGraphics g, int w, int h, float a) {
+		int borde = bordeVisor(h, a);
+		// El tinte se va apagando al final, cuando el visor ya está entero.
+		float tinte = a > 0.8f ? 1 - (a - 0.8f) / 0.2f : 1f;
 		int alfa = (int) (70 * tinte);
-		if (borde > 0) g.fill(0, 0, w, borde, alfa << 24 | 0x49C8E5);
-		if (e < 0.999f) {
-			g.fill(0, borde - 6, w, borde, 0x3049C8E5);
-			g.fill(0, borde - 2, w, borde, 0xC049C8E5);
-			g.fill(0, borde, w, borde + 1, 0xFFE8F4F8);
+		if (borde < h) g.fill(0, borde, w, h, alfa << 24 | 0x49C8E5);
+		if (borde > 0) {
+			g.fill(0, borde, w, borde + 6, 0x3049C8E5);
+			g.fill(0, borde, w, borde + 2, 0xC049C8E5);
+			g.fill(0, borde - 1, w, borde, 0xFFE8F4F8);
 		}
 		// Unas marcas a los costados, como el marco del casco.
 		int marco = (int) (160 * tinte);
-		if (marco > 0 && borde > 0) {
-			g.fill(0, 0, 3, borde, marco << 24 | 0x49C8E5);
-			g.fill(w - 3, 0, w, borde, marco << 24 | 0x49C8E5);
+		if (marco > 0 && borde < h) {
+			g.fill(0, borde, 3, h, marco << 24 | 0x49C8E5);
+			g.fill(w - 3, borde, w, h, marco << 24 | 0x49C8E5);
 		}
 	}
 
