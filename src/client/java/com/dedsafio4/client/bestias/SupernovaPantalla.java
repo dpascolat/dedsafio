@@ -15,7 +15,8 @@ import net.minecraft.util.Mth;
  * La supernova del Núcleo vista desde adentro (como en el video de Patricio): mientras un Núcleo explota y el jugador
  * está dentro del radio, la pantalla se llena de una nube de colores (rosa, magenta, verde agua, azul) estirada en
  * rayas desde el centro, que gira y late, y dos haces de luz blanco-celeste que pasan por el medio y giran como un
- * faro. Al empezar hay un fogonazo blanco, que también ven (más suave) los que están cerca pero afuera: la "nuke".
+ * faro. Al empezar hay un fogonazo blanco: la "nuke". Los que están cerca pero afuera del radio (hasta 3 veces el radio)
+ * también ven todo eso, más suave cuanto más lejos.
  */
 public final class SupernovaPantalla {
 	private SupernovaPantalla() {}
@@ -42,7 +43,9 @@ public final class SupernovaPantalla {
 			if (!(e instanceof NucleoEntity n) || n.estado() != NucleoEntity.SUPERNOVA) continue;
 			double d = mc.player.position().add(0, mc.player.getBbHeight() / 2, 0).distanceTo(n.position().add(0, NucleoEntity.ALTO / 2 * n.getScale(), 0));
 			float t = n.tiempo() + parcial;
+			// Adentro, entero; afuera, cada vez más suave hasta 3 veces el radio.
 			if (d <= n.radio()) quiero = 1;
+			else if (d <= n.radio() * 3) quiero = Math.max(quiero, 0.6f * (1 - (float) (d - n.radio()) / (n.radio() * 2)));
 			// El fogonazo: fuerte al principio, y lo ven también los que están cerca (hasta 3 veces el radio).
 			if (d <= n.radio() * 3) flash = Math.max(flash, Mth.clamp(1 - t / 30f, 0, 1) * (d <= n.radio() ? 1f : 0.6f));
 		}
