@@ -323,6 +323,32 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean NAVE_DANIO = "navedanio".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+	private static float vidaNave;
+
+	/** Prueba de /dañomob nave: con 6, cada rayo de la Nave saca 6 (en dificultad normal). */
+	private static void tickNaveDanio(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode survival"); comando(mc, "difficulty normal"); comando(mc, "clear @s"); comando(mc, "effect clear @s");
+			comando(mc, "kill @e[type=!player,distance=..60]");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5");
+			comando(mc, "attribute @s minecraft:generic.max_health base set 100");
+			comando(mc, "effect give @s minecraft:instant_health 1 20 true");
+			comando(mc, "dañomob nave 6"); comando(mc, "gamerule naturalRegeneration false");
+		}
+		if (t == 10) { comando(mc, "summon dedsafio4:nave 0.5 205 -8"); vidaNave = mc.player.getHealth(); }
+		if (t > 10 && t < 200 && mc.player.getHealth() < vidaNave - 0.01f) {
+			System.out.println("NV rayo: saco " + (vidaNave - mc.player.getHealth()));
+			vidaNave = mc.player.getHealth();
+		}
+		if (t == 200) { comando(mc, "dañomob nave normal"); comando(mc, "gamerule naturalRegeneration true"); comando(mc, "kill @e[type=dedsafio4:nave]"); mc.stop(); }
+	}
+
 	private static final boolean BRAZALETE_ESPACIO = "brazaleteespacio".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba: el Brazalete no vuela en el Overworld, sí en el Espacio, y se recarga con la Batería en la otra mano. */
@@ -9643,6 +9669,10 @@ public final class DebugCielo {
 		}
 		if (BRAZALETE_ESPACIO) {
 			tickBrazaleteEspacio(mc);
+			return;
+		}
+		if (NAVE_DANIO) {
+			tickNaveDanio(mc);
 			return;
 		}
 		if (PERLAS) {

@@ -34,7 +34,7 @@ import java.util.Map;
  * Cambiar a mano los números de un mob (se guarda en el mundo y vale para todos los de ese tipo, los que ya están y
  * los que aparezcan después):
  *   /dañomob <mob> <daño>          el golpe (en los creepers, el daño de la explosión, igual de cerca o de lejos;
- *                                  en los que tiran flechas, como el esqueleto, también cada flecha)
+ *                                  en los que tiran flechas, como el esqueleto, también cada flecha; en la Nave, cada rayo)
  *   /vidamob <mob> <vida>          la vida máxima (y los que ya están quedan con la vida llena)
  *   /velocidad <mob> <velocidad>   la velocidad (0,25 es la de un zombi; 0,3 la de un esqueleto). En los que vuelan
  *                                  (fantasmas, naves, phantoms, abejas...) cambia lo rápido que van por el aire: se

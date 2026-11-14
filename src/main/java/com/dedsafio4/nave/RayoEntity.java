@@ -47,6 +47,12 @@ public class RayoEntity extends Projectile {
 		builder.define(ROJO, false);
 	}
 
+	/** Cambia el daño del rayo (el de la Nave, con /dañomob nave). */
+	public RayoEntity conDanio(float danio) {
+		this.danio = danio;
+		return this;
+	}
+
 	/** Lo vuelve un rayo rojo del Núcleo, que hace este daño. */
 	public RayoEntity rojo(float danio) {
 		this.entityData.set(ROJO, true);

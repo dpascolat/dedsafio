@@ -33,7 +33,7 @@ import java.util.EnumSet;
 
 /**
  * Nave: vuela, persigue a los jugadores quedándose a unos 8 bloques y un poco más arriba,
- * y les dispara un rayo celeste cada 1,5 segundos (1 de daño).
+ * y les dispara un rayo celeste cada 1,5 segundos (1 de daño; se cambia con /dañomob nave <daño>).
  * Al morir explota: 4 de daño a todo lo que esté cerca, sin romper bloques.
  */
 public class NaveEntity extends Monster {
@@ -144,6 +144,11 @@ public class NaveEntity extends Monster {
 		Vec3 frente = Vec3.directionFromRotation(0f, this.getYRot());
 		Vec3 origen = this.position().add(frente.scale(0.8)).add(0, 0.22, 0);
 		RayoEntity rayo = new RayoEntity(this.level(), this, origen);
+		// El daño de siempre (1), o el que se puso con /dañomob nave.
+		if (this.level() instanceof ServerLevel mundo) {
+			Double cambiado = com.dedsafio4.bestias.AjustesMob.danoDe(mundo.getServer(), this.getType());
+			if (cambiado != null) rayo.conDanio(cambiado.floatValue());
+		}
 		rayo.shoot(objetivo.getX() - origen.x, objetivo.getY(0.5) - origen.y, objetivo.getZ() - origen.z, 2.2f, 1.0f);
 		this.level().addFreshEntity(rayo);
 		this.playSound(SoundEvents.AMETHYST_CLUSTER_BREAK, 0.5f, 1.8f + this.random.nextFloat() * 0.3f);
