@@ -36,7 +36,8 @@ import java.util.Map;
  *   Pechera    11 de armadura, 2 de resistencia, 1092 de durabilidad
  *   Pantalones  9 de armadura, 2 de resistencia, 1055 de durabilidad
  *   Botas       6 de armadura, 2 de resistencia, 981 de durabilidad y +1 de movimiento en el agua
- * La textura puesta (textures/models/armor/cedronida_layer_1 y _2): por ahora solo están dibujadas las botas.
+ * Puesta se ve con el modelo de la armadura de Hami (ArmaduraLimboLayer, textures/models/armor/cedronida_hami.png),
+ * con cuernos y la gema en el casco.
  */
 public final class ArmaduraCedronida {
 	private ArmaduraCedronida() {}

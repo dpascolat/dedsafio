@@ -26,6 +26,7 @@ public abstract class HumanoidArmorLimboNeoMixin {
 												CallbackInfo ci) {
 		boolean conTraje = entidad instanceof net.minecraft.world.entity.player.Player jugador
 				&& com.dedsafio4.brazalete.TrajeEspacial.puesto(jugador);
-		if (entidad.getItemBySlot(lugar).getItem() instanceof ArmaduraLimbo.Pieza || conTraje) ci.cancel();
+		var item = entidad.getItemBySlot(lugar).getItem();
+		if (item instanceof ArmaduraLimbo.Pieza || item instanceof com.dedsafio4.items.ArmaduraCedronida.Pieza || conTraje) ci.cancel();
 	}
 }
