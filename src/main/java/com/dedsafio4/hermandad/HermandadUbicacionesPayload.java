@@ -12,6 +12,11 @@ import java.util.List;
 
 /** Servidor → miembros: las ubicaciones marcadas por su Hermandad (en todas las dimensiones). */
 public record HermandadUbicacionesPayload(List<MarcasPayload.Marca> ubicaciones) implements CustomPacketPayload {
+	/** Copia las listas: si no, se pueden cambiar mientras se mandan y el jugador queda desconectado. */
+	public HermandadUbicacionesPayload {
+		ubicaciones = List.copyOf(ubicaciones);
+	}
+
 	public static final Type<HermandadUbicacionesPayload> TYPE =
 			new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "hermandad_ubicaciones"));
 	public static final StreamCodec<ByteBuf, HermandadUbicacionesPayload> CODEC =

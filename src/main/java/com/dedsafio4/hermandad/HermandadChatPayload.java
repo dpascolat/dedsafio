@@ -11,6 +11,11 @@ import java.util.List;
 
 /** Servidor → cliente: el chat de la Hermandad (solo lo reciben sus miembros). */
 public record HermandadChatPayload(List<Linea> lineas) implements CustomPacketPayload {
+	/** Copia las listas: si no, se pueden cambiar mientras se mandan y el jugador queda desconectado. */
+	public HermandadChatPayload {
+		lineas = List.copyOf(lineas);
+	}
+
 	/**
 	 * @param hora  "HH:mm" del servidor
 	 * @param autor quién lo escribió; vacío si es un aviso (alguien se unió, lo expulsaron...)

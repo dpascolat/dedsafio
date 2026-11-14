@@ -11,6 +11,11 @@ import java.util.List;
 
 /** Servidor → miembros: los anuncios del Tablón de su Hermandad (el más nuevo primero). */
 public record HermandadTablonPayload(List<Anuncio> anuncios) implements CustomPacketPayload {
+	/** Copia las listas: si no, se pueden cambiar mientras se mandan y el jugador queda desconectado. */
+	public HermandadTablonPayload {
+		anuncios = List.copyOf(anuncios);
+	}
+
 	/**
 	 * @param fecha "dd/MM HH:mm" del servidor
 	 * @param autor quién lo publicó

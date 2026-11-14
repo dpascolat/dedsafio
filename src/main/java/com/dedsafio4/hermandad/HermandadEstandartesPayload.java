@@ -15,6 +15,11 @@ import java.util.List;
  * y cuál está activo (-1 si ninguno).
  */
 public record HermandadEstandartesPayload(List<ItemStack> coleccion, int activo) implements CustomPacketPayload {
+	/** Copia las listas: si no, se pueden cambiar mientras se mandan y el jugador queda desconectado. */
+	public HermandadEstandartesPayload {
+		coleccion = List.copyOf(coleccion);
+	}
+
 	public static final Type<HermandadEstandartesPayload> TYPE =
 			new Type<>(ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "hermandad_estandartes"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, HermandadEstandartesPayload> CODEC = StreamCodec.composite(
