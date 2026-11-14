@@ -40,6 +40,8 @@ import net.minecraft.world.phys.BlockHitResult;
  *   /puesto lista                 los tratos, numerados
  *   /puesto agregar               agrega uno: lo que se paga es lo de la mano principal (con su cantidad) y lo que
  *                                 se recibe, lo de la mano secundaria (con su cantidad, encantamientos y nombre)
+ *   /puesto agregar2              igual, pero se paga con dos cosas distintas: lo de la mano principal más lo de la
+ *                                 casilla de al lado (a la derecha) en la barra
  *   /puesto quitar <número>       saca ese trato
  *   /puesto original              vuelve a los tres de siempre
  */
@@ -64,7 +66,7 @@ public final class ModIntercambio {
 	static final class Datos extends net.minecraft.world.level.saveddata.SavedData {
 		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
 		boolean cambiados;
-		/** Cada trato: lo que se paga y lo que se recibe. */
+		/** Cada trato: lo que se paga, lo que se recibe y el segundo pago (vacío si no hay). */
 		final java.util.List<ItemStack[]> tratos = new java.util.ArrayList<>();
 
 		private static Datos leer(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
@@ -74,7 +76,8 @@ public final class ModIntercambio {
 				net.minecraft.nbt.CompoundTag c = (net.minecraft.nbt.CompoundTag) t;
 				ItemStack paga = ItemStack.parseOptional(registros, c.getCompound("paga"));
 				ItemStack recibe = ItemStack.parseOptional(registros, c.getCompound("recibe"));
-				if (!paga.isEmpty() && !recibe.isEmpty()) d.tratos.add(new ItemStack[]{paga, recibe});
+				ItemStack paga2 = c.contains("paga2") ? ItemStack.parseOptional(registros, c.getCompound("paga2")) : ItemStack.EMPTY;
+				if (!paga.isEmpty() && !recibe.isEmpty()) d.tratos.add(new ItemStack[]{paga, recibe, paga2});
 			}
 			return d;
 		}
@@ -87,6 +90,7 @@ public final class ModIntercambio {
 				net.minecraft.nbt.CompoundTag c = new net.minecraft.nbt.CompoundTag();
 				c.put("paga", t[0].save(registros));
 				c.put("recibe", t[1].save(registros));
+				if (!t[2].isEmpty()) c.put("paga2", t[2].save(registros));
 				lista.add(c);
 			}
 			tag.put("tratos", lista);
@@ -101,9 +105,9 @@ public final class ModIntercambio {
 	/** Los tratos de siempre (lo que se paga, lo que se recibe). */
 	private static java.util.List<ItemStack[]> originales() {
 		return java.util.List.of(
-				new ItemStack[]{new ItemStack(ModItems.DEDITA, 1), new ItemStack(ModItems.DEDITA_CASINO)},
-				new ItemStack[]{new ItemStack(ModItems.DILITIO, 2), new ItemStack(ModItems.DEDITA)},
-				new ItemStack[]{new ItemStack(ModItems.DEDITA, 1), new ItemStack(ModItems.MANUSCRITO_HERMANDAD)});
+				new ItemStack[]{new ItemStack(ModItems.DEDITA, 1), new ItemStack(ModItems.DEDITA_CASINO), ItemStack.EMPTY},
+				new ItemStack[]{new ItemStack(ModItems.DILITIO, 2), new ItemStack(ModItems.DEDITA), ItemStack.EMPTY},
+				new ItemStack[]{new ItemStack(ModItems.DEDITA, 1), new ItemStack(ModItems.MANUSCRITO_HERMANDAD), ItemStack.EMPTY});
 	}
 
 	private static java.util.List<ItemStack[]> actuales(net.minecraft.server.MinecraftServer server) {
@@ -116,7 +120,7 @@ public final class ModIntercambio {
 		Datos d = datos(server);
 		if (!d.cambiados) {
 			d.tratos.clear();
-			for (ItemStack[] t : originales()) d.tratos.add(new ItemStack[]{t[0].copy(), t[1].copy()});
+			for (ItemStack[] t : originales()) d.tratos.add(new ItemStack[]{t[0].copy(), t[1].copy(), t[2].copy()});
 			d.cambiados = true;
 		}
 		d.setDirty();
@@ -126,12 +130,21 @@ public final class ModIntercambio {
 	/** Los tratos (se arman cada vez que alguien abre el puesto). Lo que se paga se compara solo por el ítem y la cantidad. */
 	private static MerchantOffers tratos(net.minecraft.server.MinecraftServer server) {
 		MerchantOffers o = new MerchantOffers();
-		for (ItemStack[] t : actuales(server)) o.add(trato(new ItemCost(t[0].getItem(), t[0].getCount()), t[1].copy()));
+		for (ItemStack[] t : actuales(server)) {
+			java.util.Optional<ItemCost> segundo = t[2].isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(new ItemCost(t[2].getItem(), t[2].getCount()));
+			o.add(new MerchantOffer(new ItemCost(t[0].getItem(), t[0].getCount()), segundo, t[1].copy(), Integer.MAX_VALUE, 0, 0f));
+		}
 		return o;
 	}
 
 	private static Component nombre(ItemStack pila) {
 		return Component.literal(pila.getCount() + " ").append(pila.getHoverName());
+	}
+
+	/** Lo que se paga: una cosa, o las dos ("2 Tótem + 1 Dedita Verde"). */
+	private static Component pago(ItemStack[] t) {
+		Component uno = nombre(t[0]);
+		return t[2].isEmpty() ? uno : Component.empty().append(uno).append(Component.literal(" + ").withStyle(net.minecraft.ChatFormatting.GRAY)).append(nombre(t[2]));
 	}
 
 	private static Component flecha() {
@@ -149,7 +162,7 @@ public final class ModIntercambio {
 				ItemStack[] t = lista.get(i);
 				int n = i + 1;
 				x.getSource().sendSuccess(() -> Component.literal(n + ". ").withStyle(net.minecraft.ChatFormatting.YELLOW)
-						.append(nombre(t[0])).append(flecha()).append(nombre(t[1])), false);
+						.append(pago(t)).append(flecha()).append(nombre(t[1])), false);
 			}
 			return lista.size();
 		}));
@@ -161,10 +174,28 @@ public final class ModIntercambio {
 				return 0;
 			}
 			Datos d = paraCambiar(x.getSource().getServer());
-			d.tratos.add(new ItemStack[]{paga.copy(), recibe.copy()});
+			d.tratos.add(new ItemStack[]{paga.copy(), recibe.copy(), ItemStack.EMPTY});
 			int n = d.tratos.size();
 			x.getSource().sendSuccess(() -> Component.literal("Listo, trato " + n + ": ").withStyle(net.minecraft.ChatFormatting.GREEN)
 					.append(nombre(paga)).append(flecha()).append(nombre(recibe)), true);
+			return n;
+		}));
+		c.then(net.minecraft.commands.Commands.literal("agregar2").executes(x -> {
+			Player jugador = x.getSource().getPlayerOrException();
+			int al = jugador.getInventory().selected + 1;
+			ItemStack paga = jugador.getMainHandItem(), recibe = jugador.getOffhandItem();
+			ItemStack paga2 = al < 9 ? jugador.getInventory().getItem(al) : ItemStack.EMPTY;
+			if (paga.isEmpty() || paga2.isEmpty() || recibe.isEmpty()) {
+				x.getSource().sendFailure(Component.literal("Pon el primer pago en la mano principal, el segundo en la casilla de al lado (a la derecha) "
+						+ "y lo que se recibe en la mano secundaria (con sus cantidades)."));
+				return 0;
+			}
+			Datos d = paraCambiar(x.getSource().getServer());
+			ItemStack[] t = {paga.copy(), recibe.copy(), paga2.copy()};
+			d.tratos.add(t);
+			int n = d.tratos.size();
+			x.getSource().sendSuccess(() -> Component.literal("Listo, trato " + n + ": ").withStyle(net.minecraft.ChatFormatting.GREEN)
+					.append(pago(t)).append(flecha()).append(nombre(recibe)), true);
 			return n;
 		}));
 		c.then(net.minecraft.commands.Commands.literal("quitar").then(net.minecraft.commands.Commands.argument("numero",
@@ -177,7 +208,7 @@ public final class ModIntercambio {
 			Datos d = paraCambiar(x.getSource().getServer());
 			ItemStack[] t = d.tratos.remove(n - 1);
 			x.getSource().sendSuccess(() -> Component.literal("Listo, se sacó el trato " + n + ": ").withStyle(net.minecraft.ChatFormatting.GREEN)
-					.append(nombre(t[0])).append(flecha()).append(nombre(t[1])), true);
+					.append(pago(t)).append(flecha()).append(nombre(t[1])), true);
 			return 1;
 		})));
 		c.then(net.minecraft.commands.Commands.literal("original").executes(x -> {
@@ -190,10 +221,6 @@ public final class ModIntercambio {
 			return 1;
 		}));
 		dispatcher.register(c);
-	}
-
-	private static MerchantOffer trato(ItemCost cuesta, ItemStack da) {
-		return new MerchantOffer(cuesta, da, Integer.MAX_VALUE, 0, 0f);
 	}
 
 	static final class PuestoBlock extends Block {
