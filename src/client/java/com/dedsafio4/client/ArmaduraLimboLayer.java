@@ -30,15 +30,15 @@ import java.util.function.Predicate;
  * Armaduras con modelo propio ("outer_armor" de Patricio), en jugadores, mobs y soportes de armadura:
  * <ul>
  *   <li>La del Limbo (textures/models/armor/limbo_armadura.png): capa de adentro +0,3 y de afuera +0,5, más finas que en Blockbench.</li>
- *   <li>La Cedrónida, con el modelo de la armadura de Hami (textures/models/armor/cedronida_hami.png): las capas como en
- *   Blockbench (+0,75 y +1) y el casco con dos cuernos y la gema en la frente.</li>
+ *   <li>La Cedrónida, con el modelo de la armadura de Hami (textures/models/armor/cedronida_hami.png): igual de fina que la
+ *   del Limbo y el casco con dos cuernos y la gema en la frente.</li>
  * </ul>
  * El casco pone la cabeza, la pechera el cuerpo (las dos capas) y los brazos, los pantalones la mitad de arriba de las
  * piernas y las botas la mitad de abajo. La armadura normal de Minecraft no se dibuja (HumanoidArmorLimboMixin).
  */
 public class ArmaduraLimboLayer<E extends LivingEntity, M extends HumanoidModel<E>> extends RenderLayer<E, M> {
 	private static final Modelo LIMBO = new Modelo(0.3f, 0.5f, 12, cabeza -> {});
-	private static final Modelo HAMI = new Modelo(0.75f, 1f, 10, ArmaduraLimboLayer::cuernosYGema);
+	private static final Modelo HAMI = new Modelo(0.3f, 0.5f, 10, ArmaduraLimboLayer::cuernosYGema);
 
 	private final ResourceLocation textura;
 	private final Modelo modelo;
@@ -76,10 +76,10 @@ public class ArmaduraLimboLayer<E extends LivingEntity, M extends HumanoidModel<
 				.texOffs(40, 36).addBox(-1.5f, -6, -1.5f, 3, 7, 3), PartPose.offsetAndRotation(6, -4.5f, 0, 0, 0, (float) Math.toRadians(35)));
 		izq.addOrReplaceChild("punta_izq", CubeListBuilder.create().mirror()
 				.texOffs(52, 36).addBox(-2.5f, -7, -0.05f, 5, 7, 0.1f), PartPose.offsetAndRotation(0, -6, 0, 0, 0, (float) Math.toRadians(-60)));
-		// La gema: un rombo (cuadrado girado 45°) y el centro rosa adelante.
+		// La gema: un rombo (cuadrado girado 45°) y el centro rosa adelante, pegada a la frente del casco fino.
 		cabeza.addOrReplaceChild("gema", CubeListBuilder.create()
 				.texOffs(40, 32).addBox(-1, -1, -0.25f, 2, 2, 0.5f)
-				.texOffs(46, 32).addBox(-0.5f, -0.5f, -0.5f, 1, 1, 0.25f), PartPose.offsetAndRotation(0, -5, -5, 0, 0, (float) Math.toRadians(45)));
+				.texOffs(46, 32).addBox(-0.5f, -0.5f, -0.5f, 1, 1, 0.25f), PartPose.offsetAndRotation(0, -5, -4.5f, 0, 0, (float) Math.toRadians(45)));
 	}
 
 	/** Las cajas de una armadura con modelo propio. */
