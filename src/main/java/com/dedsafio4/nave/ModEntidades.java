@@ -199,6 +199,10 @@ public final class ModEntidades {
 	public static final EntityType<com.dedsafio4.bestias.NucleoEntity> NUCLEO = registrar("nucleo",
 			EntityType.Builder.of(com.dedsafio4.bestias.NucleoEntity::new, MobCategory.MONSTER).sized(3.2f, 8f).clientTrackingRange(16).fireImmune());
 
+	/** Revil: el caballero de armadura dorada; no hace nada, es solo para verlo. */
+	public static final EntityType<com.dedsafio4.bestias.RevilEntity> REVIL = registrar("revil",
+			EntityType.Builder.of(com.dedsafio4.bestias.RevilEntity::new, MobCategory.CREATURE).sized(1.2f, 1.7f).clientTrackingRange(10));
+
 	/** Tremorsaurio (el Tremorsaurus de Alex's Caves): 2,5 de ancho y casi 4 de alto; cada mordida es una explosión. */
 	public static final EntityType<com.dedsafio4.bestias.TremorsaurioEntity> TREMORSAURIO = registrar("tremorsaurio",
 			EntityType.Builder.of(com.dedsafio4.bestias.TremorsaurioEntity::new, MobCategory.MONSTER).sized(2.5f, 3.85f).clientTrackingRange(10));
@@ -340,6 +344,7 @@ public final class ModEntidades {
 		FabricDefaultAttributeRegistry.register(RANA_GIGANTE, com.dedsafio4.bestias.RanaGiganteEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(TRICERATOPS, com.dedsafio4.bestias.TriceratopsEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(NUCLEO, com.dedsafio4.bestias.NucleoEntity.crearAtributos());
+		FabricDefaultAttributeRegistry.register(REVIL, com.dedsafio4.bestias.RevilEntity.crearAtributos());
 		FabricDefaultAttributeRegistry.register(TREMORSAURIO, com.dedsafio4.bestias.TremorsaurioEntity.crearAtributos());
 		for (EntityType<com.dedsafio4.bestias.FantasmaEntity> fantasma : java.util.List.of(FANTASMA_AMARILLO, FANTASMA_BLANCO, FANTASMA_ROJO, FANTASMA_NEGRO)) {
 			FabricDefaultAttributeRegistry.register(fantasma, com.dedsafio4.bestias.FantasmaEntity.crearAtributos());

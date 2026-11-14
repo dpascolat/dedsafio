@@ -5,7 +5,6 @@ import com.dedsafio4.bestias.NucleoEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -16,14 +15,10 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-
-import java.io.DataInputStream;
-import java.io.InputStream;
 
 /**
- * Dibuja el Núcleo: la construcción de bloques (modelos/nucleo.bin, sacada de modelo-minecraft.glb: cada cara de
- * bloque juntada con las vecinas del mismo color) con cada bloque como un píxel, más:
+ * Dibuja el Núcleo: la construcción de bloques (modelos/nucleo.bin, sacada de modelo-minecraft.glb; ver MallaBloques)
+ * con cada bloque como un píxel, más:
  * <ul>
  * <li>Cargando: tiembla, brilla cada vez más y en el medio crece una bola de luz.</li>
  * <li>Supernova: como una bomba nuclear, una bola blanca que sale de golpe hasta el radio y queda como una nube de
@@ -33,13 +28,7 @@ import java.io.InputStream;
  */
 public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 	private static final ResourceLocation BLANCO = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "textures/entity/nucleo_blanco.png");
-	private static final ResourceLocation MALLA = ResourceLocation.fromNamespaceAndPath(Dedsafio4.MOD_ID, "modelos/nucleo.bin");
-
-	/** Por cara: las 4 esquinas (x, y, z en píxeles). */
-	private static float[] esquinas;
-	/** Por cara: el color (ARGB) y hacia dónde mira (0..5: -x, +x, -y, +y, -z, +z). */
-	private static int[] colores;
-	private static byte[] normales;
+	private static final MallaBloques MALLA = new MallaBloques("nucleo");
 
 	public NucleoRenderer(EntityRendererProvider.Context contexto) {
 		super(contexto);
@@ -51,45 +40,8 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 		return BLANCO;
 	}
 
-	private static void cargar() {
-		if (esquinas != null) return;
-		try (InputStream in = Minecraft.getInstance().getResourceManager().getResourceOrThrow(MALLA).open();
-			 DataInputStream d = new DataInputStream(new java.io.BufferedInputStream(in))) {
-			int nc = d.readUnsignedByte();
-			int[] paleta = new int[nc];
-			for (int i = 0; i < nc; i++) paleta[i] = 0xFF000000 | d.readUnsignedByte() << 16 | d.readUnsignedByte() << 8 | d.readUnsignedByte();
-			int n = d.readInt();
-			float[] e = new float[n * 12];
-			int[] c = new int[n];
-			byte[] nor = new byte[n];
-			for (int i = 0; i < n; i++) {
-				int eje = d.readByte(), signo = d.readByte(), color = d.readByte();
-				float plano = d.readShort(), u0 = d.readShort(), v0 = d.readShort(), u1 = d.readShort(), v1 = d.readShort();
-				float[][] q = {{u0, v0}, {u1, v0}, {u1, v1}, {u0, v1}};
-				for (int k = 0; k < 4; k++) {
-					float[] p = new float[3];
-					p[eje] = plano;
-					p[eje == 0 ? 1 : 0] = q[k][0];
-					p[eje == 2 ? 1 : 2] = q[k][1];
-					System.arraycopy(p, 0, e, i * 12 + k * 3, 3);
-				}
-				c[i] = paleta[color];
-				nor[i] = (byte) (eje * 2 + signo);
-			}
-			esquinas = e;
-			colores = c;
-			normales = nor;
-		} catch (Exception ex) {
-			Dedsafio4.LOGGER.error("No se pudo leer el modelo del Núcleo", ex);
-			esquinas = new float[0];
-			colores = new int[0];
-			normales = new byte[0];
-		}
-	}
-
 	@Override
 	public void render(NucleoEntity nucleo, float giro, float parcial, PoseStack pose, MultiBufferSource buffers, int luz) {
-		cargar();
 		int estado = nucleo.estado();
 		float t = nucleo.tiempo() + (estado == NucleoEntity.QUIETO ? 0 : parcial);
 		float carga = estado == NucleoEntity.CARGANDO ? Mth.clamp(t / NucleoEntity.CARGA, 0, 1)
@@ -120,7 +72,7 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 				: estado == NucleoEntity.SUPERNOVA ? LightTexture.FULL_BRIGHT
 				: LightTexture.pack(Math.max(LightTexture.block(luz), (int) (15 * carga)), Math.max(LightTexture.sky(luz), (int) (15 * carga)));
 		int overlay = OverlayTexture.pack(OverlayTexture.u(0f), OverlayTexture.v(nucleo.hurtTime > 0));
-		if (dibujarCuerpo) dibujar(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(BLANCO)), brillo, overlay);
+		if (dibujarCuerpo) MALLA.dibujar(pose, buffers.getBuffer(RenderType.entityCutoutNoCull(BLANCO)), brillo, overlay);
 		pose.popPose();
 
 		// La luz del medio y la supernova.
@@ -160,28 +112,6 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 		}
 		pose.popPose();
 		super.render(nucleo, giro, parcial, pose, buffers, luz);
-	}
-
-	private static void dibujar(PoseStack pose, VertexConsumer v, int luz, int overlay) {
-		PoseStack.Pose p = pose.last();
-		Matrix4f m = p.pose();
-		// Las 6 direcciones ya giradas.
-		Vector3f[] dirs = new Vector3f[6];
-		for (int i = 0; i < 6; i++) {
-			float[] d = new float[3];
-			d[i / 2] = (i % 2 == 0) ? -1 : 1;
-			dirs[i] = p.normal().transform(new Vector3f(d[0], d[1], d[2])).normalize();
-		}
-		Vector3f q = new Vector3f();
-		float[] e = esquinas;
-		for (int i = 0, n = colores.length; i < n; i++) {
-			Vector3f nn = dirs[normales[i]];
-			int c = colores[i], o = i * 12;
-			for (int k = 0; k < 4; k++) {
-				m.transformPosition(e[o + k * 3], e[o + k * 3 + 1], e[o + k * 3 + 2], q);
-				v.addVertex(q.x, q.y, q.z, c, 0.5f, 0.5f, overlay, luz, nn.x, nn.y, nn.z);
-			}
-		}
 	}
 
 	/** Un haz de luz que pasa por el centro (para los dos lados), girado en Y y un poco inclinado. */
