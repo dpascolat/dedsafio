@@ -24,7 +24,8 @@ import java.util.List;
 /**
  * Martillo de Netherite: repara durabilidad a cambio de experiencia.
  * - Click derecho sobre alguien: le repara de a poco las piezas de la armadura.
- * - Click derecho al aire: repara lo que tengas en la mano secundaria.
+ * - Click derecho al aire: repara lo que tengas en la mano secundaria (menos el Brazalete Interdimensional: su barra
+ *   es el combustible, y eso solo lo carga la Batería de Dilitio).
  * Manteniendo apretado el click sigue reparando solo.
  */
 public class MartilloItem extends Item {
@@ -63,6 +64,11 @@ public class MartilloItem extends Item {
 		if (mano != InteractionHand.MAIN_HAND) return InteractionResultHolder.pass(martillo);
 		if (level.isClientSide) return InteractionResultHolder.success(martillo);
 		ItemStack secundaria = jugador.getOffhandItem();
+		// El Brazalete no se arregla: su barra es el combustible y solo lo carga la Batería de Dilitio.
+		if (secundaria.is(ModItems.BRAZALETE_INTERDIMENSIONAL)) {
+			aviso(jugador, "El Brazalete solo se recarga con una Batería de Dilitio");
+			return InteractionResultHolder.consume(martillo);
+		}
 		if (secundaria.isEmpty() || !secundaria.isDamaged()) {
 			aviso(jugador, secundaria.isEmpty()
 					? "Pon algo en la mano secundaria para repararlo"

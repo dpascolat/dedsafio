@@ -4,6 +4,8 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"BlockBehaviourMixin",
+		"BrazaleteSinRepararMixin",
+		"BrazaleteSinJuntarMixin",
 		"BlockItemPhoraMixin",
 		"CarvedPumpkinBlockMixin",
 		"ChatTypeMixin",

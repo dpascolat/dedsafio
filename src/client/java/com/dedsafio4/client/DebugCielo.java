@@ -323,6 +323,73 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean MARTILLO_BRAZALETE = "martillobrazalete".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba: el Martillo ya no carga el Brazalete, y juntar dos Brazaletes en la mesa no los arregla. */
+	private static void tickMartilloBrazalete(Minecraft mc) {
+		int t = ticks - 20;
+		var server = mc.getSingleplayerServer();
+		if (server == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		if (t == -5) revivir(mc);
+		if (t == 0) { comando(mc, "gamemode survival"); comando(mc, "clear @s"); comando(mc, "xp add @s 30 levels");
+			comando(mc, "item replace entity @s weapon.mainhand with dedsafio4:martillo_netherite");
+			comando(mc, "item replace entity @s weapon.offhand with dedsafio4:brazalete_interdimensional[damage=200]"); }
+		if (t == 10) mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+		if (t == 16) server.execute(() -> {
+			var j = server.getPlayerList().getPlayers().get(0);
+			System.out.println("MB martillo: combustible del brazalete=" + com.dedsafio4.brazalete.Brazalete.combustible(j.getOffhandItem()) + " (tiene que seguir en 100)");
+			var b1 = new net.minecraft.world.item.ItemStack(com.dedsafio4.items.ModItems.BRAZALETE_INTERDIMENSIONAL); b1.setDamageValue(250);
+			var b2 = b1.copy();
+			var entrada = net.minecraft.world.item.crafting.CraftingInput.of(2, 1, java.util.List.of(b1, b2));
+			var receta = server.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, entrada, j.level());
+			System.out.println("MB mesa: dos brazaletes juntos dan receta=" + receta.isPresent() + " (tiene que ser false)");
+		});
+		if (t == 20) mc.stop();
+	}
+
+	private static final boolean SUPERNOVA = "supernova".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	/** Prueba de la supernova del Núcleo: desde adentro del radio (la pantalla) y desde afuera (la bola y los haces). */
+	private static void tickSupernova(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		if (mc.screen != null) mc.setScreen(null);
+		mc.options.pauseOnLostFocus = false;
+		mc.options.hideGui = false;
+		String en = "execute in dedsafio4:espacio_interdimensional run ";
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			comando(mc, "gamemode creative"); comando(mc, "tag @s remove dedsafio4_brazalete_vuelo");
+			comando(mc, "tiempito 1");
+			comando(mc, en + "tp @s 0.5 100 10 180 0");
+		}
+		if (t >= 2) mc.player.getAbilities().flying = true;
+		// Quieto en el lugar (si no, se cae).
+		if (t >= 2 && t < 200 && t % 2 == 0) mc.getSingleplayerServer().execute(() -> {
+			var j = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
+			j.teleportTo(0.5, 100, 10); j.setDeltaMovement(0, 0, 0);
+		});
+		if (t >= 200 && t % 2 == 0) mc.getSingleplayerServer().execute(() -> {
+			var j = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
+			j.teleportTo(0.5, 104, 5); j.setDeltaMovement(0, 0, 0);
+		});
+		if (t >= 2) { mc.player.setYRot(180f); mc.player.setXRot(t >= 200 ? 4f : 0f); mc.player.yRotO = 180f; }
+		if (t == 40) { comando(mc, en + "kill @e[type=dedsafio4:nucleo]"); comando(mc, en + "fill -3 95 -3 3 95 3 minecraft:obsidian"); comando(mc, en + "fill -3 95 -43 3 95 -37 minecraft:obsidian"); comando(mc, en + "summon dedsafio4:nucleo 0.5 96 0.5"); }
+		if (t == 70) { comando(mc, en + "kill @e[type=dedsafio4:nucleo]"); mc.gui.getChat().clearMessages(false); }
+		if (t % 10 == 0 && t >= 40) for (var e : mc.level.entitiesForRendering()) if (e instanceof com.dedsafio4.bestias.NucleoEntity n)
+			System.out.println("SN t=" + t + " estado=" + n.estado() + " tiempo=" + n.tiempo() + " radio=" + n.radio() + " distancia=" + String.format("%.1f", n.distanceTo(mc.player)));
+		if (t == 95) captura(mc, "debug_sn1_adentro_fogonazo.png");
+		if (t == 110) captura(mc, "debug_sn2_adentro.png");
+		if (t == 140) captura(mc, "debug_sn3_adentro.png");
+		// Otro Núcleo, mirado desde afuera del radio (20 bloques): a 45.
+		if (t == 200) { comando(mc, en + "summon dedsafio4:nucleo 0.5 96 -40"); comando(mc, en + "tp @s 0.5 104 5 180 4"); }
+		if (t == 230) { comando(mc, en + "kill @e[type=dedsafio4:nucleo,distance=30..]"); mc.gui.getChat().clearMessages(false); }
+		if (t == 258) captura(mc, "debug_sn4_afuera.png");
+		if (t == 275) captura(mc, "debug_sn5_afuera.png");
+		if (t == 330) { comando(mc, "tiempito 10"); comando(mc, en + "kill @e[type=dedsafio4:nucleo]"); mc.stop(); }
+	}
+
 	private static final boolean NAVE_DANIO = "navedanio".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 	private static float vidaNave;
 
@@ -9673,6 +9740,14 @@ public final class DebugCielo {
 		}
 		if (NAVE_DANIO) {
 			tickNaveDanio(mc);
+			return;
+		}
+		if (SUPERNOVA) {
+			tickSupernova(mc);
+			return;
+		}
+		if (MARTILLO_BRAZALETE) {
+			tickMartilloBrazalete(mc);
 			return;
 		}
 		if (PERLAS) {

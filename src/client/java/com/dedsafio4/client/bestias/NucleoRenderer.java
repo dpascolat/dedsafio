@@ -26,8 +26,9 @@ import java.io.InputStream;
  * bloque juntada con las vecinas del mismo color) con cada bloque como un píxel, más:
  * <ul>
  * <li>Cargando: tiembla, brilla cada vez más y en el medio crece una bola de luz.</li>
- * <li>Supernova: una bola blanca que se agranda de golpe hasta el radio y queda como una cáscara naranja y roja que
- *     se va apagando.</li>
+ * <li>Supernova: como una bomba nuclear, una bola blanca que sale de golpe hasta el radio y queda como una nube de
+ *     colores (rosa, verde agua, azul) que se va apagando, con dos haces de luz que giran. Desde adentro se ve la
+ *     pantalla de la supernova (SupernovaPantalla).</li>
  * </ul>
  */
 public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
@@ -136,19 +137,26 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 			esfera(v, pose.last().pose(), (0.4f + 1.8f * carga) * pulso * escala, 255, 210, 90, (int) (60 + 120 * carga));
 			esfera(v, pose.last().pose(), (0.2f + 0.9f * carga) * pulso * escala, 255, 255, 230, (int) (90 + 150 * carga));
 		} else if (estado == NucleoEntity.SUPERNOVA) {
+			// Como una bomba nuclear: la bola sale de golpe hasta el radio (en medio segundo), blanca, y después queda
+			// como una nube de colores (rosa, verde agua, azul) que se va apagando, con dos haces de luz que giran.
 			float radio = nucleo.radio();
-			float crece = Mth.clamp(t / 12f, 0, 1);
+			float crece = Mth.clamp(t / 10f, 0, 1);
 			crece = 1 - (1 - crece) * (1 - crece) * (1 - crece);
 			float apaga = Mth.clamp((NucleoEntity.DURACION - t) / 30f, 0, 1);
-			// La onda: blanca al salir, después naranja y roja.
-			float blanco = 1 - Mth.clamp((t - 6) / 20f, 0, 1);
-			int g = (int) Mth.lerp(blanco, 90, 240), b = (int) Mth.lerp(blanco, 20, 200);
-			esfera(v, pose.last().pose(), radio * crece, 255, g, b, (int) ((40 + 70 * blanco) * apaga));
-			esfera(v, pose.last().pose(), radio * crece * 0.97f, 255, 60, 10, (int) (35 * apaga));
+			float blanco = 1 - Mth.clamp((t - 4) / 16f, 0, 1);
+			float late = 0.85f + 0.15f * Mth.sin(t * 0.4f);
+			Matrix4f m = pose.last().pose();
+			esfera(v, m, radio * crece, (int) Mth.lerp(blanco, 220, 255), (int) Mth.lerp(blanco, 70, 255), (int) Mth.lerp(blanco, 150, 255), (int) ((30 + 70 * blanco) * apaga * late));
+			esfera(v, m, radio * crece * 0.92f, 70, 200, 175, (int) (35 * apaga * late));
+			esfera(v, m, radio * crece * 0.8f, 100, 100, 235, (int) (40 * apaga * late));
 			// El fogonazo del medio, que se achica.
 			float fogonazo = Mth.clamp(1 - t / 25f, 0, 1);
-			if (fogonazo > 0) esfera(v, pose.last().pose(), radio * 0.35f * crece * fogonazo + 1f, 255, 255, 230, (int) (200 * fogonazo));
-			esfera(v, pose.last().pose(), 1.6f * escala, 255, 200, 90, (int) (120 * apaga));
+			if (fogonazo > 0) esfera(v, m, radio * 0.4f * crece * fogonazo + 1f, 255, 255, 255, (int) (220 * fogonazo));
+			esfera(v, m, 1.6f * escala, 230, 220, 255, (int) (140 * apaga));
+			// Los haces: dos que giran (un púlsar), largos como el radio y un poco más.
+			float largo = radio * 1.3f * crece;
+			haz(v, pose, t * 6f, 25f, largo, 0.9f * escala + 0.6f, (int) (150 * apaga));
+			haz(v, pose, -t * 4f + 60f, -35f, largo * 0.85f, 0.7f * escala + 0.5f, (int) (110 * apaga));
 		}
 		pose.popPose();
 		super.render(nucleo, giro, parcial, pose, buffers, luz);
@@ -174,6 +182,28 @@ public class NucleoRenderer extends EntityRenderer<NucleoEntity> {
 				v.addVertex(q.x, q.y, q.z, c, 0.5f, 0.5f, overlay, luz, nn.x, nn.y, nn.z);
 			}
 		}
+	}
+
+	/** Un haz de luz que pasa por el centro (para los dos lados), girado en Y y un poco inclinado. */
+	private static void haz(VertexConsumer v, PoseStack pose, float giroY, float inclinacion, float largo, float ancho, int alfa) {
+		if (alfa <= 0 || largo <= 0) return;
+		pose.pushPose();
+		pose.mulPose(Axis.YP.rotationDegrees(giroY));
+		pose.mulPose(Axis.ZP.rotationDegrees(inclinacion));
+		Matrix4f m = pose.last().pose();
+		// Dos planos cruzados para que se vea desde cualquier lado; blanco celeste.
+		for (int k = 0; k < 2; k++) {
+			float ax = k == 0 ? ancho : 0, az = k == 0 ? 0 : ancho;
+			v.addVertex(m, -ax, -largo, -az).setColor(210, 230, 255, 0);
+			v.addVertex(m, ax, -largo, az).setColor(210, 230, 255, 0);
+			v.addVertex(m, ax, 0, az).setColor(240, 248, 255, alfa);
+			v.addVertex(m, -ax, 0, -az).setColor(240, 248, 255, alfa);
+			v.addVertex(m, -ax, 0, -az).setColor(240, 248, 255, alfa);
+			v.addVertex(m, ax, 0, az).setColor(240, 248, 255, alfa);
+			v.addVertex(m, ax, largo, az).setColor(210, 230, 255, 0);
+			v.addVertex(m, -ax, largo, -az).setColor(210, 230, 255, 0);
+		}
+		pose.popPose();
 	}
 
 	/** Una esfera de luz (se ve de afuera y de adentro). */
