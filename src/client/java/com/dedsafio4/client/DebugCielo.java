@@ -323,6 +323,47 @@ public final class DebugCielo {
 		mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
 	}
 
+	private static final boolean PUESTO_TRATOS = "puestotratos".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
+
+	private static void tratosAbiertos(Minecraft mc, String que) {
+		if (mc.player.containerMenu instanceof net.minecraft.world.inventory.MerchantMenu m) {
+			StringBuilder sb = new StringBuilder("PT " + que + ": " + m.getOffers().size() + " tratos:");
+			for (var o : m.getOffers()) sb.append(" [").append(o.getCostA().getCount()).append(" ").append(o.getCostA().getItem())
+					.append(" -> ").append(o.getResult().getCount()).append(" ").append(o.getResult().getItem()).append("]");
+			System.out.println(sb);
+		} else System.out.println("PT " + que + ": no se abrio el puesto (" + mc.screen + ")");
+	}
+
+	/** Prueba de /puesto: lista, agregar, quitar, abrir el puesto con los tratos nuevos y volver a los de siempre. */
+	private static void tickPuestoTratos(Minecraft mc) {
+		int t = ticks - 20;
+		if (mc.getSingleplayerServer() == null || mc.player == null) return;
+		mc.options.pauseOnLostFocus = false;
+		if (t == -5) revivir(mc);
+		if (t == 0) {
+			if (mc.screen != null) mc.setScreen(null);
+			comando(mc, "gamemode survival"); comando(mc, "clear @s");
+			comando(mc, "execute in minecraft:overworld run tp @s 0.5 200 0.5 180 30");
+			comando(mc, "fill -2 199 -2 2 199 2 minecraft:stone");
+			comando(mc, "setblock 0 200 -1 dedsafio4:puesto_intercambio");
+			comando(mc, "puesto original");
+			comando(mc, "item replace entity @s weapon.mainhand with minecraft:diamond 3");
+			comando(mc, "item replace entity @s weapon.offhand with minecraft:emerald 5");
+		}
+		if (t == 5) comando(mc, "puesto agregar");
+		if (t == 8) comando(mc, "puesto quitar 1");
+		if (t == 10) comando(mc, "puesto lista");
+		if (t == 12) comando(mc, "item replace entity @s weapon.mainhand with minecraft:air");
+		if (t == 16) mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+				new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(0.5, 200.5, -0.01), net.minecraft.core.Direction.SOUTH, new net.minecraft.core.BlockPos(0, 200, -1), false));
+		if (t == 26) { tratosAbiertos(mc, "abierto despues de cambiar"); captura(mc, "debug_pt1_puesto.png"); mc.player.closeContainer(); }
+		if (t == 30) comando(mc, "puesto original");
+		if (t == 34) mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+				new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(0.5, 200.5, -0.01), net.minecraft.core.Direction.SOUTH, new net.minecraft.core.BlockPos(0, 200, -1), false));
+		if (t == 44) { tratosAbiertos(mc, "abierto despues de /puesto original"); mc.player.closeContainer(); }
+		if (t == 48) { comando(mc, "setblock 0 200 -1 minecraft:air"); mc.stop(); }
+	}
+
 	private static final boolean MARTILLO_BRAZALETE = "martillobrazalete".equals(System.getenv("DEDSAFIO4_DEBUG_CIELO"));
 
 	/** Prueba: el Martillo ya no carga el Brazalete, y juntar dos Brazaletes en la mesa no los arregla. */
@@ -9748,6 +9789,10 @@ public final class DebugCielo {
 		}
 		if (MARTILLO_BRAZALETE) {
 			tickMartilloBrazalete(mc);
+			return;
+		}
+		if (PUESTO_TRATOS) {
+			tickPuestoTratos(mc);
 			return;
 		}
 		if (PERLAS) {

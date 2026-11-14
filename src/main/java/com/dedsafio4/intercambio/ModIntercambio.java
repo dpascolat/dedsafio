@@ -36,6 +36,12 @@ import net.minecraft.world.phys.BlockHitResult;
  *   1 Dedita            → 1 Dedita de Casino
  *   2 Dilitio           → 1 Dedita
  *   1 Dedita            → 1 Manuscrito de Hermandad (el de 3 participantes)
+ * Los OP los cambian con /puesto (valen para todos los puestos y quedan guardados en el mundo):
+ *   /puesto lista                 los tratos, numerados
+ *   /puesto agregar               agrega uno: lo que se paga es lo de la mano principal (con su cantidad) y lo que
+ *                                 se recibe, lo de la mano secundaria (con su cantidad, encantamientos y nombre)
+ *   /puesto quitar <número>       saca ese trato
+ *   /puesto original              vuelve a los tres de siempre
  */
 public final class ModIntercambio {
 	private ModIntercambio() {}
@@ -54,13 +60,136 @@ public final class ModIntercambio {
 
 	public static void registrar() {}
 
-	/** Los tratos (se arman cada vez que alguien abre el puesto). */
-	private static MerchantOffers tratos() {
+	/** Los tratos cambiados con /puesto (si nunca se cambiaron, "cambiados" es false y se usan los de siempre). */
+	static final class Datos extends net.minecraft.world.level.saveddata.SavedData {
+		static final Factory<Datos> FACTORY = new Factory<>(Datos::new, Datos::leer, null);
+		boolean cambiados;
+		/** Cada trato: lo que se paga y lo que se recibe. */
+		final java.util.List<ItemStack[]> tratos = new java.util.ArrayList<>();
+
+		private static Datos leer(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			Datos d = new Datos();
+			d.cambiados = tag.getBoolean("cambiados");
+			for (net.minecraft.nbt.Tag t : tag.getList("tratos", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+				net.minecraft.nbt.CompoundTag c = (net.minecraft.nbt.CompoundTag) t;
+				ItemStack paga = ItemStack.parseOptional(registros, c.getCompound("paga"));
+				ItemStack recibe = ItemStack.parseOptional(registros, c.getCompound("recibe"));
+				if (!paga.isEmpty() && !recibe.isEmpty()) d.tratos.add(new ItemStack[]{paga, recibe});
+			}
+			return d;
+		}
+
+		@Override
+		public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registros) {
+			tag.putBoolean("cambiados", cambiados);
+			net.minecraft.nbt.ListTag lista = new net.minecraft.nbt.ListTag();
+			for (ItemStack[] t : tratos) {
+				net.minecraft.nbt.CompoundTag c = new net.minecraft.nbt.CompoundTag();
+				c.put("paga", t[0].save(registros));
+				c.put("recibe", t[1].save(registros));
+				lista.add(c);
+			}
+			tag.put("tratos", lista);
+			return tag;
+		}
+	}
+
+	private static Datos datos(net.minecraft.server.MinecraftServer server) {
+		return server.overworld().getDataStorage().computeIfAbsent(Datos.FACTORY, "dedsafio4_puesto_intercambio");
+	}
+
+	/** Los tratos de siempre (lo que se paga, lo que se recibe). */
+	private static java.util.List<ItemStack[]> originales() {
+		return java.util.List.of(
+				new ItemStack[]{new ItemStack(ModItems.DEDITA, 1), new ItemStack(ModItems.DEDITA_CASINO)},
+				new ItemStack[]{new ItemStack(ModItems.DILITIO, 2), new ItemStack(ModItems.DEDITA)},
+				new ItemStack[]{new ItemStack(ModItems.DEDITA, 1), new ItemStack(ModItems.MANUSCRITO_HERMANDAD)});
+	}
+
+	private static java.util.List<ItemStack[]> actuales(net.minecraft.server.MinecraftServer server) {
+		Datos d = datos(server);
+		return d.cambiados ? d.tratos : originales();
+	}
+
+	/** Si todavía son los de siempre, los copia para poder cambiarlos. */
+	private static Datos paraCambiar(net.minecraft.server.MinecraftServer server) {
+		Datos d = datos(server);
+		if (!d.cambiados) {
+			d.tratos.clear();
+			for (ItemStack[] t : originales()) d.tratos.add(new ItemStack[]{t[0].copy(), t[1].copy()});
+			d.cambiados = true;
+		}
+		d.setDirty();
+		return d;
+	}
+
+	/** Los tratos (se arman cada vez que alguien abre el puesto). Lo que se paga se compara solo por el ítem y la cantidad. */
+	private static MerchantOffers tratos(net.minecraft.server.MinecraftServer server) {
 		MerchantOffers o = new MerchantOffers();
-		o.add(trato(new ItemCost(ModItems.DEDITA, 1), new ItemStack(ModItems.DEDITA_CASINO)));
-		o.add(trato(new ItemCost(ModItems.DILITIO, 2), new ItemStack(ModItems.DEDITA)));
-		o.add(trato(new ItemCost(ModItems.DEDITA, 1), new ItemStack(ModItems.MANUSCRITO_HERMANDAD)));
+		for (ItemStack[] t : actuales(server)) o.add(trato(new ItemCost(t[0].getItem(), t[0].getCount()), t[1].copy()));
 		return o;
+	}
+
+	private static Component nombre(ItemStack pila) {
+		return Component.literal(pila.getCount() + " ").append(pila.getHoverName());
+	}
+
+	private static Component flecha() {
+		return Component.literal("  →  ").withStyle(net.minecraft.ChatFormatting.GRAY);
+	}
+
+	public static void registrarComandos(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+		var c = net.minecraft.commands.Commands.literal("puesto").requires(s -> s.hasPermission(2));
+		c.then(net.minecraft.commands.Commands.literal("lista").executes(x -> {
+			var server = x.getSource().getServer();
+			var lista = actuales(server);
+			x.getSource().sendSuccess(() -> Component.literal("Tratos del Puesto de Intercambio" + (datos(server).cambiados ? ":" : " (los de siempre):"))
+					.withStyle(net.minecraft.ChatFormatting.GOLD), false);
+			for (int i = 0; i < lista.size(); i++) {
+				ItemStack[] t = lista.get(i);
+				int n = i + 1;
+				x.getSource().sendSuccess(() -> Component.literal(n + ". ").withStyle(net.minecraft.ChatFormatting.YELLOW)
+						.append(nombre(t[0])).append(flecha()).append(nombre(t[1])), false);
+			}
+			return lista.size();
+		}));
+		c.then(net.minecraft.commands.Commands.literal("agregar").executes(x -> {
+			Player jugador = x.getSource().getPlayerOrException();
+			ItemStack paga = jugador.getMainHandItem(), recibe = jugador.getOffhandItem();
+			if (paga.isEmpty() || recibe.isEmpty()) {
+				x.getSource().sendFailure(Component.literal("Pon en la mano principal lo que se paga y en la mano secundaria lo que se recibe (con sus cantidades)."));
+				return 0;
+			}
+			Datos d = paraCambiar(x.getSource().getServer());
+			d.tratos.add(new ItemStack[]{paga.copy(), recibe.copy()});
+			int n = d.tratos.size();
+			x.getSource().sendSuccess(() -> Component.literal("Listo, trato " + n + ": ").withStyle(net.minecraft.ChatFormatting.GREEN)
+					.append(nombre(paga)).append(flecha()).append(nombre(recibe)), true);
+			return n;
+		}));
+		c.then(net.minecraft.commands.Commands.literal("quitar").then(net.minecraft.commands.Commands.argument("numero",
+				com.mojang.brigadier.arguments.IntegerArgumentType.integer(1)).executes(x -> {
+			int n = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(x, "numero");
+			if (n > actuales(x.getSource().getServer()).size()) {
+				x.getSource().sendFailure(Component.literal("No hay trato " + n + ". Mira los números con /puesto lista."));
+				return 0;
+			}
+			Datos d = paraCambiar(x.getSource().getServer());
+			ItemStack[] t = d.tratos.remove(n - 1);
+			x.getSource().sendSuccess(() -> Component.literal("Listo, se sacó el trato " + n + ": ").withStyle(net.minecraft.ChatFormatting.GREEN)
+					.append(nombre(t[0])).append(flecha()).append(nombre(t[1])), true);
+			return 1;
+		})));
+		c.then(net.minecraft.commands.Commands.literal("original").executes(x -> {
+			Datos d = datos(x.getSource().getServer());
+			d.cambiados = false;
+			d.tratos.clear();
+			d.setDirty();
+			x.getSource().sendSuccess(() -> Component.literal("Listo: el Puesto de Intercambio vuelve a los tratos de siempre.")
+					.withStyle(net.minecraft.ChatFormatting.GREEN), true);
+			return 1;
+		}));
+		dispatcher.register(c);
 	}
 
 	private static MerchantOffer trato(ItemCost cuesta, ItemStack da) {
@@ -97,18 +226,19 @@ public final class ModIntercambio {
 
 		@Override
 		protected InteractionResult useWithoutItem(BlockState estado, Level mundo, BlockPos pos, Player jugador, BlockHitResult golpe) {
-			if (!mundo.isClientSide) new Puesto(jugador).openTradingScreen(jugador, Component.literal("Puesto de Intercambio"), 0);
+			if (!mundo.isClientSide) new Puesto(jugador, tratos(mundo.getServer())).openTradingScreen(jugador, Component.literal("Puesto de Intercambio"), 0);
 			return InteractionResult.sidedSuccess(mundo.isClientSide);
 		}
 	}
 
 	/** El "comerciante" del puesto: uno por cada vez que alguien lo abre. */
 	static final class Puesto implements Merchant {
-		private final MerchantOffers ofertas = tratos();
+		private final MerchantOffers ofertas;
 		private Player jugador;
 
-		Puesto(Player jugador) {
+		Puesto(Player jugador, MerchantOffers ofertas) {
 			this.jugador = jugador;
+			this.ofertas = ofertas;
 		}
 
 		@Override public void setTradingPlayer(Player p) { jugador = p; }
